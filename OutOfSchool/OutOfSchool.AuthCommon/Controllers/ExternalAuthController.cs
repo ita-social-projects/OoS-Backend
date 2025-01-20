@@ -100,263 +100,193 @@ public class ExternalAuthController : Controller
         var backchannelToken =
             result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
 
-        var externalAuth = await communicationService
-            .GetUserInfo(remoteUserId, backchannelToken)
-            .FlatMapAsync(
-                async userInfo =>
-                {
-                    // TODO: maybe use this instead for future if we decide we will not store User in our Db Context
-                    // using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-                    var strategy = dbContext.Database.CreateExecutionStrategy();
-                    return await strategy.Execute(async () => await this.SignInUserAsync(userInfo, result));
-                },
-                error =>
-                {
-                    logger.LogError(error, "Unexpected error occurred while retrieving login information");
-                    return new InternalAuthError
-                    {
-                        HttpStatusCode = HttpStatusCode.InternalServerError,
-                        Message = "Unexpected error occurred while retrieving login information",
-                        ErrorGroup = InternalAuthErrorGroup.Unknown,
-                    };
-                });
+        var userInfoResult = await communicationService.GetUserInfo(remoteUserId, backchannelToken);
 
-        return await externalAuth.Match(
+        return await userInfoResult.Match<Task<IActionResult>>(
             async error =>
             {
                 logger.LogError("Unexpected error occurred: {Message} - {Content}", error.Message, error.Content);
-                var frontMessage = error switch
-                {
-                    ExternalAuthError e => ProcessExternalError(e),
-                    InternalAuthError e => ProcessInternalError(e),
-                    _ => "Unknown error, please try again or contact local administrator",
-                };
-
-                ModelState.AddModelError(string.Empty, frontMessage);
+                ModelState.AddModelError(string.Empty, localizer["ExternalAuthenticationError"]);
 
                 return View("~/Views/Auth/Login.cshtml", new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
                     ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
-                }) as IActionResult;
+                });
             },
-            Task.FromResult);
+            async userInfo =>
+            {
+                try
+                {
+                    var strategy = dbContext.Database.CreateExecutionStrategy();
+                    return await strategy.Execute(async () => await SignInUserAsync(userInfo, result));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unexpected error occurred while retrieving login information");
+                    ModelState.AddModelError(string.Empty, "Unexpected error occurred while retrieving login information");
+
+                    return View("~/Views/Auth/Login.cshtml", new LoginViewModel
+                    {
+                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                        ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+                    });
+                }
+            });
     }
 
-    private static string ProcessExternalError(ExternalAuthError e)
-    {
-        return e.ErrorGroup switch
-        {
-            ExternalAuthErrorGroup.Unknown => "Unknown error, please try again.",
-            ExternalAuthErrorGroup.Encryption => "Error processing your information, contact local administrator",
-            ExternalAuthErrorGroup.IdGovUa => "External provider error, please contact external support",
-            _ => "Unknown error, please try again or contact external support",
-        };
-    }
-
-    private static string ProcessInternalError(InternalAuthError e)
-    {
-        return e.ErrorGroup switch
-        {
-            InternalAuthErrorGroup.Unknown => "Unknown error, please try again.",
-            InternalAuthErrorGroup.Logic =>
-                "Error processing your information. If error persists - contact local administrator",
-            InternalAuthErrorGroup.Database => "Server error. If error persists - contact local administrator",
-            _ => "Unknown error, please try again or contact local administrator",
-        };
-    }
-
-    private async Task<Either<IErrorResponse, IActionResult>> SignInUserAsync(
+    /// <summary>
+    /// Signs in a user based on external authentication result and user info.
+    /// </summary>
+    /// <param name="userInfo">User information received from external auth provider.</param>
+    /// <param name="result">Authentication result from external provider.</param>
+    /// <returns><see cref="IActionResult"/> redirecting to appropriate page based on sign in result.</returns>
+    private async Task<IActionResult> SignInUserAsync(
         UserInfoResponse userInfo,
         AuthenticateResult result)
     {
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
         try
         {
-            var signIn = await GetOrCreateUserAsync(
-                    userInfo,
-                    result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey])
-                .FlatMapAsync(user => GetOrCreateIndividualAsync(userInfo, user))
-                .FlatMapAsync(individual => BuildClaims(individual, userInfo, result))
-                .FlatMapAsync(claims => SignInWithClaimsAsync(result, claims));
+            var user = await GetOrCreateUserAsync(userInfo, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]);
+            var individual = await GetOrCreateIndividualAsync(userInfo, user);
+            var claims = BuildClaims(individual, userInfo, result);
+            var properties = await SignInWithClaimsAsync(result, claims);
 
-            var signInResult = await signIn.Match(
-                async error =>
-                {
-                    if (error is not InternalAuthError e)
-                    {
-                        throw new InvalidOperationException(error.Message);
-                    }
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-                    await transaction.RollbackAsync();
-
-                    ModelState.AddModelError(string.Empty, ProcessInternalError(e));
-
-                    return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
-                    {
-                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                        ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
-                    }) as ActionResult;
-                },
-                async properties =>
-                {
-                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
-                    await transaction.CommitAsync().ConfigureAwait(false);
-                    return Redirect(properties.RedirectUri) as ActionResult;
-                });
-
-            return signInResult;
+            return Redirect(properties.RedirectUri);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error occurred while processing sign-in information");
             await transaction.RollbackAsync();
-            return new InternalAuthError
+
+            ModelState.AddModelError(string.Empty, "Server error occurred while processing sign-in information");
+
+            return View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "Unexpected error occurred while processing sign-in information",
-                ErrorGroup = InternalAuthErrorGroup.Database,
-            };
+                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+            });
         }
     }
 
-    private async Task<Either<IErrorResponse, User>> GetOrCreateUserAsync(UserInfoResponse userInfo,
-        string selectedRole)
+    /// <summary>
+    /// Gets existing user or creates new one based on external auth info.
+    /// </summary>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <param name="selectedRole">Selected role for the user.</param>
+    /// <returns><see cref="User"/> entity.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when user creation fails.</exception>
+    private async Task<User> GetOrCreateUserAsync(UserInfoResponse userInfo, string selectedRole)
     {
-        try
+        var user = await userManager.FindByNameAsync(userInfo.DrfoCode);
+        if (user != null)
         {
-            var user = await userManager.FindByNameAsync(userInfo.DrfoCode);
-            if (user != null)
-            {
-                return user;
-            }
+            return user;
+        }
 
-            user = new User
+        user = new User
+        {
+            UserName = userInfo.DrfoCode,
+            FirstName = userInfo.GivenName,
+            LastName = userInfo.LastName,
+            MiddleName = userInfo.MiddleName,
+            Email = userInfo.Email,
+            CreatingTime = DateTimeOffset.UtcNow,
+            IsRegistered = false,
+            IsBlocked = false,
+            MustChangePassword = false,
+        };
+
+        var createResult = await userManager.CreateAsync(user);
+        if (!createResult.Succeeded)
+        {
+            var error = string.Join("; ", createResult.Errors.Select(e => e.Description));
+            throw new InvalidOperationException(error);
+        }
+
+        await userManager.AddToRoleAsync(user, selectedRole);
+        return user;
+    }
+
+    /// <summary>
+    /// Gets existing individual or creates new one based on user info.
+    /// </summary>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <param name="user">Associated user entity.</param>
+    /// <returns><see cref="Individual"/> entity.</returns>
+    private async Task<Individual> GetOrCreateIndividualAsync(UserInfoResponse userInfo, User user)
+    {
+        var individual = await dbContext.Individuals
+            .FirstOrDefaultAsync(i => i.Rnokpp == userInfo.DrfoCode);
+
+        if (individual == null)
+        {
+            individual = new Individual
             {
-                UserName = userInfo.DrfoCode,
+                Id = Guid.NewGuid(),
                 FirstName = userInfo.GivenName,
                 LastName = userInfo.LastName,
                 MiddleName = userInfo.MiddleName,
-                Email = userInfo.Email,
-                CreatingTime = DateTimeOffset.UtcNow,
-                IsRegistered = false,
-                IsBlocked = false,
-                MustChangePassword = false,
+                Rnokpp = userInfo.DrfoCode,
             };
-
-            var createResult = await userManager.CreateAsync(user);
-            if (createResult.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, selectedRole);
-                return user;
-            }
-
-            var error = string.Join("; ", createResult.Errors.Select(e => e.Description));
-            return new InternalAuthError
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = error,
-                ErrorGroup = InternalAuthErrorGroup.Logic,
-            };
+            dbContext.Individuals.Add(individual);
         }
-        catch (Exception ex)
+
+        // Individual was created by admin or other user.
+        // Linking it to User
+        if (string.IsNullOrEmpty(individual.UserId))
         {
-            logger.LogError(ex, "An error occured while creating user");
-            return new InternalAuthError
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "An error occured while creating user",
-                ErrorGroup = InternalAuthErrorGroup.Database,
-            };
+            individual.UserId = user.Id;
         }
+
+        return individual;
     }
 
-    private async Task<Either<IErrorResponse, Individual>> GetOrCreateIndividualAsync(
-        UserInfoResponse userInfo,
-        User user)
+    /// <summary>
+    /// Builds claims list for the user based on authentication result and user info.
+    /// </summary>
+    /// <param name="individual">Individual entity.</param>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <param name="result">Authentication result.</param>
+    /// <returns>List of <see cref="Claim"/> for the user.</returns>
+    private List<Claim> BuildClaims(Individual individual, UserInfoResponse userInfo, AuthenticateResult result)
     {
-        try
+        var claims = new List<Claim>
         {
-            var individual = await dbContext.Individuals
-                .FirstOrDefaultAsync(i => i.Rnokpp == userInfo.DrfoCode);
+            new(ClaimTypes.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(ClaimTypes.GivenName, individual.FirstName),
+            new(ClaimTypes.Surname, individual.LastName),
+            new(ClaimTypes.Email, userInfo.Email),
+            new(AuthServerConstants.ClaimTypes.Rnkopp, individual.Rnokpp),
+            new(
+                OpenIddictConstants.Claims.Private.ProviderName,
+                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
+            new(
+                OpenIddictConstants.Claims.Private.RegistrationId,
+                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
+        };
 
-            if (individual == null)
-            {
-                individual = new Individual
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = userInfo.GivenName,
-                    LastName = userInfo.LastName,
-                    MiddleName = userInfo.MiddleName,
-                    Rnokpp = userInfo.DrfoCode,
-                };
-                dbContext.Individuals.Add(individual);
-            }
-
-            // Individual was created by admin or other user.
-            // Linking it to User
-            if (string.IsNullOrEmpty(individual.UserId))
-            {
-                individual.UserId = user.Id;
-            }
-
-            return individual;
-        }
-        catch (Exception ex)
+        if (Role.Provider.ToString()
+            .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
+                StringComparison.CurrentCultureIgnoreCase))
         {
-            logger.LogError(ex, "An error occured while creating individual");
-            return new InternalAuthError
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "An error occured while creating individual",
-                ErrorGroup = InternalAuthErrorGroup.Database,
-            };
+            claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
         }
+
+        return claims;
     }
 
-    private Either<IErrorResponse, List<Claim>> BuildClaims(
-        Individual individual, UserInfoResponse userInfo, AuthenticateResult result)
-    {
-        try
-        {
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
-                new(ClaimTypes.GivenName, individual.FirstName),
-                new(ClaimTypes.Surname, individual.LastName),
-                new(ClaimTypes.Email, userInfo.Email),
-                new(AuthServerConstants.ClaimTypes.Rnkopp, individual.Rnokpp),
-                new(
-                    OpenIddictConstants.Claims.Private.ProviderName,
-                    result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
-                new(
-                    OpenIddictConstants.Claims.Private.RegistrationId,
-                    result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
-            };
-
-            if (Role.Provider.ToString()
-                .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
-                    StringComparison.CurrentCultureIgnoreCase))
-            {
-                claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
-            }
-
-            return claims;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occured while building claims");
-            return new InternalAuthError
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "An error occured while building claims",
-                ErrorGroup = InternalAuthErrorGroup.Logic,
-            };
-        }
-    }
-
-    private async Task<Either<IErrorResponse, AuthenticationProperties>> SignInWithClaimsAsync(
-        AuthenticateResult result, List<Claim> claims)
+    /// <summary>
+    /// Signs in the user with specified claims.
+    /// </summary>
+    /// <param name="result">Authentication result.</param>
+    /// <param name="claims">Claims to associate with the sign in.</param>
+    /// <returns><see cref="AuthenticationProperties"/> containing redirect URI.</returns>
+    private async Task<AuthenticationProperties> SignInWithClaimsAsync(AuthenticateResult result, List<Claim> claims)
     {
         var properties = new AuthenticationProperties
         {
@@ -364,23 +294,9 @@ public class ExternalAuthController : Controller
             IsPersistent = false,
         };
 
-        try
-        {
-            // user is still in memory, should be cheap and rnkopp claim should be present if we ever get here
-            var user = await userManager.FindByNameAsync(claims
-                .First(c => c.Type == AuthServerConstants.ClaimTypes.Rnkopp).Value);
-            await signInManager.SignInWithClaimsAsync(user, properties, claims);
-            return properties;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occured while signing in with claims");
-            return new InternalAuthError
-            {
-                HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "An error occured while signing in with claims",
-                ErrorGroup = InternalAuthErrorGroup.Logic,
-            };
-        }
+        var user = await userManager.FindByNameAsync(claims
+            .First(c => c.Type == AuthServerConstants.ClaimTypes.Rnkopp).Value);
+        await signInManager.SignInWithClaimsAsync(user, properties, claims);
+        return properties;
     }
 }

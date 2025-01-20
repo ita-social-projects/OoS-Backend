@@ -35,4 +35,7 @@
     <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
         <value />
     </data>
+    <data name="ExternalAuthenticationError" xml:space="preserve">
+        <value />
+    </data>
 </root>

@@ -414,4 +414,7 @@
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="ExternalAuthenticationError" xml:space="preserve">
+    <value>Error processing your information with external provider, please try again or contact support</value>
+  </data>
 </root>

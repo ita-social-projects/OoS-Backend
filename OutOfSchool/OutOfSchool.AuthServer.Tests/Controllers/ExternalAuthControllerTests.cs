@@ -25,6 +25,7 @@ using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -274,7 +275,7 @@ public class ExternalAuthControllerTests
 
     private static OutOfSchoolDbContext GetContext()
     {
-        return new OutOfSchoolDbContext(
+        return new TestOutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
