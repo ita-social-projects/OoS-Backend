@@ -112,14 +112,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public Guid? InstitutionHierarchyId { get; set; } // TK
-    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; } //- TK need review virtual
-
-    //[ForeignKey(nameof(CategoryId))]
-    //public virtual Direction Category { get; set; }
-
-    //[MaxLength(250)]
-    //public string Subcategory { get; set; }
+    public Guid? InstitutionHierarchyId { get; set; }
+    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }

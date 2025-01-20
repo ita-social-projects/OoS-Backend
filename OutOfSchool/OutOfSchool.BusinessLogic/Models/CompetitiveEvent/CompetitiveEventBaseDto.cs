@@ -85,11 +85,6 @@ public class CompetitiveEventBaseDto
 
     public Guid? InstitutionHierarchyId { get; set; }
 
-    //public long? CategoryId { get; set; }
-
-    //[MaxLength(250)]
-    //public string Subcategory { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
