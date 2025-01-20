@@ -10,11 +10,6 @@ internal class CompetitiveEventConfiguration : IEntityTypeConfiguration<Competit
     public void Configure(EntityTypeBuilder<CompetitiveEvent> builder)
     {
         builder.ConfigureKeyedSoftDeleted<Guid, CompetitiveEvent>();
-        builder.HasOne(c => c.Category)
-            .WithMany() 
-            .HasForeignKey(c => c.CategoryId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(c => c.CompetitiveEventAccountingType)
            .WithMany()

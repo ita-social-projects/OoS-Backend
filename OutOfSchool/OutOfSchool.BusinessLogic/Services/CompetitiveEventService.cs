@@ -139,7 +139,7 @@ public class CompetitiveEventService : ICompetitiveEventService
       
         await currentUserService.UserHasRights(new ProviderRights(id));
 
-        logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {id}.", id);
+        logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {Id}.", id);
 
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
@@ -165,7 +165,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         var competitiveEventViewCards = mapper.Map<List<CompetitiveEventViewCardDto>>(competitiveEvents);
 
-        logger.LogDebug("From CompetitiveEvents table were successfully received {count} records.", competitiveEventViewCards.Count);
+        logger.LogDebug("From CompetitiveEvents table were successfully received {Count} records.", competitiveEventViewCards.Count);
 
         var result = new SearchResult<CompetitiveEventViewCardDto>()
         {
@@ -237,7 +237,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to process judge DTO with ID: {judgeId}", judgeDto.Id);
+                logger.LogError(ex, "Failed to process judge DTO with ID: {JudgeId}", judgeDto.Id);
                 throw;
             }
         }
@@ -273,7 +273,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to delete description item with ID: {descItemId}", descItem.Id);
+                logger.LogError(ex, "Failed to delete description item with ID: {DescItemId}", descItem.Id);
                 throw;
             }
         }
@@ -302,7 +302,7 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to process description item with ID: {descItemDtoId}", descItemDto.Id);
+                logger.LogError(ex, "Failed to process description item with ID: {DescItemDtoId}", descItemDto.Id);
                 throw;
             }
         }

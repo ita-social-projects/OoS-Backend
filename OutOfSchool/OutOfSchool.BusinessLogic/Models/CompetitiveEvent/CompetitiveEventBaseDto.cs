@@ -66,6 +66,9 @@ public class CompetitiveEventBaseDto
     public string VenueName { get; set; }
 
     [MaxLength(2000)]
+    public string TermsOfParticipation { get; set; }
+
+    [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     public List<JudgeDto> Judges { get; set; }
@@ -80,10 +83,12 @@ public class CompetitiveEventBaseDto
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long? CategoryId { get; set; }
+    public Guid? InstitutionHierarchyId { get; set; }
 
-    [MaxLength(250)]
-    public string Subcategory { get; set; }
+    //public long? CategoryId { get; set; }
+
+    //[MaxLength(250)]
+    //public string Subcategory { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
