@@ -263,6 +263,7 @@ public class WorkshopController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreateUpdateDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -337,6 +338,7 @@ public class WorkshopController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreateUpdateDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -394,6 +396,8 @@ public class WorkshopController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.WorkshopEdit)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Workshop))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -428,6 +432,7 @@ public class WorkshopController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopStatusDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -485,6 +490,7 @@ public class WorkshopController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopRemove)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
