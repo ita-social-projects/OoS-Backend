@@ -4,7 +4,7 @@
     <EFCoreVersion>8.0.7</EFCoreVersion>
     <OpenIdDictVersion>5.8.0</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
-    <QuartzVersion>3.5.0</QuartzVersion>
+    <QuartzVersion>3.13.1</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
     <AutoMapVersion>12.0.1</AutoMapVersion>
     <ElasticApmVersion>1.28.6</ElasticApmVersion>
