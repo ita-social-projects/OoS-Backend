@@ -41,6 +41,18 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [MaxLength(256)]
     public string Email { get; set; } = string.Empty;
 
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Website { get; set; } = string.Empty;
+
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Facebook { get; set; } = string.Empty;
+
+    [DataType(DataType.Url)]
+    [MaxLength(Constants.MaxUnifiedUrlLength)]
+    public string Instagram { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Children's min age is required")]
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinAge { get; set; }
