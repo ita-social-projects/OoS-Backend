@@ -5,7 +5,10 @@ public static class Constants
     /// <summary>
     /// Maximum length of unified URL.
     /// </summary>
+    // TODO: When we finish transition to unified contacts - change to 2048 (Max length for Chrome, which is minimal between browsers)
     public const int MaxUnifiedUrlLength = 256;
+
+    public const int MaxEmailTypeLength = 60;
 
     public const int MaxEmailAddressLength = 256;
 
@@ -223,6 +226,11 @@ public static class Constants
     /// Maximum allowed length for a teacher's description.
     /// </summary>
     public const int TeacherDescriptionLength = 300;
+    
+    /// <summary>
+    /// Maximum allowed length for contacts title.
+    /// </summary>
+    public const int ContactsTitleMaxLength = 60;
 
     /// <summary>
     /// The maximum length allowed for the competitive event title.

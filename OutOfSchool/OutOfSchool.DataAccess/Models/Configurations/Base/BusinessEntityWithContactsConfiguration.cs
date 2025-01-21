@@ -15,6 +15,10 @@ public abstract class BusinessEntityWithContactsConfiguration<TBase> : BusinessE
 
             contacts.Property<long>("Id");
             contacts.HasKey("Id");
+            
+            contacts.Property(c => c.Title)
+                .IsRequired()
+                .HasMaxLength(Constants.ContactsTitleMaxLength);
 
             // Address
             contacts.OwnsOne(c => c.Address, a =>
@@ -39,6 +43,9 @@ public abstract class BusinessEntityWithContactsConfiguration<TBase> : BusinessE
                 p.Property<long>("Id");
                 p.HasKey("Id");
 
+                p.Property(pr => pr.Type)
+                    .HasMaxLength(Constants.ContactsTitleMaxLength);
+
                 p.Property(pr => pr.Number)
                     .IsRequired()
                     .HasMaxLength(Constants.MaxPhoneNumberLengthWithPlusSign);
@@ -54,8 +61,8 @@ public abstract class BusinessEntityWithContactsConfiguration<TBase> : BusinessE
                 e.Property<long>("Id");
                 e.HasKey("Id");
 
+                e.Property(p => p.Type).HasMaxLength(Constants.MaxEmailTypeLength);
                 e.Property(p => p.Address).HasMaxLength(Constants.MaxEmailAddressLength);
-                // TODO:     [DataType(DataType.EmailAddress)]
 
                 e.HasIndex("Address"); // Additional index for search
             });

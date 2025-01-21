@@ -71,6 +71,11 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
 
     public bool ContentEquals(ContactsAddress other)
     {
+        if (other is null)
+        {
+            return false;
+        }
+
         return CATOTTGId == other.CATOTTGId &&
                string.Equals(Street, other.Street, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(BuildingNumber, other.BuildingNumber,

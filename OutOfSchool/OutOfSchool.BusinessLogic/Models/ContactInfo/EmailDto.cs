@@ -6,9 +6,12 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 {
+    [StringLength(Constants.MaxEmailTypeLength, ErrorMessage = "Email type cannot exceed 60 characters")]
     public string Type { get; set; } = null!;
 
-    [DataType(DataType.EmailAddress)] public string Address { get; set; } = null!;
+    [DataType(DataType.EmailAddress)]
+    [StringLength(Constants.MaxEmailAddressLength)]
+    public string Address { get; set; } = null!;
 
 
     public override bool Equals(object obj)
@@ -33,7 +36,8 @@ public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
             return true;
         }
 
-        return Type == other.Type && Address == other.Address;
+        return string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase) && 
+               string.Equals(Address, other.Address, StringComparison.OrdinalIgnoreCase);
     }
 
     [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
@@ -46,7 +50,12 @@ public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 
     public bool ContentEquals(Email other)
     {
-        return Type == other.Type &&
+        if (other is null)
+        {
+            return false;
+        }
+
+        return string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(Address, other.Address, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -7,6 +8,8 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<ContactsDto>
 {
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(Constants.ContactsTitleMaxLength)]
     public string Title { get; set; }
     
     public bool IsDefault { get; set; }
@@ -59,6 +62,11 @@ public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<Conta
 
     public bool ContentEquals(Contacts other)
     {
+        if (other is null)
+        {
+            return false;
+        }
+
         // Here we don't care about nested arrays and IsDefault because it's handled
         return Title == other.Title && Address.ContentEquals(other.Address);
     }
