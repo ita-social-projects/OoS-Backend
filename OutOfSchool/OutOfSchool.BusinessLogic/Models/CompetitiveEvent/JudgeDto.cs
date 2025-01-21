@@ -34,7 +34,7 @@ public class JudgeDto
 
     public bool IsChiefJudge { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(Constants.MaxJudgeDescriptionLength)]
     public string Description { get; set; } = string.Empty;
 
     public string CoverImageId { get; set; } = string.Empty;
