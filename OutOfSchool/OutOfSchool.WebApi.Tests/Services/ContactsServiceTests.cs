@@ -68,8 +68,8 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Contact1", IsDefault = false},
-                new ContactsDto {Title = "Contact2", IsDefault = false}
+                new ContactsDto {Title = "Contact1", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "Contact2", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
 
@@ -91,8 +91,8 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Contact1", IsDefault = false},
-                new ContactsDto {Title = "Contact2", IsDefault = true}
+                new ContactsDto {Title = "Contact1", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "Contact2", IsDefault = true, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
 
@@ -115,8 +115,8 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Contact1", IsDefault = false},
-                new ContactsDto {Title = "Contact1", IsDefault = false}
+                new ContactsDto {Title = "Contact1", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "Contact1", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
 
@@ -129,13 +129,49 @@ public class ContactsServiceTests
     }
 
     [Test]
+    public void PrepareNewContacts_WhenContactHasNoAddress_ShouldThrowInvalidOperation()
+    {
+        // Arrange
+        var entity = new TestEntity();
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Contact1", IsDefault = true, Address = null, Phones = [new PhoneNumberDto()]}
+            ]
+        };
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => contactsService.PrepareNewContacts(entity, dto));
+        Assert.That(ex.Message, Is.EqualTo("Address must be specified for each contact."));
+    }
+
+    [Test]
+    public void PrepareNewContacts_WhenContactHasNoPhones_ShouldThrowInvalidOperation()
+    {
+        // Arrange
+        var entity = new TestEntity();
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Contact1", IsDefault = true, Address = new ContactsAddressDto(), Phones = []}
+            ]
+        };
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => contactsService.PrepareNewContacts(entity, dto));
+        Assert.That(ex.Message, Is.EqualTo("At least one phone number must be specified for each contact."));
+    }
+
+    [Test]
     public void PrepareUpdatedContacts_WhenEntityHasNoContacts_ShouldMapDto()
     {
         // Arrange
         var entity = new TestEntity();
         var dto = new TestDto
         {
-            Contacts = [new ContactsDto {Title = "NewContact", IsDefault = true}]
+            Contacts = [new ContactsDto {Title = "NewContact", IsDefault = true, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}]
         };
 
         // Act
@@ -208,9 +244,9 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Existing1", IsDefault = false, Address = new ContactsAddressDto()},
-                new ContactsDto {Title = "Existing2", IsDefault = false, Address = new ContactsAddressDto()},
-                new ContactsDto {Title = "NewOne", IsDefault = false, Address = new ContactsAddressDto()}
+                new ContactsDto {Title = "Existing1", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "Existing2", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "NewOne", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
 
@@ -247,8 +283,8 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Overlap", IsDefault = true, Address = new ContactsAddressDto()},
-                new ContactsDto {Title = "NewDto", IsDefault = false, Address = new ContactsAddressDto()}
+                new ContactsDto {Title = "Overlap", IsDefault = true, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "NewDto", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
 
@@ -357,9 +393,9 @@ public class ContactsServiceTests
         {
             Contacts =
             [
-                new ContactsDto {Title = "Existing1", IsDefault = true, Address = new ContactsAddressDto()},
-                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto()},
-                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto()}
+                new ContactsDto {Title = "Existing1", IsDefault = true, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]},
+                new ContactsDto {Title = "New2", IsDefault = false, Address = new ContactsAddressDto(), Phones = [new PhoneNumberDto()]}
             ]
         };
         // Act
@@ -369,6 +405,48 @@ public class ContactsServiceTests
         Assert.AreEqual(2, entity.Contacts.Count);
         var newlyAdded = entity.Contacts.SingleOrDefault(c => c.Title == "New2");
         Assert.IsNotNull(newlyAdded, "Newly added contact should not be null.");
+    }
+
+    [Test]
+    public void PrepareUpdatedContacts_WhenContactHasNoAddress_ShouldThrowInvalidOperation()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Contacts = [new Contacts {Title = "Existing", IsDefault = true, Address = new ContactsAddress()}]
+        };
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Contact1", IsDefault = true, Address = null, Phones = [new PhoneNumberDto()]}
+            ]
+        };
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => contactsService.PrepareUpdatedContacts(entity, dto));
+        Assert.That(ex.Message, Is.EqualTo("Address must be specified for each contact."));
+    }
+
+    [Test]
+    public void PrepareUpdatedContacts_WhenContactHasNoPhones_ShouldThrowInvalidOperation()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Contacts = [new Contacts {Title = "Existing", IsDefault = true, Address = new ContactsAddress()}]
+        };
+        var dto = new TestDto
+        {
+            Contacts =
+            [
+                new ContactsDto {Title = "Contact1", IsDefault = true, Address = new ContactsAddressDto(), Phones = []}
+            ]
+        };
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => contactsService.PrepareUpdatedContacts(entity, dto));
+        Assert.That(ex.Message, Is.EqualTo("At least one phone number must be specified for each contact."));
     }
 
     private class TestEntity : BusinessEntity, IHasContacts
