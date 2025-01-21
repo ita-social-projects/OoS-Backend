@@ -23,6 +23,8 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         // here we check only top level contacts uniqueness
         var unique = dto.Contacts.Distinct(new ContactEqualityComparer<ContactsDto>()).ToList();
 
+        ValidateContactsRequiredFields(unique);
+
         ValidateDefaultCount(unique);
 
         entity.Contacts = mapper.Map<List<Contacts>>(unique);
@@ -39,6 +41,8 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
 
         // here we check only top level contacts uniqueness
         var unique = dto.Contacts.Distinct(new ContactEqualityComparer<ContactsDto>()).ToList();
+
+        ValidateContactsRequiredFields(unique);
         
         ValidateDefaultCount(unique);
 
@@ -82,6 +86,34 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
     }
 
+    /// <summary>
+    /// Validates that required fields are present for each contact.
+    /// </summary>
+    /// <param name="contacts">The collection of contacts to validate.</param>
+    /// <exception cref="InvalidOperationException">Thrown when address is null or phone numbers are missing.</exception>
+    private static void ValidateContactsRequiredFields(IEnumerable<ContactsDto> contacts)
+    {
+        foreach (var contact in contacts)
+        {
+            if (contact.Address == null)
+            {
+                throw new InvalidOperationException("Address must be specified for each contact.");
+            }
+
+            if (contact.Phones.IsNullOrEmpty())
+            {
+                throw new InvalidOperationException("At least one phone number must be specified for each contact.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates a list of contact information entities with new information, maintaining uniqueness.
+    /// </summary>
+    /// <typeparam name="TContactEntity">The type of the contact entity.</typeparam>
+    /// <typeparam name="TContactDto">The type of the contact DTO.</typeparam>
+    /// <param name="existingInfo">The existing list of contact information entities.</param>
+    /// <param name="newInfo">The new list of contact information DTOs.</param>
     private void UpdateContactsInfo<TContactEntity, TContactDto>(
         List<TContactEntity> existingInfo,
         List<TContactDto> newInfo)
@@ -111,6 +143,11 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
     }
 
+    /// <summary>
+    /// Validates and ensures exactly one contact is marked as default.
+    /// </summary>
+    /// <param name="contactsDtos">The list of contacts to validate.</param>
+    /// <exception cref="InvalidOperationException">Thrown when more than one contact is marked as default.</exception>
     private static void ValidateDefaultCount(List<ContactsDto> contactsDtos)
     {
         var defaultCount = contactsDtos.Count(c => c.IsDefault);
@@ -128,6 +165,10 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
         }
     }
     
+    /// <summary>
+    /// Compares objects of type T for equality, where T implements <see cref="IEquatable{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of objects to compare.</typeparam>
     private sealed class ContactEqualityComparer<T> : IEqualityComparer<T>
     where T : IEquatable<T>
     {
