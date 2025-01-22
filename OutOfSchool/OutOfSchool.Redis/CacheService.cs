@@ -162,6 +162,31 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         });
     }
 
+    public async Task<TimeSpan?> GetTimeToLiveAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        TimeSpan? returnValue = null;
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                var redisConnection = $"{redisConfig.Server}:{redisConfig.Port},password={redisConfig.Password}";
+                ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(redisConnection);
+                IDatabase db = connection.GetDatabase();
+                returnValue = db.KeyTimeToLive(key);
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+
+        return returnValue;
+    }
+
     public void Dispose()
     {
         Dispose(true);

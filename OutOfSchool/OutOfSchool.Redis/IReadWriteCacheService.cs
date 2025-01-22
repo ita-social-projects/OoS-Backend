@@ -14,4 +14,6 @@ public interface IReadWriteCacheService
         TimeSpan? slidingExpirationInterval = null);
 
     Task RemoveAsync(string key);
+
+    Task<TimeSpan?> GetTimeToLiveAsync(string key);
 }

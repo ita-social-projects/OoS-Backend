@@ -488,6 +488,11 @@ public static class Startup
             .Bind(configuration.GetSection(RedisConfig.Name))
             .ValidateDataAnnotations();
 
+        // Redis for drafts options
+        services.AddOptions<RedisForDraftConfig>()
+            .Bind(configuration.GetSection(RedisForDraftConfig.Name))
+            .ValidateDataAnnotations();
+
         // MemoryCache options
         services.AddOptions<MemoryCacheConfig>()
             .Bind(configuration.GetSection(MemoryCacheConfig.Name))

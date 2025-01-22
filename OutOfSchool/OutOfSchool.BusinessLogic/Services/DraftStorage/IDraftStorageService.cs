@@ -9,4 +9,6 @@ public interface IDraftStorageService<T>
     Task CreateAsync(string key, T value);
 
     Task RemoveAsync(string key);
+
+    Task<TimeSpan?> GetTimeToLiveAsync(string key);
 }

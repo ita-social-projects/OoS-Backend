@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -12,16 +13,20 @@ public class DraftStorageService<T> : IDraftStorageService<T>
 {
     private readonly IReadWriteCacheService cacheService;
     private readonly ILogger<DraftStorageService<T>> logger;
+    private readonly RedisForDraftConfig redisConfig;
 
     /// <summary>Initializes a new instance of the <see cref="DraftStorageService{T}" /> class.</summary>
     /// <param name="cacheService">The cache service.</param>
     /// <param name="logger">The logger.</param>
     public DraftStorageService(
         IReadWriteCacheService cacheService,
-        ILogger<DraftStorageService<T>> logger)
+        ILogger<DraftStorageService<T>> logger,
+        IOptions<RedisForDraftConfig> redisConfig)
+
     {
         this.cacheService = cacheService;
         this.logger = logger;
+        this.redisConfig = redisConfig.Value;
     }
 
     /// <summary>Restores the entity draft of T type entity.</summary>
@@ -53,7 +58,11 @@ public class DraftStorageService<T> : IDraftStorageService<T>
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        await cacheService.WriteAsync(GetKey(key), JsonSerializerHelper.Serialize(value)).ConfigureAwait(false);
+        await cacheService.WriteAsync(
+                                      GetKey(key), 
+                                      JsonSerializerHelper.Serialize(value), 
+                                      redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                                      redisConfig.SlidingExpirationInterval).ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes an entity draft from the cache.</summary>
@@ -74,6 +83,16 @@ public class DraftStorageService<T> : IDraftStorageService<T>
 
         logger.LogInformation("Start removing the {EntityType} draft with key = {DraftKey} from cache.", typeof(T).Name, draftKey);
         await cacheService.RemoveAsync(draftKey).ConfigureAwait(false);
+    }
+
+    /// <summary>Returns the time remaining until the end of the draft's life.</summary>
+    /// <param name="key">The key.</param>
+    /// <returns> Representing the asynchronous operation with result of TimeSpan? type.</returns>
+    public async Task<TimeSpan?> GetTimeToLiveAsync([NotNull] string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        return await cacheService.GetTimeToLiveAsync(GetKey(key)).ConfigureAwait(false);
     }
 
     private static string GetKey(string key)
