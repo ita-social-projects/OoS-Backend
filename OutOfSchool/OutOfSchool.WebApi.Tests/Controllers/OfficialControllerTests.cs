@@ -87,7 +87,6 @@ public class OfficialControllerTests
                 MiddleName = "Testovich",
                 Rnokpp = "1234567890"
             },
-            ExternalRegistryId = Guid.NewGuid(),
             Position = new OfficialPositionDto()
             {
                 Id = Guid.NewGuid(),

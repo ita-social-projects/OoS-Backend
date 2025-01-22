@@ -10,7 +10,6 @@ public class OfficialDto
     public string RecruitmentOrder { get; set; } = string.Empty;
     public string DismissalReason { get; set; } = string.Empty;
     public EmploymentType EmploymentType { get; set; }
-    public Guid ExternalRegistryId { get; set; }
     public DateOnly ActiveFrom { get; set; }
     public DateOnly ActiveTo { get; set; }
 }
