@@ -13,5 +13,6 @@ public class WorkshopContactsDto : WorkshopDescriptionDto, IHasContactsDto<Works
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public AddressDto Address { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
 }
