@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -185,13 +186,10 @@ public class WorkshopDraftStorageControllerTests
 
         // Assert
         result.Should()
-              .BeOfType<OkObjectResult>()
+              .BeOfType<NoContentResult>()
               .Which.StatusCode
               .Should()
-              .Be(StatusCodes.Status200OK);
-        result.Should()
-             .BeOfType<OkObjectResult>()
-             .Which.Value.Should().Be(default(WorkshopMainRequiredPropertiesDto));
+              .Be(StatusCodes.Status204NoContent);
         draftStorageService.VerifyAll();
     }
 
@@ -208,13 +206,55 @@ public class WorkshopDraftStorageControllerTests
 
         // Assert
         result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
+        draftStorageService.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetTimeToLiveOfDraft_WhenDraftExistsInCache_ReturnsDraftAtActionResult()
+    {
+        // Arrange
+        TimeSpan? timeToLive = TimeSpan.FromMinutes(1);
+        draftStorageService.Setup(ds => ds.GetTimeToLiveAsync(key))
+            .ReturnsAsync(timeToLive)
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.GetTimeToLiveOfDraft().ConfigureAwait(false);
+
+        // Assert
+        result.Should()
               .BeOfType<OkObjectResult>()
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status200OK);
         result.Should()
              .BeOfType<OkObjectResult>()
-             .Which.Value.Should().Be(default(WorkshopRequiredPropertiesDto));
+             .Which.Value.Should().Be(timeToLive);
+        draftStorageService.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetTimeToLiveOfDraft_WhenDraftIsAbsentInCache_ReturnsDefaultDraftAtActionResult()
+    {
+        // Arrange
+        TimeSpan? timeToLive = null;
+        draftStorageService.Setup(ds => ds.GetTimeToLiveAsync(key))
+            .ReturnsAsync(timeToLive)
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.GetTimeToLiveOfDraft().ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
         draftStorageService.VerifyAll();
     }
 

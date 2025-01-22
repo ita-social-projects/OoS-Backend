@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-using OutOfSchool.Common;
-using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Redis;
 

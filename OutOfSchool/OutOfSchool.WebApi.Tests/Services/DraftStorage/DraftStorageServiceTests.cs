@@ -131,6 +131,41 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.VerifyAll();
     }
 
+    [Test]
+    public async Task GetTimeToLiveAsync_WhenDraftExistsInCache_ShouldRestoreAppropriatedEntity()
+    {
+        // Arrange
+        TimeSpan? timeToLive = TimeSpan.FromMinutes(1);
+        readWriteCacheServiceMock.Setup(c => c.GetTimeToLiveAsync(cacheKey))
+            .Returns(() => Task.FromResult(timeToLive))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await draftStorageService.GetTimeToLiveAsync(key).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(timeToLive);
+        readWriteCacheServiceMock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetTimeToLiveAsync_WhenDraftIsAbsentInCache_ShouldRestoreDefaultEntity()
+    {
+        // Arrange
+        TimeSpan? timeToLive = null;
+        readWriteCacheServiceMock.Setup(c => c.GetTimeToLiveAsync(cacheKey))
+            .Returns(() => Task.FromResult(timeToLive))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await draftStorageService.GetTimeToLiveAsync(key).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+        readWriteCacheServiceMock.VerifyAll();
+    }
+
     private static WorkshopMainRequiredPropertiesDto GetWorkshopFakeDraft() =>
         WorkshopMainRequiredPropertiesDtoGenerator.Generate();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Services.DraftStorage;
+using System.Net.Mime;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -21,22 +22,36 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// <returns> The entity draft dto of type T.</returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
+    [HasPermission(Permissions.WorkshopAddNew)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RestoreDraft()
     {
-        var draft = await draftStorageService.RestoreAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
+        var result = await draftStorageService.RestoreAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
 
-        return Ok(draft);
+        return result is null ? NoContent() : Ok(result);
     }
 
     /// <summary>Returns the time remaining until the end of the draft's life.</summary>
     /// <returns>The time remaining until the end of the draft's life.</returns>
     [HttpGet]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
+    [HasPermission(Permissions.WorkshopAddNew)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTimeToLiveOfDraft()
     {
-        var draft = await draftStorageService.GetTimeToLiveAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
+        var result = await draftStorageService.GetTimeToLiveAsync(GettingUserProperties.GetUserId(User)).ConfigureAwait(false);
 
-        return Ok(draft);
+        return result is null ? NoContent() : Ok(result);
     }
 
     /// <summary>Stores the entity draft.</summary>
@@ -46,6 +61,13 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// </returns>
     [HttpPost]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
+    [HasPermission(Permissions.WorkshopAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> StoreDraft([FromBody] T draftDto)
     {
         if (!ModelState.IsValid)
@@ -62,6 +84,13 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// <returns> Information about removing an entity of type T from the cache.</returns>
     [HttpDelete]
     [Authorize(Roles = "provider, ministryadmin, areaadmin, regionadmin, techadmin")]
+    [HasPermission(Permissions.WorkshopAddNew)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpDelete("{id}")]
+
     public async Task<IActionResult> RemoveDraft()
     {
         var userId = GettingUserProperties.GetUserId(User);
