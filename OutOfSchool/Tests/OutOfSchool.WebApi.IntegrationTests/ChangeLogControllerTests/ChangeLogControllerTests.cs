@@ -21,6 +21,7 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
@@ -125,9 +126,9 @@ public class ChangeLogControllerTests
         await context.SaveChangesAsync();
     }
 
-    private static OutOfSchoolDbContext GetContext()
+    private static TestOutOfSchoolDbContext GetContext()
     {
-        return new OutOfSchoolDbContext(
+        return new TestOutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
             .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))

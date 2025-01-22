@@ -8,14 +8,14 @@ public class CompetitiveEventBaseDto
 {
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(250)]
-    [MinLength(1)]
+    [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
+    [MinLength(Constants.MinCompetitiveEventTitleLength)]
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]
     [DataType(DataType.Text)]
-    [MaxLength(100)]
-    [MinLength(1)]
+    [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
+    [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
     public string ShortTitle { get; set; }
 
     [Required]
@@ -49,10 +49,10 @@ public class CompetitiveEventBaseDto
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxDescriptionLength)]
     public string Description { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public Guid? OrganizerOfTheEventId { get; set; }
@@ -62,28 +62,28 @@ public class CompetitiveEventBaseDto
 
     public Guid? VenueId { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    public string TermsOfParticipation { get; set; }
+
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     public List<JudgeDto> Judges { get; set; }
 
     public bool? AreThereBenefits { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxBenefitsLength)]
     public string Benefits { get; set; }
 
     public bool? OptionsForPeopleWithDisabilities { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.DisabilityOptionsLength)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long? CategoryId { get; set; }
-
-    [MaxLength(250)]
-    public string Subcategory { get; set; }
+    public Guid? InstitutionHierarchyId { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }

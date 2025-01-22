@@ -8,6 +8,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -113,9 +114,9 @@ public class ApplicationRepositoryTests
         Assert.AreEqual(3, count);
     }
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IApplicationRepository GetApplicationRepository(OutOfSchoolDbContext dbContext)
+    private IApplicationRepository GetApplicationRepository(TestOutOfSchoolDbContext dbContext)
         => new ApplicationRepository(dbContext);
 
     private async Task Seed()

@@ -24,6 +24,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -32,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 public class SensitiveWorkshopsServiceDBTests
 {
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
@@ -53,7 +54,7 @@ public class SensitiveWorkshopsServiceDBTests
             .UseLazyLoadingProxies()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();

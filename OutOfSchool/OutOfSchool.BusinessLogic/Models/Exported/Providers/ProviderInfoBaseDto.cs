@@ -1,7 +1,7 @@
 ﻿
 using System.Text.Json.Serialization;
 
-namespace OutOfSchool.BusinessLogic.Models.Exported;
+namespace OutOfSchool.BusinessLogic.Models.Exported.Providers;
 
 [JsonDerivedType(typeof(ProviderInfoDto))]
 public class ProviderInfoBaseDto : IExternalInfo<Guid>

@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -144,6 +145,37 @@ public class CompetitiveEventController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Retrieves a list of competitive event view cards for a specific provider.
+    /// </summary>
+    /// <param name="id">
+    /// The unique identifier of the provider. This value must not be an empty GUID.
+    /// </param>
+    /// <param name="filter">
+    /// Filter to get specified portion of competitive events' view cards for specified provider, Id of the excluded workshop could be specified.
+    /// If <see cref="ExcludeIdFilter.ExcludedId"/> is provided, it must not be an empty GUID.
+    /// </param>
+    /// <returns>
+    /// <see cref="SearchResult{CompetitiveEventViewCardDto}"/>, or no content
+    /// </returns>
+    [HasPermission(Permissions.CompetitiveEventRead)]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventViewCardDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/provider/{id}/competitiveevents")]
+    public async Task<IActionResult> GetCompetitiveEventViewCardByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    {
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Provider id is empty.");
+        }
+       
+        SearchResult<CompetitiveEventViewCardDto> result = await service.GetByProviderId(id, filter).ConfigureAwait(false);
+        return this.SearchResultToOkOrNoContent(result);
+
+    }
     private static bool AreJudgesValid(IEnumerable<JudgeDto> judges)
     {
         if (judges != null && judges.Any())

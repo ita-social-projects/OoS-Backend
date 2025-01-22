@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.BusinessLogic.Models.Exported;
+namespace OutOfSchool.BusinessLogic.Models.Exported.Providers;
 
 public class ProviderSectionItemInfoDto
 {

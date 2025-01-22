@@ -23,6 +23,7 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Communication;
@@ -31,11 +32,13 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Api.Files;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -232,6 +235,10 @@ public static class Startup
         services.AddScoped<ICommunicationService, CommunicationService>();
 
         // Images limits options
+        services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+        services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+        services.Configure<UploadConcurrencySettings>(configuration.GetSection(nameof(UploadConcurrencySettings)));
+
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
         services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
@@ -242,6 +249,9 @@ public static class Startup
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
+
+        services.Configure<ImageOptions<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
+        services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
 
         // TODO: Move version check into an extension to reuse code across apps
         var mySQLServerVersion = configuration["MySQLServerVersion"];
@@ -264,6 +274,7 @@ public static class Startup
             });
 
         services.AddTransient<BusinessEntityInterceptor>();
+        services.AddTransient<TrackableEntityInterceptor>();
         services
             .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
                 .UseLazyLoadingProxies()
@@ -273,12 +284,14 @@ public static class Startup
                     mySqlOptions =>
                         mySqlOptions
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                            .EnableStringComparisonTranslations())
+                            .EnableStringComparisonTranslations()
+                            .UseMicrosoftJson())
                 .AddInterceptors(
-                    sp.GetRequiredService<BusinessEntityInterceptor>()))
+                    sp.GetRequiredService<BusinessEntityInterceptor>(),
+                    sp.GetRequiredService<TrackableEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration
@@ -348,23 +361,39 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
         services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
         services.AddScoped<IImageService, ImageService>();
+
         services.AddScoped<IImageValidator<Workshop>, ImageValidator<Workshop>>();
         services.AddScoped<IImageValidator<Teacher>, ImageValidator<Teacher>>();
         services.AddScoped<IImageValidator<Provider>, ImageValidator<Provider>>();
+
+        //Image validator drafts
+        services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
+        services.AddScoped<IImageValidator<TeacherDraft>, ImageValidator<TeacherDraft>>();
+
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
         services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
+
+        services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
+
+        // workshop draft images in the external storage
+        services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
+        services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();
         services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
         services.AddTransient<ICodeficatorService, CodeficatorService>();
         services.AddTransient<IOperationWithObjectService, OperationWithObjectService>();
+
         services.AddTransient<IPositionService, PositionService>();
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();
         services.AddTransient<IOfficialService, OfficialService>();
+
+        services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
 
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
@@ -398,6 +427,7 @@ public static class Startup
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+        services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
 
         // services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();

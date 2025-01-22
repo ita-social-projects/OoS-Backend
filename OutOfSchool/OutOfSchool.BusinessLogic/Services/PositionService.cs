@@ -149,15 +149,21 @@ public class PositionService : IPositionService
     PositionsFilter filter)
     {
         var sortExpression = new Dictionary<Expression<Func<Position, object>>, SortDirection>();
-        
-        if (filter.OrderByFullName)
+
+        if (filter.OrderByFullName != null)
         {
-            sortExpression.Add(a => a.FullName, SortDirection.Ascending);
+            sortExpression.Add(
+                a => a.FullName,
+                filter.OrderByFullName.Value ? SortDirection.Ascending : SortDirection.Descending
+            );
         }
 
-        if (filter.OrderByCreatedAt)
+        if (filter.OrderByCreatedAt != null)
         {
-            sortExpression.Add(a => a.CreatedAt, SortDirection.Ascending);
+            sortExpression.Add(
+                a => a.CreatedAt,
+                filter.OrderByCreatedAt.Value ? SortDirection.Ascending : SortDirection.Descending
+            );
         }
 
         return sortExpression;

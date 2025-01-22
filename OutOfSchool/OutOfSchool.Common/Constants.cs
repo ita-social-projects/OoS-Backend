@@ -199,4 +199,68 @@ public static class Constants
     /// Maximum number of employees to upload.
     /// </summary>
     public const int MaxNumberOfEmployeesToUpload = 100;
+
+    /// Length constraint for workshop draft description.
+    /// </summary>
+    public const int WorkshopDraftDescriptionMaxLength = 500;
+
+    ///<summary>
+    /// Length constraint for the description draft items.
+    ///</summary>
+    public const int WorkshopDraftDescriptionItemsLength = 200;
+
+    ///<summary>
+    /// Length constraint for the rejection messages.
+    ///</summary>
+    public const int WorkshopDraftMaxRejectionMessageLength = 200;
+
+    ///<summary>
+    /// Maximum length for disability option descriptions.
+    /// </summary>
+    public const int DisabilityOptionsLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for a teacher's description.
+    /// </summary>
+    public const int TeacherDescriptionLength = 300;
+
+    /// <summary>
+    /// The maximum length allowed for the competitive event title.
+    /// </summary>
+    public const int MaxCompetitiveEventTitleLength = 250;
+
+    /// <summary>
+    /// The minimum length required for the competitive event title.
+    /// </summary>
+    public const int MinCompetitiveEventTitleLength = 1;
+
+    /// <summary>
+    /// The maximum length allowed for the competitive event short title.
+    /// </summary>
+    public const int MaxCompetitiveEventShortTitleLength = 100;
+
+    /// <summary>
+    /// The minimum length required for the competitive event short title.
+    /// </summary>
+    public const int MinCompetitiveEventShortTitleLength = 1;
+
+    /// <summary>
+    /// The maximum length allowed for the benefits for competitive event.
+    /// </summary>
+    public const int MaxBenefitsLength = 500;
+
+    /// <summary>
+    /// The maximum length allowed for the description.
+    /// </summary>
+    public const int MaxDescriptionLength = 2000;
+
+    /// <summary>
+    /// The maximum length allowed for the venue name.
+    /// </summary>
+    public const int MaxVenueNameLength = 500;
+
+    /// <summary>
+    /// The maximum length allowed for the Judge's description.
+    /// </summary>
+    public const int MaxJudgeDescriptionLength = 300;
 }

@@ -26,6 +26,7 @@ using System.Linq;
 using OutOfSchool.EmailSender.Services;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
 
@@ -221,9 +222,9 @@ public class MinistryAdminControllerTests
         await context.SaveChangesAsync();
     }
 
-    private static OutOfSchoolDbContext GetContext()
+    private static TestOutOfSchoolDbContext GetContext()
     {
-        return new OutOfSchoolDbContext(
+        return new TestOutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
             .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))

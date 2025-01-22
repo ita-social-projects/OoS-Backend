@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
@@ -12,7 +13,8 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public Guid Id { get; set; }
 
     public bool IsDeleted { get; set; }
-
+    
+    [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(250)]
     [MinLength(1)]
@@ -91,6 +93,9 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     //public virtual Premises Venue { get; set; }
 
     [MaxLength(2000)]
+    public string TermsOfParticipation { get; set; }
+
+    [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     public virtual ICollection<Judge> Judges { get; set; }
@@ -102,22 +107,13 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     [MaxLength(2000)]
     public string Benefits {  get; set; }
 
-    public uint Rating { get; set; }
-
-    public uint NumberOfRatings { get; set; }
-
     public bool OptionsForPeopleWithDisabilities { get; set; }
 
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public long? CategoryId { get; set; }
-
-    [ForeignKey(nameof(CategoryId))]
-    public virtual Direction Category { get; set; }
-
-    [MaxLength(250)]
-    public string Subcategory { get; set; }
+    public Guid? InstitutionHierarchyId { get; set; }
+    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }

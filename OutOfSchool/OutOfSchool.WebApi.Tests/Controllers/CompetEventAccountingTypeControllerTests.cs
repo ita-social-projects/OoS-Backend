@@ -19,7 +19,6 @@ public class CompetitiveEventAccountingTypeControllerTests
 {
     private CompetitiveEventAccountingTypeController controller;
     private Mock<ICompetitiveEventAccountingTypeService> service;
-    private IMapper mapper;
 
     [SetUp]
     public void Setup()

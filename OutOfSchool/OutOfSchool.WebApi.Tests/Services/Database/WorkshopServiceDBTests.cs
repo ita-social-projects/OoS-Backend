@@ -21,6 +21,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -29,7 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 public class WorkshopServiceDBTests
 {
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private IWorkshopService workshopService;
     private IWorkshopRepository workshopRepository;
@@ -58,7 +59,7 @@ public class WorkshopServiceDBTests
             .EnableSensitiveDataLogging()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
@@ -196,9 +197,9 @@ public class WorkshopServiceDBTests
 
     #region private
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IWorkshopRepository GetWorkshopRepository(OutOfSchoolDbContext dbContext)
+    private IWorkshopRepository GetWorkshopRepository(TestOutOfSchoolDbContext dbContext)
         => new WorkshopRepository(dbContext);
 
     private void Seed()

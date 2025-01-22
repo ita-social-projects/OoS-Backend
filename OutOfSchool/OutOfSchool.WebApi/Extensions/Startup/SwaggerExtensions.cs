@@ -1,6 +1,9 @@
 using System.Reflection;
 using Asp.Versioning.ApiExplorer;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -26,6 +29,7 @@ public static class SwaggerExtensions
                 // Set the comments path for the Swagger JSON and UI.
                 c.IncludeXmlComments(XmlCommentsFilePath);
 
+                c.SchemaFilter<ExcludeClrTypesFilter>(new List<Assembly> {typeof(OutOfSchoolDbContext).Assembly});
                 c.DocumentFilter<SwaggerFeatureGateFilter>();
                 c.OperationFilter<AuthorizeCheckOperationFilter>();
                 c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
@@ -81,5 +85,31 @@ public static class SwaggerExtensions
         });
 
         return app;
+    }
+
+    private class ExcludeClrTypesFilter(List<Assembly> assemblies) : ISchemaFilter
+    {
+        private List<string> blacklist = assemblies.SelectMany(assembly => assembly.GetTypes())
+            .Where(t => !t.FullName.Contains("Enums")).Select(t => t.Name).ToList();
+
+        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (schema.Properties != null)
+            {
+                foreach (var prop in schema.Properties)
+                {
+                    if (prop.Value.Reference != null
+                        && blacklist.Contains(prop.Value.Reference.Id))
+                    {
+                        prop.Value.Reference = null;
+                    }
+                }
+            }
+
+            foreach (var key in blacklist)
+            {
+                context.SchemaRepository.Schemas.Remove(key);
+            }
+        }
     }
 }

@@ -19,6 +19,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class SocialGroupServiceTests
 {
     private ISocialGroupService service;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<long, SocialGroup> repository;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<SocialGroupService>> logger;
@@ -41,7 +42,7 @@ public class SocialGroupServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
@@ -163,7 +164,7 @@ public class SocialGroupServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();

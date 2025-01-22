@@ -4,7 +4,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 
-namespace OutOfSchool.BusinessLogic.Models.Exported;
+namespace OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 
 public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 {
@@ -98,7 +98,9 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public TeacherInfoDto DefaultTeacher { get; set; }
 
-    public List<string> Directions { get; set; }
+    public List<long> DirectionIds { get; set; }
+    
+    public Guid SubDirectionId { get; set; }
 
     public IEnumerable<string> Keywords { get; set; } = default;
 

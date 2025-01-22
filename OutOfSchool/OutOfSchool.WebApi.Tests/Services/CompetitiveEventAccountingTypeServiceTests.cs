@@ -17,6 +17,7 @@ using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using System;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -40,7 +41,7 @@ public class CompetitiveEventAccountingTypeServiceTests
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
         options = builder.Options;
 
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         repository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
 

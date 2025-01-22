@@ -26,6 +26,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
@@ -38,7 +39,7 @@ public class ProviderServiceUpdate
     private Mapper mapper;
     private DbContextOptions<OutOfSchoolDbContext> unitTestDbOptions;
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(this.unitTestDbOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(this.unitTestDbOptions);
 
     [SetUp]
     public async Task SetUp()

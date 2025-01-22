@@ -1,6 +1,5 @@
 using OutOfSchool.AuthorizationServer.Config;
 using Quartz;
-using Quartz.Impl;
 
 namespace OutOfSchool.AuthorizationServer.Extensions;
 
@@ -48,13 +47,12 @@ public static class QuartzExtension
                 s.UseClustering();
             });
 
-            q.UseMicrosoftDependencyInjectionJobFactory();
             q.UseTimeZoneConverter();
 
             configureJobs?.Invoke(q);
         });
 
-        services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
+        services.AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; });
 
         return services;
     }

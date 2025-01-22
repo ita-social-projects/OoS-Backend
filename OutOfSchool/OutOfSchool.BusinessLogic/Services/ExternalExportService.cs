@@ -2,8 +2,12 @@
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -19,6 +23,9 @@ public class ExternalExportService : IExternalExportService
     private readonly IWorkshopRepository workshopRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IAverageRatingService averageRatingService;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository;
+    private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportService> logger;
 
@@ -27,6 +34,9 @@ public class ExternalExportService : IExternalExportService
         IWorkshopRepository workshopRepository,
         IApplicationRepository applicationRepository,
         IAverageRatingService averageRatingService,
+        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
+        ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository,
+        IInstitutionHierarchyRepository institutionHierarchyRepository,
         IMapper mapper,
         ILogger<ExternalExportService> logger)
     {
@@ -36,6 +46,11 @@ public class ExternalExportService : IExternalExportService
             applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
         this.averageRatingService =
             averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
+        this.directionRepository = directionRepository ?? throw new ArgumentNullException(nameof(directionRepository));
+        this.institutionRepository =
+            institutionRepository ?? throw new ArgumentNullException(nameof(institutionRepository));
+        this.institutionHierarchyRepository = institutionHierarchyRepository ??
+                                              throw new ArgumentNullException(nameof(institutionHierarchyRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -119,6 +134,100 @@ public class ExternalExportService : IExternalExportService
         catch (Exception ex)
         {
             logger.LogError(ex, "An unexpected error occurred while processing workshops");
+            throw;
+        }
+    }
+
+    public async Task<SearchResult<DirectionInfoDto>> GetDirections(OffsetFilter offsetFilter)
+    {
+        try
+        {
+            logger.LogDebug("Getting Directions started");
+
+            offsetFilter ??= new OffsetFilter();
+
+            // Is deleted expression is added automatically by repo
+            var directions = await directionRepository
+                .Get(skip: offsetFilter.From, take: offsetFilter.Size)
+                .ToListAsync();
+
+            logger.LogDebug("All {Count} records were successfully received from the Direction table",
+                directions.Count);
+
+            // Is deleted expression is added automatically by repo
+            var count = await directionRepository.Count().ConfigureAwait(false);
+
+            var directionDtos = mapper.Map<List<DirectionInfoDto>>(directions);
+
+            var result = new SearchResult<DirectionInfoDto>()
+            {
+                TotalAmount = count,
+                Entities = directionDtos,
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred while processing directions");
+            throw;
+        }
+    }
+
+    public async Task<SearchResult<SubDirectionsInfoDto>> GetSubDirections(OffsetFilter offsetFilter)
+    {
+        try
+        {
+            logger.LogDebug("Getting SubDirections started");
+
+            offsetFilter ??= new OffsetFilter();
+
+            // Is deleted expression is added automatically by repo
+            var institutions = institutionRepository
+                .Get();
+
+            // We need to return only the lowest level for each institution
+            // Is deleted expression is added automatically by repo
+            var institutionSubDirections = institutionHierarchyRepository
+                .Get()
+                .Join(
+                    institutions,
+                    ih => new {IId = ih.InstitutionId, Level = ih.HierarchyLevel},
+                    i => new {IId = i.Id, Level = i.NumberOfHierarchyLevels},
+                    (ih, i) => ih);
+
+            // Is deleted expression is added automatically by repo
+            var count = await institutionSubDirections.CountAsync().ConfigureAwait(false);
+
+            if (offsetFilter.From > 0)
+            {
+                institutionSubDirections = institutionSubDirections.Skip(offsetFilter.From);
+            }
+
+            if (offsetFilter.Size > 0)
+            {
+                institutionSubDirections = institutionSubDirections.Take(offsetFilter.Size);
+            }
+
+            var subDirections = await institutionSubDirections
+                .IncludeProperties("Directions")
+                .OrderBy(ih => ih.Id)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var subDirectionDtos = mapper.Map<List<SubDirectionsInfoDto>>(subDirections);
+
+            var result = new SearchResult<SubDirectionsInfoDto>()
+            {
+                TotalAmount = count,
+                Entities = subDirectionDtos,
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred while processing subdirections");
             throw;
         }
     }

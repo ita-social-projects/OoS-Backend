@@ -17,6 +17,7 @@ using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using System;
 using System.Collections.Generic;
@@ -185,9 +186,9 @@ public class EmployeeServiceTests
             mockHostsConfig.Object));
     }
 
-    private static OutOfSchoolDbContext GetContext()
+    private static TestOutOfSchoolDbContext GetContext()
     {
-        return new OutOfSchoolDbContext(
+        return new TestOutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
@@ -19,6 +20,7 @@ using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,7 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CompetitiveEventServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
     private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -34,11 +36,14 @@ public class CompetitiveEventServiceTests
 
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
+    private Mock<ICurrentUserService> userService;
     private IMapper mapper;
+
 
     private CompetitiveEventService service;
     private Guid firstId;
     private Guid firstJudgeId;
+    private Guid firstProviderId;
 
     [SetUp]
     public void SetUp()
@@ -48,7 +53,7 @@ public class CompetitiveEventServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
@@ -58,15 +63,16 @@ public class CompetitiveEventServiceTests
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
+        userService = new Mock<ICurrentUserService>();
 
         service = new CompetitiveEventService(
             repo,
             judgeRepository,
-           // accountingTypeOfEventRepository,
             descriptionItemRepository,
             logger.Object,
             localizer.Object,
-            mapper);
+            mapper,
+            userService.Object);
 
         SeedDatabase();
     }
@@ -306,17 +312,74 @@ public class CompetitiveEventServiceTests
             async () => await service.Delete(id).ConfigureAwait(false));
     }
 
+    [Test]
+    public async Task GetByProviderId_NotValidProviderId_ReturnsEmpty()
+    {
+        // Arrange
+        var expected = new List<CompetitiveEvent>();
+        var invalidProviderId = Guid.NewGuid();
+
+        // Act
+        var result = await service.GetByProviderId(invalidProviderId, null);
+
+        // Assert
+        Assert.That(result.Entities, Is.Empty);
+        Assert.AreEqual(result.TotalAmount, expected.Count);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenValidProviderId_ReturnsSearchResult()
+    {
+        // Arrange
+        var expected = CompetitiveEvents().Where(x => x.OrganizerOfTheEventId == firstProviderId);
+
+        // Act
+        var result = await service.GetByProviderId(firstProviderId, null);
+
+        // Assert
+        Assert.IsNotNull(result.Entities);
+        Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
+        Assert.AreEqual(expected.First().Title, result.Entities.First().Title);
+        Assert.AreEqual(expected.First().ShortTitle, result.Entities.First().ShortTitle);
+        Assert.AreEqual(expected.Count(), result.TotalAmount);
+        Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenIdIsEmpty_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidProviderId = Guid.Empty;
+        var filter = new ExcludeIdFilter();
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.GetByProviderId(invalidProviderId, filter).ConfigureAwait(false));
+
+        Assert.AreEqual("ProviderId cannot be empty. (Parameter 'id')", exception.Message, "Unexpected exception message.");
+    }
+
     private void SeedDatabase()
     {
-        using var ctx = new OutOfSchoolDbContext(options);
+        using var ctx = new TestOutOfSchoolDbContext(options);
         {
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();
 
             firstId = Guid.NewGuid();
             firstJudgeId = Guid.NewGuid();
+            firstProviderId = Guid.NewGuid();
+            List<CompetitiveEvent> competitiveEvents = CompetitiveEvents();
 
-            var competitiveEvents = new List<CompetitiveEvent>()
+            ctx.CompetitiveEvents.AddRange(competitiveEvents);
+
+            ctx.SaveChanges();
+        }
+    }
+
+    private List<CompetitiveEvent> CompetitiveEvents()
+    {
+        var competitiveEvents = new List<CompetitiveEvent>()
             {
                 new CompetitiveEvent()
                 {
@@ -328,7 +391,7 @@ public class CompetitiveEventServiceTests
                     ScheduledStartTime = DateTime.UtcNow,
                     ScheduledEndTime = DateTime.UtcNow,
                     NumberOfSeats = 10,
-                    OrganizerOfTheEventId = Guid.NewGuid(),
+                    OrganizerOfTheEventId = firstProviderId, // Guid.NewGuid(),
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                     Judges = new List<Judge>
                     {
@@ -362,10 +425,6 @@ public class CompetitiveEventServiceTests
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
                 },
             };
-
-            ctx.CompetitiveEvents.AddRange(competitiveEvents);
-
-            ctx.SaveChanges();
-        }
+        return competitiveEvents;
     }
 }

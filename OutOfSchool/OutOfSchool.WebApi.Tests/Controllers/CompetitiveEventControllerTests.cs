@@ -10,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
@@ -25,6 +26,14 @@ public class CompetitiveEventControllerTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private IEnumerable<CompetitiveEventDto> competitiveEvents;
 
+    private List<CompetitiveEventViewCardDto> competitiveEventViewCardList = FakeCompetitiveEventViewCards(5);
+   
+    [OneTimeSetUp]
+    public void OneTimeSetup()
+    {
+        competitiveEventViewCardList = FakeCompetitiveEventViewCards(5);
+    }
+
     [SetUp]
     public void Setup()
     {
@@ -38,6 +47,7 @@ public class CompetitiveEventControllerTests
             localizer.Object);
     }
 
+    #region GetById
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult()
     {
@@ -50,7 +60,7 @@ public class CompetitiveEventControllerTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual((int)HttpStatusCode.OK, result.StatusCode);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
     }
 
     [Test]
@@ -65,9 +75,11 @@ public class CompetitiveEventControllerTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual((int)HttpStatusCode.NoContent, result.StatusCode);
+        Assert.AreEqual(StatusCodes.Status204NoContent, result.StatusCode);
     }
+    #endregion
 
+    #region Create
     [Test]
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
@@ -110,8 +122,6 @@ public class CompetitiveEventControllerTests
         Assert.AreEqual((int)HttpStatusCode.Created, result.StatusCode);
     }
 
-   
-
     [Test]
     public async Task Create_WhenDtoIsNull_ReturnsBadRequest()
     {
@@ -137,9 +147,9 @@ public class CompetitiveEventControllerTests
         // Assert
         AssertBadRequestWithMessage(result, "A competitive event can have no more than one chief judge.");
     }
+    #endregion
 
-
-
+    #region Update
     [Test]
     public async Task Update_WhenValidDto_ReturnsOkObjectResult()
     {
@@ -187,7 +197,6 @@ public class CompetitiveEventControllerTests
 
         // Assert
         AssertBadRequestWithMessage(result, "The request body is empty.");
-
     }
 
     [Test]
@@ -256,6 +265,9 @@ public class CompetitiveEventControllerTests
         Assert.AreEqual(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
         Assert.AreEqual("An unexpected error occurred. Unexpected error", objectResult.Value);
     }
+    #endregion
+
+    #region Delete
     [Test]
     public async Task Delete_WhenIdIsValid_ReturnsNoContentResult()
     {
@@ -287,6 +299,159 @@ public class CompetitiveEventControllerTests
         Assert.IsInstanceOf<NoContentResult>(result);
         competitiveEventService.Verify(s => s.Delete(id), Times.Once);
     }
+    #endregion
+
+    #region GetCompetitiveEventViewcardByProviderId
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenSearchResultIsEmpty_ReturnsNoContentResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<CompetitiveEventViewCardDto>()
+        {
+            TotalAmount = 0,
+            Entities = new List<CompetitiveEventViewCardDto>(),
+        };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+           .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(providerId, filter) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.IsInstanceOf<NoContentResult>(result);
+        Assert.AreEqual(StatusCodes.Status204NoContent, result.StatusCode);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenSearchResultIsNotEmpty_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var searchResult = new SearchResult<CompetitiveEventViewCardDto>()
+        {
+            TotalAmount = 1,
+            Entities = new List<CompetitiveEventViewCardDto>()
+            {
+                new CompetitiveEventViewCardDto(),
+            }
+        };
+
+        var providerId = Guid.NewGuid();
+
+        var filter = new ExcludeIdFilter();
+
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+           .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(providerId, filter) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
+    }
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenCompetitiveEventsExist_ReturnsOkResultObject()
+    {
+        // Arrange
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var searchResult = new SearchResult<CompetitiveEventViewCardDto>() { TotalAmount = 5, Entities = competitiveEventViewCardList };
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        competitiveEventService.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
+        Assert.AreEqual(competitiveEventViewCardList.Count, (result.Value as SearchResult<CompetitiveEventViewCardDto>).TotalAmount);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenGuidIsEmpty_ReturnsBadRequest()
+    {
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.Empty, null).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenProviderIdIsNotValid_ReturnsNoContent()
+    {
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.NewGuid(), null)
+            .ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenThereIsExcludedId_ReturnsOkResultObject()
+    {
+        // Arrange
+        var expectedCompetitiveEventCardsCount = this.competitiveEventViewCardList.Count - 1;
+        var excludedId = competitiveEventViewCardList.FirstOrDefault().Id;
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
+        var searchResult = new SearchResult<CompetitiveEventViewCardDto>() 
+        {
+            TotalAmount = 4,
+            Entities = competitiveEventViewCardList.Skip(1).ToList() 
+        };
+        
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.NewGuid(), filter)
+            .ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        competitiveEventService.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
+        Assert.AreEqual(expectedCompetitiveEventCardsCount, (result.Value as SearchResult<CompetitiveEventViewCardDto>).TotalAmount);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventViewcardByProviderId_WhenSizeFilterIsProvided_ReturnsOkResultObject()
+    {
+        // Arrange
+        var expectedCount = 1;
+        var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
+        var expectedTotalAmount = 5;
+        var searchResult = new SearchResult<CompetitiveEventViewCardDto>() 
+        {
+            TotalAmount = expectedTotalAmount,
+            Entities = competitiveEventViewCardList.Take(expectedCount).ToList(),
+        };
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult);
+
+        // Act
+        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        competitiveEventService.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
+        Assert.AreEqual(expectedCount, (result.Value as SearchResult<CompetitiveEventViewCardDto>).Entities.Count);
+        Assert.AreEqual(expectedTotalAmount, (result.Value as SearchResult<CompetitiveEventViewCardDto>).TotalAmount);
+    }
+
+    #endregion
 
     private void AssertBadRequestWithMessage(IActionResult result, string message)
     {
@@ -431,5 +596,15 @@ public class CompetitiveEventControllerTests
                 }
             },
         };
+    }
+
+    private static List<CompetitiveEventViewCardDto> FakeCompetitiveEventViewCards(int number)
+    {
+        return Enumerable.Range(1, number).Select(i => new CompetitiveEventViewCardDto
+        {
+            Id = Guid.NewGuid(),
+            Title = $"Title {i}",
+            ShortTitle = $"ShortTitle {i}"
+        }).ToList();
     }
 }

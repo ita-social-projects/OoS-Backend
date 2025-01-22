@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -82,7 +84,6 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
     }
 
     [Test]
@@ -136,6 +137,137 @@ public class ExternalExportControllerTests
         Assert.IsInstanceOf<ObjectResult>(actionResult);
         var objectResult = (ObjectResult) actionResult;
         Assert.AreEqual(500, objectResult.StatusCode);
-        Assert.AreEqual("An error occurred: Simulated exception", objectResult.Value);
+    }
+    
+    [Test]
+    public async Task GetDirectionsByFilter_ReturnsOkWithResults()
+    {
+        // Arrange
+        var fakeDirections = new List<DirectionInfoDto>
+        {
+            new()
+            {
+                Id = 1,
+                Title = "A"
+            },
+            new()
+            {
+                Id = 1,
+                Title = "B"
+            }
+        };
+
+        _ = mockExternalExportService
+            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<DirectionInfoDto>
+                {TotalAmount = fakeDirections.Count, Entities = fakeDirections});
+
+        // Act
+        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(actionResult);
+        var okObjectResult = (OkObjectResult) actionResult;
+        Assert.IsInstanceOf<SearchResult<DirectionInfoDto>>(okObjectResult.Value);
+        var result = (SearchResult<DirectionInfoDto>) okObjectResult.Value;
+        Assert.AreEqual(fakeDirections.Count, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetDirectionsByFilter_ReturnsNoContent()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<DirectionInfoDto> {Entities = new List<DirectionInfoDto>()});
+
+        // Act
+        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(actionResult);
+    }
+
+    [Test]
+    public async Task GetDirectionsByFilter_ExceptionInService_ReturnsInternalServerError()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
+            .ThrowsAsync(new Exception("Simulated exception"));
+        // Act
+        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(actionResult);
+        var objectResult = (ObjectResult) actionResult;
+        Assert.AreEqual(500, objectResult.StatusCode);
+    }
+    
+    [Test]
+    public async Task GetSubDirectionsByFilter_ReturnsOkWithResults()
+    {
+        // Arrange
+        var fakeSubDirections = new List<SubDirectionsInfoDto>
+        {
+            new()
+            {
+                Id = Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083"),
+                Title = "A",
+                DirectionIds = []
+            },
+            new()
+            {
+                Id = Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0"),
+                Title = "B",
+                DirectionIds = [1, 2]
+            },
+        };
+
+        _ = mockExternalExportService
+            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<SubDirectionsInfoDto>
+                {TotalAmount = fakeSubDirections.Count, Entities = fakeSubDirections});
+
+        // Act
+        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(actionResult);
+        var okObjectResult = (OkObjectResult) actionResult;
+        Assert.IsInstanceOf<SearchResult<SubDirectionsInfoDto>>(okObjectResult.Value);
+        var result = (SearchResult<SubDirectionsInfoDto>) okObjectResult.Value;
+        Assert.AreEqual(fakeSubDirections.Count, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetSubDirectionsByFilter_ReturnsNoContent()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<SubDirectionsInfoDto> {Entities = new List<SubDirectionsInfoDto>()});
+
+        // Act
+        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(actionResult);
+    }
+
+    [Test]
+    public async Task GetSubDirectionsByFilter_ExceptionInService_ReturnsInternalServerError()
+    {
+        // Arrange
+        mockExternalExportService
+            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
+            .ThrowsAsync(new Exception("Simulated exception"));
+        // Act
+        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(actionResult);
+        var objectResult = (ObjectResult) actionResult;
+        Assert.AreEqual(500, objectResult.StatusCode);
     }
 }

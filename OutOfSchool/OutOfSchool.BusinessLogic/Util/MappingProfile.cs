@@ -15,6 +15,9 @@ using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
@@ -314,7 +317,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Employees, opt => opt.Ignore())
-            .ForMember(dest => dest.Positions, opt => opt.Ignore());
+            .ForMember(dest => dest.Positions, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore());
 
         CreateSoftDeletedMap<ProviderUpdateDto, Provider>()
             .Apply(IgnoreCommonProviderBaseDto2Provider)
@@ -328,7 +332,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Positions, opt => opt.Ignore());
+            .ForMember(dest => dest.Positions, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore()); 
 
         CreateMap<Provider, ProviderUpdateDto>()
             .Apply(AddCommonProvider2ProviderBaseDto);
@@ -358,7 +363,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Positions, opt => opt.Ignore());
+            .ForMember(dest => dest.Positions, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore());
 
         CreateMap<Provider, ProviderCreateDto>()
             .Apply(AddCommonProvider2ProviderBaseDto);
@@ -384,9 +390,12 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
-                dest => dest.Directions,
+                dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Title)))
+                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.SubDirectionId,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.Id))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges,
@@ -412,6 +421,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
+        CreateMap<Direction, DirectionInfoDto>();
+
+        CreateMap<InstitutionHierarchy, SubDirectionsInfoDto>()
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+        
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
@@ -822,27 +836,31 @@ public class MappingProfile : Profile
         .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateMap<CompetitiveEvent, CompetitiveEventDto>()
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
+            .ForMember(
+                dest => dest.DirectionIds,
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.Judges, opt => opt.MapFrom(src => src.Judges))
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
 
         CreateSoftDeletedMap<CompetitiveEventCreateDto, CompetitiveEvent>()
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventAccountingType, opt => opt.Ignore())
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Parent, opt => opt.Ignore())
             .ForMember(dest => dest.OrganizerOfTheEvent, opt => opt.Ignore())
-            .ForMember(dest => dest.Category, opt => opt.Ignore())
-            .ForMember(dest => dest.Coverage, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .ForMember(dest => dest.Coverage, opt => opt.Ignore());
 
         CreateSoftDeletedMap<CompetitiveEventUpdateDto, CompetitiveEvent>()
             .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
-            .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
+
+        CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 
         CreateMap<CompetitiveEventAccountingType, CompetitiveEventAccountingTypeDto>().ReverseMap();
 
