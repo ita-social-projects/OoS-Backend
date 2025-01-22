@@ -15,6 +15,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ public class OfficialServiceTests
             databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         repository = new EntityRepositorySoftDeleted<Guid, Official>(context);
         providerId = Guid.NewGuid();
@@ -93,7 +94,7 @@ public class OfficialServiceTests
 
     private void SeedDatabase()
     {
-        using var ctx = new OutOfSchoolDbContext(options);
+        using var ctx = new TestOutOfSchoolDbContext(options);
         {
             ctx.Database.EnsureDeleted();
             ctx.Database.EnsureCreated();
