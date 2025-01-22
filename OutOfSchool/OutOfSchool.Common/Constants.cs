@@ -250,7 +250,7 @@ public static class Constants
     public const int MaxBenefitsLength = 500;
 
     /// <summary>
-    /// The maximum length allowed for the desctiption.
+    /// The maximum length allowed for the description.
     /// </summary>
     public const int MaxDescriptionLength = 2000;
 
@@ -260,7 +260,7 @@ public static class Constants
     public const int MaxVenueNameLength = 500;
 
     /// <summary>
-    /// The maximum length allowed for the Judge's desctiption.
+    /// The maximum length allowed for the Judge's description.
     /// </summary>
     public const int MaxJudgeDescriptionLength = 300;
 }
