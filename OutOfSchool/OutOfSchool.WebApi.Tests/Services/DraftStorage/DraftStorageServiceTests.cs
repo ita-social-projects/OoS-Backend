@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
@@ -23,6 +24,7 @@ public class DraftStorageServiceTests
     private Mock<IReadWriteCacheService> readWriteCacheServiceMock;
     private Mock<ILogger<DraftStorageService<WorkshopMainRequiredPropertiesDto>>> loggerMock;
     private IDraftStorageService<WorkshopMainRequiredPropertiesDto> draftStorageService;
+    private Mock<IOptions<RedisForDraftConfig>> redisConfigMock;
 
     [SetUp]
     public void SetUp()
@@ -31,7 +33,13 @@ public class DraftStorageServiceTests
         cacheKey = GetCacheKey(key, typeof(WorkshopMainRequiredPropertiesDto));
         loggerMock = new Mock<ILogger<DraftStorageService<WorkshopMainRequiredPropertiesDto>>>();
         readWriteCacheServiceMock = new Mock<IReadWriteCacheService>();
-        draftStorageService = new DraftStorageService<WorkshopMainRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object);
+        redisConfigMock = new Mock<IOptions<RedisForDraftConfig>>();
+        redisConfigMock.Setup(c => c.Value).Returns(new RedisForDraftConfig
+        {
+            AbsoluteExpirationRelativeToNowInterval = TimeSpan.FromMinutes(1),
+            SlidingExpirationInterval = TimeSpan.FromMinutes(1),
+        });
+        draftStorageService = new DraftStorageService<WorkshopMainRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object, redisConfigMock.Object);
     }
 
     [Test]
@@ -78,8 +86,8 @@ public class DraftStorageServiceTests
         readWriteCacheServiceMock.Setup(c => c.WriteAsync(
             cacheKey,
             workshopJsonString,
-            null,
-            null))
+            redisConfigMock.Object.Value.AbsoluteExpirationRelativeToNowInterval,
+            redisConfigMock.Object.Value.SlidingExpirationInterval))
             .Verifiable(Times.Once);
 
         // Act
