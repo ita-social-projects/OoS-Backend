@@ -37,10 +37,7 @@ public class OfficialController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get([FromRoute] Guid providerId, [FromQuery] SearchStringFilter filter = null)
-    {
-        var result = await service.GetByFilter(providerId, filter).ConfigureAwait(false);
-
-        return this.SearchResultToOkOrNoContent(result);
-    }
+    public async Task<IActionResult> Get([FromRoute] Guid providerId, [FromQuery] SearchStringFilter filter = null) =>
+        await service.GetByFilter(providerId, filter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 }
