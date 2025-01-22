@@ -103,9 +103,21 @@ public class GovIdentityCommunicationService : CommunicationService, IGovIdentit
         {
             if (errorResponse.HttpStatusCode == HttpStatusCode.Unauthorized)
             {
-                var idGovError = JsonSerializer.Deserialize<IdGovErrorResponse>(
-                    errorResponse.Body,
-                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                IdGovErrorResponse? idGovError;
+                try
+                {
+                    idGovError = JsonSerializerHelper.Deserialize<IdGovErrorResponse>(errorResponse.Body);
+                }
+                catch (JsonException)
+                {
+                    return Task.FromResult<IErrorResponse>(new ExternalAuthError
+                    {
+                        HttpStatusCode = errorResponse.HttpStatusCode,
+                        Message = "Invalid error response format.",
+                        ErrorGroup = ExternalAuthErrorGroup.Unknown,
+                    });
+                }
+
                 if (idGovError != null)
                 {
                     return Task.FromResult<IErrorResponse>(new ExternalAuthError

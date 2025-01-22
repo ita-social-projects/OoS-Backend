@@ -11,7 +11,7 @@ public static class AuthServerConstants
     public static class ClaimTypes
     {
         public const string UserId = "user_id";
-        public const string Rnkopp = "rnokpp";
+        public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
     }
 

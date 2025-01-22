@@ -200,6 +200,7 @@ public class ExternalAuthControllerTests
         principal.AddIdentity(new ClaimsIdentity());
         principal.SetClaim(AuthServerConstants.ExternalAuthUserIdKey, "test");
         principal.SetClaim(OpenIddictConstants.Claims.Private.ProviderName, "external");
+        principal.SetClaim(OpenIddictConstants.Claims.Private.RegistrationId, "12345");
         var properties = new AuthenticationProperties
         {
             RedirectUri = RedirectUrl,
@@ -271,6 +272,53 @@ public class ExternalAuthControllerTests
         var viewResult = (ViewResult) result;
         Assert.AreEqual(LoginViewCshtml, viewResult.ViewName);
         Assert.NotNull(viewResult.Model);
+    }
+    
+    [Test]
+    public async Task ExternalLogin_WithNullRole_ReturnsViewResult()
+    {
+        // Act
+        var result = await controller.ExternalLogin("test", null, "https://example.com");
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
+    }
+
+    [Test]
+    public async Task ExternalLogin_WithEmptyProvider_ReturnsViewResult()
+    {
+        // Act
+        var result = await controller.ExternalLogin(string.Empty, "provider", "https://example.com");
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
+    }
+
+    [Test]
+    public async Task ExternalLogin_WithInvalidReturnUrl_ReturnsViewResult()
+    {
+        // Act
+        var result = await controller.ExternalLogin("test", "provider", "invalid-url");
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
+    }
+    
+    [Test]
+    public async Task ExternalLoginCallback_WhenUserCreationFails_ReturnsViewResult()
+    {
+        // Arrange
+        SetupSuccessAuth();
+        userManager.Setup(u => u.FindByNameAsync(TestRnkopp))
+            .ReturnsAsync((User)null);
+        userManager.Setup(u => u.CreateAsync(It.IsAny<User>()))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Error" }));
+
+        // Act
+        var result = await controller.ExternalLoginCallback();
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
     }
 
     private static OutOfSchoolDbContext GetContext()

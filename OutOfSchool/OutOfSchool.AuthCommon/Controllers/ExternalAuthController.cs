@@ -56,7 +56,7 @@ public class ExternalAuthController : Controller
         var roleExists = await roleManager.RoleExistsAsync(role);
         if (!roleExists)
         {
-            ModelState.AddModelError(string.Empty, "Login in with this role is not supported.");
+            ModelState.AddModelError(string.Empty, localizer["LoginWithRoleNotSupported"]);
             return View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -87,7 +87,7 @@ public class ExternalAuthController : Controller
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty,
-                "The external authorization data cannot be used for authentication.");
+                localizer["ExternalAuthorizationDataInvalid"]);
 
             return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
@@ -261,14 +261,17 @@ public class ExternalAuthController : Controller
             new(ClaimTypes.GivenName, individual.FirstName),
             new(ClaimTypes.Surname, individual.LastName),
             new(ClaimTypes.Email, userInfo.Email),
-            new(AuthServerConstants.ClaimTypes.Rnkopp, individual.Rnokpp),
+            new(AuthServerConstants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(
                 OpenIddictConstants.Claims.Private.ProviderName,
                 result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
-            new(
-                OpenIddictConstants.Claims.Private.RegistrationId,
-                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
         };
+        if (!string.IsNullOrEmpty(result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)))
+        {
+            claims.Add(new(
+                OpenIddictConstants.Claims.Private.RegistrationId,
+                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)));
+        }
 
         if (Role.Provider.ToString()
             .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
@@ -295,7 +298,7 @@ public class ExternalAuthController : Controller
         };
 
         var user = await userManager.FindByNameAsync(claims
-            .First(c => c.Type == AuthServerConstants.ClaimTypes.Rnkopp).Value);
+            .First(c => c.Type == AuthServerConstants.ClaimTypes.Rnokpp).Value);
         await signInManager.SignInWithClaimsAsync(user, properties, claims);
         return properties;
     }

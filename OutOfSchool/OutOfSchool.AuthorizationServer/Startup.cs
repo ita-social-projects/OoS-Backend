@@ -16,6 +16,7 @@ using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
@@ -128,6 +129,7 @@ public static class Startup
 
         var authorizationSection = config.GetSection(AuthorizationServerConfig.Name);
         var authorizationConfig = authorizationSection.Get<AuthorizationServerConfig>();
+        ConfigurationValidationHelper.ValidateConfigurationObject(authorizationConfig);
         services.Configure<AuthorizationServerConfig>(authorizationSection);
         services.AddOpenIddict()
             .AddCore(options =>

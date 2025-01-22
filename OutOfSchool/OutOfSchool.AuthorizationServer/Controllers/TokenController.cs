@@ -197,7 +197,7 @@ public class TokenController : Controller
                     identity.SetClaims(OpenIddictConstants.Claims.Role, [result.Principal.GetClaim(ClaimTypes.Role)]);
                     identity.SetClaim(OpenIddictConstants.Claims.FamilyName, result.Principal.GetClaim(ClaimTypes.Surname));
                     identity.SetClaim(OpenIddictConstants.Claims.GivenName, result.Principal.GetClaim(ClaimTypes.GivenName));
-                    identity.SetClaim(AuthServerConstants.ClaimTypes.Rnkopp, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Rnkopp));
+                    identity.SetClaim(AuthServerConstants.ClaimTypes.Rnokpp, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Rnokpp));
                     if (result.Principal.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
                     {
                         identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
@@ -319,7 +319,7 @@ public class TokenController : Controller
             identity.SetClaims(OpenIddictConstants.Claims.Role, [signedInIdentity.GetClaim(ClaimTypes.Role)]);
             identity.SetClaim(OpenIddictConstants.Claims.FamilyName, signedInIdentity.GetClaim(ClaimTypes.Surname));
             identity.SetClaim(OpenIddictConstants.Claims.GivenName, signedInIdentity.GetClaim(ClaimTypes.GivenName));
-            identity.SetClaim(AuthServerConstants.ClaimTypes.Rnkopp, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Rnkopp));
+            identity.SetClaim(AuthServerConstants.ClaimTypes.Rnokpp, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Rnokpp));
             if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
             {
                 identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));

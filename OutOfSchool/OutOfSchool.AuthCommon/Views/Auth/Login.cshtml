@@ -6,7 +6,7 @@
 
 @model OutOfSchool.AuthCommon.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = SharedLocalizer["Entrance to Extracurricular activities"];
+    ViewData["Title"] = SharedLocalizer["Login to Extracurricular activities"];
     Layout = "_Layout";
 }
 
@@ -17,7 +17,7 @@
 
 <div class="wrapper_body">
     <div class="wrapper">
-        <h1 class="icon_title">Увійти до Позашкілля</h1>
+        <h1 class="icon_title">@SharedLocalizer["Login to Extracurricular activities"]</h1>
         <section class="icon_wrapper">
             <hr/>
             @{
@@ -36,7 +36,7 @@
                         <div>
                             <div>
                                 <label class="login__label">
-                                    Виберіть свою роль нижче, щоб продовжити.
+                                    @SharedLocalizer["Please select your role below to continue."]
                                 </label>
                                 <div class="login-role-select">
                                     <div class="login-role-select__option login-role-select__option-left login-role-select--active" data-value="provider" id="login_role_select_provider">
@@ -50,7 +50,7 @@
                                         </span>
                                         <div>
                                             <span class="login-role-select__text">@SharedLocalizer["Service provider"]</span>
-                                            <small>Для співробітників державних і комунальних установ</small>
+                                            <small>@SharedLocalizer["For employees of state and municipal institutions"]</small>
                                         </div>
                                     </div>
                                     <div class="login-role-select__option login-role-select__option-right" data-value="parent" id="login_role_select_parent">
@@ -64,7 +64,7 @@
                                         </span>
                                         <div>
                                             <span class="login-role-select__text">@SharedLocalizer["User"]</span>
-                                            <small>Для особистих облікових записів</small>
+                                            <small>@SharedLocalizer["For personal accounts"]</small>
                                         </div>
                                     </div>
                                     <div class="login-role-select__divider"></div>
@@ -75,7 +75,7 @@
                                 @foreach (var provider in loginProviders)
                                 {
                                     <button type="submit" class="registration_submit registration_button" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                                        Увійти з @provider.DisplayName
+                                        @SharedLocalizer["Log in with {0}", @provider.DisplayName]
                                     </button>
                                 }
                             </p>
