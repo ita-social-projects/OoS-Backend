@@ -221,8 +221,32 @@ public class StudySubjectControllerTests
         Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
+    [Test]
+    public void Create_ReturnsValidationError_WhenLanguageIdIsLessThanOrEqualToZero()
+    {
+        // Arrange
+        var dto = new StudySubjectCreateUpdateDto()
+        {
+            Id = Guid.NewGuid(),
+            NameInUkrainian = "тест",
+            NameInInstructionLanguage = "тест",
+            IsLanguageUkrainian = true,
+            Language = new LanguageDto { Id = 0, Code = "Ua", Name = "Українська" }
+        };
+
+        // Act
+        var validationResults = new List<ValidationResult>();
+        var validationContext = new ValidationContext(dto);
+        bool isValid = Validator.TryValidateObject(dto, validationContext, validationResults, true);
+
+        // Assert
+        Assert.IsFalse(isValid);
+        Assert.AreEqual(1, validationResults.Count);
+        Assert.AreEqual("Language ID must be greater than 0.", validationResults[0].ErrorMessage);
+    }
+
     #endregion
-    
+
     #region Update
 
     [Test]
