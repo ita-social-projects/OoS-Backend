@@ -129,7 +129,7 @@ public class StudySubjectService : IStudySubjectService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        logger.LogDebug("{Count} records were successfully received from the StudySubjects table", studySubjects.Count());
+        logger.LogDebug("{Count} records were successfully received from the StudySubjects table", studySubjects.Count);
 
         var result = new SearchResult<StudySubjectDto>
         {
@@ -251,6 +251,12 @@ public class StudySubjectService : IStudySubjectService
         var language = await languageRepository.Get(
             whereExpression: l => languageId == l.Id)
             .FirstOrDefaultAsync();
+
+        if (language == null)
+        {
+            logger.LogWarning("Operation failed, Language with Id = {languageId} was not found.", languageId);
+            throw new ArgumentException($"Language with Id = {languageId} was not found");
+        }
 
         studySubject.Language = language;
     }

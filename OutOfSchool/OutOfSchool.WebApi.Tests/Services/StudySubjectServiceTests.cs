@@ -56,7 +56,9 @@ public class StudySubjectServiceTests
 
         SeedDatabase();
     }
-    
+
+    #region GetByFilter
+
     [Test]
     public async Task GetByFilter_ReturnsAListOfStudySubjects_WhenSearchStringIsEmpty()
     {
@@ -102,7 +104,11 @@ public class StudySubjectServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Entities, Is.Empty);
     }
-    
+
+    #endregion
+
+    #region GetById
+
     [Test]
     public async Task GetById_ReturnsNull_WhenStudySubjectDoesNotExist()
     {
@@ -131,7 +137,11 @@ public class StudySubjectServiceTests
         Assert.That(result.Id, Is.EqualTo(expected.Id));
         Assert.IsInstanceOf<StudySubjectDto>(result);
     }
-    
+
+    #endregion
+
+    #region Create
+
     [Test]
     public async Task Create_ReturnsNull_WhenDtoIsNull()
     {
@@ -200,6 +210,10 @@ public class StudySubjectServiceTests
         Assert.IsInstanceOf<StudySubjectDto>(result);
     }
 
+    #endregion
+
+    #region Update
+
     [Test]
     public async Task Update_ReturnsResultFailed_WhenDtoIsNull()
     {
@@ -241,7 +255,49 @@ public class StudySubjectServiceTests
         Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
         Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-    
+
+    [Test]
+    public async Task Update_ReturnsResultFailed_WhenDbUpdateConcurrencyExceptionOccurs()
+    {
+        // Arrange
+        var dto = new StudySubjectCreateUpdateDto()
+        {
+            Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
+            IsLanguageUkrainian = true,
+            Language = new LanguageDto()
+            {
+                Id = 2,
+                Code = "Ua",
+                Name = "Українська"
+            },
+            NameInInstructionLanguage = "ім'я",
+            NameInUkrainian = "ім'я",
+        };
+
+        var mockRepository = SetUpMockRepositoryForGetById(dto.Id);
+        mockRepository
+            .Setup(repo => repo.Update(It.IsAny<StudySubject>()))
+            .ThrowsAsync(new DbUpdateConcurrencyException());
+
+        service = new StudySubjectService(
+            mockRepository.Object,
+            languageRepository,
+            providerService.Object,
+            logger.Object,
+            mapper);
+
+        // Act
+        var result = await service.Update(dto, providerId);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description,
+                    Is.EqualTo("Updating failed. StudySubject to update was not found"));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
+    }
+
     [Test]
     public async Task Update_ReturnsResultSuccess_WhenEntityWasUpdated()
     {
@@ -268,7 +324,11 @@ public class StudySubjectServiceTests
         Assert.That(result.Value.Id, Is.EqualTo(dto.Id));
         Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
     }
-    
+
+    #endregion
+
+    #region Delete
+
     [Test]
     public async Task Delete_ReturnsResutlFailed_WhenStudySubjectWithIdDoesNotExist()
     {
@@ -302,7 +362,39 @@ public class StudySubjectServiceTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsDeleted, Is.True);
     }
-    
+
+    [Test]
+    public async Task Delete_ReturnsResultFailed_WhenDbUpdateConcurrencyExceptionOccurs()
+    {
+        // Arrange
+        var id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16");
+        
+        var mockRepository = SetUpMockRepositoryForGetById(id);
+        mockRepository
+            .Setup(repo => repo.Delete(It.IsAny<StudySubject>()))
+            .ThrowsAsync(new DbUpdateConcurrencyException());
+
+        service = new StudySubjectService(
+            mockRepository.Object,
+            languageRepository,
+            providerService.Object,
+            logger.Object,
+            mapper);
+
+        // Act
+        var result = await service.Delete(id, providerId);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description,
+                    Is.EqualTo($"Deleting StudySubject with Id = {id} failed"));
+        Assert.IsInstanceOf<Result<StudySubjectDto>>(result);
+    }
+
+    #endregion
+
     private void SeedDatabase()
     {
         using var ctx = new TestOutOfSchoolDbContext(options);
@@ -314,6 +406,25 @@ public class StudySubjectServiceTests
 
             ctx.SaveChanges();
         }
+    }
+
+    private Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>> SetUpMockRepositoryForGetById(Guid id)
+    {
+        var studySubject = new StudySubject()
+        {
+            Id = id,
+            LanguageId = 2,
+            NameInInstructionLanguage = "тест",
+            NameInUkrainian = "тест",
+            IsLanguageUkrainian = true,
+        };
+
+        var mockRepository = new Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>>();
+        mockRepository
+            .Setup(repo => repo.GetById(id))
+            .ReturnsAsync(studySubject);
+
+        return mockRepository;
     }
 
     private List<StudySubject> StudySubjects()
