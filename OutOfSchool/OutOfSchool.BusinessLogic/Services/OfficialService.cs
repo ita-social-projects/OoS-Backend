@@ -54,7 +54,7 @@ public class OfficialService : IOfficialService
             .ToListAsync()
             .ConfigureAwait(false);
 
-        logger.LogDebug("{Count} records were successfully received from the Officials table", officials.Count());
+        logger.LogDebug("{Count} records were successfully received from the Officials table", officials.Count);
 
         var result = new SearchResult<OfficialDto>
         {
@@ -65,7 +65,7 @@ public class OfficialService : IOfficialService
         return result;
     }
 
-    private Expression<Func<Official, bool>> BuildPredicate(SearchStringFilter filter)
+    private static Expression<Func<Official, bool>> BuildPredicate(SearchStringFilter filter)
     {
         var predicate = PredicateBuilder.True<Official>();
 
