@@ -520,21 +520,11 @@ public class StudySubjectControllerTests
             ActiveTo = DateOnly.FromDateTime(DateTime.Now),
             Id = Guid.NewGuid(),
             IsLanguageUkrainian = true,
-            Languages = new List<LanguageDto>
+            Language = new LanguageDto()
             {
-                new LanguageDto()
-                {
-                    Id = 1,
-                    Name = "Українська",
-                    Code = "uk"
-
-                },
-                new LanguageDto()
-                {
-                    Id = 2,
-                    Name = "English",
-                    Code = "en"
-                }
+                Id = 2,
+                Name = "English",
+                Code = "en"
             },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест",
@@ -549,18 +539,11 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 1,
-                    IsPrimary = false
-                },
-                new LanguagesSelection()
-                {
-                    Id = 2,
-                    IsPrimary = true
-                }
+                Id = 2,
+                Name = "English",
+                Code = "en"
             },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест"
@@ -573,18 +556,11 @@ public class StudySubjectControllerTests
         {
             Id = Guid.NewGuid(),
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 1,
-                    IsPrimary = false
-                },
-                new LanguagesSelection()
-                {
-                    Id = 2,
-                    IsPrimary = true
-                }
+                Id = 2,
+                Name = "English",
+                Code = "en"
             },
             NameInInstructionLanguage = null,
             NameInUkrainian = null

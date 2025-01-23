@@ -52,7 +52,7 @@ public class StudySubjectService : IStudySubjectService
         await CheckIfLanguageIdIsCorrect(dto);
 
         var studySubject = mapper.Map<StudySubject>(dto);
-        //await UpdateEntityLanguages(dto, studySubject);
+        await UpdateEntityLanguages(dto, studySubject);
 
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
 
@@ -123,7 +123,7 @@ public class StudySubjectService : IStudySubjectService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Languages",
+                includeProperties: "Language",
                 whereExpression: predicate
             ).AsNoTracking()
             .ToListAsync()
@@ -192,7 +192,7 @@ public class StudySubjectService : IStudySubjectService
             });
         }
 
-        //await UpdateEntityLanguages(dto, studySubject);
+        await UpdateEntityLanguages(dto, studySubject);
 
         mapper.Map(dto, studySubject);
 
@@ -238,21 +238,20 @@ public class StudySubjectService : IStudySubjectService
 
             if (language == null || ukrainianLanguageId != language.Id)
             {
-                language = mapper.Map<LanguageDto>(ukrainianLanguage);
+                dto.Language = mapper.Map<LanguageDto>(ukrainianLanguage);
 
                 logger.LogDebug("Ukrainian language was set in dto as the primary language");
             }
         }
     }
 
-    //private async Task UpdateEntityLanguages(StudySubjectCreateUpdateDto dto, StudySubject studySubject)
-    //{
-    //    var languageIds = dto.LanguagesSelection.Select(x => x.Id).ToHashSet();
-    //    var languages = await languageRepository.Get(
-    //        whereExpression: l => languageIds.Contains(l.Id))
-    //        .ToListAsync();
-        
-    //    studySubject.Languages = new List<Language>();
-    //    studySubject.Languages.AddRange(languages);
-    //}
+    private async Task UpdateEntityLanguages(StudySubjectCreateUpdateDto dto, StudySubject studySubject)
+    {
+        var languageId = dto.Language.Id;
+        var language = await languageRepository.Get(
+            whereExpression: l => languageId == l.Id)
+            .FirstOrDefaultAsync();
+
+        studySubject.Language = language;
+    }
 }

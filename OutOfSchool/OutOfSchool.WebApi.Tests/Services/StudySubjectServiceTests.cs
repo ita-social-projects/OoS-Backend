@@ -153,13 +153,11 @@ public class StudySubjectServiceTests
         {
             Id = Guid.NewGuid(),
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>()
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 2,
-                    IsPrimary = true
-                }
+                Id = 2,
+                Code = "Ua",
+                Name = "Українська"
             },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
@@ -182,13 +180,11 @@ public class StudySubjectServiceTests
         {
             Id = Guid.NewGuid(),
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>()
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 1,
-                    IsPrimary = true
-                }
+                Id = 1,
+                Code = "Ua",
+                Name = "Українська"
             },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я",
@@ -200,7 +196,7 @@ public class StudySubjectServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(dto.Id));
-        Assert.That(result.Languages.Any(l => l.Id == 2));
+        Assert.That(result.LanguageId == 2);
         Assert.IsInstanceOf<StudySubjectDto>(result);
     }
 
@@ -227,13 +223,11 @@ public class StudySubjectServiceTests
         {
             Id = Guid.Empty,
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>()
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 2,
-                    IsPrimary = true
-                }
+                Id = 2,
+                Code = "Ua",
+                Name = "Українська"
             },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я"
@@ -256,13 +250,11 @@ public class StudySubjectServiceTests
         {
             Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
             IsLanguageUkrainian = true,
-            LanguagesSelection = new List<LanguagesSelection>()
+            Language = new LanguageDto()
             {
-                new LanguagesSelection()
-                {
-                    Id = 2,
-                    IsPrimary = true
-                }
+                Id = 2,
+                Code = "Ua",
+                Name = "Українська"
             },
             NameInInstructionLanguage = "ім'я",
             NameInUkrainian = "ім'я"
