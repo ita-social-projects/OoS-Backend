@@ -9,6 +9,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
+[HasPermission(Permissions.WorkshopAddNew)]
 public class WorkshopDraftStorageController(IDraftStorageService<WorkshopMainRequiredPropertiesDto> draftStorageService)
     : DraftStorageController<WorkshopMainRequiredPropertiesDto>(draftStorageService)
 {
