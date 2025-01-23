@@ -37,12 +37,9 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get(Guid providerId, [FromQuery] SearchStringFilter filter = null)
-    {
-        var studySubjects = await _studySubjectService.GetByFilter(providerId, filter).ConfigureAwait(false);
-
-        return this.SearchResultToOkOrNoContent(studySubjects);
-    }
+    public async Task<IActionResult> Get(Guid providerId, [FromQuery] SearchStringFilter filter = null) =>
+        await _studySubjectService.GetByFilter(providerId, filter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get StudySubject by it's id.
@@ -105,7 +102,7 @@ public class StudySubjectController : ControllerBase
 
                 return CreatedAtAction(
                 nameof(GetById),
-                new { id = creationResult.Id, },
+                new { id = creationResult.Id, providerId = providerId },
                 creationResult);
             }
 
