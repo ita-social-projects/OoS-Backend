@@ -29,7 +29,6 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.BusinessLogic.Models.Official;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
@@ -933,25 +932,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.PrimaryLanguage, opt => opt.Ignore())
-            .ForMember(dest => dest.Languages,
-                opt => opt.Ignore())
-            .ForMember(dest => dest.PrimaryLanguageId,
+            .ForMember(dest => dest.Language, opt => opt.Ignore())
+            .ForMember(dest => dest.LanguageId,
                 opt => opt.MapFrom(src => src.LanguagesSelection.FirstOrDefault(l => l.IsPrimary).Id));
 
         CreateMap<StudySubject, StudySubjectDto>()
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
 
         CreateMap<Language, LanguageDto>().ReverseMap();
-
-        CreateMap<Official, OfficialDto>()
-            .ForMember(dest => dest.DismissalOrder, opt => opt.MapFrom(src => src.DismissalOrder ?? string.Empty))
-            .ForMember(dest => dest.RecruitmentOrder, opt => opt.MapFrom(src => src.RecruitmentOrder ?? string.Empty))
-            .ForMember(dest => dest.DismissalReason, opt => opt.MapFrom(src => src.DismissalReason ?? string.Empty));
-
-        CreateMap<Position, OfficialPositionDto>();
-
-        CreateMap<Individual, OfficialIndividualDto>();
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

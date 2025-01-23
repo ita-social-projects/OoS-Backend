@@ -15,16 +15,13 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(x => x.IsPrimaryLanguageUkrainian)
+        builder.Property(x => x.IsLanguageUkrainian)
             .IsRequired();
 
-        builder.HasOne(x => x.PrimaryLanguage)
+        builder.HasOne(x => x.Language)
             .WithMany()
-            .HasForeignKey(x => x.PrimaryLanguageId)
+            .HasForeignKey(x => x.LanguageId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(x => x.Languages)
-            .WithMany();
 
         base.Configure(builder);
     }

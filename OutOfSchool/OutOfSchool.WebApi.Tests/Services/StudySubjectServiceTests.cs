@@ -333,16 +333,16 @@ public class StudySubjectServiceTests
                 Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
                 NameInInstructionLanguage = "тест",
                 NameInUkrainian = "тест",
-                PrimaryLanguageId = 2,
-                IsPrimaryLanguageUkrainian = true
+                LanguageId = 2,
+                IsLanguageUkrainian = true
             },
             new StudySubject()
             {
                 Id = new Guid("4ca6f3af-5d02-4c16-b4b2-e202c71470f4"),
                 NameInInstructionLanguage = "test",
                 NameInUkrainian = "тест",
-                PrimaryLanguageId = 1,
-                IsPrimaryLanguageUkrainian = false
+                LanguageId = 1,
+                IsLanguageUkrainian = false
             }
         };
     }

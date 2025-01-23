@@ -1,6 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
@@ -29,19 +27,13 @@ public class StudySubject : BusinessEntity
     /// Property determines if the primary language is Ukrainian
     /// </summary>
     [Required(ErrorMessage = "It's required to know if primary languge is Ukrainian.")]
-    public bool IsPrimaryLanguageUkrainian { get; set; }
-
-    /// <summary>
-    /// Language of instruction (allows multiple selection)
-    /// </summary>
-    [Required(ErrorMessage = "The language of instruction is required.")]
-    public virtual List<Language> Languages { get; set; }
+    public bool IsLanguageUkrainian { get; set; }
 
     /// <summary>
     /// Primary language of the subject
     /// </summary>
     [Required(ErrorMessage = "The primary language's ID is required.")]
-    public long PrimaryLanguageId { get; set; }
-    public virtual Language PrimaryLanguage { get; set; }
+    public long LanguageId { get; set; }
+    public virtual Language Language { get; set; }
 }
 
