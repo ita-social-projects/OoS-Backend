@@ -18,30 +18,23 @@ public class StudySubjectCreateUpdateDto : IValidatableObject
     public string NameInInstructionLanguage { get; set; }
 
     [Required(ErrorMessage = "It's required to know if primary languge is Ukrainian.")]
-    public bool IsPrimaryLanguageUkrainian { get; set; }
+    public bool IsLanguageUkrainian { get; set; }
 
     /// <summary>
-    /// Language of instruction (allows multiple selection)
+    /// Primary language of the subject
     /// </summary>
-    [Required(ErrorMessage = "The language of instruction is required.")]
-    public List<LanguagesSelection> LanguagesSelection { get; set; }
+    [Required(ErrorMessage = "The primary language is required.")]
+    public LanguageDto Language { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (LanguagesSelection == null || !LanguagesSelection.Any())
+        if (Language == null)
         {
-            yield return new ValidationResult("Languages cannot be null or empty.", new[] { nameof(LanguagesSelection) });
+            yield return new ValidationResult("Language cannot be null.", new[] { nameof(Language) });
         }
-        else
+        else if (Language.Id <= 0)
         {
-            if (LanguagesSelection.Count(l => l.IsPrimary) != 1)
-                yield return new ValidationResult("Languages must contain primary language.", new[] { nameof(LanguagesSelection) });
-
-            if (LanguagesSelection.Count() != LanguagesSelection.Distinct().Count())
-                yield return new ValidationResult("Languages cannot contain duplicates.", new[] { nameof(LanguagesSelection) });
-
-            if (LanguagesSelection.Any(l => l.Id <= 0))
-                yield return new ValidationResult("Languages cannot contain values smaller than 1.", new[] { nameof(LanguagesSelection) });
+            yield return new ValidationResult("Language ID must be greater than 0.", new[] { nameof(Language.Id) });
         }
     }
 }

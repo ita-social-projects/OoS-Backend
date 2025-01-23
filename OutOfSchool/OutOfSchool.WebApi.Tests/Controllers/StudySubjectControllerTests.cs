@@ -519,7 +519,7 @@ public class StudySubjectControllerTests
             ActiveFrom = DateOnly.FromDateTime(DateTime.Now),
             ActiveTo = DateOnly.FromDateTime(DateTime.Now),
             Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             Languages = new List<LanguageDto>
             {
                 new LanguageDto()
@@ -538,7 +538,7 @@ public class StudySubjectControllerTests
             },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест",
-            PrimaryLanguageId = 1,
+            LanguageId = 1,
             WorkshopId = Guid.NewGuid()
         };
     }
@@ -548,7 +548,7 @@ public class StudySubjectControllerTests
         return new StudySubjectCreateUpdateDto()
         {
             Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>
             {
                 new LanguagesSelection()
@@ -572,7 +572,7 @@ public class StudySubjectControllerTests
         return new StudySubjectCreateUpdateDto()
         {
             Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>
             {
                 new LanguagesSelection()

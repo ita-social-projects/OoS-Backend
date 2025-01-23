@@ -932,9 +932,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.Language, opt => opt.Ignore())
             .ForMember(dest => dest.LanguageId,
-                opt => opt.MapFrom(src => src.LanguagesSelection.FirstOrDefault(l => l.IsPrimary).Id));
+                opt => opt.MapFrom(src => src.Language.Id));
 
         CreateMap<StudySubject, StudySubjectDto>()
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());

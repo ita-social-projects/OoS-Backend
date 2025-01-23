@@ -152,7 +152,7 @@ public class StudySubjectServiceTests
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>()
             {
                 new LanguagesSelection()
@@ -181,7 +181,7 @@ public class StudySubjectServiceTests
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = Guid.NewGuid(),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>()
             {
                 new LanguagesSelection()
@@ -226,7 +226,7 @@ public class StudySubjectServiceTests
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = Guid.Empty,
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>()
             {
                 new LanguagesSelection()
@@ -255,7 +255,7 @@ public class StudySubjectServiceTests
         var dto = new StudySubjectCreateUpdateDto()
         {
             Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
-            IsPrimaryLanguageUkrainian = true,
+            IsLanguageUkrainian = true,
             LanguagesSelection = new List<LanguagesSelection>()
             {
                 new LanguagesSelection()
