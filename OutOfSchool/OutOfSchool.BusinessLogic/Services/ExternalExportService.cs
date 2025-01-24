@@ -77,7 +77,7 @@ public class ExternalExportService : IExternalExportService
                 .ConfigureAwait(false);
 
             var providersDto = providers
-                .Select(MapToInfoProviderDto)
+                .Select(MapToInfoDto<Provider, ProviderInfoBaseDto, ProviderInfoDto>)
                 .ToList();
 
             await FillRatingsForType(providersDto).ConfigureAwait(false);
@@ -118,7 +118,9 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var workshopsDto = workshops.Select(MapToInfoWorkshopDto).ToList();
+            var workshopsDto = workshops
+                .Select(MapToInfoDto<Workshop, WorkshopInfoBaseDto, WorkshopInfoDto>)
+                .ToList();
 
             await FillRatingsForType(workshopsDto).ConfigureAwait(false);
             await FillTakenSeats(workshopsDto).ConfigureAwait(false);
@@ -138,28 +140,34 @@ public class ExternalExportService : IExternalExportService
         }
     }
 
-    public async Task<SearchResult<DirectionInfoDto>> GetDirections(OffsetFilter offsetFilter)
+    public async Task<SearchResult<DirectionInfoBaseDto>> GetDirections(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
         try
         {
             logger.LogDebug("Getting Directions started");
 
             offsetFilter ??= new OffsetFilter();
+            
+            Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
+                ? direction => !direction.IsDeleted
+                : direction => direction.UpdatedAt > updatedAfter;
 
             // Is deleted expression is added automatically by repo
             var directions = await directionRepository
-                .Get(skip: offsetFilter.From, take: offsetFilter.Size)
+                .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: filterExpression)
                 .ToListAsync();
 
             logger.LogDebug("All {Count} records were successfully received from the Direction table",
                 directions.Count);
 
             // Is deleted expression is added automatically by repo
-            var count = await directionRepository.Count().ConfigureAwait(false);
+            var count = await directionRepository.Count(filterExpression).ConfigureAwait(false);
 
-            var directionDtos = mapper.Map<List<DirectionInfoDto>>(directions);
+            var directionDtos = directions
+                .Select(MapToInfoDto<Direction, DirectionInfoBaseDto, DirectionInfoDto>)
+                .ToList();;
 
-            var result = new SearchResult<DirectionInfoDto>()
+            var result = new SearchResult<DirectionInfoBaseDto>()
             {
                 TotalAmount = count,
                 Entities = directionDtos,
@@ -174,22 +182,30 @@ public class ExternalExportService : IExternalExportService
         }
     }
 
-    public async Task<SearchResult<SubDirectionsInfoDto>> GetSubDirections(OffsetFilter offsetFilter)
+    public async Task<SearchResult<SubDirectionsInfoBaseDto>> GetSubDirections(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
         try
         {
             logger.LogDebug("Getting SubDirections started");
 
             offsetFilter ??= new OffsetFilter();
+            
+            Expression<Func<Institution, bool>> institutionFilterExpression = updatedAfter == default
+                ? institution => !institution.IsDeleted
+                : institution => institution.UpdatedAt > updatedAfter;
+            
+            Expression<Func<InstitutionHierarchy, bool>> institutionHierarchyFilterExpression = updatedAfter == default
+                ? ih => !ih.IsDeleted
+                : ih => ih.UpdatedAt > updatedAfter;
 
             // Is deleted expression is added automatically by repo
             var institutions = institutionRepository
-                .Get();
+                .Get(whereExpression: institutionFilterExpression);
 
             // We need to return only the lowest level for each institution
             // Is deleted expression is added automatically by repo
             var institutionSubDirections = institutionHierarchyRepository
-                .Get()
+                .Get(whereExpression: institutionHierarchyFilterExpression)
                 .Join(
                     institutions,
                     ih => new {IId = ih.InstitutionId, Level = ih.HierarchyLevel},
@@ -215,9 +231,11 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var subDirectionDtos = mapper.Map<List<SubDirectionsInfoDto>>(subDirections);
+            var subDirectionDtos = subDirections
+                .Select(MapToInfoDto<InstitutionHierarchy, SubDirectionsInfoBaseDto, SubDirectionsInfoDto>)
+                .ToList();
 
-            var result = new SearchResult<SubDirectionsInfoDto>()
+            var result = new SearchResult<SubDirectionsInfoBaseDto>()
             {
                 TotalAmount = count,
                 Entities = subDirectionDtos,
@@ -232,19 +250,9 @@ public class ExternalExportService : IExternalExportService
         }
     }
 
-    private ProviderInfoBaseDto MapToInfoProviderDto(Provider provider)
-    {
-        return provider.IsDeleted
-            ? mapper.Map<ProviderInfoBaseDto>(provider)
-            : mapper.Map<ProviderInfoDto>(provider);
-    }
-
-    private WorkshopInfoBaseDto MapToInfoWorkshopDto(Workshop workshop)
-    {
-        return workshop.IsDeleted
-            ? mapper.Map<WorkshopInfoBaseDto>(workshop)
-            : mapper.Map<WorkshopInfoDto>(workshop);
-    }
+    private TBase MapToInfoDto<TEntity, TBase, TFull>(TEntity entity)
+        where TEntity : ISoftDeleted
+        where TFull : TBase => entity.IsDeleted ? mapper.Map<TBase>(entity) : mapper.Map<TFull>(entity);
 
     private async Task FillRatingsForType<T>(List<T> dtos)
         where T : class, IExternalInfo<Guid>

@@ -53,26 +53,32 @@ public class ExternalExportController : ControllerBase
     /// <summary>
     /// Get Directions that match filter's parameters.
     /// </summary>
+    /// <param name="updatedAfter">The date to filter directions based on their last update.</param>
     /// <param name="offsetFilter">Filter to get a part of all directions that were found.</param>
-    /// <returns><see cref="SearchResult{DirectionInfoDto}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{DirectionInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<DirectionInfoDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<DirectionInfoBaseDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("directions")]
-    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetDirections(offsetFilter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] DateTime updatedAfter,
+        [FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetDirections(updatedAfter, offsetFilter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get SubDirections that match filter's parameters.
     /// </summary>
+    /// <param name="updatedAfter">The date to filter directions based on their last update.</param>
     /// <param name="offsetFilter">Filter to get a part of all sub directions that were found.</param>
-    /// <returns><see cref="SearchResult{SubDirectionsInfoDto}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{SubDirectionsInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<SubDirectionsInfoDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<SubDirectionsInfoBaseDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("subdirections")]
-    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetSubDirections(offsetFilter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] DateTime updatedAfter,
+        [FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetSubDirections(updatedAfter, offsetFilter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 }

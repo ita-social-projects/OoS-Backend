@@ -11,7 +11,7 @@ public interface IExternalExportService
 
     Task<SearchResult<WorkshopInfoBaseDto>> GetWorkshops(DateTime updatedAfter, OffsetFilter offsetFilter);
     
-    Task<SearchResult<DirectionInfoDto>> GetDirections(OffsetFilter offsetFilter);
+    Task<SearchResult<DirectionInfoBaseDto>> GetDirections(DateTime updatedAfter, OffsetFilter offsetFilter);
     
-    Task<SearchResult<SubDirectionsInfoDto>> GetSubDirections(OffsetFilter offsetFilter);
+    Task<SearchResult<SubDirectionsInfoBaseDto>> GetSubDirections(DateTime updatedAfter, OffsetFilter offsetFilter);
 }
