@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
@@ -18,6 +19,8 @@ public class Direction : IKeyedEntity<long>, ISoftDeleted
     public string Description { get; set; } = string.Empty;
 
     public bool IsDeleted { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual List<InstitutionHierarchy> InstitutionHierarchies { get; set; }
 }
