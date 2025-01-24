@@ -30,6 +30,7 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// </summary>
     /// <returns> The entity draft dto of type T.</returns>
     [HttpGet]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -49,6 +50,7 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// </summary>
     /// <returns>The time remaining until the end of the draft's life.</returns>
     [HttpGet]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,6 +73,7 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// Information about the result of storing an entity of type T in the cache.
     /// </returns>
     [HttpPost]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -95,6 +98,7 @@ public abstract class DraftStorageController<T> : ControllerBase
     /// </summary>
     /// <returns> Information about removing an entity of type T from the cache.</returns>
     [HttpDelete]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

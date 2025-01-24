@@ -547,7 +547,10 @@ public static class Startup
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
-        var redisConnection = $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
+        var redisConfig = configuration
+            .GetSection(RedisConfig.Name)
+            .Get<RedisConfig>();
+        var redisConnection = redisConfig.GetRedisConnectionString();
 
         var signalRBuilder = services.AddSignalR();
         var isAPMEnabled = configuration.GetValue<bool>("ElasticApm:Enabled");

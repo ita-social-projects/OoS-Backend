@@ -62,7 +62,9 @@ public class DraftStorageService<T> : IDraftStorageService<T>
                                       GetKey(key), 
                                       JsonSerializerHelper.Serialize(value), 
                                       redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                                      redisConfig.SlidingExpirationInterval).ConfigureAwait(false);
+                                      TimeSpan.Zero
+                                      )
+                                      .ConfigureAwait(false);
     }
 
     /// <summary>Asynchronously removes an entity draft from the cache.</summary>

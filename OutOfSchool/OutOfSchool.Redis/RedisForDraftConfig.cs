@@ -9,7 +9,4 @@ public class RedisForDraftConfig
 
     [Required]
     public TimeSpan AbsoluteExpirationRelativeToNowInterval { get; set; }
-
-    [Required]
-    public TimeSpan SlidingExpirationInterval { get; set; }
 }

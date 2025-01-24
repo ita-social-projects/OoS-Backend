@@ -21,12 +21,12 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     private bool isDisposed;
 
     public CacheService(
-        IDistributedCache cache, 
+        IDistributedCache cache,
         IOptions<RedisConfig> redisConfig
     )
     {
         this.cache = cache;
-            
+
         try
         {
             this.redisConfig = redisConfig.Value;
@@ -75,11 +75,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
                 cacheLock.EnterWriteLock();
                 try
                 {
-                    var options = new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                        SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval,
-                    };
+                    var options = GetExpirationIntervalOptions(absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
 
                     cache.SetString(key, JsonSerializerHelper.Serialize(returnValue), options);
                 }
@@ -134,9 +130,9 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
     }
 
     public async Task WriteAsync(
-        string key, 
-        string value, 
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null, 
+        string key,
+        string value,
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
@@ -147,11 +143,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
             cacheLock.EnterWriteLock();
             try
             {
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig!.AbsoluteExpirationRelativeToNowInterval,
-                    SlidingExpiration = slidingExpirationInterval ?? redisConfig!.SlidingExpirationInterval,
-                };
+                var options = GetExpirationIntervalOptions(absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
 
                 cache.SetString(key, value, options);
             }
@@ -173,7 +165,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
             cacheLock.EnterReadLock();
             try
             {
-                var redisConnection = $"{redisConfig.Server}:{redisConfig.Port},password={redisConfig.Password}";
+                var redisConnection = redisConfig.GetRedisConnectionString();
                 ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(redisConnection);
                 IDatabase db = connection.GetDatabase();
                 returnValue = db.KeyTimeToLive(key);
@@ -192,7 +184,7 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
     }
-    
+
     protected virtual void Dispose(bool disposing)
     {
         if (disposing && !isDisposed)
@@ -243,5 +235,36 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
                 _ = Task.Run(RedisIsBrokenStartCheck);
             }
         }
+    }
+
+    private DistributedCacheEntryOptions GetExpirationIntervalOptions(
+                                                                      TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+                                                                      TimeSpan? slidingExpirationInterval = null)
+    {
+        var absoluteExpiration = absoluteExpirationRelativeToNowInterval
+                ?? redisConfig!.AbsoluteExpirationRelativeToNowInterval;
+
+        TimeSpan? slidingExpiration;
+        if (!slidingExpirationInterval.HasValue)
+        {
+            // Null => use the default from config
+            slidingExpiration = redisConfig.SlidingExpirationInterval;
+        }
+        else if (slidingExpirationInterval.Value <= TimeSpan.Zero)
+        {
+            // Zero or negative => explicitly disable sliding expiration
+            slidingExpiration = null;
+        }
+        else
+        {
+            // Positive => use the provided TimeSpan
+            slidingExpiration = slidingExpirationInterval;
+        }
+
+        return new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = absoluteExpiration,
+            SlidingExpiration = slidingExpiration
+        };
     }
 }

@@ -36,8 +36,7 @@ public class DraftStorageServiceTests
         redisConfigMock = new Mock<IOptions<RedisForDraftConfig>>();
         redisConfigMock.Setup(c => c.Value).Returns(new RedisForDraftConfig
         {
-            AbsoluteExpirationRelativeToNowInterval = TimeSpan.FromMinutes(1),
-            SlidingExpirationInterval = TimeSpan.FromMinutes(1),
+            AbsoluteExpirationRelativeToNowInterval = TimeSpan.FromMinutes(1)
         });
         draftStorageService = new DraftStorageService<WorkshopMainRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object, redisConfigMock.Object);
     }
@@ -87,7 +86,7 @@ public class DraftStorageServiceTests
             cacheKey,
             workshopJsonString,
             redisConfigMock.Object.Value.AbsoluteExpirationRelativeToNowInterval,
-            redisConfigMock.Object.Value.SlidingExpirationInterval))
+            TimeSpan.Zero))
             .Verifiable(Times.Once);
 
         // Act
