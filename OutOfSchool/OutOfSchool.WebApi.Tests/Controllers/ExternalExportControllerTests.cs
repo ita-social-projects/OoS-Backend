@@ -28,7 +28,7 @@ public class ExternalExportControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, ExternalExportMappingProfile>();
         mockExternalExportService = new Mock<IExternalExportService>();
         controller = new ExternalExportController(mockExternalExportService.Object);
     }
@@ -158,18 +158,18 @@ public class ExternalExportControllerTests
         };
 
         _ = mockExternalExportService
-            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<DirectionInfoDto>
+            .Setup(x => x.GetDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<DirectionInfoBaseDto>
                 {TotalAmount = fakeDirections.Count, Entities = fakeDirections});
 
         // Act
-        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(actionResult);
         var okObjectResult = (OkObjectResult) actionResult;
-        Assert.IsInstanceOf<SearchResult<DirectionInfoDto>>(okObjectResult.Value);
-        var result = (SearchResult<DirectionInfoDto>) okObjectResult.Value;
+        Assert.IsInstanceOf<SearchResult<DirectionInfoBaseDto>>(okObjectResult.Value);
+        var result = (SearchResult<DirectionInfoBaseDto>) okObjectResult.Value;
         Assert.AreEqual(fakeDirections.Count, result.Entities.Count);
     }
 
@@ -178,11 +178,11 @@ public class ExternalExportControllerTests
     {
         // Arrange
         mockExternalExportService
-            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<DirectionInfoDto> {Entities = new List<DirectionInfoDto>()});
+            .Setup(x => x.GetDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<DirectionInfoBaseDto> {Entities = new List<DirectionInfoDto>()});
 
         // Act
-        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult);
@@ -193,10 +193,10 @@ public class ExternalExportControllerTests
     {
         // Arrange
         mockExternalExportService
-            .Setup(x => x.GetDirections(It.IsAny<OffsetFilter>()))
+            .Setup(x => x.GetDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ThrowsAsync(new Exception("Simulated exception"));
         // Act
-        var actionResult = await controller.GetDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<ObjectResult>(actionResult);
@@ -225,18 +225,18 @@ public class ExternalExportControllerTests
         };
 
         _ = mockExternalExportService
-            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<SubDirectionsInfoDto>
+            .Setup(x => x.GetSubDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<SubDirectionsInfoBaseDto>
                 {TotalAmount = fakeSubDirections.Count, Entities = fakeSubDirections});
 
         // Act
-        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetSubDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<OkObjectResult>(actionResult);
         var okObjectResult = (OkObjectResult) actionResult;
-        Assert.IsInstanceOf<SearchResult<SubDirectionsInfoDto>>(okObjectResult.Value);
-        var result = (SearchResult<SubDirectionsInfoDto>) okObjectResult.Value;
+        Assert.IsInstanceOf<SearchResult<SubDirectionsInfoBaseDto>>(okObjectResult.Value);
+        var result = (SearchResult<SubDirectionsInfoBaseDto>) okObjectResult.Value;
         Assert.AreEqual(fakeSubDirections.Count, result.Entities.Count);
     }
 
@@ -245,11 +245,11 @@ public class ExternalExportControllerTests
     {
         // Arrange
         mockExternalExportService
-            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
-            .ReturnsAsync(new SearchResult<SubDirectionsInfoDto> {Entities = new List<SubDirectionsInfoDto>()});
+            .Setup(x => x.GetSubDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(new SearchResult<SubDirectionsInfoBaseDto> {Entities = new List<SubDirectionsInfoDto>()});
 
         // Act
-        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetSubDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(actionResult);
@@ -260,10 +260,10 @@ public class ExternalExportControllerTests
     {
         // Arrange
         mockExternalExportService
-            .Setup(x => x.GetSubDirections(It.IsAny<OffsetFilter>()))
+            .Setup(x => x.GetSubDirections(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ThrowsAsync(new Exception("Simulated exception"));
         // Act
-        var actionResult = await controller.GetSubDirectionsByFilter(new OffsetFilter {Size = 10});
+        var actionResult = await controller.GetSubDirectionsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
 
         // Assert
         Assert.IsInstanceOf<ObjectResult>(actionResult);

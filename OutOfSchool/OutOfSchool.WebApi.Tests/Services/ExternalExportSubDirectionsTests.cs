@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Util;
@@ -55,7 +56,7 @@ public class ExternalExportSubDirectionsTests
         mockWorkshopRepository = new Mock<IWorkshopRepository>();
         mockApplicationRepository = new Mock<IApplicationRepository>();
         mockAverageRatingService = new Mock<IAverageRatingService>();
-        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ExternalExportMappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportService>>();
         institutionHierarchyRepository = new InstitutionHierarchyRepository(dbContext);
 
@@ -78,10 +79,11 @@ public class ExternalExportSubDirectionsTests
     public async Task GetSubDirections_ReturnsEmptySearchResult()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
 
         // Act
-        var result = await externalExportService.GetSubDirections(offsetFilter);
+        var result = await externalExportService.GetSubDirections(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -93,18 +95,19 @@ public class ExternalExportSubDirectionsTests
     public async Task GetSubDirections_ReturnsSearchResultData()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
         SeedSubDirections(institutionHierarchyRepository);
     
         // Act
-        var result = await externalExportService.GetSubDirections(offsetFilter);
+        var result = await externalExportService.GetSubDirections(default, offsetFilter);
     
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(2, result.TotalAmount);
         Assert.AreEqual(2, result.Entities.Count);
-        Assert.AreEqual(1, result.Entities.First(s => s.Id == Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083")).DirectionIds.Count);
-        Assert.AreEqual(2, result.Entities.First(s => s.Id == Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0")).DirectionIds.Count);
+        Assert.AreEqual(1, ((SubDirectionsInfoDto)result.Entities.First(s => s.Id == Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083"))).DirectionIds.Count);
+        Assert.AreEqual(2, ((SubDirectionsInfoDto)result.Entities.First(s => s.Id == Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0"))).DirectionIds.Count);
     }
 
     private void SeedSubDirections(IInstitutionHierarchyRepository repository)

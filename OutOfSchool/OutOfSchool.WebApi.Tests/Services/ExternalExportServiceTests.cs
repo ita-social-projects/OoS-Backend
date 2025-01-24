@@ -43,7 +43,7 @@ public class ExternalExportServiceTests
         mockDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         mockInstitutionRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<Institution>>();
         mockInstitutionHierarchyRepository = new Mock<IInstitutionHierarchyRepository>();
-        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ExternalExportMappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportService>>();
 
         externalExportService = new ExternalExportService(
@@ -186,6 +186,7 @@ public class ExternalExportServiceTests
     public async Task GetDirections_ReturnsEmptySearchResult()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
         var fakeDirections = new List<Direction>();
 
@@ -194,7 +195,7 @@ public class ExternalExportServiceTests
             .Returns(fakeDirections.AsTestAsyncEnumerableQuery());
 
         // Act
-        var result = await externalExportService.GetDirections(offsetFilter);
+        var result = await externalExportService.GetDirections(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -206,6 +207,7 @@ public class ExternalExportServiceTests
     public async Task GetDirections_ReturnsSearchResultData()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
 
         List<Direction> fakeDirections = [
@@ -233,7 +235,7 @@ public class ExternalExportServiceTests
         mockDirectionRepository.Setup(x => x.Count(It.IsAny<Expression<Func<Direction,bool>>>())).ReturnsAsync(fakeDirections.Count);
 
         // Act
-        var result = await externalExportService.GetDirections(offsetFilter);
+        var result = await externalExportService.GetDirections(updatedAfter, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
@@ -246,12 +248,13 @@ public class ExternalExportServiceTests
     public void GetDirections_ExceptionInGetDirections_ReturnsEmptySearchResult()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
         mockDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<Direction,bool>>>(), null, false))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert
-        Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(new OffsetFilter()));
+        Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(updatedAfter, new OffsetFilter()));
     }
     
     /// <summary>
@@ -261,12 +264,13 @@ public class ExternalExportServiceTests
     public void GetSubDirections_ExceptionInGetSubDirections_ReturnsEmptySearchResult()
     {
         // Arrange
+        var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
         mockInstitutionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<Institution,bool>>>(), null, false))
             .Throws(new Exception("Simulated exception"));
     
         // Act & Assert
-        Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(new OffsetFilter()));
+        Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(updatedAfter, new OffsetFilter()));
     }
 
     [Test]
