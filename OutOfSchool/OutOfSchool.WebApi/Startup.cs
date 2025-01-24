@@ -291,7 +291,7 @@ public static class Startup
                     sp.GetRequiredService<TrackableEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile));
+        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile), typeof(ExternalExportMappingProfile));
 
         // Add Elasticsearch client
         var elasticConfig = configuration

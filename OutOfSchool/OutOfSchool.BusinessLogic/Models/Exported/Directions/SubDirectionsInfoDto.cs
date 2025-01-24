@@ -2,11 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.Directions;
 
-public class SubDirectionsInfoDto : IExternalInfo<Guid>
+public class SubDirectionsInfoDto : SubDirectionsInfoBaseDto
 {
-    public Guid Id { get; set; }
-    
-    [Required(ErrorMessage = "Title is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(100)]
     [MinLength(1)]

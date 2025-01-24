@@ -2,12 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.Directions;
 
-public class DirectionInfoDto : IExternalInfo<long>
+public class DirectionInfoDto : DirectionInfoBaseDto
 {
-    public long Id { get; set; }
-
-    [Required(ErrorMessage = "Title is required")]
-    [DataType(DataType.Text)]
+    [Required]
     [MaxLength(100)]
     [MinLength(1)]
     public string Title { get; set; }

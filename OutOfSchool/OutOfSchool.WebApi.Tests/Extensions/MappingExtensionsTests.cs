@@ -31,4 +31,15 @@ public class MappingExtensionsTests
         // assert
         configuration.AssertConfigurationIsValid();
     }
+    
+    [Test]
+    public void Mapping_ExternalExportMappingProfile_ConfigurationIsCorrect()
+    {
+        // act
+        var configuration = new MapperConfiguration(cfg =>
+            cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>().UseProfile<ExternalExportMappingProfile>());
+
+        // assert
+        configuration.AssertConfigurationIsValid();
+    }
 }
