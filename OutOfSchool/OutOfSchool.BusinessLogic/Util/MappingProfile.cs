@@ -947,11 +947,12 @@ public class MappingProfile : Profile
         CreateMap<Official, OfficialDto>()
             .ForMember(dest => dest.DismissalOrder, opt => opt.MapFrom(src => src.DismissalOrder ?? string.Empty))
             .ForMember(dest => dest.RecruitmentOrder, opt => opt.MapFrom(src => src.RecruitmentOrder ?? string.Empty))
-            .ForMember(dest => dest.DismissalReason, opt => opt.MapFrom(src => src.DismissalReason ?? string.Empty));
-
-        CreateMap<Position, OfficialPositionDto>();
-
-        CreateMap<Individual, OfficialIndividualDto>();
+            .ForMember(dest => dest.DismissalReason, opt => opt.MapFrom(src => src.DismissalReason ?? string.Empty))
+            .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.Position.FullName))
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Individual.FirstName))
+            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Individual.MiddleName))
+            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Individual.LastName))
+            .ForMember(dest => dest.Rnokpp, opt => opt.MapFrom(src => src.Individual.Rnokpp));
     }
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()

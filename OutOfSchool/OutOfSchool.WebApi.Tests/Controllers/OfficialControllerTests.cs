@@ -80,18 +80,11 @@ public class OfficialControllerTests
             ActiveTo = DateOnly.FromDateTime(DateTime.Now),
             Id = Guid.NewGuid(),
             EmploymentType = EmploymentType.PartTime,
-            Individual = new OfficialIndividualDto()
-            {
-                FirstName = "Test",
-                LastName = "Testov",
-                MiddleName = "Testovich",
-                Rnokpp = "1234567890"
-            },
-            Position = new OfficialPositionDto()
-            {
-                Id = Guid.NewGuid(),
-                FullName = "Test"
-            }
+            FirstName = "Test",
+            LastName = "Testov",
+            MiddleName = "Testovich",
+            Rnokpp = "1234567890",
+            Position = "Test"
         };
     }
 }
