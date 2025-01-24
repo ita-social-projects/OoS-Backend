@@ -18,7 +18,7 @@ internal class InstitutionHierarchyConfiguration : IEntityTypeConfiguration<Inst
         // It relies on MySQL default value on update feature
         // If we require this for our own logic - need to refactor to interceptor.
         builder.Property(x => x.UpdatedAt)
-            .HasDefaultValueSql("NULL ON UPDATE UTC_TIMESTAMP")
+            .HasDefaultValueSql("NULL ON UPDATE CURRENT_TIMESTAMP(6)")
             .ValueGeneratedOnUpdate();
     }
 }
