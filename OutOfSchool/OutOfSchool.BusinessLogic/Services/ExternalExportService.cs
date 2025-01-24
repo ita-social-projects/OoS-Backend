@@ -165,7 +165,7 @@ public class ExternalExportService : IExternalExportService
 
             var directionDtos = directions
                 .Select(MapToInfoDto<Direction, DirectionInfoBaseDto, DirectionInfoDto>)
-                .ToList();;
+                .ToList();
 
             var result = new SearchResult<DirectionInfoBaseDto>()
             {

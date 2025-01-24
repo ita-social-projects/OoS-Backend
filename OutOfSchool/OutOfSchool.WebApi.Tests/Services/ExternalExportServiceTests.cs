@@ -270,7 +270,7 @@ public class ExternalExportServiceTests
             .Throws(new Exception("Simulated exception"));
     
         // Act & Assert
-        Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(updatedAfter, new OffsetFilter()));
+        Assert.CatchAsync<Exception>(() => externalExportService.GetSubDirections(updatedAfter, new OffsetFilter()));
     }
 
     [Test]
