@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Services.Common.Exceptions;
@@ -56,7 +56,7 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] WorkshopV2Dto workshopV2Dto)
+    public async Task<IActionResult> Create([FromForm] WorkshopUpdateV2Dto workshopV2Dto)
     {
         var providerValidationResult = await ValidateProvider(workshopV2Dto.ProviderId);
         if (providerValidationResult != null)
