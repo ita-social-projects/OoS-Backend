@@ -49,7 +49,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly IRegionAdminService regionAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly ISearchStringService searchStringService;
-    private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
 
     /// <summary>
@@ -70,7 +69,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="ministryAdminService"> Service for ministry admin.</param>
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
-    /// <param name="tagService">Service for Tag entity.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
     /// <param name="contactsService">Service for Contacts management.</param>
     public WorkshopService(
@@ -89,7 +87,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         IMinistryAdminService ministryAdminService,
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
-        ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService)
     {
@@ -109,7 +106,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.regionAdminService = regionAdminService;
         this.codeficatorService = codeficatorService;
         this.searchStringService = searchStringService;
-        this.tagService = tagService;
         this.contactsService = contactsService;
     }
 
@@ -361,22 +357,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
-            if (!dto.TagIds.IsNullOrEmpty())
-            {
-                var tags = new List<TagDto>();
-                foreach (var tagId in dto.TagIds)
-                {
-                    var tag = await tagService.GetById(tagId);
-                    if (tag != null)
-                    {
-                        var tagDto = mapper.Map<TagDto>(tag);
-                        tags.Add(tagDto);
-                    }
-                }
-            
-                currentWorkshop.Tags.Clear();
-                currentWorkshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
-            }
+            await UpdateTags(currentWorkshop, dto);
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
@@ -456,6 +437,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
             
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
+            
+            await UpdateTags(currentWorkshop, dto);
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
@@ -1162,6 +1145,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         {
             var errorMessage = $"The default Teacher (with id = {dto.DefaultTeacherId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
+        }
+    }
+    
+    private async Task UpdateTags(Workshop currentWorkshop, WorkshopUpdateDto dto)
+    {
+        if (!dto.TagIds.IsNullOrEmpty())
+        {
+            var tags = await tagRepository.GetByFilter(t => dto.TagIds.Contains(t.Id)).ConfigureAwait(false);
+            
+            currentWorkshop.Tags.Clear();
+            currentWorkshop.Tags.AddRange(tags);
         }
     }
 }

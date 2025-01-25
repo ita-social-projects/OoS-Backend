@@ -7,7 +7,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 namespace OutOfSchool.BusinessLogic.Services;
 
 /// <summary>
-/// Implements the interface with CRUD functionality for for SocialGroup entity.
+/// Implements the interface with CRUD functionality for Tag entity.
 /// </summary>
 public class TagService : ITagService
 {
@@ -38,13 +38,11 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<IEnumerable<TagDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogDebug($"Getting all Tags, {localization} localization, started.");
+        logger.LogDebug("Getting all Tags started with {LocalizationType}", localization);
 
         var tags = await repository.GetAll().ConfigureAwait(false);
 
-        logger.LogDebug(!tags.Any()
-            ? "Tag table is empty."
-            : $"All {tags.Count()} records were successfully received from the Tag table");
+        logger.LogDebug("All {Count} records were successfully received from the Tag table", tags.Count());
 
         return mapper.Map<List<TagDto>>(tags, opt =>
         opt.Items["Localization"] = localization);
@@ -53,7 +51,7 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogDebug($"Getting Tag by Id, {localization} localization, started. Looking Id = {id}.");
+        logger.LogDebug("Getting Tag by Id, {LocalizationType} localization, started. Looking Id = {Id}", localization, id);
 
         var tag = await repository.GetById(id).ConfigureAwait(false);
 
@@ -64,7 +62,7 @@ public class TagService : ITagService
                 localizer["A Tag with a respective Id does not exist."]);
         }
 
-        logger.LogDebug($"Successfully got a Tag with Id = {id} and {localization} localization.");
+        logger.LogDebug("Successfully got a Tag with Id = {Id} and {LocalizationType} localization", id, localization);
 
         return mapper.Map<TagDto>(tag, opt =>
         opt.Items["Localization"] = localization);
@@ -73,13 +71,13 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagDto> Create(TagCreate dto)
     {
-        logger.LogDebug("Tag creating was started.");
+        logger.LogDebug("Tag creating was started");
 
         var tag = mapper.Map<Tag>(dto);
 
         var newTag = await repository.Create(tag).ConfigureAwait(false);
 
-        logger.LogDebug($"Tag with Id = {newTag?.Id} created successfully.");
+        logger.LogDebug("Tag with Id = {Id} created successfully", newTag?.Id);
 
         return mapper.Map<TagDto>(newTag);
     }
@@ -87,13 +85,13 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task<TagDto> Update(TagDto dto, LocalizationType localization = LocalizationType.Ua)
     {
-        logger.LogDebug($"Updating Tag with Id = {dto.Id}, {localization} localization, started.");
+        logger.LogDebug("Updating Tag with Id = {Id}, {LocalizationType} localization, started", dto.Id, localization);
 
         var tagLocalized = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (tagLocalized == null)
         {
-            logger.LogError($"Updating failed. Tag with Id = {dto.Id} doesn't exist in the system.");
+            logger.LogError("Updating failed. Tag with Id = {Id} doesn't exist in the system", dto.Id);
 
             return null;
         }
@@ -109,7 +107,7 @@ public class TagService : ITagService
 
         var tag = await repository.Update(tagLocalized).ConfigureAwait(false);
 
-        logger.LogDebug($"Tag with Id = {tag.Id} updated succesfully.");
+        logger.LogDebug("Tag with Id = {Id} updated successfully", tag.Id);
 
         return mapper.Map<TagDto>(tag);
     }
@@ -117,7 +115,7 @@ public class TagService : ITagService
     /// <inheritdoc/>
     public async Task Delete(long id)
     {
-        logger.LogDebug($"Deleting Tag with Id = {id} started.");
+        logger.LogDebug("Deleting Tag with Id = {Id} started", id);
 
         var tag = await repository.GetById(id).ConfigureAwait(false);
 
@@ -130,6 +128,6 @@ public class TagService : ITagService
 
         await repository.Delete(tag).ConfigureAwait(false);
 
-        logger.LogDebug($"Tag with Id = {id} succesfully deleted.");
+        logger.LogDebug("Tag with Id = {Id} successfully deleted", id);
     }
 }

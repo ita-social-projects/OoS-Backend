@@ -48,7 +48,6 @@ public class WorkshopServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
-    private Mock<ITagService> tagServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
 
@@ -77,7 +76,6 @@ public class WorkshopServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
-        tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
@@ -99,7 +97,6 @@ public class WorkshopServiceDBTests
                     ministryAdminServiceMock.Object,
                     regionAdminServiceMock.Object,
                     codeficatorServiceMock.Object,
-                    tagServiceMock.Object,
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object);
 
