@@ -1,6 +1,8 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -14,7 +16,7 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreateUpdateDto"/>.</returns>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateDto"/>.</returns>
     Task<WorkshopDto> Create(WorkshopCreateRequestDto dto);
 
     /// <summary>
@@ -56,21 +58,10 @@ public interface IWorkshopServicesCombiner
     /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{Workshop}"/>
     /// that indicates the success or failure of the operation.
     /// If the operation succeeds, the <see cref="Result{Workshop}.Value"/> property
-    /// contains the updated <see cref="WorkshopCreateUpdateDto"/>.
+    /// contains the updated <see cref="WorkshopUpdateDto"/>.
     /// If the operation fails, the <see cref="Result{Workshop}.OperationResult"/> property
     /// contains error information.</returns>
-    Task<Result<WorkshopDto>> Update(WorkshopCreateUpdateDto dto);
-
-    /// <summary>
-    /// Update the Tags for existing Worskshop.
-    /// </summary>
-    /// <param name="dto">The Woskshop to be updated.</param>
-    /// <returns>The updated <see cref="Workshop"/> entity if the update was successful, otherwise returns null.</returns>
-    /// <remarks>
-    /// This method will update the tags associated with a workshop based on the provided list of tag Ids.
-    /// If the workshop does not exist, the method will return null.
-    /// </remarks>
-    Task<Result<WorkshopDto>> UpdateTags(WorkshopTagsUpdateDto dto);
+    Task<Result<WorkshopDto>> Update(WorkshopUpdateDto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -52,7 +52,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         return creationResult;
     }
 
-    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto)
+    public async Task<Result<WorkshopResultDto>> Update(WorkshopUpdateV2Dto dto)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)

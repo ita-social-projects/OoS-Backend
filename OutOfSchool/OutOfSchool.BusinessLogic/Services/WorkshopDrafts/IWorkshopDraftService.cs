@@ -1,5 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <summary>
@@ -30,7 +30,7 @@ public interface IWorkshopDraftService
     /// <exception cref="InvalidDataException">
     /// Thrown when the workshop does not contain a list of teachers or the list is empty.
     /// </exception>
-    Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto);
+    Task<WorkshopDraftResultDto> Create(WorkshopUpdateV2Dto workshopV2Dto);
 
     /// <summary>
     /// Update existing workshop draft.   

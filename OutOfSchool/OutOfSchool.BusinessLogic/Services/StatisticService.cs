@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Repository.Api;

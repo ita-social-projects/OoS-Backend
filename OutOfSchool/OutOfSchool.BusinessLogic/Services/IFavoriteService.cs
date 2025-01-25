@@ -1,5 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

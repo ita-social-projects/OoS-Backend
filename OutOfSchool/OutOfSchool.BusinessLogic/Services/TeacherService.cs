@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -15,7 +13,6 @@ public class TeacherService : ITeacherService
     private readonly ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository;
     private readonly IEntityCoverImageInteractionService<Teacher> teacherImagesService;
     private readonly ILogger<TeacherService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -24,11 +21,9 @@ public class TeacherService : ITeacherService
     /// <param name="teacherRepository">Repository for Teacher entity.</param>
     /// <param name="teacherImagesService">Teacher images mediator.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
-    public TeacherService(ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+    public TeacherService(ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IMapper mapper)
     {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
         this.teacherImagesService = teacherImagesService ?? throw new ArgumentNullException(nameof(teacherImagesService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -36,14 +31,14 @@ public class TeacherService : ITeacherService
     }
 
     /// <inheritdoc/>
-    public async Task<TeacherCreationResultDto> Create(TeacherDTO dto)
+    public async Task<TeacherCreationResultDto> Create(Guid workshopId, TeacherCreateDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation("Teacher creating was started.");
+        logger.LogDebug("Teacher creating was started");
 
         var teacher = mapper.Map<Teacher>(dto);
-        teacher.Id = default;
-        teacher.WorkshopId = dto.WorkshopId;
+        teacher.Id = Guid.Empty;
+        teacher.WorkshopId = workshopId;
 
         var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
@@ -58,33 +53,31 @@ public class TeacherService : ITeacherService
             }
         }
 
-        logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
+        logger.LogDebug("Teacher with Id = {Id} created successfully", newTeacher.Id);
 
         return new TeacherCreationResultDto
         {
-            Teacher = mapper.Map<TeacherDTO>(newTeacher),
+            Teacher = mapper.Map<TeacherDto>(newTeacher),
             UploadingAvatarImageResult = uploadingResult?.OperationResult,
         };
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TeacherDTO>> GetAll()
+    public async Task<IEnumerable<TeacherDto>> GetAll()
     {
-        logger.LogInformation("Getting all Teachers started.");
+        logger.LogDebug("Getting all Teachers started");
 
         var teachers = await teacherRepository.GetAll().ConfigureAwait(false);
 
-        logger.LogInformation(!teachers.Any()
-            ? "Teacher table is empty."
-            : $"All {teachers.Count()} records were successfully received from the Teacher table");
+        logger.LogDebug("All {Count} records were successfully received from the Teacher table", teachers.Count());
 
-        return teachers.Select(teacher => mapper.Map<TeacherDTO>(teacher)).ToList();
+        return teachers.Select(teacher => mapper.Map<TeacherDto>(teacher)).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<TeacherDTO> GetById(Guid id)
+    public async Task<TeacherDto> GetById(Guid id)
     {
-        logger.LogInformation($"Getting Teacher by Id started. Looking Id = {id}.");
+        logger.LogDebug("Getting Teacher by Id started. Looking Id = {Id}", id);
 
         var teacher = await teacherRepository.GetById(id).ConfigureAwait(false);
 
@@ -95,16 +88,16 @@ public class TeacherService : ITeacherService
                 paramName: $"There are no recors in teachers table with such id - {id}.");
         }
 
-        logger.LogInformation($"Got a Teacher with Id = {id}.");
+        logger.LogDebug("Got a Teacher with Id = {Id}", id);
 
-        return mapper.Map<TeacherDTO>(teacher);
+        return mapper.Map<TeacherDto>(teacher);
     }
 
     /// <inheritdoc/>
-    public async Task<TeacherUpdateResultDto> Update(TeacherDTO dto)
+    public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
+        logger.LogDebug("Updating Teacher with Id = {Id} started", dto.Id);
 
         var teacher = await teacherRepository.GetById(dto.Id).ConfigureAwait(false);
 
@@ -116,7 +109,7 @@ public class TeacherService : ITeacherService
 
         return new TeacherUpdateResultDto
         {
-            Teacher = mapper.Map<TeacherDTO>(teacher),
+            Teacher = mapper.Map<TeacherDto>(teacher),
             UploadingAvatarImageResult = changingAvatarResult?.UploadingResult?.OperationResult,
         };
     }
@@ -124,7 +117,7 @@ public class TeacherService : ITeacherService
     /// <inheritdoc/>
     public async Task Delete(Guid id)
     {
-        logger.LogInformation($"Deleting Teacher with Id = {id} started.");
+        logger.LogDebug("Deleting Teacher with Id = {Id} started", id);
 
         var entity = await teacherRepository.GetById(id).ConfigureAwait(false);
 
@@ -137,11 +130,11 @@ public class TeacherService : ITeacherService
         {
             await teacherRepository.Delete(entity).ConfigureAwait(false);
 
-            logger.LogInformation($"Teacher with Id = {id} successfully deleted.");
+            logger.LogDebug("Teacher with Id = {Id} successfully deleted", id);
         }
         catch (DbUpdateConcurrencyException)
         {
-            logger.LogError($"Deleting Teacher with Id = {id} failed.");
+            logger.LogError("Deleting Teacher with Id = {Id} failed", id);
             throw;
         }
     }
@@ -149,7 +142,7 @@ public class TeacherService : ITeacherService
     /// <inheritdoc/>
     public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
     {
-        logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+        logger.LogDebug("Searching Teacher by Id started. Looking Id = {Id}", teacherId);
 
         var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
 
@@ -160,16 +153,16 @@ public class TeacherService : ITeacherService
                 paramName: $"There are no recors in teachers table with such id - {teacherId}.");
         }
 
-        logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
+        logger.LogDebug("Successfully found a Teacher with Id = {Id}", teacherId);
         var teachersWorkshopId = teacher.WorkshopId;
-        logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
+        logger.LogDebug("Successfully found WorkshopId - {WorkshopId} for Teacher  with Id = {Id}", teachersWorkshopId, teacherId);
         return teachersWorkshopId ?? Guid.Empty;
     }
 
     /// <inheritdoc/>
     public async Task<bool> ExistsAsync(Guid id)
     {
-        logger.LogDebug("Checking if Teacher exists by Id started. Looking Id = {id}.", id);
+        logger.LogDebug("Checking if Teacher exists by Id started. Looking Id = {Id}", id);
 
         return await teacherRepository.Any(x => x.Id == id);
     }
@@ -182,7 +175,7 @@ public class TeacherService : ITeacherService
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Unable to update teacher.");
+            logger.LogError(ex, "Unable to update teacher");
             throw;
         }
     }

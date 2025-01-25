@@ -7,7 +7,11 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Tag;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
@@ -16,8 +20,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-
-using SendGrid.Helpers.Errors.Model;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -68,9 +70,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="ministryAdminService"> Service for ministry admin.</param>
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
-    /// <param name="searchStringService">Service for handling the search string.</param>
-    /// <param name="codeficatorService">Service for CATOTTG.</param>
     /// <param name="tagService">Service for Tag entity.</param>
+    /// <param name="searchStringService">Service for handling the search string.</param>
+    /// <param name="contactsService">Service for Contacts management.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, Tag> tagRepository,
@@ -112,7 +114,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopUpdateDto"/> is null.</exception>
     public async Task<WorkshopDto> Create(WorkshopCreateRequestDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
@@ -339,9 +341,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">If <see cref="WorkshopUpdateDto"/> is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopDto> Update(WorkshopCreateUpdateDto dto)
+    public async Task<WorkshopDto> Update(WorkshopUpdateDto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
@@ -395,36 +397,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<WorkshopDto> UpdateTags(WorkshopTagsUpdateDto dto)
-    {
-        logger.LogInformation($"Updating the tags for Workshop with Id = {dto.WorkshopId} started.");
-
-        var workshop = await workshopRepository.GetById(dto.WorkshopId);
-        if (workshop == null)
-        {
-            throw new NotFoundException($"Workshop with Id {dto.WorkshopId} not found.");
-        }
-
-        var tags = new List<TagDto>();
-        foreach (var tagId in dto.TagIds)
-        {
-            var tag = await tagService.GetById(tagId);
-            if (tag != null)
-            {
-                var tagDto = mapper.Map<TagDto>(tag);
-                tags.Add(tagDto);
-            }
-        }
-
-        workshop.Tags.Clear();
-        workshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
-
-        await workshopRepository.Update(workshop);
-
-        return mapper.Map<WorkshopDto>(workshop);
-    }
-
-    /// <inheritdoc/>
     public async Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto)
     {
         logger.LogInformation($"Updating Workshop status with Id = {dto.WorkshopId} started.");
@@ -461,10 +433,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto)
+    public async Task<WorkshopResultDto> UpdateV2(WorkshopUpdateV2Dto dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
+        logger.LogDebug("Updating Workshop with Id = {Id} started", dto.Id);
 
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
@@ -1050,7 +1022,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return workshops;
     }
 
-    private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherDTO> teacherDtoList)
+    private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherUpdateDto> teacherDtoList)
     {
         var deletedIds = currentWorkshop.Teachers
         .Where(x => !x.IsDeleted)
@@ -1071,9 +1043,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             }
             else
             {
-                var newTeacher = mapper.Map<TeacherDTO>(teacherDto);
-                newTeacher.WorkshopId = currentWorkshop.Id;
-                await teacherService.Create(newTeacher).ConfigureAwait(false);
+                await teacherService.Create(currentWorkshop.Id, teacherDto).ConfigureAwait(false);
             }
         }
     }
@@ -1179,21 +1149,13 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task SetIdsToDefaultValue(WorkshopCreateRequestDto dto)
     {
-        dto.Id = Guid.Empty;
-
         if (dto.Address is not null)
         {
-            dto.Address.Id = default;
-        }
-
-        if (dto.DefaultTeacher is not null)
-        {
-            dto.DefaultTeacher.Id = Guid.Empty;
+            dto.Address.Id = 0;
         }
 
         dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
-        dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
-        dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
+        dto.DateTimeRanges?.ToList().ForEach(e => e.Id = 0);
 
         // If the DefaultTeacherId property of WorkshopBaseDto is incorrect, throw InvalidOperationException.
         if (dto.DefaultTeacherId is not null && !await teacherService.ExistsAsync((Guid)dto.DefaultTeacherId).ConfigureAwait(false))

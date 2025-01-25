@@ -16,6 +16,8 @@ using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Collections.Concurrent;
+using OutOfSchool.BusinessLogic.Models.Teachers;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
@@ -78,7 +80,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     }
 
     // <inheritdoc/>
-    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto)
+    public async Task<WorkshopDraftResultDto> Create(WorkshopUpdateV2Dto workshopV2Dto)
     {
         if (workshopV2Dto == null)
         {
@@ -86,7 +88,7 @@ public class WorkshopDraftService : IWorkshopDraftService
                 "ArgumentNullException: While executing the method '{MethodName}'," +
                 " the parameter '{ParameterName}' is null.",
                 nameof(Create),
-                nameof(WorkshopV2Dto));
+                nameof(WorkshopUpdateV2Dto));
 
             throw new ArgumentNullException(nameof(workshopV2Dto));
         }
@@ -316,7 +318,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         }
         else
         {
-            var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshopDraft);
+            var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshopDraft);
 
             await workshopServicesCombinerV2.Update(workshopV2Dto);
         }
@@ -368,7 +370,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         return workshopDraft;
     }
 
-    private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
+    private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopUpdateV2Dto workshopV2Dto)
     {
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
@@ -388,7 +390,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     // Applicable if images is stored in the external storage
     private async Task<UploadImagesResult> UploadWorkshopAndTeacherImagesAsync(
         WorkshopDraft createdDraft,
-        WorkshopV2Dto workshopV2Dto)
+        WorkshopUpdateV2Dto workshopV2Dto)
     {
         var teacherUploadImagesTasks = new List<Task>();
         var teacherUploadImagesResults = new ConcurrentBag<TeacherCreateUpdateResultDto>();
@@ -445,7 +447,7 @@ public class WorkshopDraftService : IWorkshopDraftService
     }
 
     private async Task UploadTeacherCoverImageAsync(
-        TeacherDTO teacherDto,
+        TeacherUpdateDto teacherDto,
         TeacherDraft teacher,
         ConcurrentBag<TeacherCreateUpdateResultDto> teacherResults,
         SemaphoreSlim semaphore)

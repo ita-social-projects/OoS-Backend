@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 
 namespace OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;

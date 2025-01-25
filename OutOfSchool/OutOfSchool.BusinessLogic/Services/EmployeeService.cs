@@ -3,7 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
