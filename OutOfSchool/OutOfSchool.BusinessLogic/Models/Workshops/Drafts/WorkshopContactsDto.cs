@@ -7,9 +7,6 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
 public class WorkshopContactsDto : WorkshopDescriptionDto, IHasContactsDto<Workshop>
 {
     [Required]
-    public long AddressId { get; set; }
-
-    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public AddressDto Address { get; set; }
 

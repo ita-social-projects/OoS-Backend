@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 namespace OutOfSchool.BusinessLogic.Models.Application;
 

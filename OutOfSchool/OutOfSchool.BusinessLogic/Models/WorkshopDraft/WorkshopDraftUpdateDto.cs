@@ -1,5 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models.Workshops;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 
@@ -9,6 +9,6 @@ public class WorkshopDraftUpdateDto
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "WorkshopV2Dto is required")]
-    public WorkshopV2Dto WorkshopV2Dto { get; set; }
+    public WorkshopUpdateV2Dto WorkshopV2Dto { get; set; }
 }
 

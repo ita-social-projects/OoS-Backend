@@ -4,7 +4,7 @@ namespace OutOfSchool.BusinessLogic.Models.Teachers;
 
 public class TeacherUpdateResultDto
 {
-    public TeacherDTO Teacher { get; set; }
+    public TeacherDto Teacher { get; set; }
 
     public OperationResult UploadingAvatarImageResult { get; set; }
 }

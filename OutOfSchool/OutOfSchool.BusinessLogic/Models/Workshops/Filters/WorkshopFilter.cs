@@ -5,7 +5,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 
 /// <inheritdoc/>>
 public class WorkshopFilter : OffsetFilter

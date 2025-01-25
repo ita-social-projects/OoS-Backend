@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models;

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.AddressDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -42,10 +44,10 @@ public class WorkshopDraftMappingProfile : Profile
                 src => src.Images.Select(x => x.ExternalStorageId)
                 .ToList()));
 
-        CreateMap<WorkshopV2Dto, WorkshopDraftContent>();
-        CreateMap<WorkshopV2Dto, WorkshopDraft>()
+        CreateMap<WorkshopUpdateV2Dto, WorkshopDraftContent>();
+        CreateMap<WorkshopUpdateV2Dto, WorkshopDraft>()
             .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
-            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.Tags.Select(t => t.Id).Concat(src.TagIds)))
+            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.TagIds))
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
@@ -58,15 +60,14 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Version, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id == Guid.Empty ? (Guid?) null : src.Id));
 
-        CreateMap<WorkshopDraftContent, WorkshopV2Dto>();
-        CreateMap<WorkshopDraft, WorkshopV2Dto>()
+        CreateMap<WorkshopDraftContent, WorkshopUpdateV2Dto>();
+        CreateMap<WorkshopDraft, WorkshopUpdateV2Dto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.WorkshopId));
 
         CreateMap<WorkshopDraftContent, WorkshopV2CreateRequestDto>();
         CreateMap<WorkshopDraft, WorkshopV2CreateRequestDto>()
-            .IncludeMembers(src => src.WorkshopDraftContent)
-            .ForMember(dest => dest.Id, opt => opt.Ignore());
+            .IncludeMembers(src => src.WorkshopDraftContent);
 
         CreateMap<DateTimeRangeDraft, DateTimeRangeDto>();
 
@@ -84,7 +85,8 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<AddressDraft, AddressDto>()
             .ReverseMap();
 
-        CreateMap<TeacherDraft, TeacherDTO>()
-            .ReverseMap();
+        CreateMap<TeacherUpdateDto, TeacherDraft>();
+        CreateMap<TeacherDraft, TeacherUpdateDto>();
+        CreateMap<TeacherDraft, TeacherCreateDto>();
     }
 }

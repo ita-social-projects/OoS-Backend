@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 public class WorkshopResultDto
 {

@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Models.Workshops;
+﻿namespace OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 
 public class WorkshopFilterWithSettlements : WorkshopFilter
 {
