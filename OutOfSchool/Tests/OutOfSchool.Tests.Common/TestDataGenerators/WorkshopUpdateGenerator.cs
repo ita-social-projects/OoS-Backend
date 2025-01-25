@@ -1,15 +1,15 @@
-﻿using Bogus;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.BusinessLogic.Models;
+﻿using System;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using System;
 using System.Collections.Generic;
+using OutOfSchool.BusinessLogic.Models.Teachers;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
-public static class WorkshopBaseDtoGenerator
+public static class WorkshopUpdateDtoGenerator
 {
-    public static readonly Faker<WorkshopBaseDto> Faker = new Faker<WorkshopBaseDto>()
+    private static readonly Faker<WorkshopUpdateDto> Faker = new Faker<WorkshopUpdateDto>()
         .RuleForType(typeof(int), f => f.Random.Int())
         .RuleForType(typeof(Guid), f => f.Random.Guid())
         .RuleForType(typeof(long), f => f.Random.Long(0, long.MaxValue))
@@ -33,21 +33,18 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
         .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
         .RuleFor(x => x.InstitutionId, f => f.Random.Guid())
-        .RuleFor(x => x.Institution, f => f.Lorem.Word())
         .RuleFor(x => x.InstitutionHierarchyId, f => f.Random.Guid())
-        .RuleFor(x => x.InstitutionHierarchy, f => f.Lorem.Word())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
         .RuleFor(x => x.Keywords, f => f.Make(new Random().Next(1, 10), () => f.Lorem.Word()))
         .RuleFor(x => x.AddressId, f => f.Random.Number(1, 1000))
         .RuleFor(x => x.Address, f => AddressDtoGenerator.Generate())
-        .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
+        .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherUpdateDto()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())
-        .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
-        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>());
+        .RuleFor(x => x.TagIds, f => f.Make(5, () => f.Random.Long(1, 100)));
+    
+    public static WorkshopUpdateDto Generate() => Faker.Generate();
 
-    public static WorkshopBaseDto Generate() => Faker.Generate();
+    public static List<WorkshopUpdateDto> Generate(int count) => Faker.Generate(count);
 
-    public static List<WorkshopBaseDto> Generate(int count) => Faker.Generate(count);
-
-    public static void Populate(WorkshopBaseDto dto) => Faker.Populate(dto);
+    public static void Populate(WorkshopUpdateDto dto) => Faker.Populate(dto);
 }

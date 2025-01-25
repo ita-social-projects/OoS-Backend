@@ -19,6 +19,8 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
@@ -43,7 +45,7 @@ public class WorkshopControllerTests
     private static List<WorkshopDto> workshops;
     private static List<WorkshopCard> workshopCards;
     private static WorkshopDto workshop;
-    private static WorkshopCreateUpdateDto workshopUpdateDto;
+    private static WorkshopUpdateDto workshopUpdateDto;
     private static WorkshopCreateRequestDto workshopCreateRequestDto;
     private static ProviderDto provider;
     private static Mock<IOptions<AppDefaultsConfig>> options;
@@ -72,11 +74,11 @@ public class WorkshopControllerTests
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
 
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();
-        workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopUpdateDto = WorkshopUpdateDtoGenerator.Generate();
         workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(WorkshopGenerator.Generate());
         provider = ProviderDtoGenerator.Generate();
         workshopCards = WorkshopCardGenerator.Generate(5);
@@ -885,7 +887,7 @@ public class WorkshopControllerTests
         var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopUpdateDto>()), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
@@ -903,7 +905,7 @@ public class WorkshopControllerTests
 
         // Assert
         providerServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopUpdateDto>()), Times.Never);
         Assert.IsNotNull(result);
         Assert.AreEqual(Forbidden, result.StatusCode);
     }
@@ -912,7 +914,7 @@ public class WorkshopControllerTests
     public async Task UpdateWorkshop_WhenDtoIsNull_ShouldReturnBadRequestObjectResult()
     {
         // Arrange
-        WorkshopCreateUpdateDto workshopBaseDto = null;
+        WorkshopUpdateDto workshopBaseDto = null;
 
         // Act
         var result = await controller.Update(workshopBaseDto).ConfigureAwait(false) as ObjectResult;

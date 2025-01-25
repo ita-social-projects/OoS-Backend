@@ -44,7 +44,7 @@ public class ProviderControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
         userId = Guid.NewGuid().ToString();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
 

@@ -12,6 +12,8 @@ using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common;
@@ -305,6 +307,7 @@ public class ChildControllerTests
                     },
                 },
             Price = 1000,
+            PayRate = PayRateType.Classes,
             WithDisabilityOptions = true,
             ProviderId = Guid.NewGuid(),
             ProviderTitle = "ProviderTitle",
@@ -320,6 +323,7 @@ public class ChildControllerTests
             {
                 CATOTTGId = 4970,
             },
+            AvailableSeats = uint.MaxValue,
         };
 
         ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());

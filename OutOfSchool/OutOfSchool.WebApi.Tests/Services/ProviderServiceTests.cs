@@ -104,7 +104,7 @@ public class ProviderServiceTests
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderService(

@@ -12,7 +12,10 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Enums;
@@ -724,6 +727,8 @@ public class ApplicationControllerTests
             Email = "email6@gmail.com",
             MaxAge = 10,
             MinAge = 4,
+            PayRate = PayRateType.Course,
+            AvailableSeats = uint.MaxValue,
             CoverImageId = "image6",
             ProviderId = Guid.NewGuid(),
             InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
@@ -737,9 +742,9 @@ public class ApplicationControllerTests
                 Latitude = 0,
                 Longitude = 0,
             },
-            Teachers = new List<TeacherDTO>
+            Teachers = new List<TeacherDto>
             {
-                new TeacherDTO
+                new TeacherDto
                 {
                     Id = Guid.NewGuid(),
                     FirstName = "Alex",
@@ -748,9 +753,8 @@ public class ApplicationControllerTests
                     Description = "Description",
                     CoverImageId = "Image",
                     DateOfBirth = DateTime.Parse("2000-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                 },
-                new TeacherDTO
+                new TeacherDto
                 {
                     Id = Guid.NewGuid(),
                     FirstName = "John",
@@ -759,7 +763,6 @@ public class ApplicationControllerTests
                     Description = "Description",
                     CoverImageId = "Image",
                     DateOfBirth = DateTime.Parse("1990-01-01"),
-                    WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                 },
             },
         };
@@ -780,6 +783,8 @@ public class ApplicationControllerTests
                     FakeWorkshopDescriptionItem(),
                 },
                 Price = 1000,
+                PayRate = PayRateType.Course,
+                AvailableSeats = uint.MaxValue,
                 WithDisabilityOptions = true,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitle",
@@ -807,6 +812,8 @@ public class ApplicationControllerTests
                     FakeWorkshopDescriptionItem(),
                 },
                 Price = 2000,
+                PayRate = PayRateType.Course,
+                AvailableSeats = uint.MaxValue,
                 WithDisabilityOptions = true,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitle",
@@ -836,6 +843,8 @@ public class ApplicationControllerTests
                     FakeWorkshopDescriptionItem(),
                 },
                 Price = 3000,
+                PayRate = PayRateType.Course,
+                AvailableSeats = uint.MaxValue,
                 WithDisabilityOptions = true,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",
@@ -860,6 +869,8 @@ public class ApplicationControllerTests
                     FakeWorkshopDescriptionItem(),
                 },
                 Price = 4000,
+                PayRate = PayRateType.Course,
+                AvailableSeats = uint.MaxValue,
                 WithDisabilityOptions = true,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",
@@ -883,6 +894,8 @@ public class ApplicationControllerTests
                     FakeWorkshopDescriptionItem(),
                 },
                 Price = 5000,
+                PayRate = PayRateType.Course,
+                AvailableSeats = uint.MaxValue,
                 WithDisabilityOptions = true,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",

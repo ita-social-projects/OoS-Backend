@@ -1,7 +1,7 @@
 ﻿using Bogus;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using System.Collections.Generic;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
