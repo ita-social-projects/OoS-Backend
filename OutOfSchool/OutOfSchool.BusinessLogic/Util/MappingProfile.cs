@@ -884,6 +884,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RecruitmentOrder, opt => opt.MapFrom(src => src.RecruitmentOrder ?? string.Empty))
             .ForMember(dest => dest.DismissalReason, opt => opt.MapFrom(src => src.DismissalReason ?? string.Empty))
             .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.Position.FullName))
+            .ForMember(dest => dest.PositionId, opt => opt.MapFrom(src => src.Position.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Individual.FirstName))
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Individual.MiddleName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Individual.LastName))

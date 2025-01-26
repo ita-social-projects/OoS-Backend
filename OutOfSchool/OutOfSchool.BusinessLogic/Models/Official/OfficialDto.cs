@@ -4,6 +4,7 @@ namespace OutOfSchool.BusinessLogic.Models.Official;
 public class OfficialDto
 {
     public Guid Id { get; set; }
+    public Guid PositionId { get; set; }
     public string Position { get; set; }
     public string FirstName { get; set; }
     public string MiddleName { get; set; }

@@ -84,7 +84,8 @@ public class OfficialControllerTests
             LastName = "Testov",
             MiddleName = "Testovich",
             Rnokpp = "1234567890",
-            Position = "Test"
+            Position = "Test",
+            PositionId = Guid.NewGuid(),
         };
     }
 }
