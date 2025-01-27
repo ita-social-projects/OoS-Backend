@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -70,4 +71,13 @@ public interface IWorkshopDraftService
     /// <param name="rejectionMessage">A message explaining the reason for rejection.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task Reject(Guid id, string rejectionMessage);
+
+    /// <summary>
+    /// Get all workshop drafts by provider Id.
+    /// </summary>
+    /// <param name="id">Provider's key.</param>
+    /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by Workshop id.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="SearchResult{WorkshopDraftResponseDto}"/> that contains elements from the input sequence.</returns>
+    Task<SearchResult<WorkshopDraftResponseDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 }

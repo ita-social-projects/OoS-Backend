@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -187,7 +188,7 @@ public class WorkshopDraftController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
-
+          
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -213,6 +214,15 @@ public class WorkshopDraftController : ControllerBase
         }
     }
 
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter) =>
+        await workshopDraftService.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+    
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
         var provider = await providerService.GetById(providerId);

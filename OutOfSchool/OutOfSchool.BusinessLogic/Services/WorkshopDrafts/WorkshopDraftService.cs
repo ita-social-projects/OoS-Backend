@@ -340,6 +340,44 @@ public class WorkshopDraftService : IWorkshopDraftService
         logger.LogDebug("Draft was successfully rejected. Draft Id = {DraftId}.", id);        
     }
 
+    // <inheritdoc/>
+    public async Task<SearchResult<WorkshopDraftResponseDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    {
+        logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
+
+        if (!await IsUserProviderOrProviderEmployee(id))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        filter ??= new ExcludeIdFilter();
+        ValidateExcludedIdFilter(filter);
+
+        var workshopBaseCardsCount = await workshopDraftRepository.Count(whereExpression: x =>
+            filter.ExcludedId == null
+                ? (x.ProviderId == id)
+                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+
+        var workshopDrafts = await workshopDraftRepository.Get(
+                skip: filter.From,
+                take: filter.Size,               
+                whereExpression: x => filter.ExcludedId == null
+                    ? (x.ProviderId == id)
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+
+        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
+
+        logger.LogDebug(!workshopDraftResponseDtos.Any()
+            ? "There aren't Workshop Drafts for Provider with Id = {Id}."
+            : "From Workshop Drafts table were successfully received {Count} records.", id, workshopDraftResponseDtos.Count);
+
+        return new SearchResult<WorkshopDraftResponseDto>()
+        {
+            TotalAmount = workshopBaseCardsCount,
+            Entities = workshopDraftResponseDtos,
+        };
+    }
+
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -496,4 +534,7 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         return employeesIds.Contains(userId);
     }
+
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
+        ModelValidationHelper.ValidateExcludedIdFilter(filter);
 }
