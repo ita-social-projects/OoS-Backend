@@ -12,7 +12,7 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 [JsonDerivedType(typeof(WorkshopV2Dto))]
 public class WorkshopDto : IHasRating
 {
-     public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
     public string Title { get; set; }
     

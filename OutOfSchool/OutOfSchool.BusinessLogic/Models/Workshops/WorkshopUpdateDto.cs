@@ -109,10 +109,6 @@ public class WorkshopUpdateDto : IValidatableObject, IHasContactsDto<Workshop>
     [Required]
     public Guid ProviderId { get; set; }
 
-    public DateOnly ActiveFrom { get; set; }
-
-    public DateOnly ActiveTo { get; set; }
-
     public bool ShortStay { get; set; } = false;
 
     public bool IsSelfFinanced { get; set; } = false;
