@@ -242,7 +242,8 @@ public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
                                                                       TimeSpan? slidingExpirationInterval = null)
     {
         var absoluteExpiration = absoluteExpirationRelativeToNowInterval
-                ?? redisConfig!.AbsoluteExpirationRelativeToNowInterval;
+                ?? redisConfig?.AbsoluteExpirationRelativeToNowInterval
+                ?? throw new ArgumentNullException(nameof(redisConfig.AbsoluteExpirationRelativeToNowInterval)); // throw exception if null
 
         TimeSpan? slidingExpiration;
         if (!slidingExpirationInterval.HasValue)
