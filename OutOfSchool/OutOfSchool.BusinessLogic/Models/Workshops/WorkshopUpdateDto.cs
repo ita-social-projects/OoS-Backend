@@ -120,6 +120,7 @@ public class WorkshopUpdateDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    [ValidateSpecialNeeds]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     public bool IsInclusive { get; set; } = false;

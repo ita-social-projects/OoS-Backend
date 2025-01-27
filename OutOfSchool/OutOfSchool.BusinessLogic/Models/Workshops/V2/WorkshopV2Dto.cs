@@ -4,5 +4,5 @@ public class WorkshopV2Dto : WorkshopDto
 {
     public string CoverImageId { get; set; } = string.Empty;
 
-    public IList<string> ImageIds { get; set; }
+    public IList<string> ImageIds { get; set; } = [];
 }

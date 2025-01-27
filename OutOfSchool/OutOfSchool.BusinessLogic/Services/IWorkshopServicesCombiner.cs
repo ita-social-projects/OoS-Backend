@@ -16,7 +16,7 @@ public interface IWorkshopServicesCombiner
     /// Add entity to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateDto"/>.</returns>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
     Task<WorkshopDto> Create(WorkshopCreateRequestDto dto);
 
     /// <summary>

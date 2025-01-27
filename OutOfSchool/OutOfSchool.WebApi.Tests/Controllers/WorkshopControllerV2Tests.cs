@@ -318,9 +318,12 @@ public class WorkshopControllerV2Tests
         workshopServiceMoq.Setup(x => x.Create(workshopV2CreateRequestDto))
                     .ReturnsAsync(workshopResultDto).Verifiable(Times.Once);
 
-        int n = 0;
+        var queue = new Queue<bool>();
+        queue.Enqueue(true);
+        queue.Enqueue(false);
         employeeService.Setup(x => x.CheckUserIsRelatedEmployee(userId, provider.Id, It.IsAny<Guid>()))
-            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(2));
+            .ReturnsAsync(queue.Dequeue)
+            .Verifiable(Times.Exactly(2));
         employeeService.Setup(x => x.GiveEmployeeAccessToWorkshop(userId, workshopResultDto.Workshop.Id))
             .Verifiable(Times.Once);
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
@@ -15,6 +16,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    [ValidateSpecialNeeds]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required]
