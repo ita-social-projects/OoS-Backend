@@ -394,6 +394,7 @@ public static class Startup
         services.AddTransient<IOfficialService, OfficialService>();
 
         services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
+        services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
 
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
@@ -427,7 +428,7 @@ public static class Startup
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-        services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
+        services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();        
 
         // services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();

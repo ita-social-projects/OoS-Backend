@@ -9,6 +9,7 @@ using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
@@ -16,6 +17,7 @@ using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
@@ -23,7 +25,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <summary>
 /// Implements the interface with CRUD functionality for WorkshopDraft entity.
 /// </summary>
-public class WorkshopDraftService : IWorkshopDraftService
+public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly ILogger<WorkshopDraftService> logger;
     private readonly IWorkshopDraftRepository workshopDraftRepository;
@@ -35,6 +37,10 @@ public class WorkshopDraftService : IWorkshopDraftService
     private readonly IWorkshopServicesCombinerV2 workshopServicesCombinerV2;
     private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
     private readonly IEntityRepository<long, Tag> tagRepository;
+    private readonly IRegionAdminService regionAdminService;
+    private readonly IMinistryAdminService ministryAdminService;
+    private readonly ICodeficatorService codeficatorService;
+    private readonly ISearchStringService searchStringService;
     private readonly int maxParallelUploads;
 
     /// <summary>
@@ -51,6 +57,10 @@ public class WorkshopDraftService : IWorkshopDraftService
     /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
     /// <param name="employeeService">Service for managing employees.</param>
     /// <param name="currentUserService">Service for managing current user.</param>
+    /// <param name="regionAdminService">Service for region admin.</param>
+    /// <param name="ministryAdminService"> Service for ministry admin.</param>
+    /// <param name="codeficatorService">Service for CATOTTG.</param>
+    /// <param name="searchStringService">Service for handling the search string.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
@@ -62,7 +72,11 @@ public class WorkshopDraftService : IWorkshopDraftService
         IEntityRepository<long, Tag> tagRepository,
         IOptions<UploadConcurrencySettings> options,
         IEmployeeService employeeService,
-        IWorkshopServicesCombinerV2 workshopServicesCombinerV2)
+        IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
+        IRegionAdminService regionAdminService,
+        IMinistryAdminService ministryAdminService,
+        ICodeficatorService codeficatorService,
+        ISearchStringService searchStringService)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
@@ -75,6 +89,10 @@ public class WorkshopDraftService : IWorkshopDraftService
         this.maxParallelUploads = options.Value.MaxParallelImageUploads;
         this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.workshopServicesCombinerV2 = workshopServicesCombinerV2 ?? throw new ArgumentNullException(nameof(workshopServicesCombinerV2));
+        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
+        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
+        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
     }
 
     // <inheritdoc/>
@@ -378,6 +396,69 @@ public class WorkshopDraftService : IWorkshopDraftService
         };
     }
 
+    // <inheritdoc/>
+    public async Task<SearchResult<WorkshopV2Dto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
+    {
+        logger.LogDebug("Started retrieving Workshops by filter for admins.");
+
+        if (filter == null)
+        {
+            logger.LogDebug(
+                "Method {MethodName} started with null filter. Applying default {Filter}",
+                nameof(FetchByFilterForAdmins),
+                nameof(WorkshopDraftFilterAdministration));
+
+            filter = new WorkshopDraftFilterAdministration();
+        }
+
+        var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
+
+        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
+        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
+
+        if (catottgIdAdmin > 0)
+        {
+            allowedSettlementIdsForAdmin = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(catottgIdAdmin)
+                .ConfigureAwait(false);
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            subSettlementsIdsByFilter = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
+                .ConfigureAwait(false);
+        }
+
+        var predicate = PredicateBuildForAdminds(
+            filter,
+            adminInstitutionId,
+            allowedSettlementIdsForAdmin,
+            subSettlementsIdsByFilter);
+
+        var workshopDrafts = await workshopDraftRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                whereExpression: predicate,
+                asNoTracking: true)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        var workshopDraftsCount = await workshopDraftRepository
+            .Count(predicate)
+            .ConfigureAwait(false);
+
+        logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
+
+        var workshopDraftsDTO = mapper.Map<List<WorkshopV2Dto>>(workshopDrafts);
+
+        return new SearchResult<WorkshopV2Dto>()
+        {
+            TotalAmount = workshopDraftsCount,
+            Entities = workshopDraftsDTO,
+        };
+    }
+
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -537,4 +618,89 @@ public class WorkshopDraftService : IWorkshopDraftService
 
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
         ModelValidationHelper.ValidateExcludedIdFilter(filter);
+
+    private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
+    {
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var userId = currentUserService.UserId;
+            var ministryAdmin = await ministryAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
+            return (ministryAdmin.InstitutionId, 0);
+        }
+        else if (currentUserService.IsRegionAdmin())
+        {
+            var userId = currentUserService.UserId;
+            var regionAdmin = await regionAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
+            if (regionAdmin == null)
+            {
+                var errorMsg = $"Region admin with the specified ID: {userId} not found";
+                logger.LogError(errorMsg);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            return (regionAdmin.InstitutionId, regionAdmin.CATOTTGId);
+        }
+
+        return (Guid.Empty, 0);
+    }
+
+    private Expression<Func<WorkshopDraft, bool>> PredicateBuildForAdminds(
+        WorkshopDraftFilterAdministration filter,
+        Guid adminInstitutionId,
+        IEnumerable<long> allowedSettlementIdsForAdmin,
+        IEnumerable<long> subSettlementFilterIds)
+    {
+        var predicate = PredicateBuilder.True<WorkshopDraft>();
+
+        predicate = predicate.And(x => x.DraftStatus == filter.WorkshopDraftStatus);
+
+        if (adminInstitutionId != Guid.Empty)
+        {          
+            predicate = predicate.And(x => EF.Functions.JsonUnquote(x.WorkshopDraftContent.InstitutionId.ToString()) == adminInstitutionId.ToString());
+        }
+        
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.WorkshopDraftContent.InstitutionId.ToString() == filter.InstitutionId.ToString());
+        }
+
+        if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
+        {
+            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+        }
+
+        if (subSettlementFilterIds != null && subSettlementFilterIds.Any())
+        {
+            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var searchTerms = searchStringService.SplitSearchString(filter.SearchString);
+
+            if (searchTerms.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
+                foreach (var word in searchTerms)
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.WorkshopDraftContent.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.WorkshopDraftContent.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.WorkshopDraftContent.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.WorkshopDraftContent.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.WorkshopDraftContent.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+        }
+
+        return predicate;
+    }
 }

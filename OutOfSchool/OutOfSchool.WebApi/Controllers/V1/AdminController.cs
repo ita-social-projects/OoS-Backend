@@ -6,7 +6,9 @@ using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
@@ -27,6 +29,7 @@ public class AdminController : Controller
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveWorkshopsService workshopService;
     private readonly ISensitiveApplicationService applicationService;
+    private readonly ISensitiveWorkshopDraftService workshopDraftService;
 
     public AdminController(
         ILogger<AdminController> logger,
@@ -35,7 +38,8 @@ public class AdminController : Controller
         ISensitiveDirectionService directionService,
         ISensitiveProviderService providerService,
         ISensitiveWorkshopsService workshopService,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        ISensitiveWorkshopDraftService workshopDraftService)
     {
         this.localizer = localizer;
         this.logger = logger;
@@ -45,6 +49,8 @@ public class AdminController : Controller
         this.workshopService = workshopService;
         this.ministryAdminService =
             ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.workshopDraftService =
+            workshopDraftService ?? throw new ArgumentNullException(nameof(workshopDraftService));
     }
 
     private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
@@ -273,4 +279,19 @@ public class AdminController : Controller
 
         return File(providersCsvData, MediaTypeNames.Text.Csv, "providers.csv");
     }
+
+    /// <summary>
+    /// Get all Workshop Drafts from the database by filter.
+    /// </summary>
+    /// <param name="filter">Filter to get a part of all workshops that were found.</param>
+    /// <returns>The result is a <see cref="SearchResult{WorkshopV2Dto}"/> that contains the count of all found workshops and list of workshops that were received.</returns>
+    [HasPermission(Permissions.WorkshopApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopV2Dto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>    
+         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);     
 }
