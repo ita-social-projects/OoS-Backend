@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
 
@@ -14,8 +15,6 @@ public class WorkshopDraftContent
 
     public int MaxAge { get; set; }
 
-    public uint EducationalShiftId { get; set; }
-
     public bool ShortStay { get; set; }
 
     public uint LanguageOfEducationId { get; set; }
@@ -26,15 +25,11 @@ public class WorkshopDraftContent
 
     public bool IsSelfFinanced { get; set; }
 
-    public uint TypeOfAgeCompositionId { get; set; }
-
     public bool CompetitiveSelection { get; set; }
 
     public DateOnly ActiveFrom { get; set; }
 
     public DateOnly ActiveTo { get; set; }
-
-    public List<Guid> EducationalDisciplinesId { get; set; } = new();
 
     public List<long> TagIds { get; set; } = new();
 
@@ -45,14 +40,6 @@ public class WorkshopDraftContent
     public string ProviderTitleEn { get; set; }
 
     public List<long> DirectionIds { get; set; } = new();
-
-    public uint CategoryId { get; set; }
-
-    public uint GroupeTypeId { get; set; }
-
-    public uint CoverageId { get; set; }
-
-    public Guid? MemberOfWorkshopId { get; set; }
 
     public bool IsPaid { get; set; }
 
@@ -73,10 +60,6 @@ public class WorkshopDraftContent
     public uint AvailableSeats { get; set; }
 
     public List<Guid> IncludedStudyGroupsIds { get; set; } = new();
-
-    public uint SpecialNeedsId { get; set; }
-
-    public string AdditionalDescription { get; set; }
 
     public string ShortTitle { get; set; }
 
@@ -99,6 +82,20 @@ public class WorkshopDraftContent
     public Guid? InstitutionHierarchyId { get; set; }
 
     public Guid? InstitutionId { get; set; }
+
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public Coverage Coverage { get; set; } = Coverage.School;
+
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
+
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
+
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
+
+    public WorkshopType WorkshopType { get; set; }
+
+    public Guid? ParentWorkshopId { get; set; }
 
     public string Phone { get; set; } 
 

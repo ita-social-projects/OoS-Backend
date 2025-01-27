@@ -43,4 +43,15 @@ public class MappingExtensionsTests
         // assert
         configuration.AssertConfigurationIsValid();
     }
+
+    [Test]
+    public void Mapping_WorkshopDraftMappingProfile_ConfigurationIsCorrect()
+    {
+        // act
+        var configuration = new MapperConfiguration(cfg =>
+            cfg.UseProfile<CommonProfile>().UseProfile<WorkshopDraftMappingProfile>());
+
+        // assert
+        configuration.AssertConfigurationIsValid();
+    }
 }

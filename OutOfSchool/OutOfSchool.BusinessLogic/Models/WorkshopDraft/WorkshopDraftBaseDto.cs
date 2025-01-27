@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Validators;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -23,7 +24,8 @@ public class WorkshopDraftBaseDto
     public Guid InstitutionId { get; set; }
 
     [Required]
-    public uint EducationalShiftId { get; set; }
+    [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
     [Required]
     public bool ShortStay { get; set; }
@@ -43,8 +45,9 @@ public class WorkshopDraftBaseDto
     [Required]
     public bool IsSelfFinanced { get; set; }
 
-    [Required]
-    public uint TypeOfAgeCompositionId { get; set; }
+    [Required(ErrorMessage = "Type of age composition is required")]
+    [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
 
     [Required]
     public bool CompetitiveSelection { get; set; }
@@ -54,10 +57,6 @@ public class WorkshopDraftBaseDto
 
     [Required]
     public DateOnly ActiveTo { get; set; }
-
-    [Required]
-    [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
-    public List<Guid> EducationalDisciplinesId { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]
@@ -75,15 +74,8 @@ public class WorkshopDraftBaseDto
     [CollectionNotEmpty(ErrorMessage = "At least one Direction ID is required.")]
     public List<long> DirectionIds { get; set; }
 
-    [Required]
-    public uint CategoryId { get; set; }
-
-    [Required]
-    public uint GroupeTypeId { get; set; }
-
-    [Required]
-    public uint CoverageId { get; set; }
-    public Guid MemberOfWorkshopId { get; set; }
+    [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
+    public Coverage Coverage { get; set; } = Coverage.School;
 
     [Required]
     public bool IsPaid { get; set; }
@@ -106,16 +98,18 @@ public class WorkshopDraftBaseDto
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
     public bool WithDisabilityOptions { get; set; }
 
     [MaxLength(Constants.DisabilityOptionsLength)]
     public string DisabilityOptionsDesc { get; set; }
-    public uint AvailableSeats { get; set; }
-    public List<Guid> IncludedStudyGroupsIds { get; set; }
-    public uint SpecialNeedsId { get; set; }
 
-    [MaxLength(Constants.WorkshopDraftDescriptionMaxLength)]
-    public string AdditionalDescription { get; set; }
+    public uint AvailableSeats { get; set; }
+
+    public List<Guid> IncludedStudyGroupsIds { get; set; }
+
+    [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required(ErrorMessage = "Workshop short title is required")]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
@@ -137,10 +131,12 @@ public class WorkshopDraftBaseDto
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType PayRate { get; set; }
+
     public bool AreThereBenefits { get; set; }
 
     [MaxLength(Constants.WorkshopDraftDescriptionMaxLength)]
     public string PreferentialTermsOfParticipation { get; set; }
+
     public Guid InstitutionHierarchyId { get; set; }
 
     [DataType(DataType.PhoneNumber)]

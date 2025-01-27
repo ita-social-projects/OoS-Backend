@@ -12,4 +12,5 @@ public class WorkshopDraftResponseDto : WorkshopDraftBaseDto
     public List<string> ImagesIds { get; set; }
     public List<TagDto> Tags { get; set; }
     public AddressDraftDto Address {  get; set; }
+    public Guid? WorkshopId { get; set; }
 }
