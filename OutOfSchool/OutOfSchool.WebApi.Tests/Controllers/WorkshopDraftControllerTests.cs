@@ -16,6 +16,8 @@ using AutoMapper;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.BusinessLogic.Models;
+using System.Collections.Generic;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -207,6 +209,55 @@ public class WorkshopDraftControllerTests
         // Assert        
         workshopDraftServiceMoq.VerifyAll();
         Assert.AreEqual(Ok, result.StatusCode);
+    }
+    #endregion 
+
+    #region GetByProviderId
+    [Test]
+    public async Task GetByProviderId_WhenThereAreWorkshopDrafts_ShouldReturnOkResultObject()
+    {
+        // Arrange 
+        var searchResult = new SearchResult<WorkshopDraftResponseDto>()
+        {
+            TotalAmount = 1,
+            Entities = new List<WorkshopDraftResponseDto>()
+            {
+                mapper.Map<WorkshopDraftResponseDto>(mapper.Map<WorkshopDraft>(workshopV2Dto))
+            },            
+        };
+
+        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(searchResult).Verifiable(Times.Once);
+
+        // Act
+        var result = await controller.GetByProviderId(Guid.NewGuid(), null).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert        
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.AreEqual(Ok, result.StatusCode);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenThereIsNoWorkshopDrafts_ShouldReturnNoContentResult()
+    {
+        // Arrange
+        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var emptySearchResult = new SearchResult<WorkshopDraftResponseDto>() 
+        { 
+            TotalAmount = 0, 
+            Entities = new List<WorkshopDraftResponseDto>() 
+        };
+
+        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+            .ReturnsAsync(emptySearchResult);
+
+        // Act
+        var result = await controller.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        workshopDraftServiceMoq.VerifyAll();
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(NoContent, result.StatusCode);
     }
     #endregion 
 }

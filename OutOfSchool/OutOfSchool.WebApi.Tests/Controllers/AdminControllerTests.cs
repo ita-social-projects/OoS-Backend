@@ -18,8 +18,10 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -42,6 +44,7 @@ public class AdminControllerTests
     private Mock<ILogger<AdminController>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ISensitiveWorkshopsService> sensitiveWorkshopServices;
+    private Mock<ISensitiveWorkshopDraftService> sensitiveWorkshopDraftService;
 
     private string userId;
     private Guid providerId;
@@ -67,6 +70,7 @@ public class AdminControllerTests
         sensitiveDirectionService = new Mock<ISensitiveDirectionService>();
         sensitiveProviderService = new Mock<ISensitiveProviderService>();
         sensitiveApplicationService = new Mock<ISensitiveApplicationService>();
+        sensitiveWorkshopDraftService = new Mock<ISensitiveWorkshopDraftService>();
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         sensitiveWorkshopServices = new Mock<ISensitiveWorkshopsService>();
@@ -85,7 +89,9 @@ public class AdminControllerTests
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
             sensitiveWorkshopServices.Object,
-            localizer.Object)
+            localizer.Object,
+            sensitiveWorkshopDraftService.Object
+            )
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
         };
@@ -639,6 +645,52 @@ public class AdminControllerTests
 
         // Assert
         sensitiveWorkshopServices.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftsByFilter_ReturnsOkResultObject_WithExpectedCollectionDtos()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        var filter = new WorkshopDraftFilterAdministration();
+        var expected = new SearchResult<WorkshopV2Dto>
+        {
+            TotalAmount = 5,
+            Entities = WorkshopV2DtoGenerator.Generate(5),
+        };
+
+        sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetWorkshopDraftsByFilter(filter).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        sensitiveWorkshopDraftService.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        result.AssertResponseOkResultAndValidateValue(expected);
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftsByFilter_WhenServiceReturnEmptyCollectionOfEntities_ShouldReturnsNoContentResult()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Moderator);
+        var filter = new WorkshopDraftFilterAdministration();
+        var expected = new SearchResult<WorkshopV2Dto>
+        {
+            TotalAmount = 0,
+            Entities = new List<WorkshopV2Dto>(),
+        };
+
+        sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+
+        // Act
+        var result = await controller.GetWorkshopDraftsByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        sensitiveWorkshopDraftService.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 }
