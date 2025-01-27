@@ -165,9 +165,11 @@ public class WorkshopDraftServiceTests
         providerDto.UserId = userId;        
 
         currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Exactly(2));
+            .Returns(userId).Verifiable(Times.Exactly(3));
         providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(2));
+            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(3));
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopV2Dto);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq
@@ -268,13 +270,6 @@ public class WorkshopDraftServiceTests
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
@@ -287,8 +282,6 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-        currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         workshopServiceCombinerV2Moq.VerifyAll();
     }
 
@@ -301,13 +294,6 @@ public class WorkshopDraftServiceTests
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;        
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
@@ -320,8 +306,6 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-        currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         workshopServiceCombinerV2Moq.VerifyAll();
     }
     #endregion
@@ -336,15 +320,8 @@ public class WorkshopDraftServiceTests
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
         var rejectionMessage = "rejectionMessage";
 
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Update(It.IsAny<WorkshopDraft>()))
@@ -355,8 +332,6 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-        currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
     }
 
     [Test]
@@ -368,15 +343,8 @@ public class WorkshopDraftServiceTests
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
         var rejectionMessage = "rejectionMessage";
 
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Update(It.IsAny<WorkshopDraft>()))

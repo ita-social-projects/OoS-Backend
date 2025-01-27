@@ -98,7 +98,7 @@ public class WorkshopDraftService : IWorkshopDraftService
             throw new ArgumentException("The workshop must have at least one associated teacher.");
         }
 
-        if (!await CanUserEditProviderWorkshops(workshopV2Dto.ProviderId))
+        if (!await IsUserProviderOrProviderEmployee(workshopV2Dto.ProviderId))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
@@ -113,7 +113,7 @@ public class WorkshopDraftService : IWorkshopDraftService
             }
             else
             {
-                await CanUserEditProviderWorkshops(existingWorkshop.ProviderId);
+                await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId);
             }            
         }       
 
@@ -172,8 +172,8 @@ public class WorkshopDraftService : IWorkshopDraftService
         {
             var workshopDraft = await GetWorkshopDraftById(workshopDraftUpdateDto.Id);            
 
-            if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId) ||
-                !await CanUserEditProviderWorkshops(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId))
+            if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId) ||
+                !await IsUserProviderOrProviderEmployee(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId))
             {
                 throw new UnauthorizedAccessException("User has no rights to perform operation.");
             }
@@ -188,7 +188,7 @@ public class WorkshopDraftService : IWorkshopDraftService
                 }
                 else
                 {
-                    await CanUserEditProviderWorkshops(existingWorkshop.ProviderId);
+                    await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId);
                 }
             }
 
@@ -250,7 +250,7 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
@@ -271,7 +271,7 @@ public class WorkshopDraftService : IWorkshopDraftService
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
+        if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
@@ -295,11 +295,6 @@ public class WorkshopDraftService : IWorkshopDraftService
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
                 
         var workshopDraft = await GetWorkshopDraftById(id);
-
-        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
         {
@@ -332,11 +327,6 @@ public class WorkshopDraftService : IWorkshopDraftService
         logger.LogDebug("Rejecting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetWorkshopDraftById(id);
-
-        if (!await CanUserEditProviderWorkshops(workshopDraft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
         {
@@ -490,7 +480,7 @@ public class WorkshopDraftService : IWorkshopDraftService
         return task.Result;
     }
        
-    private async Task<bool> CanUserEditProviderWorkshops(Guid providerId)
+    private async Task<bool> IsUserProviderOrProviderEmployee(Guid providerId)
     {
         var userId = currentUserService.UserId;
 
