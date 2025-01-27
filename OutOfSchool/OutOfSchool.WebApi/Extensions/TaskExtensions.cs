@@ -14,6 +14,10 @@ public static class TaskExtensions
 
             return mapped(result);
         }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
         catch (Exception)
         {
             return new ObjectResult("An unexpected error occurred while processing your request. Please try again or contact the administrator.")
