@@ -26,6 +26,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -54,7 +55,7 @@ public class ProviderServiceUpdate
             await context.SaveChangesAsync();
         }
 
-        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>()));
+        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>().UseProfile<TestMappingProfile>()));
 
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();

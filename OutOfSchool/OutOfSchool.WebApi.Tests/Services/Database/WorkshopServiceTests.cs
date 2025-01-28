@@ -15,7 +15,11 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Tag;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
@@ -52,7 +56,6 @@ public class WorkshopServiceTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
-    private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
@@ -67,7 +70,7 @@ public class WorkshopServiceTests
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
         providerAdminRepository = new Mock<IEmployeeRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
@@ -75,7 +78,6 @@ public class WorkshopServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
-        tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
@@ -97,7 +99,6 @@ public class WorkshopServiceTests
                     ministryAdminServiceMock.Object,
                     regionAdminServiceMock.Object,
                     codeficatorServiceMock.Object,
-                    tagServiceMock.Object,
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object);
     }
@@ -132,7 +133,7 @@ public class WorkshopServiceTests
         var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
-        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
+        var expectedTeachers = teachers.Select(mapper.Map<TeacherDto>);
         var expectedTags = tags.Select(mapper.Map<TagDto>);
         SetupCreate(createdEntity);
 
@@ -158,7 +159,7 @@ public class WorkshopServiceTests
         var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.Tags = tags;
         createdEntity.AvailableSeats = 0;
-        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
+        var expectedTeachers = teachers.Select(mapper.Map<TeacherDto>);
         var expectedTags = tags.Select(mapper.Map<TagDto>);
         SetupCreate(createdEntity);
 
@@ -268,7 +269,7 @@ public class WorkshopServiceTests
         var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
-        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
+        var expectedTeachers = teachers.Select(mapper.Map<TeacherDto>);
         var expectedTags = tags.Select(mapper.Map<TagDto>);
         SetupCreateV2(createdEntity);
 
@@ -297,7 +298,7 @@ public class WorkshopServiceTests
         var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.Tags = tags;
         createdEntity.AvailableSeats = 0;
-        var expectedTeachers = teachers.Select(mapper.Map<TeacherDTO>);
+        var expectedTeachers = teachers.Select(mapper.Map<TeacherDto>);
         var expectedTags = tags.Select(mapper.Map<TagDto>);
         SetupCreateV2(createdEntity);
 
@@ -654,11 +655,11 @@ public class WorkshopServiceTests
         changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
-        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
+        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDto>(s));
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
 
         // Act
-        var result = await workshopService.Update(mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity)).ConfigureAwait(false);
+        var result = await workshopService.Update(mapper.Map<WorkshopUpdateDto>(changedFirstEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -677,9 +678,9 @@ public class WorkshopServiceTests
         changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
-        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
+        var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDto>(s));
 
-        var changeFirstEntityDto = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
+        var changeFirstEntityDto = mapper.Map<WorkshopUpdateDto>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = null;
 
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
@@ -716,7 +717,7 @@ public class WorkshopServiceTests
 
         SetupUpdate(changedFirstEntity);
 
-        var changeFirstEntityDto = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
+        var changeFirstEntityDto = mapper.Map<WorkshopUpdateDto>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = newAvailableSeats;
 
         workshopRepository.Setup(x => x.Update(changedFirstEntity)).ReturnsAsync(changedFirstEntity);
@@ -743,7 +744,7 @@ public class WorkshopServiceTests
     public async Task Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
-        WorkshopCreateUpdateDto workshopBaseDto = null;
+        WorkshopUpdateDto workshopBaseDto = null;
 
         // Act and Assert
         await workshopService
@@ -765,8 +766,8 @@ public class WorkshopServiceTests
         changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
-        var expectedTeachers = teachers.Where(t => !t.IsDeleted).Select(s => mapper.Map<TeacherDTO>(s));
-        var techersToUpdate = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
+        var expectedTeachers = teachers.Where(t => !t.IsDeleted).Select(s => mapper.Map<TeacherDto>(s));
+        var techersToUpdate = mapper.Map<WorkshopUpdateDto>(changedFirstEntity);
 
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
 
@@ -1038,8 +1039,6 @@ public class WorkshopServiceTests
             .Returns(mapper.Map<Workshop>(workshopV2CreateRequestDto));
         mapperMock.Setup(m => m.Map<WorkshopV2Dto>(workshop))
             .Returns(workshopV2Dto);
-        mapperMock.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopV2Dto>()))
-            .Returns(mapper.Map<Workshop>(workshopV2Dto));
 
         if (isMemberOfWorkshopIdExisted)
         {
@@ -1174,8 +1173,8 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
-        mapperMock.Setup(m => m.Map<WorkshopCreateUpdateDto>(workshop))
-            .Returns(mapper.Map<WorkshopCreateUpdateDto>(workshop));
+        mapperMock.Setup(m => m.Map<WorkshopUpdateDto>(workshop))
+            .Returns(mapper.Map<WorkshopUpdateDto>(workshop));
         mapperMock.Setup(m => m.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()))
             .Returns(mapper.Map<List<DateTimeRange>>(It.IsAny<List<DateTimeRangeDto>>()));
 

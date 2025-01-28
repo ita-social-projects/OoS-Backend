@@ -2,6 +2,9 @@ using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using Profile = AutoMapper.Profile;
@@ -14,7 +17,7 @@ public class ElasticProfile : Profile
 
     public ElasticProfile()
     {
-        CreateMap<WorkshopBaseDto, WorkshopES>()
+        CreateMap<WorkshopDto, WorkshopES>()
             .IncludeBase<object, IHasRating>()
             .ForMember(
                 dest => dest.Keywords,
@@ -36,10 +39,7 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
-
-        CreateMap<WorkshopDto, WorkshopES>()
-            .IncludeBase<WorkshopBaseDto, WorkshopES>()
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()

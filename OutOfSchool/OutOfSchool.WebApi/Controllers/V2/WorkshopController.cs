@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
@@ -239,7 +241,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Update([FromForm] WorkshopV2Dto dto)
+    public async Task<IActionResult> Update([FromForm] WorkshopUpdateV2Dto dto)
     {
         var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
         if (!userHasRights)

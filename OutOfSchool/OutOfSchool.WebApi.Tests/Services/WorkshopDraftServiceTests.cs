@@ -27,7 +27,9 @@ using FluentAssertions;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using System.Collections.Generic;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -53,7 +55,8 @@ public class WorkshopDraftServiceTests
         var config = new MapperConfiguration(cfg =>
             cfg.UseProfile<CommonProfile>()
                .UseProfile<MappingProfile>()
-               .UseProfile<WorkshopDraftMappingProfile>());
+               .UseProfile<WorkshopDraftMappingProfile>()
+               .UseProfile<TestMappingProfile>());
 
         mapper = config.CreateMapper();
 
@@ -92,7 +95,7 @@ public class WorkshopDraftServiceTests
     public void Create_WithNullDto_ShouldThrowArgumentNullException()
     {
         // Arrange
-        WorkshopV2Dto workshopV2Dto = null;
+        WorkshopUpdateV2Dto workshopV2Dto = null;
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(workshopV2Dto));
@@ -103,7 +106,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();    
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
+        workshopV2Dto.ProviderId = workshop.ProviderId;
 
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         var workshopResponse= mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
@@ -151,7 +155,8 @@ public class WorkshopDraftServiceTests
     {
         //Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
+        workshopV2Dto.ProviderId = workshop.ProviderId;
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         var workshopResponse = mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
 
@@ -201,7 +206,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
         var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
@@ -232,7 +237,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
         var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
@@ -263,7 +268,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
@@ -297,7 +302,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;        
 
@@ -312,7 +317,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>()))
+        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopUpdateV2Dto>()))
             .Verifiable(Times.Once);
 
         // Act
@@ -332,7 +337,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
@@ -364,7 +369,7 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopUpdateV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
 

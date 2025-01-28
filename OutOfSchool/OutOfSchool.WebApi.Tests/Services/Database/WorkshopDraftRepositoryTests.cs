@@ -1,17 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Tests.Common.DbContextTests;
-using OutOfSchool.Services.Repository.WorkshopDraftRepository;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.Tests.Common.TestDataGenerators;
+using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.Tests.Common;
-using System;
+using OutOfSchool.Tests.Common.DbContextTests;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 
@@ -112,7 +112,7 @@ public class WorkshopDraftRepositoryTests
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        var worshopV2Dtos = WorkshopV2DtoGenerator.Generate(3);
+        var worshopV2Dtos = WorkshopV2UpdateDtoGenerator.Generate(3);
 
         workshopDrafts = mapper.Map<List<WorkshopDraft>>(worshopV2Dtos);
 

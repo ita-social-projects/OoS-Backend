@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
@@ -42,7 +43,6 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
-    private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
@@ -63,7 +63,6 @@ public class SensitiveWorkshopsServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
-        tagServiceMock = new Mock<ITagService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
 
@@ -85,7 +84,6 @@ public class SensitiveWorkshopsServiceDBTests
                 ministryAdminServiceMock.Object,
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object,
-                tagServiceMock.Object,
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object);
 

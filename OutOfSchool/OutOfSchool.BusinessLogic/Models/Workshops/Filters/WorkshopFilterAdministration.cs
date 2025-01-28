@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 public class WorkshopFilterAdministration : SearchStringFilter
 {
     public Guid InstitutionId { get; set; } = Guid.Empty;

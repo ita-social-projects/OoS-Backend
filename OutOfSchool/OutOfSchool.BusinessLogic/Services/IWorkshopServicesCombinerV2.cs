@@ -1,5 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -22,7 +22,7 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// contains the updated <see cref="WorkshopResultDto"/>.
     /// If the operation fails, the <see cref="Result{WorkshopResultDto}.OperationResult"/> property
     /// contains error information.</returns>
-    Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto);
+    Task<Result<WorkshopResultDto>> Update(WorkshopUpdateV2Dto dto);
 
     /// <summary>
     ///  Delete entity.

@@ -14,7 +14,8 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
@@ -66,7 +67,7 @@ public class WorkshopControllerV2Tests
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
         workshops = WorkshopV2DtoGenerator.Generate(5);
         provider = ProviderDtoGenerator.Generate();
         workshopCreateDto = WorkshopV2DtoGenerator.Generate();
@@ -317,9 +318,12 @@ public class WorkshopControllerV2Tests
         workshopServiceMoq.Setup(x => x.Create(workshopV2CreateRequestDto))
                     .ReturnsAsync(workshopResultDto).Verifiable(Times.Once);
 
-        int n = 0;
-        employeeService.Setup(x => x.CheckUserIsRelatedEmployee(userId, provider.Id, Guid.Empty))
-            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(2));
+        var queue = new Queue<bool>();
+        queue.Enqueue(true);
+        queue.Enqueue(false);
+        employeeService.Setup(x => x.CheckUserIsRelatedEmployee(userId, provider.Id, It.IsAny<Guid>()))
+            .ReturnsAsync(queue.Dequeue)
+            .Verifiable(Times.Exactly(2));
         employeeService.Setup(x => x.GiveEmployeeAccessToWorkshop(userId, workshopResultDto.Workshop.Id))
             .Verifiable(Times.Once);
 

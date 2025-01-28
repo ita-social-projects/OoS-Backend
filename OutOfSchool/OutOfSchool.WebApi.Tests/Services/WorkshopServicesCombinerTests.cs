@@ -42,7 +42,7 @@ public class WorkshopServicesCombinerTests
     {
         workshopService = new Mock<IWorkshopService>();
         elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         applicationRepository = new Mock<IApplicationRepository>();
@@ -164,7 +164,7 @@ public class WorkshopServicesCombinerTests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 4;
-        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        var newWorkshopCreateUpdateDto = WorkshopUpdateDtoGenerator.Generate();
         newWorkshopCreateUpdateDto.AvailableSeats = 10;
         workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
@@ -190,7 +190,6 @@ public class WorkshopServicesCombinerTests
         Assert.AreEqual(newWorkshopCreateUpdateDto.MaxAge, actual.MaxAge);
         Assert.AreEqual(newWorkshopCreateUpdateDto.Price, actual.Price);
         Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderId, actual.ProviderId);
-        Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderTitle, actual.ProviderTitle);
         Assert.AreEqual(newWorkshopCreateUpdateDto.AvailableSeats, actual.AvailableSeats);
         Assert.AreEqual(newWorkshopCreateUpdateDto.WithDisabilityOptions, actual.WithDisabilityOptions);
         Assert.AreEqual(newWorkshopCreateUpdateDto.TagIds, actual.Tags.Select(x => x.Id).ToList());
@@ -201,7 +200,7 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         var currentWorkshopDto = null as WorkshopDto;
-        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        var newWorkshopCreateUpdateDto = WorkshopUpdateDtoGenerator.Generate();
         workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
 
@@ -225,7 +224,7 @@ public class WorkshopServicesCombinerTests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 5;
-        var newWorkshopBaseDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        var newWorkshopBaseDto = WorkshopUpdateDtoGenerator.Generate();
         newWorkshopBaseDto.AvailableSeats = 3;
         workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);

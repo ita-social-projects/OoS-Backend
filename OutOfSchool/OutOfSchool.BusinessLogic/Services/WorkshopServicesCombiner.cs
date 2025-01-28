@@ -4,6 +4,8 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -84,7 +86,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public async Task<Result<WorkshopDto>> Update(WorkshopCreateUpdateDto dto)
+    public async Task<Result<WorkshopDto>> Update(WorkshopUpdateDto dto)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)
@@ -113,16 +115,6 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
                 ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
         return Result<WorkshopDto>.Success(updatedWorkshop);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<WorkshopDto>> UpdateTags(WorkshopTagsUpdateDto dto)
-    {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-        var workshop = await workshopService.UpdateTags(dto).ConfigureAwait(false);
-
-        return Result<WorkshopDto>.Success(workshop);
     }
 
     /// <inheritdoc/>

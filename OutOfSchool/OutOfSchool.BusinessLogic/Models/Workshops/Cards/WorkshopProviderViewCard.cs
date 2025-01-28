@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 public class WorkshopProviderViewCard : WorkshopBaseCard
 {

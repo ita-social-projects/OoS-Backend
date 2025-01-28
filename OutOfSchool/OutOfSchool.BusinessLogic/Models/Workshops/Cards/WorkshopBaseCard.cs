@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 public class WorkshopBaseCard : IHasRating
 {

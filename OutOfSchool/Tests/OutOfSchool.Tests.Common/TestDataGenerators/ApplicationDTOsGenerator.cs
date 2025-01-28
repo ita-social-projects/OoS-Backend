@@ -6,7 +6,7 @@ using Bogus;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

@@ -11,29 +11,30 @@ public interface ITeacherService
     /// <summary>
     /// Add entity.
     /// </summary>
+    /// <param name="workshopId">Workshop to add teachers to.</param>
     /// <param name="dto">Teacher to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<TeacherCreationResultDto> Create(TeacherDTO dto);
+    Task<TeacherCreationResultDto> Create(Guid workshopId, TeacherCreateDto dto);
 
     /// <summary>
     /// Get all entities.
     /// </summary>
     /// <returns>List of all teachers.</returns>
-    Task<IEnumerable<TeacherDTO>> GetAll();
+    Task<IEnumerable<TeacherDto>> GetAll();
 
     /// <summary>
     /// Get entity by it's key.
     /// </summary>
     /// <param name="id">Teacher's key.</param>
     /// <returns>Teacher.</returns>
-    Task<TeacherDTO> GetById(Guid id);
+    Task<TeacherDto> GetById(Guid id);
 
     /// <summary>
     /// Update entity.
     /// </summary>
     /// <param name="dto">Teacher to update.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<TeacherUpdateResultDto> Update(TeacherDTO dto);
+    Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
 
     /// <summary>
     /// Delete entity.

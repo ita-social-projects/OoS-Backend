@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
 
@@ -264,7 +266,7 @@ public class WorkshopController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreateUpdateDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -338,13 +340,13 @@ public class WorkshopController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreateUpdateDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] WorkshopCreateUpdateDto dto)
+    public async Task<IActionResult> Update([FromBody] WorkshopUpdateDto dto)
     {
         if (dto == null)
         {
@@ -382,39 +384,6 @@ public class WorkshopController : ControllerBase
         }
 
         return Ok(result.Value);
-    }
-
-    /// <summary>
-    /// Update the Tags for Workshop entity.
-    /// </summary>
-    /// <param name="dto">Dto containing the Workshop Id and the Tag Ids to update.</param>
-    /// <returns>Updated <see cref="Workshop"/>.</returns>
-    /// <response code="200">Entity was updated and returned.</response>
-    /// <response code="400">If the model is invalid, some properties are not set etc.</response>
-    /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
-    /// <response code="500">If any server error occures.</response>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Workshop))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<IActionResult> UpdateTags([FromBody] WorkshopTagsUpdateDto dto)
-    {
-        if (dto == null)
-        {
-            return BadRequest("Invalid workshop data.");
-        }
-
-        var updatedWorkshop = await combinedWorkshopService.UpdateTags(dto);
-
-        if (updatedWorkshop == null)
-        {
-            return NotFound($"Workshop with ID = {dto.WorkshopId} not found.");
-        }
-
-        return Ok(updatedWorkshop);
     }
 
     /// <summary>

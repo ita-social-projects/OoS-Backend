@@ -1,14 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models;
+namespace OutOfSchool.BusinessLogic.Models.Teachers;
 
-public class TeacherDTO
+/// <summary>
+/// As teacher logic will be completely re-written later - property re-use and inheritance is ok here.
+/// </summary>
+public abstract class TeacherBaseDto
 {
-    public Guid Id { get; set; }
-
     [Required(ErrorMessage = Constants.RequiredFirstNameErrorMessage)]
     [DataType(DataType.Text)]
     [MaxLength(Constants.NameMaxLength)]
@@ -36,11 +36,4 @@ public class TeacherDTO
 
     [MaxLength(300)]
     public string Description { get; set; } = string.Empty;
-
-    public string CoverImageId { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IFormFile CoverImage { get; set; }
-
-    public Guid WorkshopId { get; set; }
 }

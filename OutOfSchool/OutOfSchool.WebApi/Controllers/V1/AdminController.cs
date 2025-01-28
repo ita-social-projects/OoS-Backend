@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using AutoMapper;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -28,7 +29,7 @@ public class WorkshopDraftControllerTests
     private const int BadRequest = 400;
     private const int Forbidden = 403;
 
-    private static WorkshopV2Dto workshopV2Dto;
+    private static WorkshopUpdateV2Dto workshopV2Dto;
     private static WorkshopDraftResultDto workshopDraftResultDto;
     private static ProviderDto provider;    
 
@@ -54,7 +55,7 @@ public class WorkshopDraftControllerTests
 
         provider = ProviderDtoGenerator.Generate();
 
-        workshopV2Dto = WorkshopV2DtoGenerator.Generate();
+        workshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
         workshopV2Dto.Address = AddressDtoGenerator.Generate();
         workshopV2Dto.DateTimeRanges = DateTimeRangeDtoGenerator.Generate(5);
         workshopV2Dto.ProviderId = provider.Id;

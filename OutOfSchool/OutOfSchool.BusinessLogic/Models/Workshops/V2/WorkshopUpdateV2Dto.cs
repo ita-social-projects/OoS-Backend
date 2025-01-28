@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
-public class WorkshopV2CreateRequestDto : WorkshopCreateRequestDto
+public class WorkshopUpdateV2Dto : WorkshopUpdateDto, IHasCoverImage, IHasImages
 {
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;

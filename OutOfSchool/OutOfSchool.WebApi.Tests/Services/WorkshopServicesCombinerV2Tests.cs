@@ -6,6 +6,7 @@ using AutoMapper;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Util;
@@ -43,7 +44,7 @@ public class WorkshopServicesCombinerV2Tests
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var esProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, TestMappingProfile>();
 
         service = new WorkshopServicesCombinerV2(
             workshopService.Object,
@@ -120,12 +121,15 @@ public class WorkshopServicesCombinerV2Tests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 4;
-        var newWorkshopV2Dto = WorkshopV2DtoGenerator.Generate();
+        var newWorkshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
+        var returnedWorkshop = WorkshopV2DtoGenerator.Generate();
         newWorkshopV2Dto.Id = currentWorkshopDto.Id;
         newWorkshopV2Dto.AvailableSeats = 8;
+        returnedWorkshop.Id = currentWorkshopDto.Id;
+        returnedWorkshop.AvailableSeats = 8;
         var workshopResultDto = new WorkshopResultDto()
         {
-            Workshop = newWorkshopV2Dto,
+            Workshop = returnedWorkshop,
         };
 
         workshopService.Setup(x => x.GetById(newWorkshopV2Dto.Id, true))
@@ -148,6 +152,7 @@ public class WorkshopServicesCombinerV2Tests
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Succeeded);
         Assert.AreEqual(workshopResultDto, result.Value);
+        Assert.AreEqual(workshopResultDto, result.Value);
     }
 
     [Test]
@@ -155,7 +160,7 @@ public class WorkshopServicesCombinerV2Tests
     {
         // Arrange
         var currentWorkshopDto = null as WorkshopDto;
-        var newWorkshopV2Dto = WorkshopV2DtoGenerator.Generate();
+        var newWorkshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
 
         workshopService.Setup(x => x.GetById(newWorkshopV2Dto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
@@ -179,7 +184,7 @@ public class WorkshopServicesCombinerV2Tests
         // Arrange
         var currentWorkshopDto = WorkshopDtoGenerator.Generate();
         currentWorkshopDto.TakenSeats = 7;
-        var newWorkshopV2Dto = WorkshopV2DtoGenerator.Generate();
+        var newWorkshopV2Dto = WorkshopV2UpdateDtoGenerator.Generate();
         newWorkshopV2Dto.Id = currentWorkshopDto.Id;
         newWorkshopV2Dto.AvailableSeats = 5;
 

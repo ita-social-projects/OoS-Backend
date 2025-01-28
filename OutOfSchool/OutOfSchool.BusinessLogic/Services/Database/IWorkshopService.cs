@@ -1,5 +1,8 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
+using OutOfSchool.BusinessLogic.Models.Workshops.Filters;
+using OutOfSchool.BusinessLogic.Models.Workshops.V2;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -43,21 +46,14 @@ public interface IWorkshopService
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
-    Task<WorkshopDto> Update(WorkshopCreateUpdateDto dto);
-
-    /// <summary>
-    /// Update the tags for a certain workshop.
-    /// </summary>
-    /// <param name="dto">The tags to be added.</param>
-    /// /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDto"/>.</returns>
-    Task<WorkshopDto> UpdateTags(WorkshopTagsUpdateDto dto);
+    Task<WorkshopDto> Update(WorkshopUpdateDto dto);
 
     /// <summary>
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto);
+    Task<WorkshopResultDto> UpdateV2(WorkshopUpdateV2Dto dto);
 
     /// <summary>
     /// Update status field for existing entity in the database.

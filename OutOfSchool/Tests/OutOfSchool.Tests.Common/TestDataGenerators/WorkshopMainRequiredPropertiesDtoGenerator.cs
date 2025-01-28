@@ -13,7 +13,6 @@ public static class WorkshopMainRequiredPropertiesDtoGenerator
         .RuleForType(typeof(Guid), f => f.Random.Guid())
         .RuleForType(typeof(long), f => f.Random.Long(0, long.MaxValue))
         .RuleForType(typeof(string), f => f.Lorem.Word())
-        .RuleFor(w => w.Id, f => f.Random.Guid())
         .RuleFor(w => w.Title, f => f.Name.FullName())
         .RuleFor(w => w.ShortTitle, f => f.Name.LastName())
         .RuleFor(w => w.Phone, f => f.Phone.PhoneNumber())

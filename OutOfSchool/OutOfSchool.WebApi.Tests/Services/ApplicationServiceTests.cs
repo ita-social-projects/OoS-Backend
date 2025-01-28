@@ -16,6 +16,7 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Models.Workshops.Cards;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;

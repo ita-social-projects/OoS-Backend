@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
@@ -11,7 +12,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
-public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
+public class WorkshopUpdateDto : IValidatableObject, IHasContactsDto<Workshop>
 {
     public Guid Id { get; set; }
 
@@ -47,12 +48,12 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [DataType(DataType.Url)]
     [MaxLength(Constants.MaxUnifiedUrlLength)]
     public string Instagram { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Children's min age is required")]
+    
+    [Required]
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinAge { get; set; }
 
-    [Required(ErrorMessage = "Children's max age is required")]
+    [Required]
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
@@ -92,14 +93,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public Guid? InstitutionId { get; set; }
 
-    public string Institution { get; set; }
-
     public Guid? InstitutionHierarchyId { get; set; }
 
-    public string InstitutionHierarchy { get; set; }
-
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public TeacherDTO DefaultTeacher { get; set; }
+    public TeacherUpdateDto DefaultTeacher { get; set; }
 
     public List<long> DirectionIds { get; set; }
 
@@ -107,24 +104,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public IEnumerable<string> Keywords { get; set; } = default;
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public List<TeacherDTO> Teachers { get; set; }
+    public List<TeacherUpdateDto> Teachers { get; set; }
 
     [Required]
     public Guid ProviderId { get; set; }
-
-    [Required]
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
-    public string ProviderTitle { get; set; } = string.Empty;
-
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
-    public string ProviderTitleEn { get; set; } = string.Empty;
-
-    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
-    public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
-
-    public DateOnly ActiveFrom { get; set; }
-
-    public DateOnly ActiveTo { get; set; }
 
     public bool ShortStay { get; set; } = false;
 
@@ -133,6 +116,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
+    [ValidateSpecialNeeds]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     public bool IsInclusive { get; set; } = false;
@@ -167,12 +151,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public Guid? ParentWorkshopId { get; set; }
 
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public WorkshopBaseDto ParentWorkshop { get; set; }
-
-    [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public virtual ICollection<WorkshopBaseDto> IncludedStudyGroups { get; set; } // Navigation property to included study groups
-
     [Required]
     public long AddressId { get; set; }
 
@@ -182,6 +160,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
+    
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<long> TagIds { get; set; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
