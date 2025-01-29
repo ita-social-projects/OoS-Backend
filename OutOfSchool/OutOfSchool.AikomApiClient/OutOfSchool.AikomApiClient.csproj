@@ -1,16 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <NuGetAuditMode>direct</NuGetAuditMode>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="OpenIddict.Client" />
     <PackageReference Include="OpenIddict.Client.AspNetCore" />
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" />
-    <PackageReference Include="System.Net.Http" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
 
 </Project>

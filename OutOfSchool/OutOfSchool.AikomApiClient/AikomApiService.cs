@@ -1,11 +1,12 @@
 ﻿using OpenIddict.Client;
-using System.Text.Json;
 using System.Text;
 using System.Net.Http.Headers;
 using OutOfSchool.AikomApiClient.Models;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AikomApiClient.Config;
 using OutOfSchool.AikomApiClient.Extensions;
+using OutOfSchool.Common;
+using ResponseDto = OutOfSchool.AikomApiClient.Models.ResponseDto;
 
 namespace OutOfSchool.AikomApiClient;
 
@@ -56,18 +57,13 @@ public class AikomApiService : IAikomApiService
             var token = await GetAccessTokenAsync().ConfigureAwait(false);
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint);
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true,
-            };
             httpRequest.Content = new StringContent(
-                JsonSerializer.Serialize(request, jsonOptions), Encoding.UTF8, "application/json");
+                JsonSerializerHelper.Serialize(request), Encoding.UTF8, "application/json");
             using var response = await httpClient.SendAsync(httpRequest).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            return (JsonSerializer.Deserialize<TResponse>(responseContent, jsonOptions), null);
+            return (JsonSerializerHelper.Deserialize<TResponse>(responseContent), null);
         }
         catch (Exception ex)
         {
