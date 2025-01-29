@@ -781,7 +781,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Judges, opt => opt.MapFrom(src => src.Judges))
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .Apply(IgnoreAllImages)
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+            
 
         CreateSoftDeletedMap<CompetitiveEventCreateDto, CompetitiveEvent>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())

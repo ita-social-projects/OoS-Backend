@@ -1,10 +1,11 @@
 ﻿using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
-public class CompetitiveEventBaseDto
+public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages
 {
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
@@ -99,4 +100,14 @@ public class CompetitiveEventBaseDto
     public uint? NumberOfOccupiedSeats { get; set; }
 
     public List<Guid> ParticipantsOfTheEvent { get; set; } = new List<Guid>();
+
+    public string CoverImageId { get; set; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IFormFile CoverImage { get; set; }
+
+    public IList<string> ImageIds { get; set; } = new List<string>();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<IFormFile> ImageFiles { get; set; }
 }
