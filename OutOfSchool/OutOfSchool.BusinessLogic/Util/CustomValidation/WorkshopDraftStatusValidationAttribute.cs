@@ -20,6 +20,7 @@ public class WorkshopDraftStatusValidationAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        return new ValidationResult("Invalid value for WorkshopDraftStatus.");
+        return new ValidationResult(
+            $"The status must be one of the following: {string.Join(", ", AllowedStatuses)}.");
     }
 }

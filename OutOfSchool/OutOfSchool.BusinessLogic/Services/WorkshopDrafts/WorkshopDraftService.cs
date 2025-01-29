@@ -111,11 +111,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Workshop draft creating was started.");
 
-        if (workshopV2Dto.Teachers == null || !workshopV2Dto.Teachers.Any())
-        {
-            throw new ArgumentException("The workshop must have at least one associated teacher.");
-        }
-
         if (!await IsUserProviderOrProviderEmployee(workshopV2Dto.ProviderId))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
@@ -503,14 +498,17 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         var teacherUploadImagesResults = new ConcurrentBag<TeacherCreateUpdateResultDto>();
         var semaphore = new SemaphoreSlim(maxParallelUploads);
 
-        foreach (var (teacherDto, teacher) in workshopV2Dto.Teachers.Zip(createdDraft.Teachers))
+        if (workshopV2Dto.Teachers != null)
         {
-            teacherUploadImagesTasks.Add(UploadTeacherCoverImageAsync(
-                    teacherDto,
-                    teacher,
-                    teacherUploadImagesResults,
-                    semaphore));
-        }
+            foreach (var (teacherDto, teacher) in workshopV2Dto.Teachers.Zip(createdDraft.Teachers))
+            {
+                teacherUploadImagesTasks.Add(UploadTeacherCoverImageAsync(
+                        teacherDto,
+                        teacher,
+                        teacherUploadImagesResults,
+                        semaphore));
+            }
+        }        
 
         Task<MultipleImageUploadingResult> workshopImagesUploadingTasks =
             Task.FromResult<MultipleImageUploadingResult>(null);

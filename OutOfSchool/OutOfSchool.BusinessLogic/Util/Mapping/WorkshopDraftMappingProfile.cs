@@ -89,7 +89,6 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.DefaultTeacher, opt => opt.Ignore())
             .ForMember(dest => dest.DefaultTeacherId, opt => opt.Ignore())
