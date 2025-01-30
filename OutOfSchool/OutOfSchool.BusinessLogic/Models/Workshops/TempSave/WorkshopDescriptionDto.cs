@@ -4,7 +4,7 @@ using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums.Workshop;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
 public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
 {

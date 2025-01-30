@@ -8,7 +8,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
 [JsonDerivedType(typeof(WorkshopMainRequiredPropertiesDto), typeDiscriminator: "withMainProperties")]
 [JsonDerivedType(typeof(WorkshopRequiredPropertiesDto), typeDiscriminator: "withOtherRequiredProperties")]

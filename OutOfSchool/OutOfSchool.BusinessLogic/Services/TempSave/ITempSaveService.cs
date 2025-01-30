@@ -1,12 +1,12 @@
 ﻿#nullable enable
 
-namespace OutOfSchool.BusinessLogic.Services.DraftStorage;
+namespace OutOfSchool.BusinessLogic.Services.TempSave;
 
-public interface IDraftStorageService<T>
+public interface ITempSaveService<T>
 {
     Task<T?> RestoreAsync(string key);
 
-    Task CreateAsync(string key, T value);
+    Task StoreAsync(string key, T value);
 
     Task RemoveAsync(string key);
 

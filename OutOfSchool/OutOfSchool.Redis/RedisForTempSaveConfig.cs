@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Redis;
 
-public class RedisForDraftConfig
+public class RedisForTempSaveConfig
 {
-    public const string Name = "RedisForDraft";
+    public const string Name = "RedisForTempSave";
 
     [Required]
     public TimeSpan AbsoluteExpirationRelativeToNowInterval { get; set; }

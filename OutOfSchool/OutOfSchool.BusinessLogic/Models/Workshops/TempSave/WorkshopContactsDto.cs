@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 public class WorkshopContactsDto : WorkshopDescriptionDto, IHasContactsDto<Workshop>
 {
     [Required]

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;

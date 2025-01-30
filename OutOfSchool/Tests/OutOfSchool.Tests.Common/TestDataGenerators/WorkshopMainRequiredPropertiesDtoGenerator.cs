@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using System.Collections.Generic;
-using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using OutOfSchool.Common.Enums;
 using System;
 

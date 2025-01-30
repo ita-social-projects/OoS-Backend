@@ -17,12 +17,12 @@ using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
-using OutOfSchool.BusinessLogic.Services.DraftStorage;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
+using OutOfSchool.BusinessLogic.Services.TempSave;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.BusinessLogic.Util.Mapping;
@@ -491,8 +491,8 @@ public static class Startup
             .ValidateDataAnnotations();
 
         // Redis for drafts options
-        services.AddOptions<RedisForDraftConfig>()
-            .Bind(configuration.GetSection(RedisForDraftConfig.Name))
+        services.AddOptions<RedisForTempSaveConfig>()
+            .Bind(configuration.GetSection(RedisForTempSaveConfig.Name))
             .ValidateDataAnnotations();
 
         // MemoryCache options
@@ -594,7 +594,7 @@ public static class Startup
         services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
         services.AddSingleton<IReadWriteCacheService, CacheService>();
-        services.AddSingleton(typeof(IDraftStorageService<>), typeof(DraftStorageService<>));
+        services.AddSingleton(typeof(ITempSaveService<>), typeof(TempSaveService<>));
 
         services.AddHealthChecks()
             .AddCheck("Liveness", () => HealthCheckResult.Healthy())

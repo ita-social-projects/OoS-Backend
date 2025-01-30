@@ -7,46 +7,46 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
-using OutOfSchool.BusinessLogic.Services.DraftStorage;
+using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
+using OutOfSchool.BusinessLogic.Services.TempSave;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class WorkshopDraftStorageControllerTests
+public class WorkshopTempSaveControllerTests
 {
     private readonly string userId = "someUserId";
     private string key;
-    private Mock<IDraftStorageService<WorkshopMainRequiredPropertiesDto>> draftStorageService;
-    private WorkshopDraftStorageController controller;
+    private Mock<ITempSaveService<WorkshopMainRequiredPropertiesDto>> tempSaveService;
+    private WorkshopTempSaveController controller;
     private ClaimsPrincipal user;
-    private WorkshopMainRequiredPropertiesDto baseDtoDraft;
-    private WorkshopRequiredPropertiesDto derivedDtoDraft;
+    private WorkshopMainRequiredPropertiesDto baseDto;
+    private WorkshopRequiredPropertiesDto derivedDto;
 
     [SetUp]
     public void Setup()
     {
         user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId)]));
-        baseDtoDraft = GetBaseWorkshopDtoFakeDraft();
-        derivedDtoDraft = GetDerivedWorkshopDtoFakeDraft();
-        draftStorageService = new Mock<IDraftStorageService<WorkshopMainRequiredPropertiesDto>>();
-        controller = new WorkshopDraftStorageController(draftStorageService.Object);
+        baseDto = GetBaseWorkshopDtoFakeDraft();
+        derivedDto = GetDerivedWorkshopDtoFakeDraft();
+        tempSaveService = new Mock<ITempSaveService<WorkshopMainRequiredPropertiesDto>>();
+        controller = new WorkshopTempSaveController(tempSaveService.Object);
         key = GettingUserProperties.GetUserId(user);
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
     }
 
     [Test]
-    public async Task StoreDraft_WhenModelIsValid_ReturnsOkObjectResult()
+    public async Task Store_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.CreateAsync(key, baseDtoDraft))
+        tempSaveService.Setup(ds => ds.StoreAsync(key, baseDto))
             .Verifiable(Times.Once);
-        var resultValue = $"{baseDtoDraft.GetType().Name} is stored";
+        var resultValue = $"{baseDto.GetType().Name} is stored";
 
         // Act
-        var result = await controller.StoreDraft(baseDtoDraft).ConfigureAwait(false);
+        var result = await controller.Store(baseDto).ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -57,19 +57,19 @@ public class WorkshopDraftStorageControllerTests
         result.Should()
               .BeOfType<OkObjectResult>()
               .Which.Value.Should().Be(resultValue);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task StoreDerivedDraft_WhenModelIsValid_ReturnsOkObjectResult()
+    public async Task StoreDerivedDto_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.CreateAsync(key, derivedDtoDraft))
+        tempSaveService.Setup(ds => ds.StoreAsync(key, derivedDto))
             .Verifiable(Times.Once);
-        var resultValue = $"{derivedDtoDraft.GetType().Name} is stored";
+        var resultValue = $"{derivedDto.GetType().Name} is stored";
 
         // Act
-        var result = await controller.StoreDraft(derivedDtoDraft).ConfigureAwait(false);
+        var result = await controller.Store(derivedDto).ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -80,21 +80,21 @@ public class WorkshopDraftStorageControllerTests
         result.Should()
               .BeOfType<OkObjectResult>()
               .Which.Value.Should().Be(resultValue);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task StoreDraft_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    public async Task Store_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        var errorKey = "DraftStorage";
+        var errorKey = "TempSave";
         var errorMessage = "Invalid model state";
         controller.ModelState.AddModelError(errorKey, errorMessage);
-        draftStorageService.Setup(ds => ds.CreateAsync(key, baseDtoDraft))
+        tempSaveService.Setup(ds => ds.StoreAsync(key, baseDto))
             .Verifiable(Times.Never);
 
         // Act
-        var result = await controller.StoreDraft(baseDtoDraft).ConfigureAwait(false);
+        var result = await controller.Store(baseDto).ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -102,21 +102,21 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status400BadRequest);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task StoreDerivedDraft_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    public async Task StoreDerivedDto_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        var errorKey = "DraftStorage";
+        var errorKey = "TempSave";
         var errorMessage = "Invalid model state";
         controller.ModelState.AddModelError(errorKey, errorMessage);
-        draftStorageService.Setup(ds => ds.CreateAsync(key, derivedDtoDraft))
+        tempSaveService.Setup(ds => ds.StoreAsync(key, derivedDto))
             .Verifiable(Times.Never);
 
         // Act
-        var result = await controller.StoreDraft(derivedDtoDraft).ConfigureAwait(false);
+        var result = await controller.Store(derivedDto).ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -124,19 +124,19 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status400BadRequest);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task RestoreDraft_WhenDraftExistsInCache_ReturnsDraftAtActionResult()
+    public async Task Restore_WhenDtoValueExistsInCache_ReturnsDtoAtActionResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.RestoreAsync(key))
-            .ReturnsAsync(baseDtoDraft)
+        tempSaveService.Setup(ds => ds.RestoreAsync(key))
+            .ReturnsAsync(baseDto)
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.RestoreDraft().ConfigureAwait(false);
+        var result = await controller.Restore().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -146,20 +146,20 @@ public class WorkshopDraftStorageControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
              .BeOfType<OkObjectResult>()
-             .Which.Value.Should().Be(baseDtoDraft);
-        draftStorageService.VerifyAll();
+             .Which.Value.Should().Be(baseDto);
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task RestoreDerivedDraft_WhenDraftExistsInCache_ReturnsDerivedDraftAtActionResult()
+    public async Task RestoreDerivedDto_WhenDtoValueExistsInCache_ReturnsDerivedDtoAtActionResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.RestoreAsync(key))
-            .ReturnsAsync(derivedDtoDraft)
+        tempSaveService.Setup(ds => ds.RestoreAsync(key))
+            .ReturnsAsync(derivedDto)
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.RestoreDraft().ConfigureAwait(false);
+        var result = await controller.Restore().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -169,20 +169,20 @@ public class WorkshopDraftStorageControllerTests
               .Be(StatusCodes.Status200OK);
         result.Should()
              .BeOfType<OkObjectResult>()
-             .Which.Value.Should().Be(derivedDtoDraft);
-        draftStorageService.VerifyAll();
+             .Which.Value.Should().Be(derivedDto);
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task RestoreDraft_WhenDraftIsAbsentInCache_ReturnsDefaultDraftAtActionResult()
+    public async Task Restore_WhenDtoValueIsAbsentInCache_ReturnsDefaultDtoAtActionResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.RestoreAsync(key))
+        tempSaveService.Setup(ds => ds.RestoreAsync(key))
             .ReturnsAsync(default(WorkshopMainRequiredPropertiesDto))
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.RestoreDraft().ConfigureAwait(false);
+        var result = await controller.Restore().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -190,19 +190,19 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status204NoContent);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task RestoreDrivedDraft_WhenDraftIsAbsentInCache_ReturnsDefaultDrivedDraftAtActionResult()
+    public async Task RestoreDrivedDto_WhenDtoValueIsAbsentInCache_ReturnsDefaultDrivedDtoAtActionResult()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.RestoreAsync(key))
+        tempSaveService.Setup(ds => ds.RestoreAsync(key))
             .ReturnsAsync(default(WorkshopRequiredPropertiesDto))
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.RestoreDraft().ConfigureAwait(false);
+        var result = await controller.Restore().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -210,20 +210,20 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status204NoContent);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task GetTimeToLiveOfDraft_WhenDraftExistsInCache_ReturnsDraftAtActionResult()
+    public async Task GetTimeToLive_WhenDtoValueExistsInCache_ReturnsDtoAtActionResult()
     {
         // Arrange
         TimeSpan? timeToLive = TimeSpan.FromMinutes(1);
-        draftStorageService.Setup(ds => ds.GetTimeToLiveAsync(key))
+        tempSaveService.Setup(ds => ds.GetTimeToLiveAsync(key))
             .ReturnsAsync(timeToLive)
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.GetTimeToLiveOfDraft().ConfigureAwait(false);
+        var result = await controller.GetTimeToLive().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -234,20 +234,20 @@ public class WorkshopDraftStorageControllerTests
         result.Should()
              .BeOfType<OkObjectResult>()
              .Which.Value.Should().Be(timeToLive);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task GetTimeToLiveOfDraft_WhenDraftIsAbsentInCache_ReturnsDefaultDraftAtActionResult()
+    public async Task GetTimeToLive_WhenDtoValueIsAbsentInCache_ReturnsDefaultDtoAtActionResult()
     {
         // Arrange
         TimeSpan? timeToLive = null;
-        draftStorageService.Setup(ds => ds.GetTimeToLiveAsync(key))
+        tempSaveService.Setup(ds => ds.GetTimeToLiveAsync(key))
             .ReturnsAsync(timeToLive)
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.GetTimeToLiveOfDraft().ConfigureAwait(false);
+        var result = await controller.GetTimeToLive().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -255,18 +255,18 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status204NoContent);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     [Test]
-    public async Task RemoveDraft_ReturnsStatus204NoContent()
+    public async Task Remove_ReturnsStatus204NoContent()
     {
         // Arrange
-        draftStorageService.Setup(ds => ds.RemoveAsync(key))
+        tempSaveService.Setup(ds => ds.RemoveAsync(key))
             .Verifiable(Times.Once);
 
         // Act
-        var result = await controller.RemoveDraft().ConfigureAwait(false);
+        var result = await controller.Remove().ConfigureAwait(false);
 
         // Assert
         result.Should()
@@ -274,7 +274,7 @@ public class WorkshopDraftStorageControllerTests
               .Which.StatusCode
               .Should()
               .Be(StatusCodes.Status204NoContent);
-        draftStorageService.VerifyAll();
+        tempSaveService.VerifyAll();
     }
 
     private static WorkshopMainRequiredPropertiesDto GetBaseWorkshopDtoFakeDraft() =>

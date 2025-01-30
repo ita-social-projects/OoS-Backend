@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common.Enums.Workshop;
 
-namespace OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
 public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 {

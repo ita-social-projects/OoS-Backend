@@ -6,39 +6,39 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
-using OutOfSchool.BusinessLogic.Services.DraftStorage;
+using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
+using OutOfSchool.BusinessLogic.Services.TempSave;
 using OutOfSchool.Common;
 using OutOfSchool.Redis;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
-namespace OutOfSchool.WebApi.Tests.Services.DraftStorage;
+namespace OutOfSchool.WebApi.Tests.Services.TempSave;
 
 [TestFixture]
-public class DraftStorageServiceTests
+public class TempSaveServiceTests
 {
     private const int RANDOMSTRINGSIZE = 50;
 
     private string key;
     private string cacheKey;
     private Mock<IReadWriteCacheService> readWriteCacheServiceMock;
-    private Mock<ILogger<DraftStorageService<WorkshopMainRequiredPropertiesDto>>> loggerMock;
-    private IDraftStorageService<WorkshopMainRequiredPropertiesDto> draftStorageService;
-    private Mock<IOptions<RedisForDraftConfig>> redisConfigMock;
+    private Mock<ILogger<TempSaveService<WorkshopMainRequiredPropertiesDto>>> loggerMock;
+    private ITempSaveService<WorkshopMainRequiredPropertiesDto> tempSaveService;
+    private Mock<IOptions<RedisForTempSaveConfig>> redisConfigMock;
 
     [SetUp]
     public void SetUp()
     {
         key = new string(new Faker().Random.Chars(min: (char)0, max: (char)127, count: RANDOMSTRINGSIZE));
         cacheKey = GetCacheKey(key, typeof(WorkshopMainRequiredPropertiesDto));
-        loggerMock = new Mock<ILogger<DraftStorageService<WorkshopMainRequiredPropertiesDto>>>();
+        loggerMock = new Mock<ILogger<TempSaveService<WorkshopMainRequiredPropertiesDto>>>();
         readWriteCacheServiceMock = new Mock<IReadWriteCacheService>();
-        redisConfigMock = new Mock<IOptions<RedisForDraftConfig>>();
-        redisConfigMock.Setup(c => c.Value).Returns(new RedisForDraftConfig
+        redisConfigMock = new Mock<IOptions<RedisForTempSaveConfig>>();
+        redisConfigMock.Setup(c => c.Value).Returns(new RedisForTempSaveConfig
         {
             AbsoluteExpirationRelativeToNowInterval = TimeSpan.FromMinutes(1)
         });
-        draftStorageService = new DraftStorageService<WorkshopMainRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object, redisConfigMock.Object);
+        tempSaveService = new TempSaveService<WorkshopMainRequiredPropertiesDto>(readWriteCacheServiceMock.Object, loggerMock.Object, redisConfigMock.Object);
     }
 
     [Test]
@@ -51,7 +51,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await draftStorageService.RestoreAsync(key).ConfigureAwait(false);
+        var result = await tempSaveService.RestoreAsync(key).ConfigureAwait(false);
 
         // Assert
         result.Should().BeOfType<WorkshopMainRequiredPropertiesDto>();
@@ -69,7 +69,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await draftStorageService.RestoreAsync(key).ConfigureAwait(false);
+        var result = await tempSaveService.RestoreAsync(key).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(workshopDraft);
@@ -77,7 +77,7 @@ public class DraftStorageServiceTests
     }
 
     [Test]
-    public void CreateAsync_ShouldCallWriteAsyncOnce()
+    public void StoreAsync_ShouldCallWriteAsyncOnce()
     {
         // Arrange
         var workshopDraft = GetWorkshopFakeDraft();
@@ -90,7 +90,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = draftStorageService.CreateAsync(key, workshopDraft).ConfigureAwait(false);
+        var result = tempSaveService.StoreAsync(key, workshopDraft).ConfigureAwait(false);
 
         // Assert
         readWriteCacheServiceMock.VerifyAll();
@@ -108,7 +108,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        await draftStorageService.RemoveAsync(key).ConfigureAwait(false);
+        await tempSaveService.RemoveAsync(key).ConfigureAwait(false);
 
         // Assert
         readWriteCacheServiceMock.VerifyAll();
@@ -124,7 +124,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Never);
 
         // Act
-        await draftStorageService.RemoveAsync(key).ConfigureAwait(false);
+        await tempSaveService.RemoveAsync(key).ConfigureAwait(false);
 
         // Assert
         readWriteCacheServiceMock.VerifyAll();
@@ -140,7 +140,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await draftStorageService.GetTimeToLiveAsync(key).ConfigureAwait(false);
+        var result = await tempSaveService.GetTimeToLiveAsync(key).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -158,7 +158,7 @@ public class DraftStorageServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await draftStorageService.GetTimeToLiveAsync(key).ConfigureAwait(false);
+        var result = await tempSaveService.GetTimeToLiveAsync(key).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();

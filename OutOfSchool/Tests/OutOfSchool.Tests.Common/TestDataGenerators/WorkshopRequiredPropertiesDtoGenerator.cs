@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using OutOfSchool.BusinessLogic.Models.Workshops.Drafts;
+using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums.Workshop;
 
