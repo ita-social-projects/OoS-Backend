@@ -380,9 +380,10 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
 
-        logger.LogDebug(!workshopDraftResponseDtos.Any()
-            ? "There aren't Workshop Drafts for Provider with Id = {Id}."
-            : "From Workshop Drafts table were successfully received {Count} records.", id, workshopDraftResponseDtos.Count);
+        logger.LogDebug(
+            "From Workshop Drafts table for provider {Id} were successfully received {Count} records", 
+            id, 
+            workshopDraftResponseDtos.Count);
 
         return new SearchResult<WorkshopDraftResponseDto>()
         {
@@ -396,15 +397,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     {
         logger.LogDebug("Started retrieving Workshops by filter for admins.");
 
-        if (filter == null)
-        {
-            logger.LogDebug(
-                "Method {MethodName} started with null filter. Applying default {Filter}",
-                nameof(FetchByFilterForAdmins),
-                nameof(WorkshopDraftFilterAdministration));
-
-            filter = new WorkshopDraftFilterAdministration();
-        }
+        filter ??= new WorkshopDraftFilterAdministration();
 
         var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
 
