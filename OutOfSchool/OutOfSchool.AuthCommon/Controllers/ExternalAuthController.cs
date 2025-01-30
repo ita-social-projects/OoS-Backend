@@ -92,7 +92,7 @@ public class ExternalAuthController : Controller
             return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+                ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
             });
         }
 
@@ -111,7 +111,7 @@ public class ExternalAuthController : Controller
                 return View("~/Views/Auth/Login.cshtml", new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                    ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+                    ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
                 });
             },
             async userInfo =>
@@ -129,7 +129,7 @@ public class ExternalAuthController : Controller
                     return View("~/Views/Auth/Login.cshtml", new LoginViewModel
                     {
                         ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                        ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+                        ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
                     });
                 }
             });
@@ -168,7 +168,7 @@ public class ExternalAuthController : Controller
             return View("~/Views/Auth/Login.cshtml", new LoginViewModel
             {
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                ReturnUrl = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+                ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
             });
         }
     }
@@ -293,7 +293,7 @@ public class ExternalAuthController : Controller
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = result.Properties?.RedirectUri ?? $"/{AuthServerConstants.LoginPath}",
+            RedirectUri = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
             IsPersistent = false,
         };
 
