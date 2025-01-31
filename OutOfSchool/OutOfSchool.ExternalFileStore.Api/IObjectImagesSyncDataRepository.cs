@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+namespace OutOfSchool.ExternalFileStore;
 
-namespace OutOfSchool.Services.Repository.Files;
-
-public interface IGcpImagesSyncDataRepository
+public interface IObjectImagesSyncDataRepository
 {
     /// <summary>
     /// Asynchronously gets an intersect between WorkshopCoverImages ids and the given collection ids.

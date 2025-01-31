@@ -1,6 +1,6 @@
-namespace OutOfSchool.BusinessLogic.Services.Gcp;
+namespace OutOfSchool.ExternalFileStore;
 
-public interface IGcpStorageSynchronizationService
+public interface IObjectStorageSynchronizationService
 {
     /// <summary>
     /// Asynchronously synchronizes gcp files with a database.

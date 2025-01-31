@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj" />
     <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>

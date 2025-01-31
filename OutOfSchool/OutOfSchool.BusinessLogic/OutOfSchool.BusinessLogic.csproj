@@ -88,10 +88,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Exceptions\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Resources\Images\ImageResource.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

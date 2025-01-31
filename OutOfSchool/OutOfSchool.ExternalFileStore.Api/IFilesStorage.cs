@@ -1,30 +1,16 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Google.Apis.Storage.v1.Data;
-using Google.Cloud.Storage.V1;
-using OutOfSchool.Services.Models;
+using OutOfSchool.ExternalFileStore.Models;
 
-namespace OutOfSchool.Services.Repository.Files;
+namespace OutOfSchool.ExternalFileStore;
 
 public interface IFilesStorage<TFile, TIdentifier>
     where TFile : FileModel
 {
     /// <summary>
-    /// Returns the sequence of raw API responses, each of which contributes a page of
-    /// files to this sequence.
-    /// </summary>
-    /// <param name="prefix">Files prefix to fetch.</param>
-    /// <param name="options">Files options to fetch.</param>
-    /// <returns>An asynchronous sequence of raw API responses, each containing a page of files.</returns>
-    IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null);
-
-    /// <summary>
     /// Asynchronously gets a file by its id.
     /// </summary>
     /// <param name="fileId">File id.</param>
     /// <param name="cancellationToken">CancellationToken.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a file of type <see cref="TFile"/> or null if it was not found.
     /// </returns>
     Task<TFile> GetByIdAsync(TIdentifier fileId, CancellationToken cancellationToken = default);
@@ -46,4 +32,12 @@ public interface IFilesStorage<TFile, TIdentifier>
     /// <param name="cancellationToken">CancellationToken.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task DeleteAsync(TIdentifier fileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// This method generates a unique value that is used as file identifier.
+    /// </summary>
+    /// <returns>
+    /// The result contains a string value of the file if it's uploaded.
+    /// </returns>
+    TIdentifier GenerateFileId();
 }

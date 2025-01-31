@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.ExternalFileStore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 
@@ -11,7 +12,7 @@ namespace OutOfSchool.Services.Repository.Files;
 /// <summary>
 /// Represents an images sync repository.
 /// </summary>
-public class GcpImagesSyncDataRepository : IGcpImagesSyncDataRepository
+public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
 {
     private readonly DbSet<Workshop> workshopSet;
     private readonly DbSet<Teacher> teacherSet;
@@ -19,7 +20,7 @@ public class GcpImagesSyncDataRepository : IGcpImagesSyncDataRepository
     private readonly DbSet<Image<Workshop>> workshopImagesSet;
     private readonly DbSet<Image<Provider>> providerImagesSet;
 
-    public GcpImagesSyncDataRepository(OutOfSchoolDbContext dbContext)
+    public ObjectImagesSyncDataRepository(OutOfSchoolDbContext dbContext)
     {
         _ = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 

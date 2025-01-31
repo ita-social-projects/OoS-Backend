@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Logging;
-using OutOfSchool.BusinessLogic.Services.Gcp;
+using OutOfSchool.ExternalFileStore;
 using Quartz;
 
 namespace OutOfSchool.BackgroundJobs.Jobs;
 
 public class GcpStorageSynchronizationQuartzJob : IJob
 {
-    private readonly IGcpStorageSynchronizationService gcpStorageSynchronizationService;
+    private readonly IObjectStorageSynchronizationService objectStorageSynchronizationService;
     private readonly ILogger<GcpStorageSynchronizationQuartzJob> logger;
 
     public GcpStorageSynchronizationQuartzJob(
-        IGcpStorageSynchronizationService gcpStorageSynchronizationService,
+        IObjectStorageSynchronizationService objectStorageSynchronizationService,
         ILogger<GcpStorageSynchronizationQuartzJob> logger)
     {
         this.gcpStorageSynchronizationService = gcpStorageSynchronizationService;

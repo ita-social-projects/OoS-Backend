@@ -2,6 +2,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore.Storage;
+using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Files;

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace OutOfSchool.Services.Common.Exceptions;
+namespace OutOfSchool.ExternalFileStore.Exceptions;
 
 /// <summary>
 /// The ImageStorageException is thrown when something has happened while trying

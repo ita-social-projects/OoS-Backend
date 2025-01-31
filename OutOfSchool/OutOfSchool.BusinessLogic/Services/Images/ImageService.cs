@@ -1,9 +1,9 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Common.Resources.Codes;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
+using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.BusinessLogic.Services.Images;
 
@@ -12,7 +12,7 @@ namespace OutOfSchool.BusinessLogic.Services.Images;
 /// </summary>
 public class ImageService : IImageService
 {
-    private readonly IImageFilesStorage imageStorage;
+    private readonly IImageStorage imageStorage;
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger<ImageService> logger;
 
@@ -23,7 +23,7 @@ public class ImageService : IImageService
     /// <param name="serviceProvider">Provides access to the app services.</param>
     /// <param name="logger">Logger.</param>
     public ImageService(
-        IImageFilesStorage imageStorage,
+        IImageStorage imageStorage,
         IServiceProvider serviceProvider,
         ILogger<ImageService> logger)
     {

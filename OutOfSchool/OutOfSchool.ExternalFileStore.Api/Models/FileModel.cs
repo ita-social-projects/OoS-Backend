@@ -1,6 +1,4 @@
-using System.IO;
-
-namespace OutOfSchool.Services.Models;
+namespace OutOfSchool.ExternalFileStore.Models;
 
 public class FileModel
 {

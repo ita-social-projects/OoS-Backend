@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Jobs;
-using OutOfSchool.BusinessLogic.Services.Gcp;
 using OutOfSchool.Common.QuartzConstants;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Gcs;
+using OutOfSchool.ExternalFileStore.S3;
 using OutOfSchool.Services.Repository.Files;
 using Quartz;
 
