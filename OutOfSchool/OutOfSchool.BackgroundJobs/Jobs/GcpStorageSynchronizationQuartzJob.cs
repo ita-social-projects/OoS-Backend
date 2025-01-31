@@ -13,7 +13,7 @@ public class GcpStorageSynchronizationQuartzJob : IJob
         IObjectStorageSynchronizationService objectStorageSynchronizationService,
         ILogger<GcpStorageSynchronizationQuartzJob> logger)
     {
-        this.gcpStorageSynchronizationService = gcpStorageSynchronizationService;
+        this.objectStorageSynchronizationService = objectStorageSynchronizationService;
         this.logger = logger;
     }
 
@@ -21,7 +21,7 @@ public class GcpStorageSynchronizationQuartzJob : IJob
     {
         logger.LogInformation("Gcp storage synchronization job was started");
 
-        await gcpStorageSynchronizationService.SynchronizeAsync().ConfigureAwait(false);
+        await objectStorageSynchronizationService.SynchronizeAsync().ConfigureAwait(false);
 
         logger.LogInformation("Gcp storage synchronization job was finished");
     }

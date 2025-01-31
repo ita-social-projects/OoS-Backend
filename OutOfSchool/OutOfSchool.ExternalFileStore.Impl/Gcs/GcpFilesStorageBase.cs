@@ -1,37 +1,43 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Google;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Models;
+using OutOfSchool.ExternalFileStore.Exceptions;
+using OutOfSchool.ExternalFileStore.Models;
+using Object = Google.Apis.Storage.v1.Data.Object;
 
-namespace OutOfSchool.Services.Repository.Files;
+namespace OutOfSchool.ExternalFileStore.Gcs;
 
 /// <summary>
 /// Represents a base file storage.
 /// </summary>
 /// <typeparam name="TFile">File model.</typeparam>
-public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
+public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> storageContext) : IObjectStorage<TFile, string>
     where TFile : FileModel, new()
 {
-    protected GcpFilesStorageBase(IGcpStorageContext storageContext)
-    {
-        StorageClient = storageContext.StorageClient;
-        BucketName = storageContext.BucketName;
-    }
+    private protected StorageClient StorageClient { get; } = storageContext.StorageClient;
 
-    private protected StorageClient StorageClient { get; }
-
-    private protected string BucketName { get; }
+    private protected string BucketName { get; } = storageContext.BucketName;
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
-        => StorageClient.ListObjectsAsync(BucketName, prefix: prefix, options: options).AsRawResponses();
+    public IAsyncEnumerable<StorageObject> ListObjectsAsync(string? prefix = null, object? options = null)
+    {
+        if (options is ListObjectsOptions opts)
+        {
+            return StorageClient
+                .ListObjectsAsync(BucketName, prefix: prefix, options: opts)
+                .AsRawResponses()
+                .SelectMany<Objects, Object>(o => o.Items.ToAsyncEnumerable())
+                .Select(i => new StorageObject
+                {
+                    Name = i.Name,
+                    ContentType = i.ContentType,
+                    Size = i.Size ?? 0,
+                    CreatedAt = i.TimeCreatedDateTimeOffset,
+                    LastModified = i.UpdatedDateTimeOffset
+                });
+        }
+        throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsOptions)}", nameof(options));
+    }
 
     /// <inheritdoc/>
     public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
@@ -70,7 +76,7 @@ public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
 
         try
         {
-            var fileId = GenerateFileId();
+            var fileId = this.GenerateFileId();
             var dataObject = await StorageClient.UploadObjectAsync(
                 BucketName,
                 fileId,
@@ -99,13 +105,8 @@ public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
         }
     }
 
-    /// <summary>
-    /// This method generates a unique value that is used as file identifier.
-    /// </summary>
-    /// <returns>
-    /// The result contains a string value of the file if it's uploaded.
-    /// </returns>
-    protected virtual string GenerateFileId()
+    /// <inheritdoc/>
+    public virtual string GenerateFileId()
     {
         return Guid.NewGuid().ToString();
     }

@@ -1,4 +1,4 @@
-namespace OutOfSchool.BusinessLogic.Common.Synchronization;
+namespace OutOfSchool.ExternalFileStore;
 
 /// <summary>
 /// Contains constants of all date time gaps which are used to exclude objects have created recently
