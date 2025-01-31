@@ -31,6 +31,8 @@ using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -244,8 +246,6 @@ public static class Startup
         services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
 
         // Image options
-        services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
-        services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
@@ -430,11 +430,12 @@ public static class Startup
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
 
-        // services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;
-        var turnOnFakeStorage = configuration.GetValue<bool>("Images:TurnOnFakeImagesStorage") || !isImagesEnabled;
-        services.AddImagesStorage(turnOnFakeStorage: turnOnFakeStorage);
+        var storageConfig = configuration
+            .GetSection(StorageOptions.SectionName)
+            .Get<StorageOptions>();
+        services.AddImagesStorage(storageConfig, isImagesEnabled);
 
         services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
         services.AddTransient<INotificationRepository, NotificationRepository>();
@@ -534,10 +535,10 @@ public static class Startup
             quartzConfig.ConnectionStringKey,
             q =>
         {
-            if (!turnOnFakeStorage)
+            if (isImagesEnabled && storageConfig.Provider != StorageProviderType.Fake)
             {
                 // TODO: for now this is not used in release
-                q.AddGcpSynchronization(services, quartzConfig);
+                q.AddGcpSynchronization(services, storageConfig.Provider, quartzConfig);
             }
 
             q.AddElasticsearchSynchronization(services, configuration);

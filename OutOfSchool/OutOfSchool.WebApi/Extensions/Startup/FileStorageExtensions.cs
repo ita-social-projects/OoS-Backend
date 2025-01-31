@@ -1,8 +1,11 @@
 using Google.Cloud.Storage.V1;
-using Microsoft.Extensions.Options;
+using Minio;
 using OutOfSchool.BusinessLogic.Util.FakeImplementations;
-using OutOfSchool.Services.Contexts;
-using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Config;
+using OutOfSchool.ExternalFileStore.Extensions;
+using OutOfSchool.ExternalFileStore.Gcs;
+using OutOfSchool.ExternalFileStore.S3;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -12,33 +15,55 @@ public static class FileStorageExtensions
     /// Adds images storage into the services.
     /// </summary>
     /// <param name="services">Service collection.</param>
-    /// <param name="turnOnFakeStorage">Parameter that checks whether we should use fake storage.</param>
+    /// <param name="options"><see cref="StorageOptions"/> configuration options</param>
+    /// <param name="isImagesFeatureEnabled">Parameter that checks whether we have images feature enabled.</param>
     /// <returns><see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
+    /// <exception cref="ArgumentOutOfRangeException">Whenever the provider is not of a allowed type</exception>
+    public static IServiceCollection AddImagesStorage(this IServiceCollection services, StorageOptions options,
+        bool isImagesFeatureEnabled = false)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
 
-        if (turnOnFakeStorage)
+        // Use fake storage if images are disabled or fake provider is configured
+        if (!isImagesFeatureEnabled || options.Provider == StorageProviderType.Fake)
         {
-            return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
+            return services.AddTransient<IImageStorage, FakeImagesStorage>();
         }
 
-        services.AddSingleton(provider =>
+        switch (options.Provider)
         {
-            var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
-            var googleCredential = config.Value.RetrieveGoogleCredential();
-            return StorageClient.Create(googleCredential);
-        });
+            case StorageProviderType.GoogleCloud:
+            {
+                var googleCredential = options.Providers.GoogleCloud.RetrieveGoogleCredential();
+                var storageClient = StorageClient.Create(googleCredential);
 
-        services.AddSingleton<IGcpStorageContext, GcpStorageContext>(provider =>
-        {
-            var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
-            var storageClient = provider.GetRequiredService<StorageClient>();
-            return new GcpStorageContext(storageClient, config.Value.BucketName);
-        });
+                services.AddSingleton<IStorageContext<StorageClient>, GcpStorageContext>(_ =>
+                    new GcpStorageContext(storageClient, options.Containers.Images.BucketName));
+            
+                services.AddScoped<GcpImagesStorage>();
+                services.AddScoped<IImageStorage>(p => p.GetRequiredService<GcpImagesStorage>());
+                return services.AddScoped<IObjectImageStorage>(p => p.GetRequiredService<GcpImagesStorage>());
+            }
+            case StorageProviderType.AmazonS3:
+            {
+                var storageClient = new MinioClient()
+                    .WithEndpoint(options.Providers.AmazonS3.ServiceUrl)
+                    .WithCredentials(options.Providers.AmazonS3.AccessKey, options.Providers.AmazonS3.SecretKey)
+                    .WithRegion(options.Providers.AmazonS3.Region)
+                    .WithSSL()
+                    .Build();
 
-        return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
-            => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
+                services.AddSingleton<IStorageContext<IMinioClient>, S3StorageContext>(_ =>
+                    new S3StorageContext(storageClient, options.Containers.Images.BucketName));
+            
+                services.AddScoped<S3ImagesStorage>();
+                services.AddScoped<IImageStorage>(p => p.GetRequiredService<S3ImagesStorage>());
+                return services.AddScoped<IObjectImageStorage>(p => p.GetRequiredService<S3ImagesStorage>());
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(options.Provider), 
+                    $"Unsupported storage provider: {options.Provider}");
+        }
     }
 }
