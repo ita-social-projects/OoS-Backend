@@ -18,9 +18,9 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
     public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
+        var fileStream = new MemoryStream();
         try
         {
-            var fileStream = new MemoryStream();
             var args = new GetObjectArgs()
                 .WithBucket(BucketName)
                 .WithObject(fileId)
@@ -34,6 +34,7 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
         catch (Exception ex)
         {
+            await fileStream.DisposeAsync();
             throw new FileStorageException(ex);
         }
     }

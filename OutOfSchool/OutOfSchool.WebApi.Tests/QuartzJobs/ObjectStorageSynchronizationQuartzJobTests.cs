@@ -13,19 +13,19 @@ namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 public class ObjectStorageSynchronizationQuartzJobTests
 {
     [Test]
-    public async Task Execute_ShouldCallGcpStorageSynchronizationServiceSynchronizeAsync()
+    public async Task Execute_ShouldCallStorageSynchronizationServiceSynchronizeAsync()
     {
         // Arrange
-        var gcpStorageSynchronizationServiceMock = new Mock<IObjectStorageSynchronizationService>();
+        var storageSynchronizationServiceMock = new Mock<IObjectStorageSynchronizationService>();
         var loggerMock = new Mock<ILogger<ObjectStorageSynchronizationQuartzJob>>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 
-        var job = new ObjectStorageSynchronizationQuartzJob(gcpStorageSynchronizationServiceMock.Object, loggerMock.Object);
+        var job = new ObjectStorageSynchronizationQuartzJob(storageSynchronizationServiceMock.Object, loggerMock.Object);
 
         // Act
         await job.Execute(jobExecutionContextMock.Object);
 
         // Assert
-        gcpStorageSynchronizationServiceMock.Verify(x => x.SynchronizeAsync(It.IsAny<CancellationToken>()), Times.Once);
+        storageSynchronizationServiceMock.Verify(x => x.SynchronizeAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

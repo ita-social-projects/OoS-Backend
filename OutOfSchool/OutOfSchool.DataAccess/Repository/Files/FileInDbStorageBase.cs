@@ -51,6 +51,11 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Note: The cacheControl and metadata parameters are not used in the database storage implementation
+    /// as they are primarily intended for cloud storage scenarios.
+    /// </remarks>
     public async Task<string> UploadAsync(TFile file, string cacheControl, IDictionary<string, string> metadata,
         CancellationToken cancellationToken = default)
     {

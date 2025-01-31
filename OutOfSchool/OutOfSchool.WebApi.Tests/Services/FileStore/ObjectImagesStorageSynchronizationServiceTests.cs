@@ -13,7 +13,7 @@ using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
-namespace OutOfSchool.WebApi.Tests.Services.Gcp;
+namespace OutOfSchool.WebApi.Tests.Services.FileStore;
 
 [TestFixture]
 public class ObjectImagesStorageSynchronizationServiceTests
@@ -44,8 +44,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         // Arrange
         var gcpObjects = CreateGcpObjects(5);
         var dbFileIds = gcpObjects.Select(x => x.Name).ToList();
-        SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -62,8 +62,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         gcpObjects[0].CreatedAt = DateTimeOffset.UtcNow;
         gcpObjects[3].CreatedAt = DateTimeOffset.UtcNow;
         var dbFileIds = gcpObjects.Select(x => x.Name).ToList();
-        SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -80,8 +80,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         var dbFileIds = gcpObjects.Select(x => x.Name).ToList();
         dbFileIds.RemoveAt(1);
         dbFileIds.RemoveAt(3);
-        var modifiedList = SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        var modifiedList = this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -99,8 +99,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         gcpObjects.RemoveAt(0);
         gcpObjects.RemoveAt(2);
         var idsExpectedResult = dbFileIds.Intersect(gcpObjects.Select(x => x.Name));
-        SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -116,8 +116,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         var gcpObjects = new List<StorageObject>();
         var dbFileIds = ImagesGenerator.CreateRandomImageIds(3);
         const int countResult = 0;
-        SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -136,7 +136,7 @@ public class ObjectImagesStorageSynchronizationServiceTests
             .Returns(gcpObjects.ToAsyncEnumerable());
         imageFilesStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>(), CancellationToken.None))
             .Callback<string, CancellationToken>((fileId, cancellationToken) => DeleteObjectWithName(gcpObjects, fileId));
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         Func<Task> act = () => objectStorageSynchronizationService.SynchronizeAsync();
@@ -152,8 +152,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         // Arrange
         var gcpObjects = CreateGcpObjects(5);
         var dbFileIds = new List<string>();
-        var modifiedList = SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        var modifiedList = this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -168,8 +168,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         // Arrange
         var gcpObjects = CreateGcpObjects(1000);
         var dbFileIds = gcpObjects.Where((x, i) => i % 2 != 0).Select(x => x.Name).ToList();
-        var modifiedList = SetupDefaultImageFilesStorageMock(gcpObjects);
-        SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
+        var modifiedList = this.SetupDefaultImageFilesStorageMock(gcpObjects);
+        this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
         await objectStorageSynchronizationService.SynchronizeAsync();
@@ -190,7 +190,7 @@ public class ObjectImagesStorageSynchronizationServiceTests
         var dbProviderCoverFileIds = dbFileIds.Skip(takeOffset).Take(takeOffset).ToList();
         var idsExpectedResult = dbProviderFileIds.Union(dbProviderCoverFileIds);
 
-        var modifiedList = SetupDefaultImageFilesStorageMock(gcpObjects);
+        var modifiedList = this.SetupDefaultImageFilesStorageMock(gcpObjects);
         gcpImagesSyncDataRepositoryMock.Setup(x => x.GetIntersectProviderImagesIds(It.IsAny<IEnumerable<string>>()))
             .Returns<IEnumerable<string>>(ids => GetIntersectWithDbIds(ids, dbProviderFileIds));
         gcpImagesSyncDataRepositoryMock.Setup(x => x.GetIntersectWorkshopImagesIds(It.IsAny<IEnumerable<string>>()))

@@ -45,6 +45,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
+        var fileStream = new MemoryStream();
         try
         {
             var fileObject = await StorageClient.GetObjectAsync(
@@ -52,7 +53,6 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
                 fileId,
                 cancellationToken: cancellationToken);
 
-            var fileStream = new MemoryStream();
             await StorageClient.DownloadObjectAsync(
                 fileObject,
                 fileStream,
@@ -63,10 +63,12 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
         }
         catch (GoogleApiException)
         {
+            await fileStream.DisposeAsync();
             return null;
         }
         catch (Exception ex)
         {
+            await fileStream.DisposeAsync();
             throw new FileStorageException(ex);
         }
     }
