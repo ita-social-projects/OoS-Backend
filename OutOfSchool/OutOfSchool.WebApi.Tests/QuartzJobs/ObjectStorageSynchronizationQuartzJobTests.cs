@@ -10,17 +10,17 @@ using Quartz;
 namespace OutOfSchool.WebApi.Tests.QuartzJobs;
 
 [TestFixture]
-public class GcpStorageSynchronizationQuartzJobTests
+public class ObjectStorageSynchronizationQuartzJobTests
 {
     [Test]
     public async Task Execute_ShouldCallGcpStorageSynchronizationServiceSynchronizeAsync()
     {
         // Arrange
         var gcpStorageSynchronizationServiceMock = new Mock<IObjectStorageSynchronizationService>();
-        var loggerMock = new Mock<ILogger<GcpStorageSynchronizationQuartzJob>>();
+        var loggerMock = new Mock<ILogger<ObjectStorageSynchronizationQuartzJob>>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 
-        var job = new GcpStorageSynchronizationQuartzJob(gcpStorageSynchronizationServiceMock.Object, loggerMock.Object);
+        var job = new ObjectStorageSynchronizationQuartzJob(gcpStorageSynchronizationServiceMock.Object, loggerMock.Object);
 
         // Act
         await job.Execute(jobExecutionContextMock.Object);

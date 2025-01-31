@@ -11,7 +11,8 @@ namespace OutOfSchool.ExternalFileStore.Gcs;
 /// Represents a base file storage.
 /// </summary>
 /// <typeparam name="TFile">File model.</typeparam>
-public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> storageContext) : IObjectStorage<TFile, string>
+public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> storageContext)
+    : IObjectStorage<TFile, string>
     where TFile : FileModel, new()
 {
     private protected StorageClient StorageClient { get; } = storageContext.StorageClient;
@@ -36,6 +37,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
                     LastModified = i.UpdatedDateTimeOffset
                 });
         }
+
         throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsOptions)}", nameof(options));
     }
 
@@ -57,7 +59,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
                 cancellationToken: cancellationToken);
 
             fileStream.Position = 0;
-            return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
+            return new TFile {ContentStream = fileStream, ContentType = fileObject.ContentType};
         }
         catch (GoogleApiException)
         {
@@ -70,17 +72,32 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    public virtual async Task<string> UploadAsync(TFile file, CancellationToken cancellationToken = default)
+    public virtual async Task<string> UploadAsync(TFile file, string cacheControl,
+        IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
+        metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
 
         try
         {
             var fileId = this.GenerateFileId();
+            var storageObject = new Object
+            {
+                Bucket = BucketName,
+                Name = fileId,
+                ContentType = file.ContentType,
+            };
+            if (!string.IsNullOrEmpty(cacheControl))
+            {
+                storageObject.CacheControl = cacheControl;
+            }
+
+            if (metadata.Count > 0)
+            {
+                storageObject.Metadata = metadata;
+            }
             var dataObject = await StorageClient.UploadObjectAsync(
-                BucketName,
-                fileId,
-                file.ContentType,
+                storageObject,
                 file.ContentStream,
                 cancellationToken: cancellationToken);
             return dataObject.Name;

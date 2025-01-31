@@ -271,4 +271,9 @@ public static class Constants
     /// The maximum length allowed for the Judge's description.
     /// </summary>
     public const int MaxJudgeDescriptionLength = 300;
+    
+    /// <summary>
+    /// Sets public images cache control to be 1 hour (GCS default for public data).
+    /// </summary>
+    public const string PublicImageCacheControl = "public, max-age=3600";
 }

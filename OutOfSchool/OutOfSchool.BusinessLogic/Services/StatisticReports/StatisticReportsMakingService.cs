@@ -66,7 +66,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
                         await statisticReportRepository.Delete(report);
                     }
 
-                    var externalId = await storage.UploadAsync(fileModel, cancellationToken);
+                    var externalId = await storage.UploadAsync(fileModel, cancellationToken: cancellationToken);
 
                     var currentDate = DateTime.UtcNow;
 
@@ -83,7 +83,7 @@ public class StatisticReportsMakingService : IStatisticReportsMakingService
 
                     if (currentDate.Day == 1 && currentDate.Month == 1)
                     {
-                        externalId = await storage.UploadAsync(fileModel, cancellationToken);
+                        externalId = await storage.UploadAsync(fileModel, cancellationToken: cancellationToken);
 
                         statisticReport.ExternalStorageId = externalId;
                         statisticReport.ReportType = StatisticReportTypes.WorkshopsYear;

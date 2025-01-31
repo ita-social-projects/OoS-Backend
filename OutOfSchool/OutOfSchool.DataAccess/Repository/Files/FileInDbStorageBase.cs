@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,8 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
         }
     }
 
-    public async Task<string> UploadAsync(TFile file, CancellationToken cancellationToken = default)
+    public async Task<string> UploadAsync(TFile file, string cacheControl, IDictionary<string, string> metadata,
+        CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
 

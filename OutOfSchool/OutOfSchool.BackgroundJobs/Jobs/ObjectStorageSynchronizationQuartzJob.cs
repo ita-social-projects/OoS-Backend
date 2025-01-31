@@ -4,14 +4,14 @@ using Quartz;
 
 namespace OutOfSchool.BackgroundJobs.Jobs;
 
-public class GcpStorageSynchronizationQuartzJob : IJob
+public class ObjectStorageSynchronizationQuartzJob : IJob
 {
     private readonly IObjectStorageSynchronizationService objectStorageSynchronizationService;
-    private readonly ILogger<GcpStorageSynchronizationQuartzJob> logger;
+    private readonly ILogger<ObjectStorageSynchronizationQuartzJob> logger;
 
-    public GcpStorageSynchronizationQuartzJob(
+    public ObjectStorageSynchronizationQuartzJob(
         IObjectStorageSynchronizationService objectStorageSynchronizationService,
-        ILogger<GcpStorageSynchronizationQuartzJob> logger)
+        ILogger<ObjectStorageSynchronizationQuartzJob> logger)
     {
         this.objectStorageSynchronizationService = objectStorageSynchronizationService;
         this.logger = logger;
@@ -19,10 +19,10 @@ public class GcpStorageSynchronizationQuartzJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        logger.LogInformation("Gcp storage synchronization job was started");
+        logger.LogInformation("Object storage synchronization job was started");
 
         await objectStorageSynchronizationService.SynchronizeAsync().ConfigureAwait(false);
 
-        logger.LogInformation("Gcp storage synchronization job was finished");
+        logger.LogInformation("Object storage synchronization job was finished");
     }
 }

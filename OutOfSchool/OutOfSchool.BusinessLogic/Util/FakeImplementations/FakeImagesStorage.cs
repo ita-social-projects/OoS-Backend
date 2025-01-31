@@ -13,7 +13,8 @@ public class FakeImagesStorage : IImageStorage
         return Task.FromResult(new ImageFileModel());
     }
 
-    public Task<string> UploadAsync(ImageFileModel file, CancellationToken cancellationToken = default)
+    public Task<string> UploadAsync(ImageFileModel file, string cacheControl, IDictionary<string, string> metadata,
+        CancellationToken cancellationToken = default)
     {
         return Task.FromResult(GenerateFileId());
     }
@@ -22,7 +23,7 @@ public class FakeImagesStorage : IImageStorage
     {
         return Task.CompletedTask;
     }
-    
+
     public string GenerateFileId()
     {
         return Guid.NewGuid().ToString();

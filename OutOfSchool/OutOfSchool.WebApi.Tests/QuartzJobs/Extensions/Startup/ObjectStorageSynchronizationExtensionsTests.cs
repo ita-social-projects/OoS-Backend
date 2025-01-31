@@ -12,7 +12,7 @@ using Quartz;
 namespace OutOfSchool.WebApi.Tests.QuartzJobs.Extensions.Startup;
 
 [TestFixture]
-public class GcpStorageSynchronizationExtensionsTests
+public class ObjectStorageSynchronizationExtensionsTests
 {
     [Test]
     public void AddGcpSynchronization_WhenQuartzConfigIsNull_ThrowsArgumentNullException()
@@ -23,7 +23,7 @@ public class GcpStorageSynchronizationExtensionsTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             servicesRegistering.AddQuartz(q =>
-                q.AddGcpSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, null)));
+                q.AddObjectStorageSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, null)));
     }
 
     [Test]
@@ -44,7 +44,7 @@ public class GcpStorageSynchronizationExtensionsTests
 
         // Act
         servicesRegistering.AddQuartz(q =>
-            q.AddGcpSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, quartzConfig));
+            q.AddObjectStorageSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, quartzConfig));
 
         using var services = servicesRegistering.BuildServiceProvider();
 

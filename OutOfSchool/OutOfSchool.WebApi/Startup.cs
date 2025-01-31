@@ -538,7 +538,7 @@ public static class Startup
             if (isImagesEnabled && storageConfig.Provider != StorageProviderType.Fake)
             {
                 // TODO: for now this is not used in release
-                q.AddGcpSynchronization(services, storageConfig.Provider, quartzConfig);
+                q.AddObjectStorageSynchronization(services, storageConfig.Provider, quartzConfig);
             }
 
             q.AddElasticsearchSynchronization(services, configuration);

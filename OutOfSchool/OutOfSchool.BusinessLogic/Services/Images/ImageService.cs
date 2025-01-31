@@ -203,7 +203,9 @@ public class ImageService : IImageService
         try
         {
             var imageStorageId = await imageStorage
-                .UploadAsync(new ImageFileModel { ContentStream = contentStream, ContentType = contentType })
+                .UploadAsync(
+                    new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
+                    Constants.PublicImageCacheControl)
                 .ConfigureAwait(false);
 
             return Result<string>.Success(imageStorageId);

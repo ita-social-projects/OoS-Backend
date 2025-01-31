@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace OutOfSchool.ExternalFileStore.Config;
 
 /// <summary>
 /// Contains configuration for file storage providers and containers.
 /// </summary>
-public class StorageOptions
+public class StorageOptions : IValidatableObject
 {
     public const string SectionName = "FileStorage";
     
@@ -21,6 +23,69 @@ public class StorageOptions
     /// Gets or sets the configuration for storage providers.
     /// </summary>
     public ProvidersConfig Providers { get; set; } = new();
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Validate bucket names
+        if (string.IsNullOrEmpty(Containers.Images?.BucketName))
+        {
+            yield return new ValidationResult(
+                "Bucket name is required for Images container",
+                [nameof(Containers.Images.BucketName)]);
+        }
+
+        // TODO: Add file bucket validation when we will use it.
+
+        // Validate provider-specific settings
+        var results = Provider switch
+        {
+            StorageProviderType.GoogleCloud => ValidateGoogleCloud(),
+            StorageProviderType.AmazonS3 => ValidateAmazonS3(),
+            _ => []
+        };
+
+        foreach (var result in results)
+        {
+            yield return result;
+        }
+    }
+
+    private IEnumerable<ValidationResult> ValidateGoogleCloud()
+    {
+        // Placeholder for consistency, currently no option in GCP needs to be present.
+        return [];
+    }
+
+    private IEnumerable<ValidationResult> ValidateAmazonS3()
+    {
+        if (string.IsNullOrEmpty(Providers?.AmazonS3?.AccessKey))
+        {
+            yield return new ValidationResult(
+                "Access key is required for Amazon S3",
+                [nameof(Providers.AmazonS3.AccessKey)]);
+        }
+
+        if (string.IsNullOrEmpty(Providers?.AmazonS3?.SecretKey))
+        {
+            yield return new ValidationResult(
+                "Secret key is required for Amazon S3",
+                [nameof(Providers.AmazonS3.SecretKey)]);
+        }
+
+        if (string.IsNullOrEmpty(Providers?.AmazonS3?.Region))
+        {
+            yield return new ValidationResult(
+                "Region is required for Amazon S3",
+                [nameof(Providers.AmazonS3.Region)]);
+        }
+
+        if (string.IsNullOrEmpty(Providers?.AmazonS3?.ServiceUrl))
+        {
+            yield return new ValidationResult(
+                "Service URL is required for Amazon S3",
+                [nameof(Providers.AmazonS3.ServiceUrl)]);
+        }
+    }
 }
 
 /// <summary>
@@ -80,11 +145,6 @@ public class GoogleCloudConfig
     /// Gets or sets a file of Google credential.
     /// </summary>
     public string CredentialFilePath { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Google Cloud project identifier.
-    /// </summary>
-    public string ProjectId { get; set; }
 }
 
 /// <summary>

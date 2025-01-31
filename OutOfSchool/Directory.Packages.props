@@ -123,7 +123,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)" />
     <PackageVersion Include="MockQueryable.Moq" Version="7.0.0" />
     <PackageVersion Include="Bogus" Version="34.0.2" />
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <!-- Application Performance Monitoring -->
     <PackageVersion Include="Elastic.Apm.AspNetCore" Version="$(ElasticApmVersion)" />
     <PackageVersion Include="Elastic.Apm.EntityFrameworkCore" Version="$(ElasticApmVersion)" />

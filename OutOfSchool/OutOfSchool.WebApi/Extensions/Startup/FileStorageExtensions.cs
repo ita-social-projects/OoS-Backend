@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Google.Cloud.Storage.V1;
 using Minio;
 using OutOfSchool.BusinessLogic.Util.FakeImplementations;
@@ -19,11 +20,13 @@ public static class FileStorageExtensions
     /// <param name="isImagesFeatureEnabled">Parameter that checks whether we have images feature enabled.</param>
     /// <returns><see cref="IServiceCollection"/> instance.</returns>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
+    /// <exception cref="ValidationException">Whenever the options is not valid for a given provider.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Whenever the provider is not of a allowed type</exception>
     public static IServiceCollection AddImagesStorage(this IServiceCollection services, StorageOptions options,
         bool isImagesFeatureEnabled = false)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
+        ValidateOptions(options);
 
         // Use fake storage if images are disabled or fake provider is configured
         if (!isImagesFeatureEnabled || options.Provider == StorageProviderType.Fake)
@@ -65,5 +68,11 @@ public static class FileStorageExtensions
                 throw new ArgumentOutOfRangeException(nameof(options.Provider), 
                     $"Unsupported storage provider: {options.Provider}");
         }
+    }
+
+    private static void ValidateOptions(StorageOptions options)
+    {
+        var validationContext = new ValidationContext(options);
+        Validator.ValidateObject(options, validationContext, true);
     }
 }

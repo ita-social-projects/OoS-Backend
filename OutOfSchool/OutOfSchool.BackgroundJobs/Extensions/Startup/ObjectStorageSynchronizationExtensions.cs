@@ -10,17 +10,17 @@ using Quartz;
 
 namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
-public static class GcpStorageSynchronizationExtensions
+public static class ObjectStorageSynchronizationExtensions
 {
     /// <summary>
-    /// Adds all essential methods to synchronize gcp files with the main database.
+    /// Adds all essential methods to synchronize object storage files with the main database.
     /// </summary>
     /// <param name="quartz">Quartz Configurator.</param>
     /// <param name="services">Service collection.</param>
     /// <param name="providerType">Storage provider implementation.</param>
     /// <param name="quartzConfig">Quartz configuration.</param>
     /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-    public static void AddGcpSynchronization(
+    public static void AddObjectStorageSynchronization(
         this IServiceCollectionQuartzConfigurator quartz,
         IServiceCollection services,
         StorageProviderType providerType,
@@ -45,7 +45,7 @@ public static class GcpStorageSynchronizationExtensions
 
         var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
 
-        quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+        quartz.AddJob<ObjectStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
             .ForJob(gcpImagesJobKey)

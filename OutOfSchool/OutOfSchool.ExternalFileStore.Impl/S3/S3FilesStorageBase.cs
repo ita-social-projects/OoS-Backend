@@ -1,43 +1,36 @@
 using Google.Apis.Util;
 using Minio;
-using Minio.DataModel;
 using Minio.DataModel.Args;
-using Minio.DataModel.Encryption;
 using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.ExternalFileStore.S3;
 
-public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> storageContext) : IObjectStorage<TFile, string>
+public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> storageContext)
+    : IObjectStorage<TFile, string>
     where TFile : FileModel, new()
 {
     private protected IMinioClient StorageClient { get; } = storageContext.StorageClient;
 
     private protected string BucketName { get; } = storageContext.BucketName;
-    
-    
+
+
     public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         try
         {
+            var fileStream = new MemoryStream();
             var args = new GetObjectArgs()
                 .WithBucket(BucketName)
                 .WithObject(fileId)
-                .WithFile(fileId);
+                .WithCallbackStream(stream => stream.CopyTo(fileStream));
             var fileObject = await StorageClient.GetObjectAsync(
                 args,
                 cancellationToken);
 
-            var downloadArgs = new SelectObjectContentArgs()
-                .WithBucket(BucketName)
-                .WithObject(fileObject.ObjectName);
-            var response = await StorageClient
-                .SelectObjectContentAsync(downloadArgs, cancellationToken)
-                .ConfigureAwait(false);
-            
-
-            return new TFile { ContentStream = response.Payload, ContentType = fileObject.ContentType };
+            fileStream.Position = 0;
+            return new TFile {ContentStream = fileStream, ContentType = fileObject.ContentType};
         }
         catch (Exception ex)
         {
@@ -45,27 +38,27 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
     }
 
-    public async Task<string> UploadAsync(TFile file, CancellationToken cancellationToken = default)
+    public async Task<string> UploadAsync(TFile file, string cacheControl,
+        IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
+        metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
+
+        if (!string.IsNullOrEmpty(cacheControl))
+        {
+            metadata["Cache-Control"] = cacheControl;
+        }
+
         try
         {
-            // TODO: Extract progress report
-            IProgress<ProgressReport> progress = null;
-            IServerSideEncryption sse = null;
             var fileId = this.GenerateFileId();
-            var fileInfo = new FileInfo(fileId);
-            var metaData = new Dictionary<string, string>
-                (StringComparer.Ordinal) { { "Test-Metadata", "Test  Test" } };
             var args = new PutObjectArgs()
                 .WithBucket(BucketName)
                 .WithObject(fileId)
                 .WithStreamData(file.ContentStream)
                 .WithObjectSize(file.ContentStream.Length)
                 .WithContentType(file.ContentType)
-                .WithHeaders(metaData)
-                .WithProgress(progress)
-                .WithServerSideEncryption(sse);
+                .WithHeaders(metadata);
             var dataObject = await StorageClient.PutObjectAsync(
                 args,
                 cancellationToken);
@@ -108,9 +101,10 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
                 LastModified = DiscoveryFormat.ParseDateTimeToDateTimeOffset(o.LastModified)
             });
         }
+
         throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsArgs)}", nameof(options));
     }
-    
+
     /// <inheritdoc/>
     public virtual string GenerateFileId()
     {
