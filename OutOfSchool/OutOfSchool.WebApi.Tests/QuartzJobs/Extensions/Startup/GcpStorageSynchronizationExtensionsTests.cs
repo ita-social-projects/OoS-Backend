@@ -6,6 +6,7 @@ using NUnit.Framework;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.Common.QuartzConstants;
+using OutOfSchool.ExternalFileStore;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Tests.QuartzJobs.Extensions.Startup;
@@ -20,7 +21,9 @@ public class GcpStorageSynchronizationExtensionsTests
         var servicesRegistering = new ServiceCollection();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => servicesRegistering.AddQuartz(q => q.AddGcpSynchronization(servicesRegistering, null)));
+        Assert.Throws<ArgumentNullException>(() =>
+            servicesRegistering.AddQuartz(q =>
+                q.AddGcpSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, null)));
     }
 
     [Test]
@@ -40,13 +43,15 @@ public class GcpStorageSynchronizationExtensionsTests
         };
 
         // Act
-        servicesRegistering.AddQuartz(q => q.AddGcpSynchronization(servicesRegistering, quartzConfig));
+        servicesRegistering.AddQuartz(q =>
+            q.AddGcpSynchronization(servicesRegistering, StorageProviderType.GoogleCloud, quartzConfig));
 
         using var services = servicesRegistering.BuildServiceProvider();
 
         // Assert
         var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
 
-        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp)));
+        Assert.IsTrue(
+            await scheduler.CheckExists(new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp)));
     }
 }

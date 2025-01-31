@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BackgroundJobs.Jobs;
-using OutOfSchool.BusinessLogic.Services.Gcp;
+using OutOfSchool.ExternalFileStore;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Tests.QuartzJobs;
@@ -16,7 +16,7 @@ public class GcpStorageSynchronizationQuartzJobTests
     public async Task Execute_ShouldCallGcpStorageSynchronizationServiceSynchronizeAsync()
     {
         // Arrange
-        var gcpStorageSynchronizationServiceMock = new Mock<IGcpStorageSynchronizationService>();
+        var gcpStorageSynchronizationServiceMock = new Mock<IObjectStorageSynchronizationService>();
         var loggerMock = new Mock<ILogger<GcpStorageSynchronizationQuartzJob>>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 

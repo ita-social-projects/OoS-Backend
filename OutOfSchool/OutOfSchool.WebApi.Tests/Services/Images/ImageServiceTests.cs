@@ -12,9 +12,9 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
+using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.WebApi.Tests.Services.Images;
 
@@ -28,7 +28,7 @@ internal class ImageServiceTests
 
     #endregion
 
-    private Mock<IImageFilesStorage> externalStorageMock;
+    private Mock<IObjectImageStorage> externalStorageMock;
     private Mock<IServiceProvider> serviceProviderMock;
     private Mock<ILogger<ImageService>> loggerMock;
     private IImageService imageService;
@@ -42,7 +42,7 @@ internal class ImageServiceTests
     [SetUp]
     public void SetUp()
     {
-        externalStorageMock = new Mock<IImageFilesStorage>();
+        externalStorageMock = new Mock<IObjectImageStorage>();
         serviceProviderMock = new Mock<IServiceProvider>();
         loggerMock = new Mock<ILogger<ImageService>>();
         imageService = new ImageService(
