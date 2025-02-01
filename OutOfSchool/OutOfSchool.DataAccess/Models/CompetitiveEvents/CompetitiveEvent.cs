@@ -9,12 +9,8 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
-public class CompetitiveEvent : BusinessEntity, IKeyedEntity<Guid>, ISoftDeleted, IHasContacts
+public class CompetitiveEvent : BusinessEntity, IHasContacts
 {
-    //public Guid Id { get; set; }
-
-   // public bool IsDeleted { get; set; }
-    
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(250)]

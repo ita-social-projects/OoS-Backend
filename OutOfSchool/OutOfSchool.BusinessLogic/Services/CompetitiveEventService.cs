@@ -63,9 +63,6 @@ public class CompetitiveEventService : ICompetitiveEventService
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <see cref="CompetitiveEventCreateDto"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="CompetitiveEventCreateDto"/> contains invalid contact data.
-    ///  See <see cref="ContactsService{TEntity, TDto}"/> for details.</exception>
     public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -73,19 +70,9 @@ public class CompetitiveEventService : ICompetitiveEventService
         logger.LogDebug("CompetitiveEvent creating was started.");
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
-        // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
         
         contactsService.PrepareNewContacts(competitiveEvent, dto);
-        try
-        {
-            contactsService.PrepareNewContacts(competitiveEvent, dto);
-        }
-        catch (InvalidOperationException ex)
-        {
-            logger.LogError(ex, "Failed to prepare contacts for CompetitiveEvent creation. {ErrorMessage}", ex.Message);
-            throw;
-        }
-
+       
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
 
