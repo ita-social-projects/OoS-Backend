@@ -1,12 +1,17 @@
-﻿using OutOfSchool.Common.Enums;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
-public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages
+public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDto<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>
 {
+    public Guid Id { get; set; }
+
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
@@ -110,4 +115,7 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<ContactsDto> Contacts { get; set; }
 }

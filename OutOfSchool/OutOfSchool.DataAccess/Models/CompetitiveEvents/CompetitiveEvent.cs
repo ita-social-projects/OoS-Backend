@@ -4,15 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
-public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
+public class CompetitiveEvent : BusinessEntity, IKeyedEntity<Guid>, ISoftDeleted, IHasContacts
 {
-    public Guid Id { get; set; }
+    //public Guid Id { get; set; }
 
-    public bool IsDeleted { get; set; }
+   // public bool IsDeleted { get; set; }
     
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
@@ -129,4 +130,7 @@ public class CompetitiveEvent : IKeyedEntity<Guid>, ISoftDeleted
     public bool CompetitiveSelection { get; set; }
 
     public uint NumberOfOccupiedSeats { get; set; }
+
+    // owned entities
+    public List<Contacts> Contacts { get; set; } = [];
 }

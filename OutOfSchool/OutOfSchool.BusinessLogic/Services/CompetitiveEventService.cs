@@ -22,6 +22,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
+    private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
 
     public CompetitiveEventService(
         IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
@@ -30,7 +31,8 @@ public class CompetitiveEventService : ICompetitiveEventService
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.judgeRepository = judgeRepository ?? throw new ArgumentNullException(nameof(judgeRepository));
@@ -39,7 +41,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService;
-
+        this.contactsService = contactsService;
     }
 
     /// <inheritdoc/>
@@ -59,6 +61,11 @@ public class CompetitiveEventService : ICompetitiveEventService
     }
 
     /// <inheritdoc/>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <see cref="CompetitiveEventCreateDto"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="CompetitiveEventCreateDto"/> contains invalid contact data.
+    ///  See <see cref="ContactsService{TEntity, TDto}"/> for details.</exception>
     public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -67,9 +74,21 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
         // competitiveEvent.Judges = dto.Judges?.Select(dtoJudges => mapper.Map<Judge>(dtoJudges)).ToList();
+        
+        contactsService.PrepareNewContacts(competitiveEvent, dto);
+        try
+        {
+            contactsService.PrepareNewContacts(competitiveEvent, dto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError(ex, "Failed to prepare contacts for CompetitiveEvent creation. {ErrorMessage}", ex.Message);
+            throw;
+        }
 
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
+
 
         return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
     }
@@ -93,6 +112,8 @@ public class CompetitiveEventService : ICompetitiveEventService
         await ChangeJudges(competitiveEvent, dto.Judges ?? new List<JudgeDto>()).ConfigureAwait(false);
         await ChangeCompetitiveEventDescriptionItems(competitiveEvent, dto.CompetitiveEventDescriptionItems
             ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+
+        contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
 
         mapper.Map(dto, competitiveEvent);
 
