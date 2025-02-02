@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations.Base;
@@ -11,8 +10,6 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
     public override void Configure(EntityTypeBuilder<CompetitiveEvent> builder)
     {
         base.Configure(builder);
-
-       //builder.ConfigureKeyedSoftDeleted<Guid, CompetitiveEvent>();
 
         builder.HasOne(c => c.CompetitiveEventAccountingType)
            .WithMany()
