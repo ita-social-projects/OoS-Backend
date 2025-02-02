@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -26,7 +27,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
     private Mock<IMapper> mockMapper;
     private Mock<ICurrentUserService> userService;
-
+    private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
+    
     private CompetitiveEventService service;
 
     [SetUp]
@@ -39,6 +41,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         mockMapper = new Mock<IMapper>();
         userService = new Mock<ICurrentUserService>();
+        contactsService = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
 
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
@@ -47,7 +50,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
             mockLogger.Object,
             mockLocalizer.Object,
             mockMapper.Object,
-            userService.Object);
+            userService.Object,
+            contactsService.Object);
     }
 
     [Test]

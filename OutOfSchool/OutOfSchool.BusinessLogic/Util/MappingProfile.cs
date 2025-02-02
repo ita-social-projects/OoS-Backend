@@ -794,7 +794,19 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Parent, opt => opt.Ignore())
             .ForMember(dest => dest.OrganizerOfTheEvent, opt => opt.Ignore())
-            .ForMember(dest => dest.Coverage, opt => opt.Ignore());
+            .ForMember(dest => dest.Coverage, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
 
         CreateSoftDeletedMap<CompetitiveEventUpdateDto, CompetitiveEvent>()
             .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()

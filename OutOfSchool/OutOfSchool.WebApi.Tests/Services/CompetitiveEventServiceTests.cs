@@ -37,8 +37,8 @@ public class CompetitiveEventServiceTests
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ICurrentUserService> userService;
+    private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
     private IMapper mapper;
-
 
     private CompetitiveEventService service;
     private Guid firstId;
@@ -64,6 +64,8 @@ public class CompetitiveEventServiceTests
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
         userService = new Mock<ICurrentUserService>();
+        contactsService = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
+
 
         service = new CompetitiveEventService(
             repo,
@@ -72,7 +74,8 @@ public class CompetitiveEventServiceTests
             logger.Object,
             localizer.Object,
             mapper,
-            userService.Object);
+            userService.Object,
+            contactsService.Object);
 
         SeedDatabase();
     }
