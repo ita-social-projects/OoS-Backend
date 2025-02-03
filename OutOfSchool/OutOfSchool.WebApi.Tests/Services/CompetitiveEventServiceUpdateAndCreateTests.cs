@@ -96,10 +96,13 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 Judges = input.Judges,
             });
 
-        
+        contactsService
+            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateDto>()))
+            .Verifiable();
+
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(createdEvent);// ???
+            .ReturnsAsync(createdEvent);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
@@ -116,6 +119,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockMapper.Verify(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateDto>()), Times.Once);
         mockMapper.Verify(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()), Times.Once);
         mockCompetitiveEventRepository.Verify(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()), Times.Once);
+        contactsService.Verify(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateDto>()), Times.Once);
     }
 
     [Test]
@@ -147,6 +151,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
             .ReturnsAsync((CompetitiveEvent input) => input);
 
+        contactsService
+            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventUpdateDto>()))
+            .Verifiable();
+
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
             .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation());
@@ -162,6 +170,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
         mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(existingEventId, "Judges,CompetitiveEventDescriptionItems"), Times.Once);
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
+        contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventUpdateDto>()), Times.Once);
     }
 
     [Test]
