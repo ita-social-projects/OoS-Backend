@@ -53,6 +53,7 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         try
         {
             var fileId = this.GenerateFileId();
+            file.ContentStream.Position = 0;
             var args = new PutObjectArgs()
                 .WithBucket(BucketName)
                 .WithObject(fileId)

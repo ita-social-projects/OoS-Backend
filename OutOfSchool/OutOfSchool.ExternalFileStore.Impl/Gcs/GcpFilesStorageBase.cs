@@ -98,6 +98,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
             {
                 storageObject.Metadata = metadata;
             }
+            file.ContentStream.Position = 0;
             var dataObject = await StorageClient.UploadObjectAsync(
                 storageObject,
                 file.ContentStream,
