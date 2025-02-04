@@ -218,7 +218,10 @@ internal class ImageServiceTests
     public async Task UploadImage_WhenImageIsValid_ShouldReturnSuccessfulResultWithSavedImageId()
     {
         // Arrange
-        var file = new Mock<IFormFile>().Object;
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(x => x.ContentType).Returns("image/jpeg");
+        var file = fileMock.Object;
+        
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         SetUpValidatorWithOperationResult(true);
         externalStorageMock
@@ -249,7 +252,9 @@ internal class ImageServiceTests
         UploadImage_WhenImageIsInvalid_ShouldReturnFailedResult()
     {
         // Arrange
-        var file = new Mock<IFormFile>().Object;
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(x => x.ContentType).Returns("image/jpeg");
+        var file = fileMock.Object;
         SetUpValidatorWithOperationResult(false);
 
         // Act
@@ -444,6 +449,7 @@ internal class ImageServiceTests
         for (var i = 0; i < count; i++)
         {
             var file = new Mock<IFormFile>();
+            file.Setup(x => x.ContentType).Returns("image/jpeg");
             file.Setup(x => x.OpenReadStream()).Returns(new Mock<Stream>().Object);
             fileList.Add(file.Object);
         }

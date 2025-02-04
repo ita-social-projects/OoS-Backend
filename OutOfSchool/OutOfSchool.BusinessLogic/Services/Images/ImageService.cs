@@ -205,7 +205,11 @@ public class ImageService : IImageService
             var imageStorageId = await imageStorage
                 .UploadAsync(
                     new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
-                    Constants.PublicImageCacheControl)
+                    Constants.PublicImageCacheControl,
+                    new Dictionary<string, string>
+                    {
+                        {"Content-Disposition", "inline"}
+                    })
                 .ConfigureAwait(false);
 
             return Result<string>.Success(imageStorageId);
