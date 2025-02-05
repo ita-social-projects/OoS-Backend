@@ -400,7 +400,7 @@ public class WorkshopControllerTests
     {
         // Arrange
         var expectedWorkshopCount = workshopBaseCards.Count - 1;
-        var excludedId = workshopBaseCards.FirstOrDefault().WorkshopId;
+        var excludedId = workshopBaseCards.FirstOrDefault().Id;
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 4, Entities = workshopProviderViewCardList.Skip(1).ToList() };
         workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))

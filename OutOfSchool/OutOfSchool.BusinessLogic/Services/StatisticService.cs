@@ -206,11 +206,11 @@ public class StatisticService : IStatisticService
 
     private async Task<List<WorkshopCard>> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
     {
-        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopsCards.Select(p => p.WorkshopId)).ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshopsCards.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var workshop in workshopsCards)
         {
-            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.Id);
             workshop.Rating = averageRatingDto?.Rate ?? default;
             workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }

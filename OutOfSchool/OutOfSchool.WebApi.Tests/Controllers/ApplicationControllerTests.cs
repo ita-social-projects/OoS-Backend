@@ -907,7 +907,7 @@ public class ApplicationControllerTests
     {
         return FakeWorkshops().Select(w => new WorkshopCard
         {
-            WorkshopId = w.Id,
+            Id = w.Id,
             ProviderTitle = w.ProviderTitle,
             ProviderOwnership = w.ProviderOwnership,
             Title = w.Title,

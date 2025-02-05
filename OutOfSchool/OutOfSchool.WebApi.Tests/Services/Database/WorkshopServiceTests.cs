@@ -565,7 +565,7 @@ public class WorkshopServiceTests
         result.TotalAmount.Should().Be(workshops.Count);
         result.Entities.Count.Should().Be(workshops.Count);
         result.Entities.Select(x => x.ProviderId).Should().Equal(workshops.Select(w => w.ProviderId));
-        result.Entities.Select(x => x.WorkshopId).Should().Equal(workshops.Select(w => w.Id));
+        result.Entities.Select(x => x.Id).Should().Equal(workshops.Select(w => w.Id));
         result.Entities.Select(x => x.UnreadMessages).Should().Equal(expectedUnreadMessages);
     }
     #endregion
@@ -1206,7 +1206,7 @@ public class WorkshopServiceTests
         mapperMock
             .Setup(m => m.Map<List<WorkshopCard>>(workshops))
             .Returns(workshops
-                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, WorkshopId = w.Id, }).ToList());
+                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, Id = w.Id, }).ToList());
     }
 
     private List<Application> SetupApplications(Workshop workshop, int approvedApplications)
@@ -1279,7 +1279,7 @@ public class WorkshopServiceTests
             .Select(w => new WorkshopCard()
             {
                 ProviderId = w.ProviderId,
-                WorkshopId = w.Id,
+                Id = w.Id,
             });
 
         return new SearchResult<WorkshopCard>()

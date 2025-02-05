@@ -8,7 +8,7 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 public class WorkshopBaseCard : IHasRating
 {
     [Required]
-    public Guid WorkshopId { get; set; }
+    public Guid Id { get; set; }
 
     [Required]
     [MaxLength(Constants.MaxProviderFullTitleLength)]

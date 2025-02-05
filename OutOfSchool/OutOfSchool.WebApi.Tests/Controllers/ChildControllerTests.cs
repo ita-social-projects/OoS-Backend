@@ -328,7 +328,7 @@ public class ChildControllerTests
             .Generate()
             .WithWorkshopCard(new WorkshopCard
             {
-                WorkshopId = existingWorkshop.Id,
+                Id = existingWorkshop.Id,
                 ProviderTitle = existingWorkshop.ProviderTitle,
                 ProviderOwnership = existingWorkshop.ProviderOwnership,
                 Title = existingWorkshop.Title,

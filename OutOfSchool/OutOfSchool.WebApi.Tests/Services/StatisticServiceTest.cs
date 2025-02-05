@@ -180,7 +180,7 @@ public class StatisticServiceTest
             .Returns(workshopsMock)
             .Verifiable();
 
-        var expectedWorkshopCardsIds = expectedWorkshopCards.Select(wc => wc.WorkshopId).ToList();
+        var expectedWorkshopCardsIds = expectedWorkshopCards.Select(wc => wc.Id).ToList();
         var ratings = RatingsGenerator.GetAverageRatings(expectedWorkshopCardsIds);
 
         averageRatingServiceMock
@@ -602,8 +602,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
-            new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
+            new WorkshopCard {Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
+            new WorkshopCard {Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
         };
     }
 
@@ -613,7 +613,7 @@ public class StatisticServiceTest
         {
             new WorkshopCard
             {
-                WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
+                Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
                 Title = "w3",
                 Address = new AddressDto
                 {
