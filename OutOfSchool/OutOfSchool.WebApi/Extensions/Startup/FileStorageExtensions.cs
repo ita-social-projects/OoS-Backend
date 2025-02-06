@@ -26,13 +26,14 @@ public static class FileStorageExtensions
         bool isImagesFeatureEnabled = false)
     {
         _ = services ?? throw new ArgumentNullException(nameof(services));
-        ValidateOptions(options);
 
         // Use fake storage if images are disabled or fake provider is configured
         if (!isImagesFeatureEnabled || options.Provider == StorageProviderType.Fake)
         {
             return services.AddTransient<IImageStorage, FakeImagesStorage>();
         }
+        
+        ValidateOptions(options);
 
         switch (options.Provider)
         {
