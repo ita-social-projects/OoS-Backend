@@ -285,4 +285,15 @@ public static class Constants
         public const string AikomProviderId = "aikom_provider_id";
         public const string ExternalIdProviderName = "external_id_provider_name";
     }
+    public static class OpenIddictScopes
+    {
+        public const string ExternalExportRead = "external_export.read";
+        public const string OutOfSchoolApi = "outofschoolapi";
+    }
+
+    public static class OpenIddictResources
+    {
+        public const string ExternalApi = "external_api";
+        public const string OutOfSchoolApi = "outofschool_api";
+    }
 }

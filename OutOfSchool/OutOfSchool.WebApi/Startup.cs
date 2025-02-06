@@ -126,14 +126,14 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapHealthChecks("/healthz/active", new HealthCheckOptions
+        {
+            Predicate = healthCheck => healthCheck.Name == "Liveness",
+            ResponseWriter = async (context, _) =>
             {
-                Predicate = healthCheck => healthCheck.Name == "Liveness",
-                ResponseWriter = async (context, _) =>
-                {
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync("{\"status\":\"Healthy\"}");
-                },
-            })
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{\"status\":\"Healthy\"}");
+            },
+        })
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
@@ -652,5 +652,15 @@ public static class Startup
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("ExternalClientPolicy", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("scope", Constants.OpenIddictScopes.ExternalExportRead);
+                policy.RequireClaim("aud", Constants.OpenIddictResources.ExternalApi); 
+            });
+        });
     }
 }

@@ -13,4 +13,6 @@ public class OpenIdClient
     public Dictionary<string, string> DisplayNames { get; set; }
 
     public bool IsIntrospection { get; set; }
+
+    public string ClientSecret { get; set; }
 }

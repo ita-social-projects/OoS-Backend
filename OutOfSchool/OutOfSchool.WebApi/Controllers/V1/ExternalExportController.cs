@@ -10,6 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/export")]
+[Authorize(Policy = "ExternalClientPolicy")]
 public class ExternalExportController : ControllerBase
 {
     private readonly IExternalExportService externalProviderService;
@@ -32,7 +33,7 @@ public class ExternalExportController : ControllerBase
     [Route("providers")]
     public async Task<IActionResult> GetProvidersByFilter([FromQuery] DateTime updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetProviders(updatedAfter, offsetFilter)
+   await externalProviderService.GetProviders(updatedAfter, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
@@ -48,7 +49,7 @@ public class ExternalExportController : ControllerBase
     [Route("workshops")]
     public async Task<IActionResult> GetWorkshopsByFilter([FromQuery] DateTime updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
+         await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>

@@ -173,7 +173,9 @@ public static class Startup
                     OpenIddictConstants.Scopes.Email,
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Roles,
-                    "outofschoolapi");
+                    Constants.OpenIddictScopes.OutOfSchoolApi,
+                    Constants.OpenIddictScopes.ExternalExportRead
+                    );
 
                 var aspNetCoreBuilder = options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()
