@@ -1,8 +1,10 @@
-﻿namespace OutOfSchool.AikomApiClient.Models;
+﻿using OutOfSchool.AikomApiClient.Models.Contract;
 
-public class GetUniversityRequest(int id) : ApiRequest(
+namespace OutOfSchool.AikomApiClient.Models.Requests;
+
+public class GetUniversityRequest(int id) : ApiRequest<GetUniversityRequestData>(
     BusinessProcessKeys.GetUniversity,
-    new StartVariables 
+    new ()
     { 
         Request = new GetUniversityRequestData
         {

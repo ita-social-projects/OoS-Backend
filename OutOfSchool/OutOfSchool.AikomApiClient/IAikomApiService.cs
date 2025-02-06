@@ -1,10 +1,11 @@
-﻿using OutOfSchool.AikomApiClient.Models;
+﻿using OutOfSchool.AikomApiClient.Models.Data;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AikomApiClient;
 
 public interface IAikomApiService
 {
-    Task<ResponseDto> SearchUniversity(string edrpou);
+    Task<Either<ErrorResponse, SearchUniversityDto>> SearchUniversity(string edrpou);
 
-    Task<ResponseDto> GetUniversity(int id);
+    Task<Either<ErrorResponse, GetUniversityDto>> GetUniversity(int id);
 }

@@ -1,4 +1,5 @@
-﻿using OutOfSchool.AikomApiClient.Models;
+﻿using OutOfSchool.AikomApiClient.Models.Data;
+using OutOfSchool.AikomApiClient.Models.Responses;
 
 namespace OutOfSchool.AikomApiClient.Extensions;
 

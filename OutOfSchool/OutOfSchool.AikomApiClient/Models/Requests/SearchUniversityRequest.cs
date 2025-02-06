@@ -1,9 +1,10 @@
-﻿namespace OutOfSchool.AikomApiClient.Models;
+﻿using OutOfSchool.AikomApiClient.Models.Contract;
 
-public class SearchUniversityRequest(string edrpou) 
-    : ApiRequest(
+namespace OutOfSchool.AikomApiClient.Models.Requests;
+
+public class SearchUniversityRequest(string edrpou) : ApiRequest<SearchUniversityRequestData>(
         BusinessProcessKeys.SearchUniversity,
-        new StartVariables
+        new ()
         {
             Request = new SearchUniversityRequestData
             { 

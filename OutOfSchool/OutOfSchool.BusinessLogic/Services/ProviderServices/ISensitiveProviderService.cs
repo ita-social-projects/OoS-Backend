@@ -1,7 +1,7 @@
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 
-namespace OutOfSchool.BusinessLogic.Services;
+namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 public interface ISensitiveProviderService
 {

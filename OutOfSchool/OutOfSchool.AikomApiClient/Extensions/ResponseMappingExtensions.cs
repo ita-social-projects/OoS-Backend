@@ -1,31 +1,28 @@
-﻿using OutOfSchool.AikomApiClient.Models;
+﻿using System.Net;
+using OutOfSchool.AikomApiClient.Models.Contract;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.AikomApiClient.Extensions;
 
 public static class ResponseMappingExtensions
 {
-    public static ResponseDto ToResponseDto<TData>(
+    public static Either<ErrorResponse, TDto> ToResponseDto<TData, TDto>(
         this ApiResponse<TData>? response,
-        Exception? exception,
-        Func<TData, object> mapResult)
+        Func<TData, TDto> mapResult)
         where TData : class
+        where TDto : class
     {
-        if (exception != null)
-        {
-            return new ResponseDto
-            {
-                IsSuccess = false,
-                ErrorMessage = exception.Message,
-            };
-        }
-
         if (response?.ResultVariables.Response.Error != null)
         {
-            return new ResponseDto
+            return new ErrorResponse
             {
-                IsSuccess = false,
-                ErrorMessage = response.ResultVariables.Response.Error.Message,
-                ErrorCode = response.ResultVariables.Response.Error.Code,
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = response.ResultVariables.Response.Error.Message,
+                ApiErrorResponse = new ApiErrorResponse([
+                    new ApiError("Aikom", response.ResultVariables.Response.Error.Code.ToString(),
+                        response.ResultVariables.Response.Error.Message)
+                ]),
             };
         }
 
@@ -33,17 +30,13 @@ public static class ResponseMappingExtensions
 
         if (data is null)
         {
-            return new ResponseDto
+            return new ErrorResponse
             {
-                IsSuccess = false,
-                ErrorMessage = "Aikom API returned an empty result",
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Aikom API returned an empty result",
             };
         }
 
-        return new ResponseDto
-        {
-            IsSuccess = true,
-            Result = mapResult.Invoke(data),
-        };
+        return mapResult(data);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.AikomApiClient.Models;
+﻿namespace OutOfSchool.AikomApiClient.Models.Data;
 
 public class SearchUniversityDto
 {

@@ -1,6 +1,13 @@
-﻿namespace OutOfSchool.AikomApiClient.Models;
+﻿using OutOfSchool.AikomApiClient.Models.Contract;
+using OutOfSchool.Common.Models;
 
-public class GetUniversityDto
+namespace OutOfSchool.AikomApiClient.Models.Responses;
+
+public class GetUniversityResponse : ApiResponse<GetUniversityResponseData>, IResponse
+{
+}
+
+public class GetUniversityResponseData
 {
     public required string FullName { get; set; }
 
@@ -12,10 +19,10 @@ public class GetUniversityDto
 
     public required string Phone { get; set; }
 
-    public required UniversityBossDto UniversityBoss { get; set; }
+    public required UniversityBoss UniversityBoss { get; set; }
 }
 
-public class UniversityBossDto
+public class UniversityBoss
 {
     public required string BossLastName { get; set; }
 
@@ -23,7 +30,8 @@ public class UniversityBossDto
 
     public string? BossMiddleName { get; set; }
 
-    public string? BossRnokp { get; set; }
+    public string? BossRnokpp { get; set; }
 
     public required string UniversityBossEMail { get; set; }
 }
+
