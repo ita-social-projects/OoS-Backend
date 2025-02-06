@@ -51,7 +51,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
 
         var institutionHierarchy = mapper.Map<InstitutionHierarchy>(dto);
 
-        var newInstitutionHierarchy = await repository.Create(institutionHierarchy, dto.Directions.Select(d => d.Id).ToList()).ConfigureAwait(false);
+        var newInstitutionHierarchy = await repository.Create(institutionHierarchy, dto.SubDirections.Select(d => d.Id).ToList()).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionHierarchy with Id = {newInstitutionHierarchy?.Id} created successfully.");
 
@@ -86,14 +86,14 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
         logger.LogInformation("Getting all InstitutionHierarchies started.");
 
         var institutionHierarchies = await repository.Get(asNoTracking: true)
-            .Include(x => x.Directions)
+            .Include(x => x.SubDirections)
             .Include(x => x.Institution)
             .ToListAsync()
             .ConfigureAwait(false);
 
         logger.LogInformation(!institutionHierarchies.Any()
             ? "InstitutionHierarchy table is empty."
-            : $"All {institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table.");
+            : $"All {institutionHierarchies.Count} records were successfully received from the InstitutionHierarchy table.");
 
         return institutionHierarchies.Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
     }
@@ -233,7 +233,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
         institutionHierarchy = await repository
             .Update(
                 institutionHierarchy,
-                dto.Directions.Select(d => d.Id).ToList())
+                dto.SubDirections.Select(d => d.Id).ToList())
             .ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionHierarchy with Id = {institutionHierarchy?.Id} updated succesfully.");

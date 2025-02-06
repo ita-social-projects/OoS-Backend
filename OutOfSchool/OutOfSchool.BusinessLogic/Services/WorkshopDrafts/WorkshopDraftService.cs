@@ -46,7 +46,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly int maxParallelUploads;
 
     private readonly Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>> includeDirectionsFunc =
-        i => i.Include(i => i.Directions);
+        i => i.Include(i => i.SubDirections);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopDraftService"/> class.
@@ -402,7 +402,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             responseDto.DirectionIds = institutionHierarchies
                 .FirstOrDefault(i => 
                     i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
-                ?.Directions
+                ?.SubDirections
                 .Select(d => d.Id)
                 .ToList();
 
@@ -747,7 +747,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             id: (Guid) workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
 
-        return institutionHierarchyDto.Directions.Select(d => d.Id).ToList();
+        return institutionHierarchyDto.SubDirections.Select(d => d.Id).ToList();
     }
 
     private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
@@ -812,7 +812,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             var institutionHierarchy = institutionHierarchies
                 .FirstOrDefault(i => i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId);
 
-            responseDto.WorkshopDetails.DirectionIds = institutionHierarchy?.Directions
+            responseDto.WorkshopDetails.DirectionIds = institutionHierarchy?.SubDirections
                 .Select(d => d.Id)
                 .ToList();
 

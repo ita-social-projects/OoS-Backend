@@ -263,11 +263,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 1,
+                            DirectionId = 1,
+                            Direction = new Direction
+                            {
+                                Id = 1
+                            }
                         },
                     },
                     InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
@@ -300,11 +305,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 2,
+                            DirectionId = 2,
+                            Direction = new Direction
+                            {
+                                Id = 2
+                            }
                         },
                     },
                     InstitutionId = Guid.NewGuid(),
@@ -338,11 +348,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 3,
+                            DirectionId = 3,
+                            Direction = new Direction
+                            {
+                                Id = 3
+                            }
                         },
                     },
                     InstitutionId = Guid.NewGuid(),
@@ -384,11 +399,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 1,
+                            DirectionId = 1,
+                            Direction = new Direction
+                            {
+                                Id = 1
+                            }
                         },
                     },
                 },
@@ -421,11 +441,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 2,
+                            DirectionId = 2,
+                            Direction = new Direction
+                            {
+                                Id = 2
+                            }
                         },
                     },
                 },
@@ -459,11 +484,16 @@ public class StatisticServiceTest
                 InstitutionHierarchy = new InstitutionHierarchy
                 {
                     Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
-                    Directions = new List<Direction>
+                    SubDirections = new List<SubDirection>
                     {
-                        new Direction
+                        new SubDirection
                         {
                             Id = 3,
+                            DirectionId = 3,
+                            Direction = new Direction
+                            {
+                                Id = 3
+                            }
                         },
                     },
                 },
@@ -514,11 +544,16 @@ public class StatisticServiceTest
                     Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                                 Id = 1,
+                                DirectionId = 1,
+                                Direction = new Direction
+                                {
+                                    Id = 1
+                                }
                             },
                         },
                         InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
@@ -532,11 +567,16 @@ public class StatisticServiceTest
                     Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                                 Id = 2,
+                                DirectionId = 2,
+                                Direction = new Direction
+                                {
+                                    Id = 2
+                                }
                             },
                         },
                         InstitutionId = Guid.NewGuid(),
@@ -550,9 +590,9 @@ public class StatisticServiceTest
                     Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), InstitutionHierarchyId = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                             Id = 2,
                             },
@@ -568,11 +608,16 @@ public class StatisticServiceTest
                     Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                                 Id = 3,
+                                DirectionId = 3,
+                                Direction = new Direction
+                                {
+                                    Id = 3
+                                }
                             },
                         },
                         InstitutionId = Guid.NewGuid(),
@@ -586,11 +631,16 @@ public class StatisticServiceTest
                     Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                                 Id = 3,
+                                DirectionId = 3,
+                                Direction = new Direction
+                                {
+                                    Id = 3
+                                }
                             },
                         },
                         InstitutionId = Guid.NewGuid(),
@@ -604,11 +654,16 @@ public class StatisticServiceTest
                     Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), InstitutionHierarchy = new InstitutionHierarchy
                     {
                         Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"),
-                        Directions = new List<Direction>
+                        SubDirections = new List<SubDirection>
                         {
-                            new Direction
+                            new SubDirection
                             {
                                 Id = 3,
+                                DirectionId = 3,
+                                Direction = new Direction
+                                {
+                                    Id = 3
+                                }
                             },
                         },
                         InstitutionId = Guid.NewGuid(),

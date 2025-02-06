@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -14,97 +8,80 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class DirectionControllerTests
+public class SubDirectionControllerTests
 {
-    private DirectionController controller;
-    private Mock<IDirectionService> service;
-    private ClaimsPrincipal user;
+    private SubDirectionController controller;
+    private Mock<ISubDirectionService> service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
 
-    private IEnumerable<DirectionDto> directions;
-    private DirectionDto direction;
+    private IEnumerable<SubDirectionDto> subDirections;
+    private SubDirectionDto subDirection;
 
     [SetUp]
     public void Setup()
     {
-        service = new Mock<IDirectionService>();
+        service = new Mock<ISubDirectionService>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-        controller = new DirectionController(service.Object, localizer.Object);
-        user = new ClaimsPrincipal(new ClaimsIdentity());
-        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        controller = new SubDirectionController(service.Object, localizer.Object);
 
-        directions = FakeDirections();
-        direction = FakeDirection();
+        subDirections = FakeSubDirections();
+        subDirection = FakeSubDirection();
     }
 
     [Test]
     public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnOkObjectResult()
     {
         // Arrange
-        var data = new SearchResult<DirectionDto>()
+        var data = new SearchResult<SubDirectionDto>()
         {
-            Entities = new List<DirectionDto>() { new DirectionDto() },
+            Entities = new List<SubDirectionDto>() { new SubDirectionDto() },
             TotalAmount = 1,
         };
+        var directionId = 1;
 
-        var directionFilter = new DirectionFilter();
+        var filter = new SearchStringFilter();
 
-        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+        service.Setup(x => x.GetByFilter(directionId, filter)).ReturnsAsync(data);
 
         // Act
-        var result = await controller.GetByFilter(directionFilter, true);
+        var result = await controller.GetByFilter(directionId, filter);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should()
-              .BeOfType<OkObjectResult>()
-              .Which.StatusCode
-              .Should()
-              .Be(StatusCodes.Status200OK);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        Assert.AreEqual(StatusCodes.Status200OK, (result as OkObjectResult).StatusCode);
     }
 
     [Test]
     public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnNoContentObjectResult()
     {
         // Arrange
-        var data = new SearchResult<DirectionDto>()
+        var data = new SearchResult<SubDirectionDto>()
         {
 
         };
+        var directionId = 1;
 
-        var directionFilter = new DirectionFilter();
+        var filter = new SearchStringFilter();
 
-        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
-
-        // Act
-        var result = await controller.GetByFilter(directionFilter, true);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should()
-              .BeOfType<NoContentResult>()
-              .Which.StatusCode
-              .Should()
-              .Be(StatusCodes.Status204NoContent);
-    }
-
-    [Test]
-    public async Task Get_WhenCalled_ReturnsOkResultObject()
-    {
-        // Arrange
-        service.Setup(x => x.GetAll()).ReturnsAsync(directions);
+        service.Setup(x => x.GetByFilter(directionId, filter)).ReturnsAsync(data);
 
         // Act
-        var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetByFilter(directionId, filter);
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<NoContentResult>(result);
+        Assert.AreEqual(StatusCodes.Status204NoContent, (result as NoContentResult).StatusCode);
     }
 
     [Test]
@@ -112,7 +89,7 @@ public class DirectionControllerTests
     public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult(long id)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id)).ReturnsAsync(subDirections.SingleOrDefault(x => x.Id == id));
 
         // Act
         var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -127,7 +104,7 @@ public class DirectionControllerTests
     public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id)).ReturnsAsync(subDirections.SingleOrDefault(x => x.Id == id));
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -139,7 +116,7 @@ public class DirectionControllerTests
     public async Task GetById_WhenIdIsInvalid_ReturnsNotFound(long id)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync((long id) => directions.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id)).ReturnsAsync((long id) => subDirections.SingleOrDefault(x => x.Id == id));
 
         // Act
         var result = await controller.GetById(id).ConfigureAwait(false) as NotFoundObjectResult;
@@ -148,30 +125,32 @@ public class DirectionControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(404, result.StatusCode);
     }
-    
+
     [Test]
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        var returnedResult = Result<DirectionDto>.Success(direction);
-        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
+        var directionId = 1;
+        var returnedResult = Result<SubDirectionDto>.Success(subDirection);
+        service.Setup(x => x.Create(directionId, subDirection)).ReturnsAsync(returnedResult);
 
         // Act
-        var result = await controller.Create(direction).ConfigureAwait(false) as CreatedAtActionResult;
+        var result = await controller.Create(directionId, subDirection).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(201, result.StatusCode);
     }
-    
+
     [Test]
     public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
-        controller.ModelState.AddModelError("CreateDirection", "Invalid model state.");
+        var directionId = 1;
+        controller.ModelState.AddModelError("CreateSubDirection", "Invalid model state.");
 
         // Act
-        var result = await controller.Create(direction).ConfigureAwait(false);
+        var result = await controller.Create(directionId, subDirection).ConfigureAwait(false);
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -182,47 +161,48 @@ public class DirectionControllerTests
     public async Task Create_WhenModelTitleIsDuplicated_ReturnsBadRequestObjectResult()
     {
         //Arrange
-        var returnedResult = Result<DirectionDto>.Failed(new OperationError()
+        var returnedResult = Result<SubDirectionDto>.Failed(new OperationError()
         {
             Code = "400",
             Description = "There is already a Direction with such a data.",
         });
-        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
+        var directionId = 1;
+        service.Setup(x => x.Create(directionId, subDirection)).ReturnsAsync(returnedResult);
 
         // Act
-        var result = await controller.Create(direction).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Create(directionId, subDirection).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
-    private DirectionDto FakeDirection()
+    private SubDirectionDto FakeSubDirection()
     {
-        return new DirectionDto()
+        return new SubDirectionDto()
         {
             Title = "Test1",
             Description = "Test1",
         };
     }
 
-    private IEnumerable<DirectionDto> FakeDirections()
+    private IEnumerable<SubDirectionDto> FakeSubDirections()
     {
-        return new List<DirectionDto>()
+        return new List<SubDirectionDto>()
         {
-            new DirectionDto()
+            new SubDirectionDto()
             {
                 Id = 1,
                 Title = "Test1",
                 Description = "Test1",
             },
-            new DirectionDto
+            new SubDirectionDto
             {
                 Id = 2,
                 Title = "Test2",
                 Description = "Test2",
             },
-            new DirectionDto
+            new SubDirectionDto
             {
                 Id = 3,
                 Title = "Test3",

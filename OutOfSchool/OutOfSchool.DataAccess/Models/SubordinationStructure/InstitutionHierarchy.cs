@@ -27,5 +27,5 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>, ISoftDeleted
 
     public virtual Institution Institution { get; set; }
 
-    public virtual List<Direction> Directions { get; set; }
+    public virtual List<SubDirection> SubDirections { get; set; }
 }
