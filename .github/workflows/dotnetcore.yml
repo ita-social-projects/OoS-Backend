@@ -67,6 +67,14 @@ jobs:
       with:
         dotnet-version: 8.0.300
 
+    - name: Download Libraries
+      if: runner.os != 'Windows'
+      env:
+        IIT_URL: ${{ secrets.IIT_URL }}
+      run: |
+        curl --silent --show-error --fail -o "./iit.zip" $IIT_URL
+        unzip -j -o "./iit.zip" 'Modules/*' -d "./Nuget"
+
     - name: Clean
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
 
