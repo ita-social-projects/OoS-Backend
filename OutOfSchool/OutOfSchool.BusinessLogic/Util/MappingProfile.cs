@@ -177,7 +177,7 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
@@ -449,7 +449,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()));
 
         CreateMap<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(
                 dest => dest.DirectionIds,
@@ -458,11 +458,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus));
 
-        //analyze usage of WorkshopProviderViewCard
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats())) //ignore TakenSeats
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<Child, ChildDto>()

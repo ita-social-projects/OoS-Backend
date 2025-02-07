@@ -48,6 +48,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ICodeficatorService codeficatorService;
     private readonly ISearchStringService searchStringService;
     private readonly ITagService tagService;
+    private readonly IApplicationRepository applicationRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -87,7 +88,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         IRegionAdminService regionAdminService,
         ICodeficatorService codeficatorService,
         ITagService tagService,
-        ISearchStringService searchStringService)
+        ISearchStringService searchStringService,
+        IApplicationRepository applicationRepository)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -106,6 +108,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.codeficatorService = codeficatorService;
         this.searchStringService = searchStringService;
         this.tagService = tagService;
+        this.applicationRepository = applicationRepository;
     }
 
     /// <inheritdoc/>
@@ -126,7 +129,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
-        return mapper.Map<WorkshopDto>(newWorkshop);
+        var workshopDtos = mapper.Map<WorkshopDto>(newWorkshop);
+
+        return workshopDtos;
     }
 
     /// <inheritdoc/>
@@ -300,7 +305,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
-        //Fill Pending Applications method
         await FillPendingApplications(workshopProviderViewCards).ConfigureAwait(false);
 
         var workshopsIds = workshops.Select(x => x.Id).ToList();
@@ -321,7 +325,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         workshopProviderViewCards.ForEach(workshop =>
         {
-            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.WorkshopId);
+            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.Id);
             workshop.UnreadMessages = matchingItem?.UnreadMessageCount ?? 0;
         });
 
@@ -1020,11 +1024,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)
         where T : WorkshopBaseCard
     {
-        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var workshop in workshops)
         {
-            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.Id);
             workshop.Rating = averageRatingDto?.Rate ?? default;
             workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
@@ -1204,11 +1208,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task FillPendingApplications(List<WorkshopProviderViewCard> viewCards)
     {
-        var ids = viewCards.Select(w => w.WorkshopId).ToList();
+        var ids = viewCards.Select(w => w.Id).ToList();
         var pendingApplicationsList = await workshopRepository.AmountOfPendingApplications(ids).ConfigureAwait(false);
         foreach (var card in viewCards)
         {
-            var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.WorkshopId)?.PendingApplications;
+            var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.Id)?.PendingApplications;
             card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
     }
