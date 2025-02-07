@@ -12,6 +12,7 @@ steps:
     - --buildpack=file://./buildpacks/cert
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --extension=file://./buildpacks/unzip
+    - --env=BP_NUGET_RESTORE_MSBUILD_ARGS=/p:Configuration=Release
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.Encryption/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --env=BP_IIT_URL=${_IIT_URL}

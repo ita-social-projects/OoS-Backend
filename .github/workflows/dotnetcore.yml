@@ -68,7 +68,6 @@ jobs:
         dotnet-version: 8.0.300
 
     - name: Download Libraries
-      if: runner.os != 'Windows'
       env:
         IIT_URL: ${{ secrets.IIT_URL }}
       run: |
