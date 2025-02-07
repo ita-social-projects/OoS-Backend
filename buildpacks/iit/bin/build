@@ -8,7 +8,7 @@ function topic() {
 topic "IIT Buildpack"
 
 layers_dir="$CNB_LAYERS_DIR"
-nuget_dir="${CNB_APP_DIR}/Nuget"
+nuget_dir="${CNB_APP_DIR:-$(pwd)}/Nuget"
 
 iit_layer="${CNB_LAYERS_DIR}/iit"
 mkdir -p "${iit_layer}"
@@ -26,15 +26,15 @@ if [[ "${iit_version}" == "${cached_iit_version}" ]]; then
 else
     topic "Downloading and extracting IIT libraries"
     rm -rf "${iit_layer}/"*
-    curl --silent --show-error --fail -o "./iit.zip" $BP_IIT_URL
+    curl --silent --show-error --fail -o "${iit_layer}/iit.zip" $BP_IIT_URL
     if [ $? -ne 0 ]
     then
         echo "Failed to download libraries"
         # Fail build
         exit 100
     fi
-    unzip -j -o "./iit.zip" 'Modules/*' -d "${iit_layer}/"
-    rm "./iit.zip"
+    unzip -j -o "${iit_layer}/iit.zip" 'Modules/*' -d "${iit_layer}/nuget"
+    rm "${iit_layer}/iit.zip"
 
     # TODO: LD_LIBRARY_PATH is automatically set by buildpack lifecycle
     # TODO: leave this here in case the behaviour changes
@@ -48,12 +48,13 @@ fi
 
 topic "Copying libraries to local Nuget folder"
 
-cp "${iit_layer}"/*.nupkg "${nuget_dir}/"
+cp "${iit_layer}"/nuget/*.nupkg "${nuget_dir}/"
 
 topic "Finalizing layer for caching"
 
 cat > "${iit_layer}.toml" <<EOL
 [types]
+build = true
 cache = true
 [metadata]
 iit_version = "${iit_version}"
