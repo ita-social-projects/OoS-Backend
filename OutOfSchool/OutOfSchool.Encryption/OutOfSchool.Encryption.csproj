@@ -5,6 +5,7 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>db5c1f0a-62fe-42c7-ba72-df07e26ee2d9</UserSecretsId>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
@@ -40,6 +41,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="IIT.EUSignCP">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@ api = "0.9"
 [buildpack]
 description = "A buildpack to add a layer of C IIT libraries for encryption service"
 id = "outofschool/iit"
-version = "0.0.1"
+version = "0.0.2"
 name = "Buildpack for IIT"
 
 [[buildpack.licenses]]

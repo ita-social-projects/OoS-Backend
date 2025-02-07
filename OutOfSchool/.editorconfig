@@ -119,8 +119,8 @@ dotnet_diagnostic.SA1633.severity = none
 
 
 [*.props]
-tab_width = 4
-indent_size = 4
+tab_width = 2
+indent_size = 2
 end_of_line = crlf
 indent_style = space
 

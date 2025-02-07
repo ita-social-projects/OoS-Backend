@@ -16,7 +16,6 @@
         </PackageReference>
         <PackageReference Include="FluentAssertions" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-        <PackageReference Include="Microsoft.AspNet.Identity.Core" />
         <PackageReference Include="Moq" />
         <PackageReference Include="Bogus" />
         <PackageReference Include="NUnit" />
