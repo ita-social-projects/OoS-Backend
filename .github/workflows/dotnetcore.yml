@@ -79,7 +79,7 @@ jobs:
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
 
     - name: Restore dependencies
-      run: dotnet restore ./OutOfSchool/
+      run: dotnet restore /p:Configuration=Release ./OutOfSchool/
 
     - name: Build
       run: dotnet build --configuration Release --no-restore ./OutOfSchool
