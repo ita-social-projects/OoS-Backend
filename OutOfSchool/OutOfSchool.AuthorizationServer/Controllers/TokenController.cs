@@ -202,6 +202,11 @@ public class TokenController : Controller
                     {
                         identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
                     }
+                    if (result.Principal.HasClaim(AuthServerConstants.ClaimTypes.AikomProviderId))
+                    {
+                        identity.SetClaim(AuthServerConstants.ClaimTypes.AikomProviderId, 
+                            result.Principal.GetClaim(AuthServerConstants.ClaimTypes.AikomProviderId));
+                    }
                 }
                 else
                 {
@@ -323,6 +328,11 @@ public class TokenController : Controller
             if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
             {
                 identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
+            }
+            if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.AikomProviderId))
+            {
+                identity.SetClaim(AuthServerConstants.ClaimTypes.AikomProviderId, 
+                    signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.AikomProviderId));
             }
         }
         else

@@ -5,10 +5,9 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
+using OutOfSchool.AikomApiClient;
 using OutOfSchool.AuthCommon.Config;
-using OutOfSchool.AuthCommon.Models;
 using OutOfSchool.AuthCommon.ViewModels;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services.Enums;
 
@@ -28,6 +27,7 @@ public class ExternalAuthController : Controller
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IGovIdentityCommunicationService communicationService;
     private readonly OutOfSchoolDbContext dbContext;
+    private readonly IAikomProviderService aikomProviderService;
 
     public ExternalAuthController(
         SignInManager<User> signInManager,
@@ -37,7 +37,8 @@ public class ExternalAuthController : Controller
         IOptions<AuthorizationServerConfig> authServerConfig,
         IStringLocalizer<SharedResource> localizer,
         IGovIdentityCommunicationService communicationService,
-        OutOfSchoolDbContext dbContext)
+        OutOfSchoolDbContext dbContext,
+        IAikomProviderService aikomProviderService)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -47,6 +48,7 @@ public class ExternalAuthController : Controller
         this.localizer = localizer;
         this.communicationService = communicationService;
         this.dbContext = dbContext;
+        this.aikomProviderService = aikomProviderService;
     }
 
     [Route("~/external-login")]
@@ -148,9 +150,29 @@ public class ExternalAuthController : Controller
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
         try
         {
-            var user = await GetOrCreateUserAsync(userInfo, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]);
+            var selectedRole = result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
+            long? externalProviderId = null;
+            
+            // For provider role, verify director access before proceeding to database operations.
+            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                var verificationResult = await VerifyProviderAccessAsync(userInfo);
+                if (verificationResult.errorResult != null)
+                {
+                    ModelState.AddModelError(string.Empty, verificationResult.errorResult);
+                    return View("~/Views/Auth/Login.cshtml", new LoginViewModel
+                    {
+                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                        ReturnUrl = $"~/{AuthServerConstants.LoginPath}",
+                    });
+                }
+
+                externalProviderId = verificationResult.externalProviderId;
+            }
+
+            var user = await GetOrCreateUserAsync(userInfo, selectedRole);
             var individual = await GetOrCreateIndividualAsync(userInfo, user);
-            var claims = BuildClaims(individual, userInfo, result);
+            var claims = BuildClaims(individual, userInfo, result, externalProviderId);
             var properties = await SignInWithClaimsAsync(result, claims);
 
             await dbContext.SaveChangesAsync();
@@ -170,6 +192,54 @@ public class ExternalAuthController : Controller
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
                 ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
             });
+        }
+    }
+
+    /// <summary>
+    /// Verifies if the user has access as a provider director.
+    /// </summary>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <returns>A tuple containing error result (if any) and external provider ID (if verified).</returns>
+    private async Task<(LocalizedString? errorResult, long? externalProviderId)> VerifyProviderAccessAsync(
+        UserInfoResponse userInfo)
+    {
+        try
+        {
+            var verificationResult = await aikomProviderService
+                .VerifyProviderAndDirectorAccess(userInfo.EdrpouCode, userInfo.DrfoCode)
+                .ConfigureAwait(false);
+
+            // TODO: this is a dirty either to non-either transition, but it works :)
+            return verificationResult.Match<(LocalizedString? errorResult, long? externalProviderId)>(
+                error =>
+                {
+                    logger.LogError(
+                        "Failed to verify provider access. EDRPOU: {Edrpou}, DRFO: {Drfo}, Error: {Error}",
+                        userInfo.EdrpouCode,
+                        userInfo.DrfoCode,
+                        error.Message);
+
+                    return (localizer["ExternalProviderVerificationFailed"], null);
+                },
+                providerInfo =>
+                {
+                    if (providerInfo?.HasAccess ?? false)
+                    {
+                        return (null, providerInfo.ProviderInfo.Id);
+                    }
+
+                    logger.LogWarning(
+                        "User is not a director of the provider. EDRPOU: {Edrpou}, DRFO: {Drfo}",
+                        userInfo.EdrpouCode,
+                        userInfo.DrfoCode);
+
+                    return (localizer["NotAProviderDirector"], null);
+                });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error verifying provider access for EDRPOU: {Edrpou}", userInfo.EdrpouCode);
+            throw;
         }
     }
 
@@ -252,8 +322,13 @@ public class ExternalAuthController : Controller
     /// <param name="individual">Individual entity.</param>
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="result">Authentication result.</param>
+    /// <param name="externalProviderId">Optional external provider ID for provider role.</param>
     /// <returns>List of <see cref="Claim"/> for the user.</returns>
-    private List<Claim> BuildClaims(Individual individual, UserInfoResponse userInfo, AuthenticateResult result)
+    private List<Claim> BuildClaims(
+        Individual individual,
+        UserInfoResponse userInfo,
+        AuthenticateResult result,
+        long? externalProviderId = null)
     {
         var claims = new List<Claim>
         {
@@ -266,6 +341,7 @@ public class ExternalAuthController : Controller
                 OpenIddictConstants.Claims.Private.ProviderName,
                 result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
         };
+
         if (!string.IsNullOrEmpty(result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)))
         {
             claims.Add(new(
@@ -278,6 +354,12 @@ public class ExternalAuthController : Controller
                 StringComparison.CurrentCultureIgnoreCase))
         {
             claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
+            
+            if (externalProviderId.HasValue)
+            {
+                claims.Add(new Claim(AuthServerConstants.ClaimTypes.AikomProviderId, 
+                    externalProviderId.Value.ToString()));
+            }
         }
 
         return claims;

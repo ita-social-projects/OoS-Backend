@@ -13,6 +13,7 @@ public static class AuthServerConstants
         public const string UserId = "user_id";
         public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
+        public const string AikomProviderId = "aikom_provider_id";
     }
 
     public static class ExternalQuery
