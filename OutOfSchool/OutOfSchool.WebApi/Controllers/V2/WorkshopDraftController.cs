@@ -165,17 +165,17 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Reject(Guid id, [FromBody] string rejectionMessage)
+    [HttpPut]
+    public async Task<IActionResult> Reject(WorkshopDraftRejectionDto workshopDraftRejection)
     {
-        if (string.IsNullOrWhiteSpace(rejectionMessage))
+        if (string.IsNullOrWhiteSpace(workshopDraftRejection.RejectionMessage))
         {
             return BadRequest("RejectionMessage can`t be empty");
         }
 
         try
         {
-            await workshopDraftService.Reject(id, rejectionMessage);
+            await workshopDraftService.Reject(workshopDraftRejection.WorkshopDraftId, workshopDraftRejection.RejectionMessage);
             return Ok();
         }
         catch (EntityDeletedConflictException ex)

@@ -168,13 +168,17 @@ public class WorkshopDraftControllerTests
     public async Task Reject_WhenModelIsValid_ShouldReturnOk()
     {
         // Arrange  
-        var rejectionMessage = "I don`t like it";
-        
-        workshopDraftServiceMoq.Setup(x => x.Reject(workshopV2Dto.Id, rejectionMessage))
+        var rejectionDto = new WorkshopDraftRejectionDto
+        {
+            WorkshopDraftId = workshopV2Dto.Id,
+            RejectionMessage = "I don’t like it"
+        };
+
+        workshopDraftServiceMoq.Setup(x => x.Reject(rejectionDto.WorkshopDraftId, rejectionDto.RejectionMessage))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
 
         // Act
-        var result = await controller.Reject(workshopV2Dto.Id, rejectionMessage).ConfigureAwait(false) as OkResult;
+        var result = await controller.Reject(rejectionDto).ConfigureAwait(false) as OkResult;
 
         // Assert        
         workshopDraftServiceMoq.VerifyAll();
@@ -185,10 +189,14 @@ public class WorkshopDraftControllerTests
     public async Task Reject_WhenRejectionMessageIsEmpty_ShouldReturnBadRequest()
     {
         // Arrange        
-        var rejectionMessage = string.Empty;
+        var rejectionDto = new WorkshopDraftRejectionDto
+        {
+            WorkshopDraftId = workshopV2Dto.Id,
+            RejectionMessage = string.Empty
+        };
 
         // Act
-        var result = await controller.Reject(workshopV2Dto.Id, rejectionMessage).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Reject(rejectionDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert             
         Assert.AreEqual(BadRequest, result.StatusCode);
