@@ -72,7 +72,7 @@ public class WorkshopDraftController : ControllerBase
 
         return CreatedAtAction(
             nameof(Create),
-            new { id = result.WorkshopDraft.Id },
+            new { id = result.WorkshopDraft.WorkshopDraftId },
             result);
     }
     

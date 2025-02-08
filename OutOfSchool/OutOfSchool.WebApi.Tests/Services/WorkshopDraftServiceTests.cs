@@ -118,7 +118,7 @@ public class WorkshopDraftServiceTests
 
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         var workshopResponse= mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
-        workshopResponse.Tags = [];
+        //workshopResponse.Tags = [];
 
         var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
         providerDto.UserId = userId;

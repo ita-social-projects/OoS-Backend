@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
@@ -150,7 +149,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             .ConfigureAwait(false);
 
         var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
-        createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
+        // createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
 
         logger.LogDebug("WorkshopDraft created successfully.");
 
@@ -693,5 +692,59 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         }
 
         return predicate;
+    }
+
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> FetchCardByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
+    {
+        logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
+
+        filter ??= new WorkshopDraftFilterAdministration();
+
+        var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
+
+        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
+        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
+
+        if (catottgIdAdmin > 0)
+        {
+            allowedSettlementIdsForAdmin = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(catottgIdAdmin)
+                .ConfigureAwait(false);
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            subSettlementsIdsByFilter = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
+                .ConfigureAwait(false);
+        }
+
+        var predicate = PredicateBuildForAdminds(
+            filter,
+            adminInstitutionId,
+            allowedSettlementIdsForAdmin,
+            subSettlementsIdsByFilter);
+
+        var workshopDrafts = await workshopDraftRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                whereExpression: predicate,
+                asNoTracking: true)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        var workshopDraftsCount = await workshopDraftRepository
+            .Count(predicate)
+            .ConfigureAwait(false);
+
+        logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);                
+
+        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftViewCardDto>(draft)).ToList();
+
+        return new SearchResult<WorkshopDraftViewCardDto>()
+        {
+            TotalAmount = workshopDraftsCount,
+            Entities = entities,
+        };
     }
 }
