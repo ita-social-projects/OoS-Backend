@@ -446,7 +446,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .IncludeBase<object, IHasRating>()
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()));
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
 
         CreateMap<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(s => s.Id))

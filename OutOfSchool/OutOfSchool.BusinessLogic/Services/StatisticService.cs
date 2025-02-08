@@ -199,6 +199,8 @@ public class StatisticService : IStatisticService
 
         var workshopsCard = mapper.Map<List<WorkshopCard>>(popularWorkshopsList);
 
+        await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopsCard, applicationRepository);
+
         var result = await GetWorkshopsWithAverageRating(workshopsCard).ConfigureAwait(false);
 
         return result;
