@@ -31,4 +31,9 @@ public class CurrentUserAccessor : ICurrentUser
                         claim.Type,
                         type,
                         StringComparison.OrdinalIgnoreCase) && (valueComparer?.Invoke(claim.Value) ?? true))) ?? false;
+
+    public string? GetClaimValue(string claimType)
+    {
+        return user?.FindFirst(claimType)?.Value;
+    }
 }
