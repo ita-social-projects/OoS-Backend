@@ -18,7 +18,7 @@ public class ExtractUserIdFromTokenResponseHandler : IOpenIddictClientHandler<Op
 
     public ValueTask HandleAsync(OpenIddictClientEvents.ProcessAuthenticationContext context)
     {
-        if (context.TokenResponse.TryGetParameter(AuthServerConstants.ClaimTypes.UserId, out var userId))
+        if (context.TokenResponse.TryGetParameter(Constants.ClaimTypes.UserId, out var userId))
         {
             var principal = context.MergedPrincipal.Identity as ClaimsIdentity;
             principal.AddClaim(new Claim(AuthServerConstants.ExternalAuthUserIdKey, userId.Value.ToString()));

@@ -24,6 +24,7 @@ using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services;
@@ -169,7 +170,7 @@ public class ExternalAuthControllerTests
         // Assert
         signInManager.Verify(s =>
                 s.SignInWithClaimsAsync(user, It.IsAny<AuthenticationProperties>(), It.Is<IEnumerable<Claim>>(claims =>
-                    claims.Any(c => c.Type == AuthServerConstants.ClaimTypes.AikomProviderId && c.Value == TestExternalProviderId.ToString()))),
+                    claims.Any(c => c.Type == Constants.ClaimTypes.AikomProviderId && c.Value == TestExternalProviderId.ToString()))),
             Times.Once);
 
         Assert.IsInstanceOf<RedirectResult>(result);
@@ -387,7 +388,9 @@ public class ExternalAuthControllerTests
                 Id = TestExternalProviderId,
                 FullName = "Test Provider",
                 ShortName = "Test",
-                Address = "Test Address"
+                Address = "Test Address",
+                Email = "test@test.com",
+                Phone = "+380671234567",
             }
         };
 
@@ -406,7 +409,9 @@ public class ExternalAuthControllerTests
                 Id = TestExternalProviderId,
                 FullName = "Test Provider",
                 ShortName = "Test",
-                Address = "Test Address"
+                Address = "Test Address",
+                Email = "test@test.com",
+                Phone = "+380671234567",
             }
         };
 

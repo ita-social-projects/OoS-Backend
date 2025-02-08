@@ -10,7 +10,6 @@ using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using OpenIddict.Server.AspNetCore;
-using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthorizationServer.Services;
 using OutOfSchool.AuthorizationServer.Util;
@@ -197,15 +196,15 @@ public class TokenController : Controller
                     identity.SetClaims(OpenIddictConstants.Claims.Role, [result.Principal.GetClaim(ClaimTypes.Role)]);
                     identity.SetClaim(OpenIddictConstants.Claims.FamilyName, result.Principal.GetClaim(ClaimTypes.Surname));
                     identity.SetClaim(OpenIddictConstants.Claims.GivenName, result.Principal.GetClaim(ClaimTypes.GivenName));
-                    identity.SetClaim(AuthServerConstants.ClaimTypes.Rnokpp, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Rnokpp));
-                    if (result.Principal.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
+                    identity.SetClaim(Constants.ClaimTypes.Rnokpp, result.Principal.GetClaim(Constants.ClaimTypes.Rnokpp));
+                    if (result.Principal.HasClaim(Constants.ClaimTypes.Edrpou))
                     {
-                        identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, result.Principal.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
+                        identity.SetClaim(Constants.ClaimTypes.Edrpou, result.Principal.GetClaim(Constants.ClaimTypes.Edrpou));
                     }
-                    if (result.Principal.HasClaim(AuthServerConstants.ClaimTypes.AikomProviderId))
+                    if (result.Principal.HasClaim(Constants.ClaimTypes.AikomProviderId))
                     {
-                        identity.SetClaim(AuthServerConstants.ClaimTypes.AikomProviderId, 
-                            result.Principal.GetClaim(AuthServerConstants.ClaimTypes.AikomProviderId));
+                        identity.SetClaim(Constants.ClaimTypes.AikomProviderId, 
+                            result.Principal.GetClaim(Constants.ClaimTypes.AikomProviderId));
                     }
                 }
                 else
@@ -324,15 +323,15 @@ public class TokenController : Controller
             identity.SetClaims(OpenIddictConstants.Claims.Role, [signedInIdentity.GetClaim(ClaimTypes.Role)]);
             identity.SetClaim(OpenIddictConstants.Claims.FamilyName, signedInIdentity.GetClaim(ClaimTypes.Surname));
             identity.SetClaim(OpenIddictConstants.Claims.GivenName, signedInIdentity.GetClaim(ClaimTypes.GivenName));
-            identity.SetClaim(AuthServerConstants.ClaimTypes.Rnokpp, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Rnokpp));
-            if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.Edrpou))
+            identity.SetClaim(Constants.ClaimTypes.Rnokpp, signedInIdentity.GetClaim(Constants.ClaimTypes.Rnokpp));
+            if (signedInIdentity.HasClaim(Constants.ClaimTypes.Edrpou))
             {
-                identity.SetClaim(AuthServerConstants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.Edrpou));
+                identity.SetClaim(Constants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(Constants.ClaimTypes.Edrpou));
             }
-            if (signedInIdentity.HasClaim(AuthServerConstants.ClaimTypes.AikomProviderId))
+            if (signedInIdentity.HasClaim(Constants.ClaimTypes.AikomProviderId))
             {
-                identity.SetClaim(AuthServerConstants.ClaimTypes.AikomProviderId, 
-                    signedInIdentity.GetClaim(AuthServerConstants.ClaimTypes.AikomProviderId));
+                identity.SetClaim(Constants.ClaimTypes.AikomProviderId, 
+                    signedInIdentity.GetClaim(Constants.ClaimTypes.AikomProviderId));
             }
         }
         else

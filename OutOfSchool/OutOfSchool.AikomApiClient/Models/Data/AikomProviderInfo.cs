@@ -11,4 +11,8 @@ public class AikomProviderInfo
     public string Edrpou { get; set; }
 
     public required string Address { get; set; }
+
+    public required string Email { get; set; }
+    
+    public required string Phone { get; set; }
 }

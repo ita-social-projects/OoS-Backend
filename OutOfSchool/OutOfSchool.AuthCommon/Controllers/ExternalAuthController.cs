@@ -336,7 +336,7 @@ public class ExternalAuthController : Controller
             new(ClaimTypes.GivenName, individual.FirstName),
             new(ClaimTypes.Surname, individual.LastName),
             new(ClaimTypes.Email, userInfo.Email),
-            new(AuthServerConstants.ClaimTypes.Rnokpp, individual.Rnokpp),
+            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(
                 OpenIddictConstants.Claims.Private.ProviderName,
                 result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
@@ -353,11 +353,11 @@ public class ExternalAuthController : Controller
             .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
                 StringComparison.CurrentCultureIgnoreCase))
         {
-            claims.Add(new Claim(AuthServerConstants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
+            claims.Add(new Claim(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
             
             if (externalProviderId.HasValue)
             {
-                claims.Add(new Claim(AuthServerConstants.ClaimTypes.AikomProviderId, 
+                claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId, 
                     externalProviderId.Value.ToString()));
             }
         }
@@ -380,7 +380,7 @@ public class ExternalAuthController : Controller
         };
 
         var user = await userManager.FindByNameAsync(claims
-            .First(c => c.Type == AuthServerConstants.ClaimTypes.Rnokpp).Value);
+            .First(c => c.Type == Constants.ClaimTypes.Rnokpp).Value);
         await signInManager.SignInWithClaimsAsync(user, properties, claims);
         return properties;
     }

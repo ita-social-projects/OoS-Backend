@@ -146,6 +146,8 @@ internal class AikomProviderService : IAikomProviderService
                             FullName = result.University.FullName,
                             ShortName = result.University.ShortName,
                             Address = result.University.Address,
+                            Email = result.University.Email,
+                            Phone = result.University.Phone,
                         }
                     };
                 });
@@ -189,6 +191,8 @@ internal class AikomProviderService : IAikomProviderService
                             FullName = university.FullName,
                             ShortName = university.ShortName,
                             Address = university.Address,
+                            Email = university.Email,
+                            Phone = university.Phone,
                         }
                     };
                 });
