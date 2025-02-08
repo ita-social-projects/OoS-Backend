@@ -309,14 +309,6 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> GetWorkshopDraftsCardByFilter([FromQuery] WorkshopDraftFilterAdministration filter)
-    {        
-        var searchResult = await workshopDraftService.FetchCardByFilterForAdmins(filter);
-     
-        if (searchResult == null || searchResult.Entities == null || !searchResult.Entities.Any())
-        {
-            return NoContent();
-        }
-        return Ok(searchResult.Entities);
-    }
+    public async Task<IActionResult> GetWorkshopDraftsCardByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
+        await workshopDraftService.FetchCardByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 }   
