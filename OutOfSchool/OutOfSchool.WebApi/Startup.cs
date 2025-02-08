@@ -607,9 +607,10 @@ public static class Startup
             }
         });
 
-        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<CacheService>();
+        services.AddSingleton<ICacheService>(s => s.GetRequiredService<CacheService>());
+        services.AddSingleton<IReadWriteCacheService>(s => s.GetRequiredService<CacheService>());
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
-        services.AddSingleton<IReadWriteCacheService, CacheService>();
         services.AddSingleton(typeof(ITempSaveService<>), typeof(TempSaveService<>));
 
         services.AddHealthChecks()
