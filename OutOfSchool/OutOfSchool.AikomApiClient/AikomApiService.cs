@@ -2,7 +2,6 @@
 using OpenIddict.Client;
 using OutOfSchool.AikomApiClient.Config;
 using OutOfSchool.AikomApiClient.Extensions;
-using OutOfSchool.AikomApiClient.Models.Data;
 using OutOfSchool.AikomApiClient.Models.Requests;
 using OutOfSchool.AikomApiClient.Models.Responses;
 using OutOfSchool.Common.Communication;
@@ -12,7 +11,8 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AikomApiClient;
 
-public class AikomApiService : IAikomApiService
+/// <inheritdoc />
+internal class AikomApiService : IAikomApiService
 {
     private readonly ICommunicationService communicationService;
     private readonly OpenIddictClientService service;
@@ -30,23 +30,25 @@ public class AikomApiService : IAikomApiService
         apiUrl = config.ApiUrl;
     }
 
-    public Task<Either<ErrorResponse, SearchUniversityDto>> SearchUniversity(string edrpou)
+    /// <inheritdoc />
+    public Task<Either<ErrorResponse, SearchUniversityResponseData>> SearchUniversity(string edrpou)
     {
         var request = new SearchUniversityRequest(edrpou);
         var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
         return PostAsync<SearchUniversityRequest, SearchUniversityResponse>(
             endpoint, request)
-            .FlatMapAsync(result => result.ToResponseDto(data => data.ToDto()));
+            .FlatMapAsync(result => result.ToResponseData());
     }
 
-    public Task<Either<ErrorResponse, GetUniversityDto>> GetUniversity(int id)
+    /// <inheritdoc />
+    public Task<Either<ErrorResponse, GetUniversityResponseData>> GetUniversity(long id)
     {
         var request = new GetUniversityRequest(id);
         var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
 
         return PostAsync<GetUniversityRequest, GetUniversityResponse>(
                 endpoint, request)
-            .FlatMapAsync(result => result.ToResponseDto(data => data.ToDto()));
+            .FlatMapAsync(result => result.ToResponseData());
     }
 
     private async Task<Either<ErrorResponse,TResponse>> PostAsync<TRequest, TResponse>(string endpoint, TRequest request)

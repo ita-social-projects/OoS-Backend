@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.AikomApiClient;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 
@@ -14,16 +13,14 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class AchievementTypeController : Controller
 {
     private readonly IAchievementTypeService achievementTypeService;
-    private readonly IAikomApiService aikomService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AchievementTypeController"/> class.
     /// </summary>
     /// <param name="service">Service for Achievement Type entity.</param>
-    public AchievementTypeController(IAchievementTypeService service, IAikomApiService aikomService)
+    public AchievementTypeController(IAchievementTypeService service)
     {
         this.achievementTypeService = service ?? throw new ArgumentNullException(nameof(service));
-        this.aikomService = aikomService ?? throw new ArgumentNullException(nameof(aikomService));
     }
 
     /// <summary>

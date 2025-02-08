@@ -13,8 +13,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
-using OutOfSchool.AikomApiClient;
-using OutOfSchool.AikomApiClient.Config;
 using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
@@ -182,10 +180,7 @@ public static class Startup
                 options.UseAspNetCore();
             });
 
-        var aikomConfiguration = configuration
-            .GetSection(AikomApiClientConfig.Name)
-            .Get<AikomApiClientConfig>();
-        services.Configure<AikomApiClientConfig>(configuration.GetSection(AikomApiClientConfig.Name));
+        var aikomConfiguration = services.RegisterAikomApiClient(configuration);
 
         services.AddOpenIddict()
             .AddClient(options =>
@@ -196,8 +191,6 @@ public static class Startup
                 options.UseAspNetCore();
                 options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
             });
-
-        services.AddTransient<IAikomApiService, AikomApiService>();
 
         services.AddCors(confg =>
             confg.AddPolicy(

@@ -24,6 +24,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+    <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
   </ItemGroup>
 
 </Project>

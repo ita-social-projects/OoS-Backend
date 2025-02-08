@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using System;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.Redis;
 
-public interface IReadWriteCacheService
+public interface IReadWriteCacheService : ICacheService
 {
     Task<string> ReadAsync(string key);
 
@@ -12,8 +12,6 @@ public interface IReadWriteCacheService
         string value,
         TimeSpan? absoluteExpirationRelativeToNowInterval = null,
         TimeSpan? slidingExpirationInterval = null);
-
-    Task RemoveAsync(string key);
 
     Task<TimeSpan?> GetTimeToLiveAsync(string key);
 }

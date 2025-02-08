@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.AikomApiClient.Models.Requests;
 
-public class GetUniversityRequest(int id) : ApiRequest<GetUniversityRequestData>(
+internal class GetUniversityRequest(long id) : ApiRequest<GetUniversityRequestData>(
     BusinessProcessKeys.GetUniversity,
     new ()
     { 
@@ -14,7 +14,7 @@ public class GetUniversityRequest(int id) : ApiRequest<GetUniversityRequestData>
 {
 }
 
-public class GetUniversityRequestData
+internal class GetUniversityRequestData
 {
-    public required int Id { get; set; }
+    public required long Id { get; set; }
 }

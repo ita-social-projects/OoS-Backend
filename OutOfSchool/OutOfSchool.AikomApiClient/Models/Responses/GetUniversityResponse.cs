@@ -3,11 +3,11 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AikomApiClient.Models.Responses;
 
-public class GetUniversityResponse : ApiResponse<GetUniversityResponseData>, IResponse
+internal class GetUniversityResponse : ApiResponse<GetUniversityResponseData>, IResponse
 {
 }
 
-public class GetUniversityResponseData
+internal class GetUniversityResponseData
 {
     public required string FullName { get; set; }
 
@@ -22,7 +22,7 @@ public class GetUniversityResponseData
     public required UniversityBoss UniversityBoss { get; set; }
 }
 
-public class UniversityBoss
+internal class UniversityBoss
 {
     public required string BossLastName { get; set; }
 

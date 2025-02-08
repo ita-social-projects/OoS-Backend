@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
+using OutOfSchool.AikomApiClient.Config;
+using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
@@ -131,6 +133,10 @@ public static class Startup
         var authorizationConfig = authorizationSection.Get<AuthorizationServerConfig>();
         ConfigurationValidationHelper.ValidateConfigurationObject(authorizationConfig);
         services.Configure<AuthorizationServerConfig>(authorizationSection);
+        var aikomConfiguration = config
+            .GetSection(AikomApiClientConfig.Name)
+            .Get<AikomApiClientConfig>();
+        services.Configure<AikomApiClientConfig>(config.GetSection(AikomApiClientConfig.Name));
         services.AddOpenIddict()
             .AddCore(options =>
             {
@@ -184,6 +190,7 @@ public static class Startup
             })
             .AddClient(options =>
             {
+                options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
                 options.AddRegistration(new OpenIddictClientRegistration
                 {
                     Issuer = authorizationConfig.ExternalLogin.IdServerUri,

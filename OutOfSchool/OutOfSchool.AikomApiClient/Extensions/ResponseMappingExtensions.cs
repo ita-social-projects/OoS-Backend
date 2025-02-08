@@ -5,13 +5,11 @@ using OutOfSchool.Common.Responses;
 
 namespace OutOfSchool.AikomApiClient.Extensions;
 
-public static class ResponseMappingExtensions
+internal static class ResponseMappingExtensions
 {
-    public static Either<ErrorResponse, TDto> ToResponseDto<TData, TDto>(
-        this ApiResponse<TData>? response,
-        Func<TData, TDto> mapResult)
+    internal static Either<ErrorResponse, TData> ToResponseData<TData>(
+        this ApiResponse<TData>? response)
         where TData : class
-        where TDto : class
     {
         if (response?.ResultVariables.Response.Error != null)
         {
@@ -37,6 +35,6 @@ public static class ResponseMappingExtensions
             };
         }
 
-        return mapResult(data);
+        return data;
     }
 }

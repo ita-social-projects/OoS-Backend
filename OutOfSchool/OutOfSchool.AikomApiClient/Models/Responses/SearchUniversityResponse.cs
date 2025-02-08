@@ -3,11 +3,11 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AikomApiClient.Models.Responses;
 
-public class SearchUniversityResponse : ApiResponse<SearchUniversityResponseData>, IResponse
+internal class SearchUniversityResponse : ApiResponse<SearchUniversityResponseData>, IResponse
 {
 }
 
-public class SearchUniversityResponseData
+internal class SearchUniversityResponseData
 {
     public required int Id { get; set; }
 
@@ -20,7 +20,7 @@ public class SearchUniversityResponseData
     public List<Branch>? Branches { get; set; }
 }
 
-public class Branch
+internal class Branch
 {
     public required int BranchId { get; set; }
 

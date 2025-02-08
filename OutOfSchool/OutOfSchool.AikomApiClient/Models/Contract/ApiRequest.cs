@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.AikomApiClient.Models.Contract;
 
-public abstract class ApiRequest<TData>(string businessProcessDefinitionKey, StartVariables<TData> startVariables)
+internal abstract class ApiRequest<TData>(string businessProcessDefinitionKey, StartVariables<TData> startVariables)
 where TData : class
 {
     [JsonInclude]

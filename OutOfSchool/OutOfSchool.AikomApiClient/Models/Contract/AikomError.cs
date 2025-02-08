@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace OutOfSchool.AikomApiClient.Models.Contract;
 
-public class AikomError
+internal class AikomError
 {
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public required int Code { get; set; }

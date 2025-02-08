@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.AikomApiClient.Models.Requests;
 
-public class SearchUniversityRequest(string edrpou) : ApiRequest<SearchUniversityRequestData>(
+internal class SearchUniversityRequest(string edrpou) : ApiRequest<SearchUniversityRequestData>(
         BusinessProcessKeys.SearchUniversity,
         new ()
         {
@@ -14,7 +14,7 @@ public class SearchUniversityRequest(string edrpou) : ApiRequest<SearchUniversit
 {
 }
 
-public class SearchUniversityRequestData
+internal class SearchUniversityRequestData
 {
     public required string Edrpou { get; set; }
 }
