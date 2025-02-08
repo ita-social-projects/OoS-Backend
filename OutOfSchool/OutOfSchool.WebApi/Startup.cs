@@ -180,7 +180,7 @@ public static class Startup
                 options.UseAspNetCore();
             });
 
-        var aikomConfiguration = services.RegisterAikomApiClient(configuration);
+        var aikomConfiguration = services.RegisterAikomApiClient(configuration, builder.Environment);
 
         services.AddOpenIddict()
             .AddClient(options =>
