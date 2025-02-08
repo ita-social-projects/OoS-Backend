@@ -1,12 +1,11 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -16,21 +15,21 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class ProviderController : ControllerBase
 {
     private readonly IProviderService providerService;
-    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<ProviderController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderController"/> class.
     /// </summary>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="localizer">Localizer.</param>
+    /// <param name="currentUserService">Service for current user operations.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     public ProviderController(
         IProviderService providerService,
-        IStringLocalizer<SharedResource> localizer,
+        ICurrentUserService currentUserService,
         ILogger<ProviderController> logger)
     {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -66,12 +65,11 @@ public class ProviderController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         // TODO: localize messages from the conrollers.
-        var userId = GettingUserProperties.GetUserId(User);
-        var isEmployee = !string.IsNullOrEmpty(GettingUserProperties.GetUserRole(User)) &&
-                              GettingUserProperties.GetUserRole(User) == "Employee";
-        if (userId == null)
+        var userId = currentUserService.UserId;
+        var isEmployee = currentUserService.IsInRole(Role.Employee);
+        if (string.IsNullOrEmpty(userId))
         {
-            BadRequest("Invalid user information.");
+            return BadRequest("Invalid user information.");
         }
 
         var provider = await providerService.GetByUserId(userId, isEmployee).ConfigureAwait(false);
@@ -115,7 +113,7 @@ public class ProviderController : ControllerBase
         }
 
         // TODO: find out if we need this field in the model
-        providerModel.UserId = GettingUserProperties.GetUserId(User);
+        providerModel.UserId = currentUserService.UserId;
 
         try
         {
@@ -157,7 +155,7 @@ public class ProviderController : ControllerBase
 
         try
         {
-            var userId = GettingUserProperties.GetUserId(User);
+            var userId = currentUserService.UserId;
             var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
             if (provider == null)
