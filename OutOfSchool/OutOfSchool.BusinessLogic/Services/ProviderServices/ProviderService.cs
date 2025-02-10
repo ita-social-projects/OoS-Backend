@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
@@ -31,6 +32,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Individual> individualRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Official> officialRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, Position> positionRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
@@ -63,6 +67,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="localizer">Localizer.</param>
     /// <param name="mapper">Mapper.</param>
     /// <param name="addressRepository">AddressRepository.</param>
+    /// <param name="individualRepository">IndividualRepository.</param>
+    /// <param name="officialRepository">OfficialRepository.</param>
+    /// <param name="positionRepository">PositionRepository.</param>
     /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
     /// <param name="employeeRepository">Employee repository.</param>
     /// <param name="providerImagesService">Images service.</param>
@@ -89,6 +96,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
+        IEntityRepositorySoftDeleted<Guid, Individual> individualRepository,
+        IEntityRepositorySoftDeleted<Guid, Official> officialRepository,
+        IEntityRepositorySoftDeleted<Guid, Position> positionRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
@@ -112,6 +122,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
+        this.individualRepository = individualRepository ?? throw new ArgumentNullException(nameof(individualRepository));
+        this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
+        this.positionRepository = positionRepository ?? throw new ArgumentNullException(nameof(positionRepository));
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
@@ -521,6 +534,39 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         logger.LogInformation($"Checking if Provider exists by Id. Looking Id = {id}.");
 
         return providerRepository.Any(x => x.Id == id);
+    }
+
+    public async Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data)
+    {
+        var isProviderExists = await Exists(id).ConfigureAwait(false);
+
+        if (!isProviderExists)
+        {
+            logger.LogError("User has no rights to perform operation. Provider with Id = {id} doesn't exist.", id);
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        await currentUserService.UserHasRights(new ProviderRights(id));
+
+        // Check list of Employees for uploading.
+        CheckListOfEmployeesForUploading(data);
+
+        var uploadResponse = new UploadEmployeeResponse();
+
+        async Task UploadEmployeesIntoDb()
+        {
+            // Add individuals to DB and populate the Dictionary for uploading employees.
+            var uploadDictionary = await AddIndividualsToDb(data, uploadResponse).ConfigureAwait(false);
+
+            // Fill DB with new Employees on certain Positions.
+            await FillDbWithNewEmployeesOnPositions(uploadDictionary, id, uploadResponse).ConfigureAwait(false);
+        }
+
+        await providerRepository.RunInTransaction(UploadEmployeesIntoDb).ConfigureAwait(false);
+
+        logger.LogDebug("Upload employees for provider finished successfully.");
+
+        return uploadResponse;
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
@@ -1012,5 +1058,124 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             .ConfigureAwait(false);
 
         return providersWithTheSameEdrpouIpn.Any();
+    }
+
+    private void CheckListOfEmployeesForUploading(UploadEmployeeRequestDto[] data)
+    {
+        _ = data ?? throw new ArgumentNullException(nameof(data));
+
+        logger.LogDebug("Upload employees for provider was started.");
+
+        if (data.Length == 0)
+        {
+            var errorMessage = "The number of entries to upload should be greater than 0.";
+            logger.LogError(errorMessage);
+            throw new ArgumentOutOfRangeException(errorMessage);
+        }
+
+        if (data.Length > Constants.MaxNumberOfEmployeesToUpload)
+        {
+            var errorMessage = $"The number of entries should not exceed {Constants.MaxNumberOfEmployeesToUpload}.";
+            logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}.", Constants.MaxNumberOfEmployeesToUpload);
+            throw new ArgumentOutOfRangeException(errorMessage);
+        }
+
+        var uploadEmployeesRnokpps = data.Select(e => e.Rnokpp).ToList();
+
+        // Check if the Rnokpp property values ​​are unique?
+        if (uploadEmployeesRnokpps.Distinct().Count() != data.Length)
+        {
+            var errorMessage = "The Rnokpp property values are not unique.";
+            logger.LogError(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
+    }
+
+    private async Task<Dictionary<Guid, UploadEmployeeRequestDto>> AddIndividualsToDb(UploadEmployeeRequestDto[] data,
+                                                                                      UploadEmployeeResponse uploadResponse)
+    {
+        // Dictionary for uploading employees
+        var uploadDictionary = new Dictionary<Guid, UploadEmployeeRequestDto>();
+        // Create a list of Rnokpps.
+        // The number of members in this list is limited by a constant - MaxNumberOfEmployeesToUpload.
+        var listOfRnokpps = data.Select(e => e.Rnokpp).ToList();
+        var existingIndividuals = (await individualRepository.GetByFilter(i => listOfRnokpps.Contains(i.Rnokpp))
+                                                                          .ConfigureAwait(false))
+                                                                          .Select(i => new { i.Rnokpp, i.Id })
+                                                                          .ToDictionary(e => e.Rnokpp);
+
+        // Loop to add individuals to DB and populate the Dictionary for uploading employees
+        foreach (var employee in data)
+        {
+            if (existingIndividuals.ContainsKey(employee.Rnokpp))
+            {
+                uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
+            }
+            else // Add an Individual to DB if it has not already existed in DB
+            {
+                var newIndividual = await individualRepository.Create(mapper.Map<Individual>(employee));
+                uploadResponse.CountOfCreatedIndividuals++;
+                uploadDictionary.Add(newIndividual.Id, employee);
+            }
+        }
+
+        return uploadDictionary;
+    }
+
+    private async Task FillDbWithNewEmployeesOnPositions(Dictionary<Guid, UploadEmployeeRequestDto> uploadDictionary,
+                                                         Guid providerId,
+                                                         UploadEmployeeResponse uploadResponse)
+    {
+        // Get a dictionary (Lookup) with keys - IndividualId and values ​​- Official.Position.FullName for a certain Provider.
+        var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
+                                                                                 o.Position.ProviderId == providerId
+                                                                                 && uploadDictionary.Keys.Contains(o.IndividualId)
+                                                                                 && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
+                                                                                 , includeProperties: "Position")
+                                                                                 .ConfigureAwait(false))
+                                                                                 .ToLookup(o => o.IndividualId, o => o?.Position?.FullName);
+
+        //Loop for filling the DB with new employees on certain positions.
+        foreach (var key in uploadDictionary.Keys)
+        {
+            // If this Employee already exists and occupies the same Position
+            if (existingOfficialsForProvider.Contains(key)
+                && existingOfficialsForProvider[key].Contains(uploadDictionary[key].AssignedRole))
+            {
+                continue;
+            }
+
+            // Create a new Position if it doesn't exist
+            var position = (await positionRepository.GetByFilter(
+                                                                 p => p.ProviderId == providerId
+                                                                 && p.FullName == uploadDictionary[key].AssignedRole
+                                                                 ).ConfigureAwait(false))
+                                                                 .FirstOrDefault();
+
+            if (position == default)
+            {
+                position = await positionRepository.Create(
+                new Position
+                {
+                    ProviderId = providerId,
+                    FullName = uploadDictionary[key].AssignedRole
+                }).ConfigureAwait(false);
+                uploadResponse.CountOfCreatedPositions++;
+            }
+
+            // Create a new Official
+            await officialRepository.Create(
+                new Official()
+                {
+                    IndividualId = key,
+                    PositionId = position.Id
+                }).ConfigureAwait(false);
+            uploadResponse.CountOfCreatedOfficials++;
+        }
+    }
+
+    public async Task HasProviderRights(Guid providerId)
+    {
+        await currentUserService.UserHasRights(new ProviderRights(providerId));
     }
 }

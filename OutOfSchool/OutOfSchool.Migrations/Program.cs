@@ -30,6 +30,7 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
+                            .UseMicrosoftJson()
                             .MigrationsAssembly(migrationsAssembly)))
             .AddDbContext<OpenIdDictDbContext>(options => options
                 .UseMySql(

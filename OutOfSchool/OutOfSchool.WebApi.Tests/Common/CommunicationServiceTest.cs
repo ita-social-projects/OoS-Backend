@@ -3,14 +3,10 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Moq.Language.Flow;
-using Moq.Protected;
 using NUnit.Framework;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
@@ -62,8 +58,8 @@ public class CommunicationServiceTest
             Url = uri,
         };
         var response = new TestResponse("OK");
-        var setup = SetupSendAsync(handler, HttpMethod.Post, uri.ToString());
-        ReturnsHttpResponseAsync(setup, response, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Post, uri.ToString())
+            .ReturnsHttpResponseAsync(response, HttpStatusCode.OK);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
@@ -75,8 +71,8 @@ public class CommunicationServiceTest
     public async Task SendRequest_WithEmptyRequest_ReturnsErrorResponse()
     {
         // Arrange
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.OK);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.OK);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(null);
@@ -93,8 +89,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
@@ -111,8 +107,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -128,8 +124,8 @@ public class CommunicationServiceTest
             HttpMethodType = HttpMethodType.Get,
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        ReturnsHttpResponseAsync(setup, null, HttpStatusCode.Unauthorized);
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .ReturnsHttpResponseAsync(null, HttpStatusCode.Unauthorized);
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, TestError>(request, new TestErrorHandler());
@@ -151,8 +147,8 @@ public class CommunicationServiceTest
             Token = "secret",
             Url = uri,
         };
-        var setup = SetupSendAsync(handler, HttpMethod.Get, uri.ToString());
-        setup.Throws(new HttpRequestException(null, null, HttpStatusCode.InsufficientStorage));
+        handler.SetupSendAsync(HttpMethod.Get, uri.ToString())
+            .Throws(new HttpRequestException(null, null, HttpStatusCode.InsufficientStorage));
 
         // Act
         var result = await communicationService.SendRequest<TestResponse, ErrorResponse>(request);
@@ -162,34 +158,6 @@ public class CommunicationServiceTest
             Assert.IsInstanceOf<ErrorResponse>(error);
             Assert.AreEqual(HttpStatusCode.InsufficientStorage, error.HttpStatusCode);
         });
-    }
-
-    private static ISetup<HttpMessageHandler, Task<HttpResponseMessage>> SetupSendAsync(
-        Mock<HttpMessageHandler> handler, HttpMethod requestMethod, string requestUrl)
-    {
-        return handler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
-            ItExpr.Is<HttpRequestMessage>(r =>
-                r.Method == requestMethod &&
-                r.RequestUri != null &&
-                r.RequestUri.ToString() == requestUrl),
-            ItExpr.IsAny<CancellationToken>());
-    }
-
-    private static IReturnsResult<HttpMessageHandler> ReturnsHttpResponseAsync(
-        ISetup<HttpMessageHandler, Task<HttpResponseMessage>> moqSetup,
-        object? responseBody,
-        HttpStatusCode responseCode)
-    {
-        var serializedResponse = JsonSerializer.Serialize(responseBody);
-        var stringContent = new StringContent(serializedResponse ?? string.Empty);
-
-        var responseMessage = new HttpResponseMessage
-        {
-            StatusCode = responseCode,
-            Content = stringContent,
-        };
-
-        return moqSetup.ReturnsAsync(responseMessage);
     }
 
     private record TestRequestData(string? Content);

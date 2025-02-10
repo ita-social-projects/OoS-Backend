@@ -15,6 +15,8 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>, ISoftDeleted
     public int HierarchyLevel { get; set; }
 
     public bool IsDeleted { get; set; }
+    
+    public DateTime? UpdatedAt { get; set; }
 
     public Guid? ParentId { get; set; }
 

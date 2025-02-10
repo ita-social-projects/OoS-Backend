@@ -12,7 +12,6 @@ namespace OutOfSchool.AuthCommon.Controllers;
 
 public class AccountController : Controller
 {
-    private const string ReturnUrl = "Login";
     private readonly SignInManager<User> signInManager;
     private readonly UserManager<User> userManager;
     private readonly IEmailSenderService emailSender;
@@ -46,7 +45,7 @@ public class AccountController : Controller
     [Authorize]
     [FeatureGate(AuthServerConstants.FeatureManagement.EmailManagement)]
     [Obsolete("Change email API is no longer supported. Exists only for testing purposes.")]
-    public IActionResult ChangeEmail(string returnUrl = "Login")
+    public IActionResult ChangeEmail(string returnUrl = AuthServerConstants.LoginPath)
     {
         return View("Email/ChangeEmail", new ChangeEmailViewModel() { ReturnUrl = returnUrl });
     }
@@ -194,7 +193,7 @@ public class AccountController : Controller
         var user = await userManager.FindByEmailAsync(User.Identity.Name);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var email = user.Email;
-        var passedData = new { token, email, ReturnUrl };
+        var passedData = new { token, email, AuthServerConstants.LoginPath };
 
         await SendConfirmEmailProcess(nameof(EmailConfirmation), user, RazorTemplates.ConfirmEmail, passedData);
 
@@ -257,7 +256,7 @@ public class AccountController : Controller
     [HttpGet]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
     [Obsolete("Forgot password API is no longer supported. Exists only for testing purposes.")]
-    public IActionResult ForgotPassword(string returnUrl = "Login")
+    public IActionResult ForgotPassword(string returnUrl = AuthServerConstants.LoginPath)
     {
         return View("Password/ForgotPassword", new ForgotPasswordViewModel() { ReturnUrl = returnUrl });
     }
@@ -410,7 +409,7 @@ public class AccountController : Controller
     [Authorize]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordManagement)]
     [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
-    public IActionResult ChangePassword(string returnUrl = "Login")
+    public IActionResult ChangePassword(string returnUrl = AuthServerConstants.LoginPath)
     {
         return View("Password/ChangePassword", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
     }

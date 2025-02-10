@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
@@ -10,7 +11,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
-public class WorkshopBaseDto : IValidatableObject
+public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 {
     public Guid Id { get; set; }
 
@@ -178,6 +179,9 @@ public class WorkshopBaseDto : IValidatableObject
     [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public AddressDto Address { get; set; }
+    
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<ContactsDto> Contacts { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

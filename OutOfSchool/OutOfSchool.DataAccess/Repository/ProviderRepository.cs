@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 
@@ -16,7 +17,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     public ProviderRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
-        db = dbContext;
+        this.db = dbContext;        
     }
 
     /// <summary>

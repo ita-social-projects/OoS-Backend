@@ -2,9 +2,9 @@ using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.EntityFrameworkCore;
 using GrpcServiceServer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Net.Http.Headers;
+using Microsoft.IdentityModel.JsonWebTokens;
 using OpenIddict.Abstractions;
-using OpenIddict.Validation.AspNetCore;
+using OpenIddict.Client;
 using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Extensions;
@@ -13,8 +13,10 @@ using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.AuthorizationServer.Config;
 using OutOfSchool.AuthorizationServer.Extensions;
+using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
@@ -66,6 +68,7 @@ public static class Startup
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
+                            .UseMicrosoftJson()
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                             .MigrationsAssembly(migrationsAssembly)))
             .AddDbContext<OpenIdDictDbContext>(options => options
@@ -83,7 +86,14 @@ public static class Startup
         services.AddTransient<ICustomPasswordRules, CustomPasswordRules>();
         services.AddTransient<IPasswordValidator<User>, CustomPasswordValidator>();
 
-        services.AddIdentity<User, IdentityRole>()
+        services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = false;
+                options.User.AllowedUserNameCharacters = AuthServerConstants.AllowedUserNameCharacters;
+                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+            })
             .AddEntityFrameworkStores<OutOfSchoolDbContext>()
             .AddDefaultTokenProviders();
 
@@ -91,8 +101,8 @@ public static class Startup
         services.ConfigureApplicationCookie(c =>
         {
             c.Cookie.Name = "OpenIdDict.Cookie";
-            c.LoginPath = "/Auth/Login";
-            c.LogoutPath = "/Auth/Logout";
+            c.LoginPath = $"/{AuthServerConstants.LoginPath}";
+            c.LogoutPath = $"/{AuthServerConstants.LogoutPath}";
             c.ExpireTimeSpan = TimeSpan.FromDays(Convert.ToInt32(expireDaysStr));
         });
 
@@ -117,30 +127,9 @@ public static class Startup
             options.SignIn.RequireConfirmedAccount = false;
         });
 
-        // Must be AFTER services.AddIdentity() call
-        services
-            .AddAuthentication(options =>
-        {
-            options.DefaultChallengeScheme = Constants.DefaultAuthScheme;
-            options.DefaultAuthenticateScheme = Constants.DefaultAuthScheme;
-            options.DefaultScheme = Constants.DefaultAuthScheme;
-        })
-            .AddPolicyScheme(Constants.DefaultAuthScheme, Constants.DefaultAuthScheme, options =>
-        {
-            options.ForwardDefaultSelector = context =>
-            {
-                string authorization = context.Request.Headers[HeaderNames.Authorization];
-                if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
-                {
-                    return OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-                }
-
-                return IdentityConstants.ApplicationScheme;
-            };
-        });
-
         var authorizationSection = config.GetSection(AuthorizationServerConfig.Name);
         var authorizationConfig = authorizationSection.Get<AuthorizationServerConfig>();
+        ConfigurationValidationHelper.ValidateConfigurationObject(authorizationConfig);
         services.Configure<AuthorizationServerConfig>(authorizationSection);
         services.AddOpenIddict()
             .AddCore(options =>
@@ -183,6 +172,7 @@ public static class Startup
                     options.AddEphemeralEncryptionKey()
                         .AddEphemeralSigningKey();
                     aspNetCoreBuilder.DisableTransportSecurityRequirement();
+                    options.DisableAccessTokenEncryption();
                 }
                 else
                 {
@@ -191,8 +181,63 @@ public static class Startup
                     options.AddSigningCertificate(certificate)
                         .AddEncryptionCertificate(certificate);
                 }
+            })
+            .AddClient(options =>
+            {
+                options.AddRegistration(new OpenIddictClientRegistration
+                {
+                    Issuer = authorizationConfig.ExternalLogin.IdServerUri,
+                    ClientId = authorizationConfig.ExternalLogin.ClientId,
+                    ClientSecret = authorizationConfig.ExternalLogin.ClientSecret,
+                    RedirectUri = new Uri($"{config["Identity:Authority"]}/callback/idgovua"),
+                    ProviderName = "IdGovUa",
+                    ProviderDisplayName = "id.gov.ua",
+                    Scopes = { OpenIddictConstants.Scopes.Profile },
 
-                options.DisableAccessTokenEncryption(); //TODO: Maybe do encrypt? :)
+                    // Token validation is not supported by id.gov.ua.
+                    TokenValidationParameters =
+                    {
+                        SignatureValidator = (token, _) =>
+                        {
+                            var handler = new JsonWebTokenHandler();
+                            return handler.ReadJsonWebToken(token);
+                        },
+                    },
+                    Configuration = new OpenIddictConfiguration
+                    {
+                        Issuer = authorizationConfig.ExternalLogin.IdServerUri,
+                        AuthorizationEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Authorize),
+                        TokenEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Token),
+                        ResponseTypesSupported = { OpenIddictConstants.ResponseTypes.Code },
+                        TokenEndpointAuthMethodsSupported = {OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost},
+                        UserinfoEndpoint = null,
+                    },
+                });
+                options.UseSystemNetHttp();
+                
+                options
+                    .AllowClientCredentialsFlow()
+                    .AllowAuthorizationCodeFlow()
+                    .AllowRefreshTokenFlow()
+                    .AddEventHandler(ExtractUserIdFromTokenResponseHandler.Descriptor);
+
+                var aspNetCoreBuilder = options.UseAspNetCore()
+                    .EnableRedirectionEndpointPassthrough()
+                    .EnablePostLogoutRedirectionEndpointPassthrough();
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.AddDevelopmentSigningCertificate()
+                        .AddEphemeralEncryptionKey();
+                    aspNetCoreBuilder.DisableTransportSecurityRequirement();
+                }
+                else
+                {
+                    var certificate = ExternalCertificate.LoadCertificates(authorizationConfig.Certificate);
+                    // TODO: create two different certificates after testing this
+                    options.AddSigningCertificate(certificate)
+                        .AddEncryptionCertificate(certificate);
+                }
             })
             .AddValidation(options =>
             {
@@ -225,6 +270,7 @@ public static class Startup
         services.Configure<CommunicationConfig>(config.GetSection(CommunicationConfig.Name));
         services.AddHostedService<Worker>(); // TODO: Move to Quartz
         services.AddProxy();
+        services.AddTransient<IGovIdentityCommunicationService, GovIdentityCommunicationService>();
         services.AddAuthCommon(config, builder.Environment.IsDevelopment());
         services.AddTransient<IInteractionService, InteractionService>();
         services.AddTransient<IProfileService, ProfileService>();

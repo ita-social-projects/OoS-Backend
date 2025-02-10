@@ -7,6 +7,7 @@ using NUnit.Framework;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.IntegrationTests;
 
@@ -240,7 +241,7 @@ public class BusinessEntityInterceptorTests
         public string Name { get; set; }
     }
 
-    internal class TestDbContext : OutOfSchoolDbContext
+    internal class TestDbContext : TestOutOfSchoolDbContext
     {
         public TestDbContext(DbContextOptions<OutOfSchoolDbContext> options)
             : base(options)

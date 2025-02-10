@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" />
-    <PackageReference Include="Google.Cloud.Storage.V1" />
     <PackageReference Include="H3Lib" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
@@ -30,9 +29,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+    <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Api\OutOfSchool.ExternalFileStore.Api.csproj" />
   </ItemGroup>
 </Project>

@@ -12,9 +12,9 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
+using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.WebApi.Tests.Services.Images;
 
@@ -28,7 +28,7 @@ internal class ImageServiceTests
 
     #endregion
 
-    private Mock<IImageFilesStorage> externalStorageMock;
+    private Mock<IObjectImageStorage> externalStorageMock;
     private Mock<IServiceProvider> serviceProviderMock;
     private Mock<ILogger<ImageService>> loggerMock;
     private IImageService imageService;
@@ -42,7 +42,7 @@ internal class ImageServiceTests
     [SetUp]
     public void SetUp()
     {
-        externalStorageMock = new Mock<IImageFilesStorage>();
+        externalStorageMock = new Mock<IObjectImageStorage>();
         serviceProviderMock = new Mock<IServiceProvider>();
         loggerMock = new Mock<ILogger<ImageService>>();
         imageService = new ImageService(
@@ -110,7 +110,7 @@ internal class ImageServiceTests
         SetUpValidatorWithOperationResult(true);
         var queue = new Queue<string>(imageIds);
         externalStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<string>(), It.IsAny<IDictionary<string,string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(queue.Dequeue);
 
         // Act
@@ -176,7 +176,7 @@ internal class ImageServiceTests
         serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator<It.IsAnyType>))).Returns(validator.Object);
         var queue = new Queue<string>(imageIds);
         externalStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<string>(), It.IsAny<IDictionary<string,string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(queue.Dequeue);
 
         // Act
@@ -198,7 +198,7 @@ internal class ImageServiceTests
         var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfUploadedImages);
         SetUpValidatorWithOperationResult(true);
         externalStorageMock
-            .SetupSequence(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+            .SetupSequence(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<string>(), It.IsAny<IDictionary<string,string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(imageIds[0])
             .ThrowsAsync(new FileStorageException())
             .ThrowsAsync(new FileStorageException())
@@ -218,11 +218,14 @@ internal class ImageServiceTests
     public async Task UploadImage_WhenImageIsValid_ShouldReturnSuccessfulResultWithSavedImageId()
     {
         // Arrange
-        var file = new Mock<IFormFile>().Object;
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(x => x.ContentType).Returns("image/jpeg");
+        var file = fileMock.Object;
+        
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         SetUpValidatorWithOperationResult(true);
         externalStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<string>(), It.IsAny<IDictionary<string,string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(imageId);
 
         // Act
@@ -249,7 +252,9 @@ internal class ImageServiceTests
         UploadImage_WhenImageIsInvalid_ShouldReturnFailedResult()
     {
         // Arrange
-        var file = new Mock<IFormFile>().Object;
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(x => x.ContentType).Returns("image/jpeg");
+        var file = fileMock.Object;
         SetUpValidatorWithOperationResult(false);
 
         // Act
@@ -268,7 +273,7 @@ internal class ImageServiceTests
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         SetUpValidatorWithOperationResult(true);
         externalStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<string>(), It.IsAny<IDictionary<string,string>>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new FileStorageException());
 
         // Act
@@ -444,6 +449,7 @@ internal class ImageServiceTests
         for (var i = 0; i < count; i++)
         {
             var file = new Mock<IFormFile>();
+            file.Setup(x => x.ContentType).Returns("image/jpeg");
             file.Setup(x => x.OpenReadStream()).Returns(new Mock<Stream>().Object);
             fileList.Add(file.Object);
         }

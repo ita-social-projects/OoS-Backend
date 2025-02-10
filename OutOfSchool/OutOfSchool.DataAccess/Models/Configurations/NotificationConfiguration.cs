@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Newtonsoft.Json;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
@@ -16,7 +16,7 @@ internal class NotificationConfiguration : IEntityTypeConfiguration<Notification
         builder
             .Property(b => b.Data)
             .HasConversion(
-                v => JsonConvert.SerializeObject(v),
-                v => JsonConvert.DeserializeObject<Dictionary<string, string>>(v));
+                v => JsonSerializerHelper.Serialize(v, null),
+                v => JsonSerializerHelper.Deserialize<Dictionary<string, string>>(v, null));
     }
 }

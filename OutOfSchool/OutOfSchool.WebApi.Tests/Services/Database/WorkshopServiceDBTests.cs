@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -21,6 +22,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -29,7 +31,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 public class WorkshopServiceDBTests
 {
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private IWorkshopService workshopService;
     private IWorkshopRepository workshopRepository;
@@ -48,6 +50,7 @@ public class WorkshopServiceDBTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
@@ -59,7 +62,7 @@ public class WorkshopServiceDBTests
             .EnableSensitiveDataLogging()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
@@ -78,6 +81,7 @@ public class WorkshopServiceDBTests
         tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         workshopService =
@@ -99,6 +103,7 @@ public class WorkshopServiceDBTests
                     codeficatorServiceMock.Object,
                     tagServiceMock.Object,
                     searchStringServiceMock.Object,
+                    contactsServiceMock.Object,
                     applicationRepositoryMock.Object);
 
         Seed();
@@ -199,9 +204,9 @@ public class WorkshopServiceDBTests
 
     #region private
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IWorkshopRepository GetWorkshopRepository(OutOfSchoolDbContext dbContext)
+    private IWorkshopRepository GetWorkshopRepository(TestOutOfSchoolDbContext dbContext)
         => new WorkshopRepository(dbContext);
 
     private void Seed()

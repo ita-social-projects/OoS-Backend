@@ -25,6 +25,7 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -50,7 +51,7 @@ public class EmployeeServiceDBTest
     private Employee employee;
 
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     [SetUp]
     public async Task SetUp()
@@ -61,7 +62,7 @@ public class EmployeeServiceDBTest
             .EnableSensitiveDataLogging()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
         var providerAdminRepository = new EmployeeRepository(dbContext);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
@@ -148,7 +149,7 @@ public class EmployeeServiceDBTest
     private IEmployeeRepository GetProviderAdminRepository(OutOfSchoolDbContext dbContext)
         => new EmployeeRepository(dbContext);
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
     private async Task Seed()
     {

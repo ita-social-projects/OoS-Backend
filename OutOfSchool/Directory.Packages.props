@@ -4,7 +4,7 @@
     <EFCoreVersion>8.0.7</EFCoreVersion>
     <OpenIdDictVersion>5.8.0</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
-    <QuartzVersion>3.5.0</QuartzVersion>
+    <QuartzVersion>3.13.1</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
     <AutoMapVersion>12.0.1</AutoMapVersion>
     <ElasticApmVersion>1.28.6</ElasticApmVersion>
@@ -63,6 +63,7 @@
     <PackageVersion Include="OpenIddict.Quartz" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="$(OpenIdDictVersion)" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.0" />
     <!--Serilog-->
     <PackageVersion Include="Serilog.AspNetCore" Version="6.0.1" />
     <PackageVersion Include="Serilog.Enrichers.GlobalLogContext" Version="1.1.0" />
@@ -99,6 +100,8 @@
     <PackageVersion Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />
     <PackageVersion Include="CsvHelper" Version="30.0.1" />
     <PackageVersion Include="Google.Cloud.Storage.V1" Version="4.10.0" />
+    <PackageVersion Include="Minio" Version="6.0.4" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="H3Lib" Version="3.7.2" />
     <PackageVersion Include="Ardalis.SmartEnum" Version="2.1.0" />
     <PackageVersion Include="NetEscapades.AspNetCore.SecurityHeaders" Version="0.18.0" />
@@ -120,7 +123,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EFCoreVersion)" />
     <PackageVersion Include="MockQueryable.Moq" Version="7.0.0" />
     <PackageVersion Include="Bogus" Version="34.0.2" />
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <!-- Application Performance Monitoring -->
     <PackageVersion Include="Elastic.Apm.AspNetCore" Version="$(ElasticApmVersion)" />
     <PackageVersion Include="Elastic.Apm.EntityFrameworkCore" Version="$(ElasticApmVersion)" />

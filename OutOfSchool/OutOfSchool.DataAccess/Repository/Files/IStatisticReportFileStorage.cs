@@ -1,4 +1,5 @@
-﻿using OutOfSchool.Services.Models;
+﻿using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.Services.Repository.Files;
 

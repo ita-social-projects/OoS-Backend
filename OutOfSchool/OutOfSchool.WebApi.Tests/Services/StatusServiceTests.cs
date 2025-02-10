@@ -18,6 +18,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -26,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class StatusServiceTests
 {
     private IStatusService service;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
     private IMapper mapper;
@@ -40,7 +41,7 @@ public class StatusServiceTests
             .EnableSensitiveDataLogging()
             .Options;
 
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
         repository = new EntityRepositorySoftDeleted<long, InstitutionStatus>(context);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var logger = new Mock<ILogger<StatusService>>();

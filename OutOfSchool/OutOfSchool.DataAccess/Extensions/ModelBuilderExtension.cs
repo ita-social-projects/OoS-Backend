@@ -430,6 +430,20 @@ public static class ModelBuilderExtension
                 Title = "Певний місяць або місяці року",
                 TitleEn = "A certain month or months of the year",
             });
+
+        builder.Entity<Language>().HasData(
+            new Language {
+                Id = 1,
+                Name = "English",
+                Code = "en",
+            },
+            new Language
+            {
+                Id = 2,
+                Name = "Українська",
+                Code = "uk",
+
+            });
     }
 
     /// <summary>

@@ -132,9 +132,6 @@
   <data name="Email" xml:space="preserve">
     <value>Email</value>
   </data>
-  <data name="Entrance to Extracurricular activities" xml:space="preserve">
-    <value>Entrance to Extracurricular activities</value>
-  </data>
   <data name="First name" xml:space="preserve">
     <value>First name</value>
   </data>
@@ -413,5 +410,29 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="ExternalAuthenticationError" xml:space="preserve">
+    <value>Error processing your information with external provider, please try again or contact support</value>
+  </data>
+  <data name="Login to Extracurricular activities" xml:space="preserve">
+    <value>Login to Extracurricular activities</value>
+  </data>
+  <data name="Please select your role below to continue." xml:space="preserve">
+    <value>Please select your role below to continue.</value>
+  </data>
+  <data name="For personal accounts" xml:space="preserve">
+    <value>For personal accounts</value>
+  </data>
+  <data name="For employees of state and municipal institutions" xml:space="preserve">
+    <value>For employees of state and municipal institutions</value>
+  </data>
+  <data name="Log in with {0}" xml:space="preserve">
+    <value>Log in with {0}</value>
+  </data>
+  <data name="LoginWithRoleNotSupported" xml:space="preserve">
+    <value>Login in with this role is not supported.</value>
+  </data>
+  <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
+    <value>The external authorization data cannot be used for authentication.</value>
   </data>
 </root>

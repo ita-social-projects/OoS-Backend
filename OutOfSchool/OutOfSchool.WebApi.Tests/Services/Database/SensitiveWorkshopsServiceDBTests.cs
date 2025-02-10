@@ -24,6 +24,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -32,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 public class SensitiveWorkshopsServiceDBTests
 {
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
@@ -44,6 +45,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
@@ -54,7 +56,7 @@ public class SensitiveWorkshopsServiceDBTests
             .UseLazyLoadingProxies()
             .Options;
 
-        dbContext = new OutOfSchoolDbContext(dbContextOptions);
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
@@ -64,6 +66,7 @@ public class SensitiveWorkshopsServiceDBTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         tagServiceMock = new Mock<ITagService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         searchStringServiceMock = new Mock<ISearchStringService>();
@@ -86,8 +89,9 @@ public class SensitiveWorkshopsServiceDBTests
                 codeficatorServiceMock.Object,
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
+                contactsServiceMock.Object,
                 applicationRepositoryMock.Object);
-
+      
         Seed();
     }
 

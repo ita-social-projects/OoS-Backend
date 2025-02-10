@@ -5,7 +5,10 @@ public static class Constants
     /// <summary>
     /// Maximum length of unified URL.
     /// </summary>
+    // TODO: When we finish transition to unified contacts - change to 2048 (Max length for Chrome, which is minimal between browsers)
     public const int MaxUnifiedUrlLength = 256;
+
+    public const int MaxEmailTypeLength = 60;
 
     public const int MaxEmailAddressLength = 256;
 
@@ -184,4 +187,93 @@ public static class Constants
     /// Maximum length of keywords.
     /// </summary>
     public const int MaxKeywordsLength = 200;
+
+    /// <summary>
+    /// Maximum length of first name, middle name, and last name for Individual.
+    /// </summary>
+    public const int MaxIndividualNameLength = 50;
+
+    /// <summary>
+    /// Minimum length of first name, middle name, and last name for Individual.
+    /// </summary>
+    public const int MinIndividualNameLength = 2;
+
+    /// <summary>
+    /// Maximum number of employees to upload.
+    /// </summary>
+    public const int MaxNumberOfEmployeesToUpload = 100;
+
+    /// Length constraint for workshop draft description.
+    /// </summary>
+    public const int WorkshopDraftDescriptionMaxLength = 500;
+
+    ///<summary>
+    /// Length constraint for the description draft items.
+    ///</summary>
+    public const int WorkshopDraftDescriptionItemsLength = 200;
+
+    ///<summary>
+    /// Length constraint for the rejection messages.
+    ///</summary>
+    public const int WorkshopDraftMaxRejectionMessageLength = 200;
+
+    ///<summary>
+    /// Maximum length for disability option descriptions.
+    /// </summary>
+    public const int DisabilityOptionsLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for a teacher's description.
+    /// </summary>
+    public const int TeacherDescriptionLength = 300;
+    
+    /// <summary>
+    /// Maximum allowed length for contacts title.
+    /// </summary>
+    public const int ContactsTitleMaxLength = 60;
+
+    /// <summary>
+    /// The maximum length allowed for the competitive event title.
+    /// </summary>
+    public const int MaxCompetitiveEventTitleLength = 250;
+
+    /// <summary>
+    /// The minimum length required for the competitive event title.
+    /// </summary>
+    public const int MinCompetitiveEventTitleLength = 1;
+
+    /// <summary>
+    /// The maximum length allowed for the competitive event short title.
+    /// </summary>
+    public const int MaxCompetitiveEventShortTitleLength = 100;
+
+    /// <summary>
+    /// The minimum length required for the competitive event short title.
+    /// </summary>
+    public const int MinCompetitiveEventShortTitleLength = 1;
+
+    /// <summary>
+    /// The maximum length allowed for the benefits for competitive event.
+    /// </summary>
+    public const int MaxBenefitsLength = 500;
+
+    /// <summary>
+    /// The maximum length allowed for the description.
+    /// </summary>
+    public const int MaxDescriptionLength = 2000;
+
+    /// <summary>
+    /// The maximum length allowed for the venue name.
+    /// </summary>
+    public const int MaxVenueNameLength = 500;
+
+    /// <summary>
+    /// The maximum length allowed for the Judge's description.
+    /// </summary>
+    public const int MaxJudgeDescriptionLength = 300;
+    
+    /// <summary>
+    /// Sets public images cache control to be 1 hour (GCS default for public data).
+    /// </summary>
+    public const string PublicImageCacheControl = "public, max-age=3600";
 }

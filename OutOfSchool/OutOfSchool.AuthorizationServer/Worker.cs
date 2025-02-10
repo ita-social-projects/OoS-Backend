@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
-using OutOfSchool.AuthorizationServer.Config;
+using OutOfSchool.AuthCommon.Config;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OutOfSchool.AuthorizationServer;

@@ -21,6 +21,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -44,7 +45,7 @@ public class ChatMessageWorkshopServiceTests
     private IMapper mapper;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private IChatMessageWorkshopService messageService;
 
@@ -60,7 +61,7 @@ public class ChatMessageWorkshopServiceTests
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
         options = builder.Options;
-        dbContext = new OutOfSchoolDbContext(options);
+        dbContext = new TestOutOfSchoolDbContext(options);
 
         messageRepository = new EntityRepositorySoftDeleted<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
@@ -215,7 +216,7 @@ public class ChatMessageWorkshopServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();

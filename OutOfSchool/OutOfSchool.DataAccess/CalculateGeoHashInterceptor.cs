@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.Services;
 
@@ -57,7 +58,17 @@ public class CalculateGeoHashInterceptor : ISaveChangesInterceptor
             EntityState.Modified,
         };
 
+        // TODO: This entity will stay until we fully move everything to unified contacts
         foreach (var entry in context.ChangeTracker.Entries<Address>().Where(x => states.Contains(x.State)).Select(x => x.CurrentValues))
+        {
+            entry["GeoHash"] =
+                Api.GeoToH3(
+                    default(GeoCoord).SetDegrees(
+                        Convert.ToDecimal(entry["Latitude"]),
+                        Convert.ToDecimal(entry["Longitude"])), GeoMathHelper.Resolution).Value;
+        }
+
+        foreach (var entry in context.ChangeTracker.Entries<ContactsAddress>().Where(x => states.Contains(x.State)).Select(x => x.CurrentValues))
         {
             entry["GeoHash"] =
                 Api.GeoToH3(

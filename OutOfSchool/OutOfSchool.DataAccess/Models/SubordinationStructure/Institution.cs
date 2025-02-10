@@ -18,6 +18,8 @@ public class Institution : IKeyedEntity<Guid>, ISoftDeleted
     public bool IsGovernment { get; set; }
 
     public bool IsDeleted { get; set; }
+    
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual List<Provider> RelatedProviders { get; set; }
 }

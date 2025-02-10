@@ -5,5 +5,5 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 public class WorkshopCreateUpdateDto : WorkshopBaseDto
 {
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    public List<long> TagIds { get; set; } = new List<long>();
+    public List<long> TagIds { get; set; } = [];
 }

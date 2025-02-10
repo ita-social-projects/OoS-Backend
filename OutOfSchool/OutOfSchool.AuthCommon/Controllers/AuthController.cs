@@ -83,6 +83,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="logoutId"> Identifier of cookie captured the current state needed for sign out.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/logout")]
     [HttpGet]
     public async Task<IActionResult> Logout(string logoutId)
     {
@@ -111,8 +112,9 @@ public class AuthController : Controller
     /// <param name="returnUrl"> URL used to redirect user back to client.</param>
     /// <param name="providerRegistration"> bool used to redirect on registration page and prepare page for provider registration.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/login")]
     [HttpGet]
-    public async Task<IActionResult> Login(string returnUrl = "Login", bool? providerRegistration = null)
+    public async Task<IActionResult> Login(string returnUrl = AuthServerConstants.LoginPath, bool? providerRegistration = null)
     {
         if (providerRegistration ?? GetProviderRegistrationFromUri(returnUrl))
         {
@@ -137,6 +139,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="model"> View model that contains credentials for logging in.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/login")]
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -241,7 +244,7 @@ public class AuthController : Controller
     [HttpGet]
     [Obsolete("Change password API is no longer supported. Exists only for testing purposes.")]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordLogin)]
-    public IActionResult ChangePasswordLogin(string email, string returnUrl = "Login")
+    public IActionResult ChangePasswordLogin(string email, string returnUrl = AuthServerConstants.LoginPath)
     {
         return View(new ChangePasswordLoginViewModel { Email = email, ReturnUrl = returnUrl });
     }
@@ -318,10 +321,11 @@ public class AuthController : Controller
     /// <param name="returnUrl"> URL used to redirect user back to client.</param>
     /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/register")]
     [HttpGet]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordRegistration)]
     [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
-    public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
+    public IActionResult Register(string returnUrl = AuthServerConstants.LoginPath, bool? providerRegistration = null)
     {
         return View(new RegisterViewModel
         {
@@ -335,6 +339,7 @@ public class AuthController : Controller
     /// </summary>
     /// <param name="model"> View model that contains credentials for signing in.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [Route("~/register")]
     [HttpPost]
     [FeatureGate(AuthServerConstants.FeatureManagement.PasswordRegistration)]
     [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]

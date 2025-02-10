@@ -135,9 +135,6 @@
   <data name="Email" xml:space="preserve">
     <value>Імейл</value>
   </data>
-  <data name="Entrance to Extracurricular activities" xml:space="preserve">
-    <value>Вхід в Позашкілля</value>
-  </data>
   <data name="First name" xml:space="preserve">
     <value>Ім’я</value>
   </data>
@@ -419,5 +416,29 @@ Login: {0}
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Так</value>
+  </data>
+  <data name="ExternalAuthenticationError" xml:space="preserve">
+    <value>Помилка обробки вашої інформації за допомогою зовнішнього постачальника, спробуйте ще раз або зверніться до служби підтримки</value>
+  </data>
+  <data name="Login to Extracurricular activities" xml:space="preserve">
+    <value>Увійти до Позашкілля</value>
+  </data>
+  <data name="Please select your role below to continue." xml:space="preserve">
+    <value>Виберіть свою роль нижче, щоб продовжити.</value>
+  </data>
+  <data name="For personal accounts" xml:space="preserve">
+    <value>Для особистих облікових записів</value>
+  </data>
+  <data name="For employees of state and municipal institutions" xml:space="preserve">
+    <value>ля співробітників державних і комунальних установ</value>
+  </data>
+  <data name="Log in with {0}" xml:space="preserve">
+    <value>Увійти з {0}</value>
+  </data>
+  <data name="LoginWithRoleNotSupported" xml:space="preserve">
+    <value>Вхід із цією роллю не підтримується.</value>
+  </data>
+  <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
+    <value>Зовнішні дані авторизації не можна використати для автентифікації.</value>
   </data>
 </root>

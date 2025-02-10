@@ -2,8 +2,12 @@
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Directions;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -19,6 +23,9 @@ public class ExternalExportService : IExternalExportService
     private readonly IWorkshopRepository workshopRepository;
     private readonly IApplicationRepository applicationRepository;
     private readonly IAverageRatingService averageRatingService;
+    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository;
+    private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportService> logger;
 
@@ -27,6 +34,9 @@ public class ExternalExportService : IExternalExportService
         IWorkshopRepository workshopRepository,
         IApplicationRepository applicationRepository,
         IAverageRatingService averageRatingService,
+        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
+        ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository,
+        IInstitutionHierarchyRepository institutionHierarchyRepository,
         IMapper mapper,
         ILogger<ExternalExportService> logger)
     {
@@ -36,6 +46,11 @@ public class ExternalExportService : IExternalExportService
             applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
         this.averageRatingService =
             averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
+        this.directionRepository = directionRepository ?? throw new ArgumentNullException(nameof(directionRepository));
+        this.institutionRepository =
+            institutionRepository ?? throw new ArgumentNullException(nameof(institutionRepository));
+        this.institutionHierarchyRepository = institutionHierarchyRepository ??
+                                              throw new ArgumentNullException(nameof(institutionHierarchyRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -62,7 +77,7 @@ public class ExternalExportService : IExternalExportService
                 .ConfigureAwait(false);
 
             var providersDto = providers
-                .Select(MapToInfoProviderDto)
+                .Select(MapToInfoDto<Provider, ProviderInfoBaseDto, ProviderInfoDto>)
                 .ToList();
 
             await FillRatingsForType(providersDto).ConfigureAwait(false);
@@ -103,7 +118,9 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var workshopsDto = workshops.Select(MapToInfoWorkshopDto).ToList();
+            var workshopsDto = workshops
+                .Select(MapToInfoDto<Workshop, WorkshopInfoBaseDto, WorkshopInfoDto>)
+                .ToList();
 
             await FillRatingsForType(workshopsDto).ConfigureAwait(false);
             await FillTakenSeats(workshopsDto).ConfigureAwait(false);
@@ -123,19 +140,119 @@ public class ExternalExportService : IExternalExportService
         }
     }
 
-    private ProviderInfoBaseDto MapToInfoProviderDto(Provider provider)
+    public async Task<SearchResult<DirectionInfoBaseDto>> GetDirections(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
-        return provider.IsDeleted
-            ? mapper.Map<ProviderInfoBaseDto>(provider)
-            : mapper.Map<ProviderInfoDto>(provider);
+        try
+        {
+            logger.LogDebug("Getting Directions started");
+
+            offsetFilter ??= new OffsetFilter();
+            
+            Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
+                ? direction => !direction.IsDeleted
+                : direction => direction.UpdatedAt > updatedAfter;
+
+            // Is deleted expression is added automatically by repo
+            var directions = await directionRepository
+                .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: filterExpression)
+                .ToListAsync();
+
+            logger.LogDebug("All {Count} records were successfully received from the Direction table",
+                directions.Count);
+
+            // Is deleted expression is added automatically by repo
+            var count = await directionRepository.Count(filterExpression).ConfigureAwait(false);
+
+            var directionDtos = directions
+                .Select(MapToInfoDto<Direction, DirectionInfoBaseDto, DirectionInfoDto>)
+                .ToList();
+
+            var result = new SearchResult<DirectionInfoBaseDto>()
+            {
+                TotalAmount = count,
+                Entities = directionDtos,
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred while processing directions");
+            throw;
+        }
     }
 
-    private WorkshopInfoBaseDto MapToInfoWorkshopDto(Workshop workshop)
+    public async Task<SearchResult<SubDirectionsInfoBaseDto>> GetSubDirections(DateTime updatedAfter, OffsetFilter offsetFilter)
     {
-        return workshop.IsDeleted
-            ? mapper.Map<WorkshopInfoBaseDto>(workshop)
-            : mapper.Map<WorkshopInfoDto>(workshop);
+        try
+        {
+            logger.LogDebug("Getting SubDirections started");
+
+            offsetFilter ??= new OffsetFilter();
+            
+            Expression<Func<Institution, bool>> institutionFilterExpression = updatedAfter == default
+                ? institution => !institution.IsDeleted
+                : institution => institution.UpdatedAt > updatedAfter;
+            
+            Expression<Func<InstitutionHierarchy, bool>> institutionHierarchyFilterExpression = updatedAfter == default
+                ? ih => !ih.IsDeleted
+                : ih => ih.UpdatedAt > updatedAfter;
+
+            // Is deleted expression is added automatically by repo
+            var institutions = institutionRepository
+                .Get(whereExpression: institutionFilterExpression);
+
+            // We need to return only the lowest level for each institution
+            // Is deleted expression is added automatically by repo
+            var institutionSubDirections = institutionHierarchyRepository
+                .Get(whereExpression: institutionHierarchyFilterExpression)
+                .Join(
+                    institutions,
+                    ih => new {IId = ih.InstitutionId, Level = ih.HierarchyLevel},
+                    i => new {IId = i.Id, Level = i.NumberOfHierarchyLevels},
+                    (ih, i) => ih);
+
+            // Is deleted expression is added automatically by repo
+            var count = await institutionSubDirections.CountAsync().ConfigureAwait(false);
+
+            if (offsetFilter.From > 0)
+            {
+                institutionSubDirections = institutionSubDirections.Skip(offsetFilter.From);
+            }
+
+            if (offsetFilter.Size > 0)
+            {
+                institutionSubDirections = institutionSubDirections.Take(offsetFilter.Size);
+            }
+
+            var subDirections = await institutionSubDirections
+                .IncludeProperties("Directions")
+                .OrderBy(ih => ih.Id)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var subDirectionDtos = subDirections
+                .Select(MapToInfoDto<InstitutionHierarchy, SubDirectionsInfoBaseDto, SubDirectionsInfoDto>)
+                .ToList();
+
+            var result = new SearchResult<SubDirectionsInfoBaseDto>()
+            {
+                TotalAmount = count,
+                Entities = subDirectionDtos,
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred while processing subdirections");
+            throw;
+        }
     }
+
+    private TBase MapToInfoDto<TEntity, TBase, TFull>(TEntity entity)
+        where TEntity : ISoftDeleted
+        where TFull : TBase => entity.IsDeleted ? mapper.Map<TBase>(entity) : mapper.Map<TFull>(entity);
 
     private async Task FillRatingsForType<T>(List<T> dtos)
         where T : class, IExternalInfo<Guid>

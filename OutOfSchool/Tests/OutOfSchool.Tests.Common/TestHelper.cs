@@ -29,6 +29,16 @@ public static class TestHelper
         return config.CreateMapper();
     }
 
+    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2, TProfile3>()
+        where TProfile1 : Profile, new()
+        where TProfile2 : Profile, new()
+        where TProfile3 : Profile, new()
+    {
+        var config = new MapperConfiguration(cfg =>
+            cfg.UseProfile<TProfile1>().UseProfile<TProfile2>().UseProfile<TProfile3>());
+        return config.CreateMapper();
+    }
+
     public static void AssertResponseOkResultAndValidateValue<TExpectedValue>(this IActionResult response, TExpectedValue expected)
     {
         var actual = (response as ObjectResult).Value;

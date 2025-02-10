@@ -2,66 +2,140 @@
 @using OutOfSchool.AuthCommon
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@inject SignInManager<User> SignInManager
 
 @model OutOfSchool.AuthCommon.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = SharedLocalizer["Entrance to Extracurricular activities"];
+    ViewData["Title"] = SharedLocalizer["Login to Extracurricular activities"];
     Layout = "_Layout";
 }
-<div class="wrapper_body">    
-    <div class="wrapper"> 
-        <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>       
-        <div class="icon_wrapper">
-            @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
-            @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
-            @*     @foreach (var provider in Model.ExternalProviders) *@
-            @*     { *@
-            @*         <button name="provider" *@
-            @*                 type="submit" *@
-            @*                 value="@provider.Name"> *@
-            @*             @provider.Name *@
-            @*         </button> *@
-            @*     } *@
-            @* </form> *@
 
-            <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                <input type="hidden" asp-for="ReturnUrl"/>
-                <div asp-validation-summary="ModelOnly"></div>
-                <label class="registration_label">@SharedLocalizer["Email"]</label>
-                <input class="registration_input" asp-for="Username" placeholder="email@companyname.com"/>
-                <div class="login_privacy_username_box">
-                    <span asp-validation-for="Username"></span>
-                </div>
-                <div id="login_registration_item">
-                    <label class="registration_label">@SharedLocalizer["Password"]</label>
-                    <input class="registration_input registration_input-password" asp-for="Password" id="login_password" />
-                    <div class="login_privacy_password">
-                        <img src="~/_content/auth/icons/ic_eye.svg" alt="eye" class="registration_eye" id="login_password_eye">
+@section PageSpecificCss
+{
+    <link rel="stylesheet" href="~/_content/auth/css/login.css" asp-append-version="true" type="text/css"/>
+}
+
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h1 class="icon_title">@SharedLocalizer["Login to Extracurricular activities"]</h1>
+        <section class="icon_wrapper">
+            <hr/>
+            @{
+                var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+                if (loginProviders.Count == 0)
+                {
+                    <div>
+                        <p>
+                            There are no external authentication services configured.
+                        </p>
                     </div>
-                </div>
-                <div class="login_privacy_password_box">
-                    <div class="login_privacy_password_warning">
-                        <span asp-validation-for="Password"></span>
-                    </div>
-                    <div class="password_link">
-                        <a class="link" asp-controller="Account" asp-action="ForgotPassword"
-                           asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot password?"]</a>
-                    </div>
-                </div>
-                <div class="checkbox-container">
-                    <input asp-for="RememberMe" type="checkbox" id="rememberMe">
-                    <label>@SharedLocalizer["Remember me?"]</label>
-                </div>
-                <div class="title">
-                    <button class="registration_submit registration_button" type="submit" >@SharedLocalizer["Sign In"].Value.ToUpper()</button>
-                </div>
-                <div class="title registered_question">
-                    <span>@SharedLocalizer["Not registered yet?"]&nbsp;</span>
-                    <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
-                </div>
-            </form>
-        </div>
+                }
+                else
+                {
+                    <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" role="form">
+                        <div>
+                            <div>
+                                <label class="login__label">
+                                    @SharedLocalizer["Please select your role below to continue."]
+                                </label>
+                                <div class="login-role-select">
+                                    <div class="login-role-select__option login-role-select__option-left login-role-select--active" data-value="provider" id="login_role_select_provider">
+                                        <span class="login-role-select__icon-medium">
+                                            <svg width="13" height="15" viewBox="0 0 13 15" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M1.66683 6.6665V11.3332H3.66683V6.6665H1.66683ZM5.66683 6.6665V11.3332H7.66683V6.6665H5.66683ZM0.333496 14.6665H13.0002V12.6665H0.333496V14.6665ZM9.66683 6.6665V11.3332H11.6668V6.6665H9.66683ZM6.66683 0.666504L0.333496 3.99984V5.33317H13.0002V3.99984L6.66683 0.666504Z"
+                                                    fill="#272425"/>
+                                            </svg>
+                                        </span>
+                                        <div>
+                                            <span class="login-role-select__text">@SharedLocalizer["Service provider"]</span>
+                                            <small>@SharedLocalizer["For employees of state and municipal institutions"]</small>
+                                        </div>
+                                    </div>
+                                    <div class="login-role-select__option login-role-select__option-right" data-value="parent" id="login_role_select_parent">
+                                        <span class="login-role-select__icon-small">
+                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M5.99984 5.99984C7.47317 5.99984 8.6665 4.8065 8.6665 3.33317C8.6665 1.85984 7.47317 0.666504 5.99984 0.666504C4.5265 0.666504 3.33317 1.85984 3.33317 3.33317C3.33317 4.8065 4.5265 5.99984 5.99984 5.99984ZM5.99984 7.33317C4.21984 7.33317 0.666504 8.2265 0.666504 9.99984V11.3332H11.3332V9.99984C11.3332 8.2265 7.77984 7.33317 5.99984 7.33317Z"
+                                                    fill="#272425"/>
+                                            </svg>
+                                        </span>
+                                        <div>
+                                            <span class="login-role-select__text">@SharedLocalizer["User"]</span>
+                                            <small>@SharedLocalizer["For personal accounts"]</small>
+                                        </div>
+                                    </div>
+                                    <div class="login-role-select__divider"></div>
+                                </div>
+                                <input type="hidden" name="role" id="role" value="provider">
+                            </div>
+                            <p>
+                                @foreach (var provider in loginProviders)
+                                {
+                                    <button type="submit" class="registration_submit registration_button" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                        @SharedLocalizer["Log in with {0}", @provider.DisplayName]
+                                    </button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
     </div>
 </div>
+<feature name="@AuthServerConstants.FeatureManagement.PasswordLogin">
+    <div class="wrapper_body">
+        <div class="wrapper">
+            <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>
+            <div class="icon_wrapper">
+                <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                    <input type="hidden" asp-for="ReturnUrl"/>
+                    <div asp-validation-summary="ModelOnly"></div>
+                    <label class="registration_label">@SharedLocalizer["Email"]</label>
+                    <input class="registration_input" asp-for="Username" placeholder="email@companyname.com"/>
+                    <div class="login_privacy_username_box">
+                        <span asp-validation-for="Username"></span>
+                    </div>
+                    <div id="login_registration_item">
+                        <label class="registration_label">@SharedLocalizer["Password"]</label>
+                        <input class="registration_input registration_input-password" asp-for="Password" id="login_password"/>
+                        <div class="login_privacy_password">
+                            <img src="~/_content/auth/icons/ic_eye.svg" alt="eye" class="registration_eye" id="login_password_eye">
+                        </div>
+                    </div>
+                    <div class="login_privacy_password_box">
+                        <div class="login_privacy_password_warning">
+                            <span asp-validation-for="Password"></span>
+                        </div>
+                        <feature name="@AuthServerConstants.FeatureManagement.PasswordManagement">
+                        <div class="password_link">
+                            <a class="link" asp-controller="Account" asp-action="ForgotPassword"
+                               asp-route-returnUrl="@Model.ReturnUrl">
+                                @SharedLocalizer["Forgot password?"]
+                            </a>
+                        </div>
+                        </feature>
+                    </div>
+                    <div class="checkbox-container">
+                        <input asp-for="RememberMe" type="checkbox" id="rememberMe">
+                        <label>@SharedLocalizer["Remember me?"]</label>
+                    </div>
+                    <div class="title">
+                        <button class="registration_submit registration_button" type="submit">@SharedLocalizer["Sign In"].Value.ToUpper()</button>
+                    </div>
+                    <feature name="@AuthServerConstants.FeatureManagement.PasswordRegistration">
+                    <div class="title registered_question">
+                        <span>@SharedLocalizer["Not registered yet?"]&nbsp;</span>
+                        <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
+                    </div>
+                    </feature>
+                </form>
+            </div>
+        </div>
+    </div>
+</feature>
 @await Html.PartialAsync("_JqueryPartial")
 <script src="~/_content/auth/js/login.js" type="text/javascript" asp-append-version="true"></script>

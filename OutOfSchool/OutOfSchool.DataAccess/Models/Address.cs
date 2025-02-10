@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
+// TODO: This entity will stay until we fully move everything to unified contacts
 public class Address : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }

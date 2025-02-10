@@ -7,6 +7,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -73,9 +74,9 @@ public class AchievementRepositoryTests
 
     #region private
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IAchievementRepository GetAchievementRepository(OutOfSchoolDbContext dbContext)
+    private IAchievementRepository GetAchievementRepository(TestOutOfSchoolDbContext dbContext)
         => new AchievementRepository(dbContext);
 
     #endregion

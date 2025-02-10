@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
+using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 

@@ -35,4 +35,28 @@
     <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
         <value />
     </data>
+    <data name="ExternalAuthenticationError" xml:space="preserve">
+        <value />
+    </data>
+    <data name="Login to Extracurricular activities" xml:space="preserve">
+        <value />
+    </data>
+    <data name="Please select your role below to continue." xml:space="preserve">
+        <value />
+    </data>
+    <data name="For personal accounts" xml:space="preserve">
+        <value />
+    </data>
+    <data name="For employees of state and municipal institutions" xml:space="preserve">
+        <value />
+    </data>
+    <data name="Log in with {0}" xml:space="preserve">
+        <value />
+    </data>
+    <data name="LoginWithRoleNotSupported" xml:space="preserve">
+        <value />
+    </data>
+    <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
+        <value />
+    </data>
 </root>

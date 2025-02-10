@@ -3,6 +3,7 @@ using OutOfSchool.BusinessLogic.Models.Codeficator;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
+// TODO: This entity will stay until we fully move everything to unified contacts
 public class AddressDto
 {
     public long Id { get; set; }

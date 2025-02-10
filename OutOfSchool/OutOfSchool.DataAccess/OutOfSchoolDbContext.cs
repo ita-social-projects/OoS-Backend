@@ -8,8 +8,11 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
+using OutOfSchool.Services.Models.Configurations.WorkshopDraftConfig;
+using OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.Services;
 
@@ -128,9 +131,20 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<CompetitiveEventRegistrationDeadline> CompetitiveEventRegistrationDeadlines { get; set; }
 
+    public DbSet<Judge> Judges { get; set; }
+
     public DbSet<Official> Officials { get; set; }
     
     public DbSet<Position> Positions { get; set; }
+
+    public DbSet<StudySubject> StudySubjects { get; set; }
+
+    public DbSet<Language> Languages { get; set; }
+
+    public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
+
+    public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
+    
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
@@ -172,6 +186,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new InstitutionFieldDescriptionConfiguration());
         builder.ApplyConfiguration(new InstitutionHierarchyConfiguration());
         builder.ApplyConfiguration(new InstitutionStatusConfiguration());
+        builder.ApplyConfiguration(new LanguageConfiguration());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new OfficialConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
@@ -183,11 +198,15 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new RatingConfiguration());
         builder.ApplyConfiguration(new RegionAdminConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
+        builder.ApplyConfiguration(new StudySubjectConfiguration());
         builder.ApplyConfiguration(new TagConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
+        builder.ApplyConfiguration(new WorkshopDraftConfiguration());
+        builder.ApplyConfiguration(new TeacherDraftConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

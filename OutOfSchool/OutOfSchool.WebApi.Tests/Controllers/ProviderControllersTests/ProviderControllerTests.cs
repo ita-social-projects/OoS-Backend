@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
@@ -291,5 +293,120 @@ public class ProviderControllerTests
         };
 
         return context;
+    }
+
+    [Test]
+    [TestCase(4)]
+    [TestCase(10)]
+    public async Task Upload_WhenModelIsValid_ReturnsOkObjectResult(int entitiesCount)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ReturnsAsync(It.IsAny<UploadEmployeeResponse>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await providerController.Upload(id, data)
+            .ConfigureAwait(false);
+
+        //Assert
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+        providerService.VerifyAll();
+    }
+
+    [Test]
+    public void Upload_WhenModelIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = (UploadEmployeeRequestDto[])null;
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ReturnsAsync(It.IsAny<UploadEmployeeResponse>())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await providerController.Upload(id, data).ConfigureAwait(false));
+        providerService.VerifyAll();
+    }
+
+    [Test]
+    [TestCase(0)]
+    public async Task Upload_WhenServisThrowsInvalidOperationException_ReturnsBadRequestObjectResult(int entitiesCount)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var errorMessage = "Error message";
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ThrowsAsync(new InvalidOperationException(errorMessage))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await providerController.Upload(id, data)
+           .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+              .BeOfType<BadRequestObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status400BadRequest);
+        providerService.VerifyAll();
+    }
+
+    [Test]
+    [TestCase(101)]
+    public async Task Upload_WhenServisThrowsArgumentOutOfRangeException_ReturnsBadRequestObjectResult(int entitiesCount)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var errorMessage = "Error message";
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ThrowsAsync(new ArgumentOutOfRangeException(errorMessage))
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await providerController.Upload(id, data)
+           .ConfigureAwait(false);
+
+        // Assert
+        result.Should()
+              .BeOfType<BadRequestObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status400BadRequest);
+        providerService.VerifyAll();
+    }
+
+    [Test]
+    [TestCase(4)]
+    [TestCase(10)]
+    public async Task Upload_WhenModelIsInvalid_ReturnsBadRequestObjectResult(int entitiesCount)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var dictionary = new ModelStateDictionary();
+        dictionary.AddModelError("CreateProvider", "Invalid model state.");
+        var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
+        providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
+        providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
+            .ReturnsAsync(It.IsAny<UploadEmployeeResponse>())
+            .Verifiable(Times.Never);
+
+        // Act
+        var result = await providerController.Upload(id, data)
+            .ConfigureAwait(false);
+
+        //Assert
+        result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        providerService.VerifyAll();
     }
 }
