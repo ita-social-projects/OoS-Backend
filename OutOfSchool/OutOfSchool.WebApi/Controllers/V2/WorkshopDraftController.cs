@@ -165,8 +165,8 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<IActionResult> Reject(WorkshopDraftRejectionDto workshopDraftRejection)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Reject(Guid id, [FromBody] WorkshopDraftRejectionDto workshopDraftRejection)
     {
         if (string.IsNullOrWhiteSpace(workshopDraftRejection.RejectionMessage))
         {
@@ -175,7 +175,7 @@ public class WorkshopDraftController : ControllerBase
 
         try
         {
-            await workshopDraftService.Reject(workshopDraftRejection.WorkshopDraftId, workshopDraftRejection.RejectionMessage);
+            await workshopDraftService.Reject(id, workshopDraftRejection.RejectionMessage);
             return Ok();
         }
         catch (EntityDeletedConflictException ex)
@@ -215,7 +215,7 @@ public class WorkshopDraftController : ControllerBase
     }
 
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftViewCardDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

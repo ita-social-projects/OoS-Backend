@@ -353,7 +353,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopDraftResponseDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
         logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
 
@@ -377,14 +377,14 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
-        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
+        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
 
         logger.LogDebug(
             "From Workshop Drafts table for provider {Id} were successfully received {Count} records", 
             id, 
             workshopDraftResponseDtos.Count);
 
-        return new SearchResult<WorkshopDraftResponseDto>()
+        return new SearchResult<WorkshopDraftViewCardDto>()
         {
             TotalAmount = workshopBaseCardsCount,
             Entities = workshopDraftResponseDtos,
@@ -392,9 +392,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopV2Dto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
+    public async Task<SearchResult<TDto>> FetchByFilterForAdmins<TDto>(WorkshopDraftFilterAdministration filter = null) where TDto : class
     {
-        logger.LogDebug("Started retrieving Workshops by filter for admins.");
+        logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
 
         filter ??= new WorkshopDraftFilterAdministration();
 
@@ -437,12 +437,12 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
 
-        var workshopDraftsDTO = mapper.Map<List<WorkshopV2Dto>>(workshopDrafts);
+        var entities = workshopDrafts.Select(draft => mapper.Map<TDto>(draft)).ToList();
 
-        return new SearchResult<WorkshopV2Dto>()
+        return new SearchResult<TDto>()
         {
             TotalAmount = workshopDraftsCount,
-            Entities = workshopDraftsDTO,
+            Entities = entities,
         };
     }
 
@@ -693,58 +693,5 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         return predicate;
     }
-
-    public async Task<SearchResult<WorkshopDraftViewCardDto>> FetchCardByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
-    {
-        logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
-
-        filter ??= new WorkshopDraftFilterAdministration();
-
-        var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
-
-        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
-        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
-
-        if (catottgIdAdmin > 0)
-        {
-            allowedSettlementIdsForAdmin = await codeficatorService
-                .GetAllChildrenIdsByParentIdAsync(catottgIdAdmin)
-                .ConfigureAwait(false);
-        }
-
-        if (filter.CATOTTGId > 0)
-        {
-            subSettlementsIdsByFilter = await codeficatorService
-                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
-                .ConfigureAwait(false);
-        }
-
-        var predicate = PredicateBuildForAdminds(
-            filter,
-            adminInstitutionId,
-            allowedSettlementIdsForAdmin,
-            subSettlementsIdsByFilter);
-
-        var workshopDrafts = await workshopDraftRepository.Get(
-                skip: filter.From,
-                take: filter.Size,
-                whereExpression: predicate,
-                asNoTracking: true)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        var workshopDraftsCount = await workshopDraftRepository
-            .Count(predicate)
-            .ConfigureAwait(false);
-
-        logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);                
-
-        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftViewCardDto>(draft)).ToList();
-
-        return new SearchResult<WorkshopDraftViewCardDto>()
-        {
-            TotalAmount = workshopDraftsCount,
-            Entities = entities,
-        };
-    }
+   
 }

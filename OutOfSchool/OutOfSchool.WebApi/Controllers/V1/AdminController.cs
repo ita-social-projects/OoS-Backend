@@ -294,7 +294,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>    
-         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+         await workshopDraftService.FetchByFilterForAdmins<WorkshopV2Dto>(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
 
     /// <summary>
@@ -310,5 +310,5 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsCardByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
-        await workshopDraftService.FetchCardByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+        await workshopDraftService.FetchByFilterForAdmins<WorkshopDraftViewCardDto>(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 }   

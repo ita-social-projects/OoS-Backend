@@ -78,6 +78,6 @@ public interface IWorkshopDraftService
     /// <param name="id">Provider's key.</param>
     /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by Workshop id.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="SearchResult{WorkshopDraftResponseDto}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<WorkshopDraftResponseDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
+    /// The task result contains a <see cref="SearchResult{WorkshopDraftViewCardDto}"/> that contains elements from the input sequence.</returns>
+    Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 }

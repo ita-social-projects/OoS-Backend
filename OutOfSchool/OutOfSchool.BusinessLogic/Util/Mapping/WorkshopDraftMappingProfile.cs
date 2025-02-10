@@ -55,8 +55,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.DraftStatus, opt => opt.MapFrom(src => src.DraftStatus))
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title));
 
-        CreateMap<WorkshopDraft, WorkshopDraftRejectionDto>()
-            .ForMember(dest => dest.WorkshopDraftId, opt => opt.MapFrom(src => src.Id))
+        CreateMap<WorkshopDraft, WorkshopDraftRejectionDto>()            
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(scr => scr.RejectionMessage));
 
 
