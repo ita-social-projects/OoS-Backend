@@ -58,7 +58,6 @@ public class CompetitiveEventServiceTests
         repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
         descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
-        judgeRepository = new EntityRepository<Guid, Judge>(context);
 
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -66,10 +65,8 @@ public class CompetitiveEventServiceTests
         userService = new Mock<ICurrentUserService>();
         contactsService = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
 
-
         service = new CompetitiveEventService(
             repo,
-            judgeRepository,
             descriptionItemRepository,
             logger.Object,
             localizer.Object,
@@ -117,7 +114,7 @@ public class CompetitiveEventServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventCreateDto()
+        var input = new CompetitiveEventCreateUpdateDto()
         {
             Title = "Test",
             ShortTitle = "TestShort",
@@ -128,12 +125,6 @@ public class CompetitiveEventServiceTests
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
             CompetitiveEventAccountingTypeId = 1,
-
-            Judges = new List<JudgeDto>
-            {
-                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 1" },
-                new JudgeDto { Id = Guid.NewGuid(), FirstName = "Judge 2" }
-            }
         };
         // Act
         var countBeforeCreating = await repo.Count().ConfigureAwait(false);
@@ -151,7 +142,7 @@ public class CompetitiveEventServiceTests
     public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        CompetitiveEventUpdateDto dto = null;
+        CompetitiveEventCreateUpdateDto dto = null;
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(
@@ -163,7 +154,7 @@ public class CompetitiveEventServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedDto = new CompetitiveEventUpdateDto()
+        var changedDto = new CompetitiveEventCreateUpdateDto()
         {
             Id = Guid.NewGuid(),
             Title = "Test",
@@ -187,7 +178,7 @@ public class CompetitiveEventServiceTests
     public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventUpdateDto()
+        var input = new CompetitiveEventCreateUpdateDto()
         {
             Id = firstId,
             Title = "TestNew",
@@ -199,11 +190,6 @@ public class CompetitiveEventServiceTests
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
             CompetitiveEventAccountingTypeId = 1,
-            Judges = new List<JudgeDto>
-            {
-                new JudgeDto { Id = firstJudgeId, FirstName = "Judge C" },
-                new JudgeDto { FirstName = "Judge D" }
-            }
         };
 
         // Act
@@ -211,8 +197,6 @@ public class CompetitiveEventServiceTests
 
         // Assert
         Assert.That(input.Title, Is.EqualTo(result.Title), "CompetitiveEvent's title was not updated correctly.");
-        Assert.That(input.Judges[0].FirstName, Is.EqualTo(result.Judges[0].FirstName), "First Judge's name was not updated correctly.");
-        Assert.That(input.Judges[1].FirstName, Is.EqualTo(result.Judges[1].FirstName), "New judge (Judge D) was not added correctly.");
     }
 
     [Test]
@@ -239,7 +223,7 @@ public class CompetitiveEventServiceTests
         context.CompetitiveEvents.Add(competitiveEvent);
         await context.SaveChangesAsync();
 
-        var updateDto = new CompetitiveEventUpdateDto
+        var updateDto = new CompetitiveEventCreateUpdateDto
         {
             Id = eventId,
             Title = "Updated Test Event",

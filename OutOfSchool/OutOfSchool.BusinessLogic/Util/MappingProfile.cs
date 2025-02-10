@@ -778,16 +778,14 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
-            .ForMember(dest => dest.Judges, opt => opt.MapFrom(src => src.Judges))
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .Apply(IgnoreAllImages)
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
-            
 
-        CreateSoftDeletedMap<CompetitiveEventCreateDto, CompetitiveEvent>()
+        CreateSoftDeletedMap<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventAccountingType, opt => opt.Ignore())
@@ -806,13 +804,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
-
-        CreateSoftDeletedMap<CompetitiveEventUpdateDto, CompetitiveEvent>()
-            .IncludeBase<CompetitiveEventCreateDto, CompetitiveEvent>()
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
-            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore());
+            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore());
 
         CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 

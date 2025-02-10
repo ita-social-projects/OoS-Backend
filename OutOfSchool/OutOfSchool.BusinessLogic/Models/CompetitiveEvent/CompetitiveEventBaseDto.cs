@@ -77,8 +77,6 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDt
     [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    public List<JudgeDto> Judges { get; set; }
-
     public bool? AreThereBenefits { get; set; }
 
     [MaxLength(Constants.MaxBenefitsLength)]
