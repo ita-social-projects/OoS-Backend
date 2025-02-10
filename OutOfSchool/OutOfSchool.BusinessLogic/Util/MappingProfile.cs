@@ -456,7 +456,8 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
-                opt.MapFrom(src => src.Provider.LicenseStatus));
+                opt.MapFrom(src => src.Provider.LicenseStatus))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
 
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()

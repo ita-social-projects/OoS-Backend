@@ -28,6 +28,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Util;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -55,6 +56,7 @@ public class WorkshopServiceTests
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IApplicationRepository> applicationRepository;
 
     [SetUp]
     public void SetUp()
@@ -77,6 +79,7 @@ public class WorkshopServiceTests
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        applicationRepository = new Mock<IApplicationRepository>();
 
         workshopService =
                 new WorkshopService(
@@ -96,7 +99,8 @@ public class WorkshopServiceTests
                     regionAdminServiceMock.Object,
                     codeficatorServiceMock.Object,
                     tagServiceMock.Object,
-                    searchStringServiceMock.Object);
+                    searchStringServiceMock.Object,
+                    applicationRepository.Object);
     }
 
     #region Create
@@ -654,6 +658,8 @@ public class WorkshopServiceTests
         var expectedTeachers = teachers.Select(s => mapper.Map<TeacherDTO>(s));
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
 
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
+
         // Act
         var result = await workshopService.Update(mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity)).ConfigureAwait(false);
 
@@ -680,6 +686,7 @@ public class WorkshopServiceTests
         changeFirstEntityDto.AvailableSeats = null;
 
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
 
         // Act
         var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
@@ -726,6 +733,8 @@ public class WorkshopServiceTests
             .Returns(mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto));
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
 
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync([new(changedFirstEntity.Id, currentTakenSeats)]);
+
         // Act
         var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
 
@@ -766,6 +775,7 @@ public class WorkshopServiceTests
         var techersToUpdate = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
 
         mapperMock.Setup(m => m.Map<WorkshopDto>(It.IsAny<Workshop>())).Returns(mapper.Map<WorkshopDto>(changedFirstEntity));
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
 
         // Act
         var result = await workshopService.Update(techersToUpdate).ConfigureAwait(false);

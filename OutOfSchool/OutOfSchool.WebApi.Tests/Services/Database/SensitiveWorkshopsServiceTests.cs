@@ -41,6 +41,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -54,6 +55,7 @@ public class SensitiveWorkshopsServiceTests
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         sensitiveWorkshopService =
             new WorkshopService(
@@ -73,7 +75,8 @@ public class SensitiveWorkshopsServiceTests
                 regionAdminServiceMock.Object,
                 codeficatorServiceMock.Object,
                 tagServiceMock.Object,
-                searchStringServiceMock.Object);
+                searchStringServiceMock.Object,
+                applicationRepositoryMock.Object);
     }
 
     #region FetchByFilterForAdmins
