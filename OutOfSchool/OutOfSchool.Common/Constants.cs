@@ -283,5 +283,6 @@ public static class Constants
         public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
         public const string AikomProviderId = "aikom_provider_id";
+        public const string ExternalIdProviderName = "external_id_provider_name";
     }
 }

@@ -48,6 +48,60 @@ public class TokenController : Controller
         _profileService = profileService;
     }
 
+    /// <summary>
+    /// Sets essential identity claims required for proper token generation and user identification.
+    /// This method MUST be called when creating or refreshing tokens to ensure proper claim propagation,
+    /// especially for external authentication scenarios.
+    /// </summary>
+    /// <param name="identityToPopulate">The identity to populate with claims</param>
+    /// <param name="existingPrincipal">The existing principal containing source claims</param>
+    /// <param name="user">The user entity for retrieving roles when needed</param>
+    /// <remarks>
+    /// This method is critical for maintaining security context and MUST NOT be removed or modified without careful consideration.
+    /// It handles both internal and external authentication scenarios, ensuring proper claim propagation.
+    /// 
+    /// Usage requirements:
+    /// - Must be called after basic claims (Subject, Email, etc.) are set
+    /// - Must be called before token generation
+    /// - Must be called in all token generation/refresh scenarios
+    /// </remarks>
+    private async Task EnsureRequiredIdentityClaimsAsync(
+        ClaimsIdentity identityToPopulate,
+        ClaimsPrincipal existingPrincipal,
+        User user)
+    {
+        if (existingPrincipal.HasClaim(OpenIddictConstants.Claims.Private.ProviderName) ||
+            existingPrincipal.HasClaim(Constants.ClaimTypes.ExternalIdProviderName))
+        {
+            // Take claims from external principal
+            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role, [existingPrincipal.GetClaim(ClaimTypes.Role)]);
+            identityToPopulate.SetClaim(OpenIddictConstants.Claims.FamilyName, existingPrincipal.GetClaim(ClaimTypes.Surname));
+            identityToPopulate.SetClaim(OpenIddictConstants.Claims.GivenName, existingPrincipal.GetClaim(ClaimTypes.GivenName));
+            identityToPopulate.SetClaim(Constants.ClaimTypes.Rnokpp, existingPrincipal.GetClaim(Constants.ClaimTypes.Rnokpp));
+
+            // Set the provider name claim
+            identityToPopulate.SetClaim(Constants.ClaimTypes.ExternalIdProviderName,
+                existingPrincipal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName) ??
+                existingPrincipal.GetClaim(Constants.ClaimTypes.ExternalIdProviderName));
+
+            if (existingPrincipal.HasClaim(Constants.ClaimTypes.Edrpou))
+            {
+                identityToPopulate.SetClaim(Constants.ClaimTypes.Edrpou, existingPrincipal.GetClaim(Constants.ClaimTypes.Edrpou));
+            }
+
+            if (existingPrincipal.HasClaim(Constants.ClaimTypes.AikomProviderId))
+            {
+                identityToPopulate.SetClaim(Constants.ClaimTypes.AikomProviderId,
+                    existingPrincipal.GetClaim(Constants.ClaimTypes.AikomProviderId));
+            }
+        }
+        else
+        {
+            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role,
+                [..await _userManager.GetRolesAsync(user)]);
+        }
+    }
+
     #region Authorization code, implicit and hybrid flows
 
     [HttpGet("~/connect/authorize")]
@@ -189,29 +243,7 @@ public class TokenController : Controller
                     .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
                     .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
 
-                // TODO: for now only having this private claim is enough, maybe check value later.
-                if (result.Principal.HasClaim(OpenIddictConstants.Claims.Private.ProviderName))
-                {
-                    // Take claims from external principal
-                    identity.SetClaims(OpenIddictConstants.Claims.Role, [result.Principal.GetClaim(ClaimTypes.Role)]);
-                    identity.SetClaim(OpenIddictConstants.Claims.FamilyName, result.Principal.GetClaim(ClaimTypes.Surname));
-                    identity.SetClaim(OpenIddictConstants.Claims.GivenName, result.Principal.GetClaim(ClaimTypes.GivenName));
-                    identity.SetClaim(Constants.ClaimTypes.Rnokpp, result.Principal.GetClaim(Constants.ClaimTypes.Rnokpp));
-                    if (result.Principal.HasClaim(Constants.ClaimTypes.Edrpou))
-                    {
-                        identity.SetClaim(Constants.ClaimTypes.Edrpou, result.Principal.GetClaim(Constants.ClaimTypes.Edrpou));
-                    }
-                    if (result.Principal.HasClaim(Constants.ClaimTypes.AikomProviderId))
-                    {
-                        identity.SetClaim(Constants.ClaimTypes.AikomProviderId, 
-                            result.Principal.GetClaim(Constants.ClaimTypes.AikomProviderId));
-                    }
-                }
-                else
-                {
-                    identity.SetClaims(OpenIddictConstants.Claims.Role,
-                            [..await _userManager.GetRolesAsync(user)]);
-                }
+                await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
 
                 await _profileService.GetProfileDataAsync(identity);
 
@@ -315,30 +347,7 @@ public class TokenController : Controller
             .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
 
         // If flow reaches this point - user is already signed in with claims
-        var signedInIdentity = User.Identity as ClaimsIdentity;
-        // TODO: for now only having this private claim is enough, maybe check value later.
-        if (signedInIdentity.HasClaim(OpenIddictConstants.Claims.Private.ProviderName))
-        {
-            // Take claims from external principal
-            identity.SetClaims(OpenIddictConstants.Claims.Role, [signedInIdentity.GetClaim(ClaimTypes.Role)]);
-            identity.SetClaim(OpenIddictConstants.Claims.FamilyName, signedInIdentity.GetClaim(ClaimTypes.Surname));
-            identity.SetClaim(OpenIddictConstants.Claims.GivenName, signedInIdentity.GetClaim(ClaimTypes.GivenName));
-            identity.SetClaim(Constants.ClaimTypes.Rnokpp, signedInIdentity.GetClaim(Constants.ClaimTypes.Rnokpp));
-            if (signedInIdentity.HasClaim(Constants.ClaimTypes.Edrpou))
-            {
-                identity.SetClaim(Constants.ClaimTypes.Edrpou, signedInIdentity.GetClaim(Constants.ClaimTypes.Edrpou));
-            }
-            if (signedInIdentity.HasClaim(Constants.ClaimTypes.AikomProviderId))
-            {
-                identity.SetClaim(Constants.ClaimTypes.AikomProviderId, 
-                    signedInIdentity.GetClaim(Constants.ClaimTypes.AikomProviderId));
-            }
-        }
-        else
-        {
-            identity.SetClaims(OpenIddictConstants.Claims.Role,
-                [..await _userManager.GetRolesAsync(user)]);
-        }
+        await EnsureRequiredIdentityClaimsAsync(identity, User, user);
 
         await _profileService.GetProfileDataAsync(identity);
 
@@ -477,8 +486,9 @@ public class TokenController : Controller
         identity.SetClaim(OpenIddictConstants.Claims.Subject, await _userManager.GetUserIdAsync(user))
             .SetClaim(OpenIddictConstants.Claims.Email, await _userManager.GetEmailAsync(user))
             .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
-            .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user))
-            .SetClaims(OpenIddictConstants.Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+            .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
+
+        await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
 
         identity.SetDestinations(this.GetDestinations);
 

@@ -19,6 +19,7 @@ using OpenIddict.Server.AspNetCore;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthorizationServer.Controllers;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Models;
 using SignInResult = Microsoft.AspNetCore.Mvc.SignInResult;
 
@@ -213,6 +214,215 @@ public class TokenControllerTests
         Assert.AreEqual(authServerConfig.RedirectToStartPageUrl, signOutResult.Properties.RedirectUri);
     }
 
+    /// <summary>
+    /// Verifies that external claims are properly set during the Authorize flow.
+    /// This test ensures the critical claim-setting functionality is maintained and not accidentally removed.
+    /// 
+    /// Related method: <c>EnsureRequiredIdentityClaimsAsync</c>
+    /// </summary>
+    [Test]
+    public async Task Authorize_WithExternalProvider_ShouldSetExternalClaims()
+    {
+        // Arrange
+        var request = new OpenIddictRequest();
+        SetOpenIddictServerRequest(httpContext, request);
+
+        var externalClaims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "123"),
+            new(ClaimTypes.Name, "1234567890"),
+            new(ClaimTypes.Role, "Provider"),
+            new(ClaimTypes.Surname, "Name"),
+            new(ClaimTypes.GivenName, "Surname"),
+            new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
+        };
+        var identity = new ClaimsIdentity(externalClaims, "TestAuthType");
+        var principal = new ClaimsPrincipal(identity);
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, "TestScheme"));
+
+        authenticationService.Setup(a => a.AuthenticateAsync(httpContext, null))
+            .ReturnsAsync(authResult);
+
+        var user = new User { Id = "123", UserName = "1234567890" };
+        userManager.Setup(u => u.GetUserAsync(principal)).ReturnsAsync(user);
+
+        SetupCommonAuthorizationMocks(user);
+
+        // Act
+        var result = await controller.Authorize() as SignInResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultIdentity = result.Principal.Identity as ClaimsIdentity;
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "Provider"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
+    }
+
+    /// <summary>
+    /// Verifies that external claims are properly set during the Accept (consent) flow.
+    /// This test ensures the critical claim-setting functionality is maintained and not accidentally removed.
+    /// 
+    /// Related method: <c>EnsureRequiredIdentityClaimsAsync</c>
+    /// </summary>
+    [Test]
+    public async Task Accept_WithExternalProvider_ShouldSetExternalClaims()
+    {
+        // Arrange
+        var request = new OpenIddictRequest();
+        SetOpenIddictServerRequest(httpContext, request);
+
+        var externalClaims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "123"),
+            new(ClaimTypes.Name, "1234567890"),
+            new(ClaimTypes.Role, "provider"),
+            new(ClaimTypes.Surname, "Name"),
+            new(ClaimTypes.GivenName, "Surname"),
+            new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
+        };
+        var identity = new ClaimsIdentity(externalClaims, "TestAuthType");
+        var principal = new ClaimsPrincipal(identity);
+        controller.ControllerContext.HttpContext.User = principal;
+
+        var user = new User { Id = "123", UserName = "1234567890" };
+        userManager.Setup(u => u.GetUserAsync(principal)).ReturnsAsync(user);
+
+        SetupCommonAuthorizationMocks(user);
+
+        // Act
+        var result = await controller.Accept() as SignInResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultIdentity = result.Principal.Identity as ClaimsIdentity;
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
+    }
+
+    /// <summary>
+    /// Verifies that external claims are properly set during token refresh.
+    /// This test ensures the critical claim-setting functionality is maintained and not accidentally removed.
+    /// 
+    /// Related method: <c>EnsureRequiredIdentityClaimsAsync</c>
+    /// </summary>
+    [Test]
+    public async Task HandleExchangeCodeAndRefreshGrantTypes_WithExternalProvider_ShouldSetExternalClaims()
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            GrantType = OpenIddictConstants.GrantTypes.RefreshToken
+        };
+        SetOpenIddictServerRequest(httpContext, request);
+        var externalClaims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "123"),
+            new(ClaimTypes.Name, "1234567890"),
+            new(ClaimTypes.Role, "provider"),
+            new(ClaimTypes.Surname, "Name"),
+            new(ClaimTypes.GivenName, "Surname"),
+            new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider"),
+            new(OpenIddictConstants.Claims.Subject, "123")
+        };
+        var identity = new ClaimsIdentity(externalClaims, "TestAuthType");
+        var principal = new ClaimsPrincipal(identity);
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, "TestScheme"));
+
+        authenticationService.Setup(a => a.AuthenticateAsync(httpContext, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme))
+            .ReturnsAsync(authResult);
+
+        var user = new User { Id = "123", UserName = "1234567890" };
+        userManager.Setup(u => u.FindByIdAsync("123")).ReturnsAsync(user);
+        signInManager.Setup(s => s.CanSignInAsync(user)).ReturnsAsync(true);
+
+        SetupCommonAuthorizationMocks(user);
+        
+        // Act
+        var result = await controller.Exchange() as SignInResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultIdentity = result.Principal.Identity as ClaimsIdentity;
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
+    }
+
+    /// <summary>
+    /// Verifies that internal user claims are properly set during the Authorize flow.
+    /// This test ensures the critical claim-setting functionality is maintained and not accidentally removed.
+    /// 
+    /// Related method: <c>EnsureRequiredIdentityClaimsAsync</c>
+    /// </summary>
+    [Test]
+    public async Task Authorize_WithInternalUser_ShouldSetInternalClaims()
+    {
+        // Arrange
+        var request = new OpenIddictRequest();
+        SetOpenIddictServerRequest(httpContext, request);
+
+        var internalClaims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "123"),
+            new(ClaimTypes.Name, "username")
+        };
+        var identity = new ClaimsIdentity(internalClaims, "TestAuthType");
+        var principal = new ClaimsPrincipal(identity);
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, "TestScheme"));
+
+        authenticationService.Setup(a => a.AuthenticateAsync(httpContext, null))
+            .ReturnsAsync(authResult);
+
+        var user = new User { Id = "123", UserName = "username" };
+        userManager.Setup(u => u.GetUserAsync(principal)).ReturnsAsync(user);
+        userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { "InternalRole1", "InternalRole2" });
+
+        SetupCommonAuthorizationMocks(user);
+
+        // Act
+        var result = await controller.Authorize() as SignInResult;
+
+        // Assert
+        Assert.IsNotNull(result);
+        var resultIdentity = result.Principal.Identity as ClaimsIdentity;
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "InternalRole1"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "InternalRole2"}));
+        Assert.IsFalse(resultIdentity.HasClaim(c => c.Type == Constants.ClaimTypes.ExternalIdProviderName));
+    }
+
+    private void SetupCommonAuthorizationMocks(User user)
+    {
+        var application = new object();
+        applicationManager.Setup(a => a.FindByClientIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(application);
+
+        applicationManager.Setup(a => a.GetConsentTypeAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(OpenIddictConstants.ConsentTypes.Implicit);
+
+        userManager.Setup(u => u.GetUserIdAsync(user)).ReturnsAsync(user.Id);
+        userManager.Setup(u => u.GetEmailAsync(user)).ReturnsAsync("user@example.com");
+        userManager.Setup(u => u.GetUserNameAsync(user)).ReturnsAsync(user.UserName);
+
+        authorizationManager.Setup(a => a.FindAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ImmutableArray<string>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new List<object>().ToAsyncEnumerable());
+
+        scopeManager.Setup(s => s.ListResourcesAsync(It.IsAny<ImmutableArray<string>>(), It.IsAny<CancellationToken>()))
+            .Returns(new List<string> { "resource1", "resource2" }.ToAsyncEnumerable());
+
+        profileService.Setup(p => p.GetProfileDataAsync(It.IsAny<ClaimsIdentity>()))
+            .Returns(Task.CompletedTask);
+    }
 
     private void SetOpenIddictServerRequest(HttpContext context, OpenIddictRequest request)
     {
