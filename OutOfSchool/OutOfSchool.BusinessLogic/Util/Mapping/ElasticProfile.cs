@@ -38,6 +38,11 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.Tags,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Tags.Select(t => t.Name)))
             .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()
@@ -185,6 +190,11 @@ public class ElasticProfile : Profile
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
                         !x.IsDeleted && (x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears))));
+                        || x.Status == ApplicationStatus.StudyingForYears))))
+            .ForMember(
+                dest => dest.Tags,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Tags.Select(t => t.Name)));
     }
 }

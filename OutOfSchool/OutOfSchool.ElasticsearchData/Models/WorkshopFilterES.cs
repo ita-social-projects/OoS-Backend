@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.ElasticsearchData.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models;
@@ -61,4 +62,24 @@ public class WorkshopFilterES
     public Guid? InstitutionId { get; set; } = Guid.Empty;
 
     public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
+
+    public IReadOnlyCollection<AgeComposition> AgeComposition { get; set; }
+
+    public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; }
+
+    public bool ShortStay { get; set; }
+
+    public bool IsSelfFinanced { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    public bool IsSpecial { get; set; }
+
+    public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; }
+
+    public bool IsInclusive { get; set; }
+
+    public bool AreThereBenefits { get; set; }
+
+    public IReadOnlyCollection<Coverage> Coverage { get; set; }
 }

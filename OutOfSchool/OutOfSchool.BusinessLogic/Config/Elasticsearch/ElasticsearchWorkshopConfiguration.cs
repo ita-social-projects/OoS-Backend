@@ -41,6 +41,21 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
                             .IcuCollation(WorkshopES.SortSuffix, ic => ic
                                 .Language(DefaultLanguage)
                                 .Country(DefaultCountry)
-                                .CaseFirst(IcuCollationCaseFirst.Upper))))));
+                                .CaseFirst(IcuCollationCaseFirst.Upper))))
+                    .Keyword(n => n.AgeComposition)
+                    .Keyword(n => n.EducationalShift)
+                    .Boolean(n => n.ShortStay)
+                    .Boolean(n => n.IsSelfFinanced)
+                    .Boolean(n => n.IsPaid)
+                    .Text(n => n.CompetitiveSelectionDescription)
+                    .Text(n => n.DisabilityOptionsDesc)
+                    .Boolean(n => n.IsSpecial)
+                    .Keyword(n => n.SpecialNeedsType)
+                    .Boolean(n => n.IsInclusive)
+                    .Text(n => n.EnrollmentProcedureDescription)
+                    .Boolean(n => n.AreThereBenefits)
+                    .Text(n => n.PreferentialTermsOfParticipation)
+                    .Keyword(n => n.Coverage)
+                    .Keyword(n => n.Tags)));
     }
 }

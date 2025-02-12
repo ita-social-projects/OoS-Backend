@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
@@ -74,4 +75,34 @@ namespace OutOfSchool.ElasticsearchData.Models;
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
 
     public FormOfLearning FormOfLearning { get; set; }
+
+    public AgeComposition AgeComposition { get; set; }
+
+    public EducationalShift EducationalShift { get; set; }
+
+    public bool ShortStay { get; set; }
+
+    public bool IsSelfFinanced { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    public string CompetitiveSelectionDescription { get; set; }
+
+    public string DisabilityOptionsDesc { get; set; }
+
+    public bool IsSpecial { get; set; }
+
+    public SpecialNeedsType SpecialNeedsType { get; set; }
+
+    public bool IsInclusive { get; set; }
+
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public bool AreThereBenefits { get; set; }
+
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    public Coverage Coverage { get; set; }
+
+    public List<string> Tags { get; set; }
 }

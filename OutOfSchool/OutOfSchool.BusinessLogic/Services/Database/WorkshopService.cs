@@ -948,15 +948,15 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(tempPredicate);
         }
 
-        if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        if (filter.IsFree && !filter.IsPaid)
         {
             predicate = predicate.And(x => x.Price == filter.MinPrice);
         }
-        else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        else if (!filter.IsFree && filter.IsPaid)
         {
             predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
         }
-        else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        else
         {
             predicate = predicate.And(x =>
                 (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
@@ -1008,6 +1008,51 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (filter.FormOfLearning.Any())
         {
             predicate = predicate.And(x => filter.FormOfLearning.Contains(x.FormOfLearning));
+        }
+
+        if (filter.ShortStay)
+        {
+            predicate = predicate.And(x => x.ShortStay);
+        }
+
+        if (filter.IsSelfFinanced)
+        {
+            predicate = predicate.And(x => x.IsSelfFinanced);
+        }
+
+        if (filter.IsSpecial)
+        {
+            predicate = predicate.And(x => x.IsPaid);
+        }
+
+        if (filter.IsInclusive)
+        {
+            predicate = predicate.And(x => x.IsInclusive);
+        }
+
+        if (filter.AreThereBenefits)
+        {
+            predicate = predicate.And(x => x.AreThereBenefits);
+        }
+
+        if (filter.AgeComposition.Any())
+        {
+            predicate = predicate.And(x => filter.AgeComposition.Contains(x.AgeComposition));
+        }
+
+        if (filter.EducationalShift.Any())
+        {
+            predicate = predicate.And(x => filter.EducationalShift.Contains(x.EducationalShift));
+        }
+
+        if (filter.SpecialNeedsType.Any())
+        {
+            predicate = predicate.And(x => filter.SpecialNeedsType.Contains(x.SpecialNeedsType));
+        }
+
+        if (filter.Coverage.Any())
+        {
+            predicate = predicate.And(x => filter.Coverage.Contains(x.Coverage));
         }
 
         return predicate;
