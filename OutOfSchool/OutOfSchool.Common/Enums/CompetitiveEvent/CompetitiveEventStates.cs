@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.Services.Enums;
+﻿namespace OutOfSchool.Common.Enums.CompetitiveEvent;
 
 public enum CompetitiveEventStates
 {
