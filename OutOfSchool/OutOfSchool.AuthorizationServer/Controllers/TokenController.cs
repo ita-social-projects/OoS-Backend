@@ -10,10 +10,14 @@ using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using OpenIddict.Server.AspNetCore;
+using OutOfSchool.AikomApiClient;
+using OutOfSchool.AikomApiClient.Models.Data;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthorizationServer.Services;
 using OutOfSchool.AuthorizationServer.Util;
 using OutOfSchool.AuthorizationServer.ViewModels;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.AuthorizationServer.Controllers;
 
@@ -27,6 +31,7 @@ public class TokenController : Controller
     private readonly UserManager<User> _userManager;
     private readonly AuthServerConfig authorizationServerConfig;
     private readonly IProfileService _profileService;
+    private readonly IAikomProviderService _aikomProviderService;
 
     public TokenController(
         IOpenIddictApplicationManager applicationManager,
@@ -36,7 +41,8 @@ public class TokenController : Controller
         SignInManager<User> signInManager,
         UserManager<User> userManager,
         IOptions<AuthServerConfig> identityServerConfig,
-        IProfileService profileService)
+        IProfileService profileService,
+        IAikomProviderService aikomProviderService)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
@@ -46,6 +52,7 @@ public class TokenController : Controller
         _userManager = userManager;
         authorizationServerConfig = identityServerConfig.Value;
         _profileService = profileService;
+        _aikomProviderService = aikomProviderService;
     }
 
     /// <summary>
@@ -244,6 +251,18 @@ public class TokenController : Controller
                     .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
 
                 await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
+                
+                // Verify provider access if the user has the Provider role
+                if (await this.ShouldForbidBasedOnProviderAccess(identity))
+                {
+                    return Forbid(
+                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                        properties: new AuthenticationProperties(new Dictionary<string, string>
+                        {
+                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
+                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
+                        }));
+                }
 
                 await _profileService.GetProfileDataAsync(identity);
 
@@ -348,6 +367,18 @@ public class TokenController : Controller
 
         // If flow reaches this point - user is already signed in with claims
         await EnsureRequiredIdentityClaimsAsync(identity, User, user);
+        
+        // Verify provider access if the user has the Provider role
+        if (await this.ShouldForbidBasedOnProviderAccess(identity))
+        {
+            return Forbid(
+                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                properties: new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
+                }));
+        }
 
         await _profileService.GetProfileDataAsync(identity);
 
@@ -490,6 +521,18 @@ public class TokenController : Controller
 
         await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
 
+        // Verify provider access if the user has the Provider role
+        if (await this.ShouldForbidBasedOnProviderAccess(identity))
+        {
+            return Forbid(
+                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                properties: new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
+                }));
+        }
+
         identity.SetDestinations(this.GetDestinations);
 
         // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
@@ -631,5 +674,50 @@ public class TokenController : Controller
                 yield return OpenIddictConstants.Destinations.AccessToken;
                 yield break;
         }
+    }
+    
+    /// <summary>
+    /// Checks if the user has the Provider role and verifies their director status through the Aikom API.
+    /// </summary>
+    /// <param name="identity">The claims identity containing provider verification claims (EDRPOU, RNOKPP, AikomProviderId).</param>
+    /// <returns>
+    ///   <c>true</c> if the user has the Provider role and does NOT have valid director access, indicating that the request should be forbidden; otherwise, <c>false</c>.
+    ///   The method will return <c>true</c> in the following cases:
+    ///   <list type="bullet">
+    ///     <item>The user does not have the Provider role.</item>
+    ///     <item>Required claims are missing.</item>
+    ///     <item>API call fails.</item>
+    ///     <item>Provider is not verified as a director.</item>
+    ///   </list>
+    /// </returns>
+    private async Task<bool> ShouldForbidBasedOnProviderAccess(ClaimsIdentity identity)
+    {
+        if (!identity.HasClaim(c => c.Type == OpenIddictConstants.Claims.Role && string.Equals(c.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        var edrpou = identity.FindFirst(Constants.ClaimTypes.Edrpou)?.Value;
+        var rnokpp = identity.FindFirst(Constants.ClaimTypes.Rnokpp)?.Value;
+        var aikomProviderId = identity.FindFirst(Constants.ClaimTypes.AikomProviderId)?.Value;
+
+        Either<ErrorResponse, AikomProviderResponse?> verificationResult;
+
+        if (long.TryParse(aikomProviderId, out var parsedAikomProviderId) && !string.IsNullOrEmpty(rnokpp))
+        {
+            verificationResult = await _aikomProviderService.VerifyDirectorAccess(parsedAikomProviderId, rnokpp);
+        }
+        else if (!string.IsNullOrEmpty(edrpou) && !string.IsNullOrEmpty(rnokpp))
+        {
+            verificationResult = await _aikomProviderService.VerifyProviderAndDirectorAccess(edrpou, rnokpp);
+        }
+        else
+        {
+            return true;
+        }
+
+        return verificationResult.Match(
+            _ => true,
+            providerInfo => providerInfo?.HasAccess != true);
     }
 }

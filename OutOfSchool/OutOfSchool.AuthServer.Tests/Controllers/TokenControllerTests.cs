@@ -16,6 +16,8 @@ using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
+using OutOfSchool.AikomApiClient;
+using OutOfSchool.AikomApiClient.Models.Data;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthorizationServer.Controllers;
 using OutOfSchool.AuthorizationServer.Services;
@@ -39,6 +41,7 @@ public class TokenControllerTests
     private AuthServerConfig authServerConfig;
     private HttpContext httpContext;
     private Mock<IAuthenticationService> authenticationService;
+    private Mock<IAikomProviderService> aikomProviderService;
     private TokenController controller;
 
     [SetUp]
@@ -53,6 +56,7 @@ public class TokenControllerTests
         identityServerOptions = new Mock<IOptions<AuthServerConfig>>();
         profileService = new Mock<IProfileService>();
         authenticationService = new Mock<IAuthenticationService>();
+        aikomProviderService = new Mock<IAikomProviderService>();
 
         authServerConfig = new AuthServerConfig
         {
@@ -68,7 +72,8 @@ public class TokenControllerTests
             signInManager.Object,
             userManager.Object,
             identityServerOptions.Object,
-            profileService.Object
+            profileService.Object,
+            aikomProviderService.Object
         );
         httpContext = new DefaultHttpContext();
         controller.ControllerContext.HttpContext = httpContext;
@@ -231,10 +236,11 @@ public class TokenControllerTests
         {
             new(ClaimTypes.NameIdentifier, "123"),
             new(ClaimTypes.Name, "1234567890"),
-            new(ClaimTypes.Role, "Provider"),
+            new(ClaimTypes.Role, "provider"),
             new(ClaimTypes.Surname, "Name"),
             new(ClaimTypes.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(Constants.ClaimTypes.AikomProviderId, "12345"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
         };
         var identity = new ClaimsIdentity(externalClaims, "TestAuthType");
@@ -255,7 +261,7 @@ public class TokenControllerTests
         // Assert
         Assert.IsNotNull(result);
         var resultIdentity = result.Principal.Identity as ClaimsIdentity;
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "Provider"}));
+        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
     }
@@ -281,6 +287,7 @@ public class TokenControllerTests
             new(ClaimTypes.Surname, "Name"),
             new(ClaimTypes.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(Constants.ClaimTypes.Edrpou, "1234567890"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
         };
         var identity = new ClaimsIdentity(externalClaims, "TestAuthType");
@@ -326,6 +333,7 @@ public class TokenControllerTests
             new(ClaimTypes.Surname, "Name"),
             new(ClaimTypes.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
+            new(Constants.ClaimTypes.Edrpou, "1234567890"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider"),
             new(OpenIddictConstants.Claims.Subject, "123")
         };
@@ -341,7 +349,7 @@ public class TokenControllerTests
         signInManager.Setup(s => s.CanSignInAsync(user)).ReturnsAsync(true);
 
         SetupCommonAuthorizationMocks(user);
-        
+
         // Act
         var result = await controller.Exchange() as SignInResult;
 
@@ -422,6 +430,29 @@ public class TokenControllerTests
 
         profileService.Setup(p => p.GetProfileDataAsync(It.IsAny<ClaimsIdentity>()))
             .Returns(Task.CompletedTask);
+        
+        aikomProviderService.Setup(x =>
+                x.VerifyDirectorAccess(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeSpan?>()))
+            .ReturnsAsync(new AikomProviderResponse { HasAccess = true, ProviderInfo = new AikomProviderInfo
+                {
+                    FullName = "",
+                    ShortName = "",
+                    Address = "",
+                    Email = "",
+                    Phone = ""
+                }
+            });
+        aikomProviderService.Setup(x =>
+                x.VerifyProviderAndDirectorAccess(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeSpan?>()))
+            .ReturnsAsync(new AikomProviderResponse { HasAccess = true, ProviderInfo = new AikomProviderInfo
+                {
+                    FullName = "",
+                    ShortName = "",
+                    Address = "",
+                    Email = "",
+                    Phone = ""
+                }
+            });
     }
 
     private void SetOpenIddictServerRequest(HttpContext context, OpenIddictRequest request)
