@@ -64,8 +64,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())            
             .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())
             .ForPath(dest => dest.WorkshopDraftContent.Title, opt => opt.MapFrom(src => src.Title));            
       
@@ -93,8 +92,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())            
             .ForMember(dest => dest.Version, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDraftContent, opt => opt.Ignore())
             .ForMember(dest => dest.Workshop, opt => opt.Ignore())            
