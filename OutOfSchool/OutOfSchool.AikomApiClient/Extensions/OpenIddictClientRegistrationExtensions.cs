@@ -25,7 +25,6 @@ public static class OpenIddictClientRegistrationExtensions
             Configuration = new()
             {
                 TokenEndpoint = new Uri(config.TokenEndpoint, UriKind.Absolute),
-                AuthorizationEndpoint = new Uri(config.AuthorizationEndpoint, UriKind.Absolute),
                 GrantTypesSupported = { OpenIddictConstants.GrantTypes.ClientCredentials },
                 TokenEndpointAuthMethodsSupported = { OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost }
             }

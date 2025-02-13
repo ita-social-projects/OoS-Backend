@@ -13,6 +13,4 @@ public class AikomApiClientConfig
     public required string ClientSecret { get; set; }
 
     public required string TokenEndpoint { get; set; }
-
-    public required string AuthorizationEndpoint {  get; set; }
 }
