@@ -80,4 +80,12 @@ public interface IWorkshopDraftService
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="SearchResult{WorkshopDraftViewCardDto}"/> that contains elements from the input sequence.</returns>
     Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
+
+    /// <summary>
+    /// Get all workshop drafts by provider Id.
+    /// </summary>
+    /// <param name="id">Provider's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="{WorkshopDraftResponseDto}"/> that contains mapped WorkshopDraft.</returns>
+    Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id);
 }

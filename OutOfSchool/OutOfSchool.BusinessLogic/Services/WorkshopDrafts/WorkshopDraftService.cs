@@ -15,6 +15,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using SendGrid.Helpers.Errors.Model;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
@@ -392,7 +393,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<TDto>> FetchByFilterForAdmins<TDto>(WorkshopDraftFilterAdministration filter = null) where TDto : class
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
     {
         logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
 
@@ -437,9 +438,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
 
-        var entities = workshopDrafts.Select(draft => mapper.Map<TDto>(draft)).ToList();
+        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftViewCardDto>(draft)).ToList();
 
-        return new SearchResult<TDto>()
+        return new SearchResult<WorkshopDraftViewCardDto>()
         {
             TotalAmount = workshopDraftsCount,
             Entities = entities,
@@ -462,6 +463,23 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
 
         return workshopDraft;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
+    {       
+        var draft = await workshopDraftRepository.GetById(id);
+        
+        if (draft == null)
+        {
+            throw new NotFoundException($"WorkshopDraft with id {id} not found.");
+        }
+
+        if (!await IsUserProviderOrProviderEmployee(draft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+        return mapper.Map<WorkshopDraftResponseDto>(draft);
     }
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)

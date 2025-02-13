@@ -242,4 +242,16 @@ public class WorkshopDraftController : ControllerBase
 
         return null;
     }
+
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetByDraftId(Guid id)
+    {
+        var responseDto = await workshopDraftService.GetWorkshopDraftByIdMapped(id);
+        return responseDto is not null ? Ok(responseDto) : NotFound();
+    }
 }

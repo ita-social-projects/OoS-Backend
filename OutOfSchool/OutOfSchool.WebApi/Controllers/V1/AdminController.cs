@@ -285,23 +285,7 @@ public class AdminController : Controller
     /// Get all Workshop Drafts from the database by filter.
     /// </summary>
     /// <param name="filter">Filter to get a part of all workshops that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{WorkshopV2Dto}"/> that contains the count of all found workshops and list of workshops that were received.</returns>
-    [HasPermission(Permissions.WorkshopApprove)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopV2Dto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>    
-         await workshopDraftService.FetchByFilterForAdmins<WorkshopV2Dto>(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
-
-
-    /// <summary>
-    /// Get all Workshop Drafts Cards from the database by filter.
-    /// </summary>
-    /// // <param name="filter">Filter to get a part of all workshops that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{WorkshopDraftViewCardDto}"/> that contains the count of all found workshops and list of workshops cards that were received.</returns>
+    /// <returns>The result is a <see cref="SearchResult{WorkshopDraftViewCardDto}"/> that contains the count of all found workshops and list of workshops that were received.</returns>
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftViewCardDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -309,6 +293,6 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> GetWorkshopDraftsCardByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
-        await workshopDraftService.FetchByFilterForAdmins<WorkshopDraftViewCardDto>(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+    public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
+         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);    
 }   
