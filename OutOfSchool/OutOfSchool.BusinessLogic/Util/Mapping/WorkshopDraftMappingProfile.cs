@@ -42,23 +42,35 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.WorkshopDetails, opt => opt.Ignore());
 
         CreateMap<WorkshopDraft, WorkshopDraftResponseDto>()
-            .IncludeMembers(src => src.WorkshopDraftContent)            
+            .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.DraftStatus, opt => opt.MapFrom(src => src.DraftStatus))
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(src => src.RejectionMessage))
-            .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src.Workshop));
+            .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src.WorkshopDraftContent));
+
+        CreateMap<WorkshopV2Dto, WorkshopDraftResponseDto>()
+            .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src))
+            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
+            .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnershipType, opt => opt.Ignore())
+            .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopStatus, opt => opt.Ignore())
+            
+            .ForMember(dest => dest.DateTimeRanges, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.Ignore()); 
+
 
         CreateMap<WorkshopDraft, WorkshopDraftViewCardDto>()
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.DraftStatus, opt => opt.MapFrom(src => src.DraftStatus))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title));
-
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.WorkshopDraftContent.Title));
         CreateMap<WorkshopDraft, WorkshopDraftRejectionDto>()            
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(scr => scr.RejectionMessage));
-
-
+         
+        
         CreateMap<WorkshopV2Dto, WorkshopDraftContent>()
             .ForMember(dest => dest.OwnershipType, opt => opt.MapFrom(src => src.ProviderOwnership))
             .ForMember(dest => dest.WorkshopStatus, opt => opt.MapFrom(src => src.Status))

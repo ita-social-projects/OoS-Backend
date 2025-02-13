@@ -169,16 +169,15 @@ public class WorkshopDraftControllerTests
     {
         // Arrange  
         var rejectionDto = new WorkshopDraftRejectionDto
-        {
-            WorkshopDraftId = workshopV2Dto.Id,
+        {            
             RejectionMessage = "I don’t like it"
         };
 
-        workshopDraftServiceMoq.Setup(x => x.Reject(rejectionDto.WorkshopDraftId, rejectionDto.RejectionMessage))
+        workshopDraftServiceMoq.Setup(x => x.Reject(workshopV2Dto.Id, rejectionDto.RejectionMessage))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
 
         // Act
-        var result = await controller.Reject(rejectionDto).ConfigureAwait(false) as OkResult;
+        var result = await controller.Reject(workshopV2Dto.Id, rejectionDto).ConfigureAwait(false) as OkResult;
 
         // Assert        
         workshopDraftServiceMoq.VerifyAll();
@@ -190,13 +189,12 @@ public class WorkshopDraftControllerTests
     {
         // Arrange        
         var rejectionDto = new WorkshopDraftRejectionDto
-        {
-            WorkshopDraftId = workshopV2Dto.Id,
+        {            
             RejectionMessage = string.Empty
         };
 
         // Act
-        var result = await controller.Reject(rejectionDto).ConfigureAwait(false) as BadRequestObjectResult;
+        var result = await controller.Reject(workshopV2Dto.Id, rejectionDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert             
         Assert.AreEqual(BadRequest, result.StatusCode);
@@ -225,12 +223,12 @@ public class WorkshopDraftControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshopDrafts_ShouldReturnOkResultObject()
     {
         // Arrange 
-        var searchResult = new SearchResult<WorkshopDraftResponseDto>()
+        var searchResult = new SearchResult<WorkshopDraftViewCardDto>()
         {
             TotalAmount = 1,
-            Entities = new List<WorkshopDraftResponseDto>()
+            Entities = new List<WorkshopDraftViewCardDto>()
             {
-                mapper.Map<WorkshopDraftResponseDto>(mapper.Map<WorkshopDraft>(workshopV2Dto))
+                mapper.Map<WorkshopDraftViewCardDto>(mapper.Map<WorkshopDraft>(workshopV2Dto))
             },            
         };
 
@@ -250,10 +248,10 @@ public class WorkshopDraftControllerTests
     {
         // Arrange
         var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
-        var emptySearchResult = new SearchResult<WorkshopDraftResponseDto>() 
+        var emptySearchResult = new SearchResult<WorkshopDraftViewCardDto>() 
         { 
             TotalAmount = 0, 
-            Entities = new List<WorkshopDraftResponseDto>() 
+            Entities = new List<WorkshopDraftViewCardDto>() 
         };
 
         workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
