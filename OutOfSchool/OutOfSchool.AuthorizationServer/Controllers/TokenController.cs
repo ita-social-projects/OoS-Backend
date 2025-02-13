@@ -692,6 +692,13 @@ public class TokenController : Controller
     /// </returns>
     private async Task<bool> ShouldForbidBasedOnProviderAccess(ClaimsIdentity identity)
     {
+        // TODO: As we have two options to log in (password for dev and external for prod)
+        // This check should work only for external auth
+        if (!identity.HasClaim(Constants.ClaimTypes.ExternalIdProviderName))
+        {
+            return false;
+        }
+
         if (!identity.HasClaim(c => c.Type == OpenIddictConstants.Claims.Role && string.Equals(c.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase)))
         {
             return false;
