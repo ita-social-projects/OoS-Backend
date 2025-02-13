@@ -414,7 +414,7 @@ public class WorkshopDraftServiceTests
         var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
         var workshopV2Dtos = mapper.Map<List<WorkshopV2Dto>>(workshops);
         var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshopV2Dtos);
-        var workshopDraftResponses = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
+        var workshopDraftResponses = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
 
         var providerDto = new ProviderDto
         {
