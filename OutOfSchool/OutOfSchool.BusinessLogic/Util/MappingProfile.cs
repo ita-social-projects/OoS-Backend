@@ -406,11 +406,9 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
-            .IncludeBase<object, IHasRating>()
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+            .IncludeBase<object, IHasRating>();
 
         CreateMap<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(
                 dest => dest.DirectionIds,
@@ -423,7 +421,6 @@ public class MappingProfile : Profile
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<Child, ChildDto>()

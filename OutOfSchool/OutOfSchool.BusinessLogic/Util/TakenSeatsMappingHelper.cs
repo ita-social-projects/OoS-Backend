@@ -2,7 +2,7 @@
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Util;
-public class TakenSeatsMappingHelper
+public static class TakenSeatsMappingHelper
 {
     public static async Task FillTakenSeatsForCards(IEnumerable<WorkshopBaseCard> cards, IApplicationRepository applicationRepository)
     {

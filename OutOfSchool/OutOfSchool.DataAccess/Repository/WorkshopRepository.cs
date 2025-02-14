@@ -99,27 +99,23 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         return await Task.FromResult(workshop).ConfigureAwait(false);
     }
 
-    public Task<List<WorkshopPendingApplications>> AmountOfPendingApplications(List<Guid> workshopIds)
+    public async Task<List<WorkshopPendingApplications>> AmountOfPendingApplications(List<Guid> workshopIds)
     {
-        return dbSet
-            .Where(x => x.Applications
-                .Any(a => a.Status == ApplicationStatus.Pending
+        return await dbSet
+            .Where(w => workshopIds.Contains(w.Id))
+            .Select(w => new
+            {
+                WorkshopId = w.Id,
+                PendingCount = w.Applications.Count(
+                    a => a.Status == ApplicationStatus.Pending
                     && !a.IsDeleted
                     && a.Child != null
                     && !a.Child.IsDeleted
                     && a.Parent != null
-                    && !a.Parent.IsDeleted
-                    && workshopIds.Contains(a.WorkshopId)))
-            .SelectMany(x => x.Applications
-                .Where(a => a.Status == ApplicationStatus.Pending
-                    && !a.IsDeleted
-                    && a.Child != null
-                    && !a.Child.IsDeleted
-                    && a.Parent != null
-                    && !a.Parent.IsDeleted
-                    && workshopIds.Contains(a.WorkshopId))
-                .GroupBy(a => a.WorkshopId)
-                .Select(g => new WorkshopPendingApplications(g.Key, g.Count())))
+                    && !a.Parent.IsDeleted)
+            })
+            .Where(w => w.PendingCount > 0)
+            .Select(w => new WorkshopPendingApplications(w.WorkshopId, w.PendingCount))
             .ToListAsync();
     }
 }

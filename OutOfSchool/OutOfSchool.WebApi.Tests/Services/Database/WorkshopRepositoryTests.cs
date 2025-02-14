@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -128,6 +129,38 @@ public class WorkshopRepositoryTests
     }
 
     #endregion
+
+    [Test]
+    public async Task AmountOfPendingApplications_Return_Correct_Count()
+    {
+        //Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshopIds = context.Workshops.Select(x => x.Id).ToList();
+        var expectedCounts = context.Applications
+            .Where(a => a.Status == ApplicationStatus.Pending 
+                    && !a.IsDeleted 
+                    && a.Child != null 
+                    && !a.Child.IsDeleted 
+                    && a.Parent != null 
+                    && !a.Parent.IsDeleted 
+                    && workshopIds.Contains(a.WorkshopId))
+            .GroupBy(a => a.WorkshopId)
+            .Select(g => new { WorkshopId = g.Key, PendingApplicationCount = g.Count() })
+            .ToList();
+
+        //Act
+        var actualCounts = await workshopRepository.AmountOfPendingApplications(workshopIds).ConfigureAwait(false);
+
+        //Assert
+        Assert.AreEqual(expectedCounts.Count, actualCounts.Count);
+        foreach (var expected in expectedCounts)
+        {
+            var actual = actualCounts.FirstOrDefault(x => x.WorkshopId == expected.WorkshopId);
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.PendingApplicationCount, actual.PendingApplications);
+        }
+    }
 
     #region private
 
