@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.AikomApiClient.Config;
+using OutOfSchool.Common.Communication;
+using OutOfSchool.Common.Communication.ICommunication;
 
 namespace OutOfSchool.AikomApiClient.Extensions;
 
@@ -19,6 +21,7 @@ public static class AikomApiClientServiceExtensions
 
         if (aikomConfiguration.Enable)
         {
+            services.AddTransient<ICommunicationService, CommunicationService>();
             services.AddTransient<IAikomApiService, AikomApiService>();
             services.AddTransient<IAikomProviderService, AikomProviderService>();
         }

@@ -133,6 +133,9 @@ public static class Startup
         ConfigurationValidationHelper.ValidateConfigurationObject(authorizationConfig);
         services.Configure<AuthorizationServerConfig>(authorizationSection);
         
+        // Communications config should be added before AddAikomOpenIddictClientRegistration
+        services.Configure<CommunicationConfig>(config.GetSection(CommunicationConfig.Name));
+        
         var aikomConfiguration = services.RegisterAikomApiClient(config, builder.Environment);
         services.AddOpenIddict()
             .AddCore(options =>
@@ -271,7 +274,6 @@ public static class Startup
                     AutomaticDecompression = DecompressionMethods.GZip,
                 });
 
-        services.Configure<CommunicationConfig>(config.GetSection(CommunicationConfig.Name));
         services.AddHostedService<Worker>(); // TODO: Move to Quartz
         services.AddProxy();
         services.AddTransient<IGovIdentityCommunicationService, GovIdentityCommunicationService>();
