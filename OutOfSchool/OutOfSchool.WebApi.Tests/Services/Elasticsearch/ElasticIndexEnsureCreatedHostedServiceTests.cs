@@ -13,14 +13,14 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
-using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch;
 
 [TestFixture]
 public class ElasticIndexEnsureCreatedHostedServiceTests
 {
-    private const string TestIndexName = "test-index";
+    private const string WorkshopTestIndexName = "test-index";
+    private const string CompetitiveEventTestIndexName = "test-index2";
     private const int TestCheckConnectivityDelayMs = 200;
     private const int TestConnectionWaitingTimeSec = 1;
 
@@ -44,7 +44,8 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         elasticOptionsMock.Setup(x => x.Value).Returns(
             new ElasticConfig
             {
-                WorkshopIndexName = TestIndexName,
+                WorkshopIndexName = WorkshopTestIndexName,
+                CompetitiveEventIndexName = CompetitiveEventTestIndexName,
                 CheckConnectivityDelayMs = TestCheckConnectivityDelayMs,
                 ConnectionWaitingTimeSec = TestConnectionWaitingTimeSec,
             });
@@ -80,15 +81,14 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
     public async Task StartAsync_WhenElasticIsHealthyAndIndexDoesNotExist_ShouldCreateIndex()
     {
         // Arrange
-        IndexName expectedIndexName = TestIndexName;
         elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
         var response = TestableResponseFactory
             .CreateSuccessfulResponse<CreateIndexResponse>(
             new(), StatusCodes.Status200OK);
         elasticClientMock.Setup(
             x => x.Indices.CreateAsync(
-                expectedIndexName,
-                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                It.IsAny<IndexName>(),
+                It.IsAny<Action<CreateIndexRequestDescriptor<It.IsAnyType>>>(),
                 CancellationToken.None))
             .Returns(Task.FromResult(response));
 
@@ -103,25 +103,24 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         elasticHealthServiceMock.Verify(x => x.IsHealthy, Times.Exactly(2));
         elasticClientMock.Verify(
             x => x.Indices.CreateAsync(
-                expectedIndexName,
-                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                It.IsAny<IndexName>(),
+                It.IsAny<Action<CreateIndexRequestDescriptor<It.IsAnyType>>>(),
                 CancellationToken.None),
-            Times.Once);
+            Times.Exactly(2));
     }
 
     [Test]
     public async Task StartAsync_WhenElasticIsHealthyAndIndexExist_ShouldExit()
     {
         // Arrange
-        IndexName expectedIndexName = TestIndexName;
         elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
         var response = TestableResponseFactory
             .CreateResponse<CreateIndexResponse>(
             new(), StatusCodes.Status400BadRequest, false);
         elasticClientMock.Setup(
             x => x.Indices.CreateAsync(
-                expectedIndexName,
-                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                It.IsAny<IndexName>(),
+                It.IsAny<Action<CreateIndexRequestDescriptor<It.IsAnyType>>>(),
                 CancellationToken.None))
             .Returns(Task.FromResult(response));
 
@@ -136,10 +135,10 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         elasticHealthServiceMock.Verify(x => x.IsHealthy, Times.Exactly(2));
         elasticClientMock.Verify(
             x => x.Indices.CreateAsync(
-                expectedIndexName,
-                It.IsAny<Action<CreateIndexRequestDescriptor<WorkshopES>>>(),
+                It.IsAny<IndexName>(),
+                It.IsAny<Action<CreateIndexRequestDescriptor<It.IsAnyType>>>(),
                 CancellationToken.None),
-            Times.Once);
+            Times.Exactly(2));
     }
 
     [Test]
@@ -184,6 +183,7 @@ public class ElasticIndexEnsureCreatedHostedServiceTests
         var validConfig = new ElasticConfig
         {
             WorkshopIndexName = "valid-index",
+            CompetitiveEventIndexName = "valid-index2",
             CheckConnectivityDelayMs = 100,
             ConnectionWaitingTimeSec = 5,
         };

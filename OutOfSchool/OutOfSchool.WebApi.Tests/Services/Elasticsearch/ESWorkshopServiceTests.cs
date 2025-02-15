@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
@@ -25,6 +27,7 @@ public class ESWorkshopServiceTests
     private Mock<IElasticsearchHealthService> elasticHealthServiceMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IMapper> mapperMock;
+    private Mock<IOptions<ElasticConfig>> configMock; 
 
     [SetUp]
     public void Setup()
@@ -34,13 +37,15 @@ public class ESWorkshopServiceTests
         elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         mapperMock = new Mock<IMapper>();
+        configMock = new Mock<IOptions<ElasticConfig>>();
         service = new ESWorkshopService(
             workshopServiceMock.Object,
             esProviderMock.Object,
             elasticHealthServiceMock.Object,
             new Mock<ILogger<ESWorkshopService>>().Object,
             averageRatingServiceMock.Object,
-            mapperMock.Object);
+            mapperMock.Object,
+            configMock.Object);
     }
 
     #region IsElasticAlive
@@ -233,6 +238,13 @@ public class ESWorkshopServiceTests
             Entities = workshops,
             TotalAmount = workshops.Count,
         };
+
+        var config = new ElasticConfig()
+        {
+            WorkshopIndexName = "test",
+            CompetitiveEventIndexName = "test1",
+        };
+
         workshopServiceMock.Setup(x => x.GetAll(It.IsAny<OffsetFilter>()))
             .ReturnsAsync(searchResult)
             .Callback<OffsetFilter>(filter =>
@@ -247,8 +259,9 @@ public class ESWorkshopServiceTests
                 RatingsGenerator.GetAverageRating(Guid.NewGuid()) : null);
         mapperMock.Setup(x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()))
             .Returns(new WorkshopES());
-        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()))
+        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
             .ReturnsAsync(Result.Updated);
+        configMock.Setup(x => x.Value).Returns(config);
 
         // Act
         var result = await service.ReIndex();
@@ -260,7 +273,7 @@ public class ESWorkshopServiceTests
             x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
         mapperMock.Verify(
             x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
-        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()), Times.Once);
+        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
         Assert.IsTrue(result);
     }
 
@@ -274,6 +287,13 @@ public class ESWorkshopServiceTests
             Entities = workshops,
             TotalAmount = workshops.Count,
         };
+
+        var config = new ElasticConfig()
+        {
+            WorkshopIndexName = "test",
+            CompetitiveEventIndexName = "test1",
+        };
+
         workshopServiceMock.Setup(x => x.GetAll(It.IsAny<OffsetFilter>()))
             .ReturnsAsync(searchResult)
             .Callback<OffsetFilter>(filter =>
@@ -287,8 +307,9 @@ public class ESWorkshopServiceTests
             .ReturnsAsync(RatingsGenerator.GetAverageRating(Guid.NewGuid()));
         mapperMock.Setup(x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()))
             .Returns(new WorkshopES());
-        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()))
+        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
             .ReturnsAsync(Result.NoOp);
+        configMock.Setup(x => x.Value).Returns(config);
 
         // Act
         var result = await service.ReIndex();
@@ -300,7 +321,7 @@ public class ESWorkshopServiceTests
             x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
         mapperMock.Verify(
             x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
-        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>()), Times.Once);
+        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
         Assert.IsFalse(result);
     }
 

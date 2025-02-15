@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class WorkshopServicesCombinerV2Tests
 {
     private Mock<IWorkshopService> workshopService;
-    private Mock<IElasticsearchSynchronizationService> elasticsearchSynchronizationService;
+    private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
     private IWorkshopServicesCombinerV2 service;
     private IMapper mapper;
 
@@ -33,7 +33,7 @@ public class WorkshopServicesCombinerV2Tests
     public void SetUp()
     {
         workshopService = new Mock<IWorkshopService>();
-        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
+        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
         var notificationService = new Mock<INotificationService>();
         var favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         var applicationRepository = new Mock<IApplicationRepository>();
