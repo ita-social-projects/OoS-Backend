@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OpenIddict.Abstractions;
+using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using OutOfSchool.AikomApiClient;
 using OutOfSchool.AikomApiClient.Models.Data;
@@ -49,6 +51,7 @@ public class ExternalAuthControllerTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IGovIdentityCommunicationService> communicationService;
     private Mock<IAikomProviderService> aikomProviderService;
+    private Mock<OpenIddictClientService> openIddictClientService;
     private OutOfSchoolDbContext dbContext;
     private HttpContext httpContext;
     private Mock<IAuthenticationService> authenticationService;
@@ -86,6 +89,7 @@ public class ExternalAuthControllerTests
         communicationService = new Mock<IGovIdentityCommunicationService>();
         aikomProviderService = new Mock<IAikomProviderService>();
         authServerOptions = new Mock<IOptions<AuthorizationServerConfig>>();
+        openIddictClientService = new Mock<OpenIddictClientService>(new Mock<IServiceProvider>().Object);
 
         authServerOptions.Setup(o => o.Value).Returns(authServerConfig);
 
@@ -105,7 +109,8 @@ public class ExternalAuthControllerTests
             localizer.Object,
             communicationService.Object,
             dbContext,
-            aikomProviderService.Object);
+            aikomProviderService.Object,
+            openIddictClientService.Object);
 
         controller.ControllerContext.HttpContext = httpContext;
         controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
@@ -126,6 +131,12 @@ public class ExternalAuthControllerTests
         roleManager.Setup(r => r.RoleExistsAsync(expectedRole)).ReturnsAsync(true);
         signInManager.Setup(s => s.ConfigureExternalAuthenticationProperties(externalAuthProvider, returnUrl, null))
             .Returns(new AuthenticationProperties());
+        openIddictClientService.Setup(o =>
+                o.GetClientRegistrationByProviderNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OpenIddictClientRegistration()
+            {
+                RegistrationId = "test"
+            });
 
         // Act
         var result = await controller.ExternalLogin(externalAuthProvider, expectedRole, returnUrl);
