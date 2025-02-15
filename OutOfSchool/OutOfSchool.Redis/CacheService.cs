@@ -3,12 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 using OutOfSchool.Common;
+using StackExchange.Redis;
 
 namespace OutOfSchool.Redis;
 
-public class CacheService : ICacheService, IReadWriteCacheService, IDisposable
+public class CacheService : IReadWriteCacheService, IDisposable
 {
     private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IDistributedCache cache;

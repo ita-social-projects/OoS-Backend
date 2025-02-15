@@ -276,4 +276,13 @@ public static class Constants
     /// Sets public images cache control to be 1 hour (GCS default for public data).
     /// </summary>
     public const string PublicImageCacheControl = "public, max-age=3600";
+    
+    public static class ClaimTypes
+    {
+        public const string UserId = "user_id";
+        public const string Rnokpp = "rnokpp";
+        public const string Edrpou = "edrpou";
+        public const string AikomProviderId = "aikom_provider_id";
+        public const string ExternalIdProviderName = "external_id_provider_name";
+    }
 }

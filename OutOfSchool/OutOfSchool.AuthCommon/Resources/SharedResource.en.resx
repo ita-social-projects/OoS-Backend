@@ -435,4 +435,10 @@
   <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
     <value>The external authorization data cannot be used for authentication.</value>
   </data>
+  <data name="ExternalProviderVerificationFailed" xml:space="preserve">
+    <value>Failed to verify your organization in the external registry. Please try again later or contact support if the problem persists.</value>
+  </data>
+  <data name="NotAProviderDirector" xml:space="preserve">
+    <value>You are not registered as a director of this organization. Only organization directors can sign in with the Provider role.</value>
+  </data>
 </root>

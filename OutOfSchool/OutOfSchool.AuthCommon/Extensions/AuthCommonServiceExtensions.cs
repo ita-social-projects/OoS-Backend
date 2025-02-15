@@ -6,6 +6,7 @@ using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Util;
 using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Redis;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -50,6 +51,10 @@ public static class AuthCommonServiceExtensions
         services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
+        
+        services.AddSingleton<CacheService>();
+        services.AddSingleton<ICacheService>(s => s.GetRequiredService<CacheService>());
+        services.AddSingleton<IReadWriteCacheService>(s => s.GetRequiredService<CacheService>());
 
         services.AddTransient<IParentRepository, ParentRepository>();
         services.AddTransient<IEmployeeRepository, EmployeeRepository>();

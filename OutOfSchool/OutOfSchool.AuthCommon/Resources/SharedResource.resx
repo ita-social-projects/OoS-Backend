@@ -59,4 +59,10 @@
     <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
         <value />
     </data>
+    <data name="ExternalProviderVerificationFailed" xml:space="preserve">
+        <value />
+    </data>
+    <data name="NotAProviderDirector" xml:space="preserve">
+        <value />
+    </data>
 </root>

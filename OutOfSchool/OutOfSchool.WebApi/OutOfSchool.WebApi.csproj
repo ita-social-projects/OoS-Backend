@@ -90,6 +90,5 @@
         <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj" />
         <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
-        <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
     </ItemGroup>
 </Project>

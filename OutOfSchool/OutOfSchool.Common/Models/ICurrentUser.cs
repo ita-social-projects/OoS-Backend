@@ -41,4 +41,11 @@ public interface ICurrentUser
     /// <see langword="true" /> if the user has the specified claim; otherwise, <see langword="false" />.
     /// </returns>
     bool HasClaim(string type, Func<string, bool>? valueComparer = null);
+
+    /// <summary>
+    /// Gets the value of a specific claim from the current user's claims.
+    /// </summary>
+    /// <param name="claimType">The type of claim to retrieve.</param>
+    /// <returns>The claim value if found; otherwise, null.</returns>
+    string? GetClaimValue(string claimType);
 }

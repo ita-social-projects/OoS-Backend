@@ -34,6 +34,7 @@
         <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.AikomApiClient\OutOfSchool.AikomApiClient.csproj" />
         <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
     </ItemGroup>
 

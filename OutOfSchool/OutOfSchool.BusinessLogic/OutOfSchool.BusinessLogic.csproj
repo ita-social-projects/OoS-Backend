@@ -79,6 +79,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+    <ProjectReference Include="..\OutOfSchool.AikomApiClient\OutOfSchool.AikomApiClient.csproj" />
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
     <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />

@@ -8,13 +8,6 @@ public static class AuthServerConstants
     public const string ExternalAuthSelectedRoleKey = "external_selected_role";
     public const string ExternalAuthUserIdKey = "external_user_id";
 
-    public static class ClaimTypes
-    {
-        public const string UserId = "user_id";
-        public const string Rnokpp = "rnokpp";
-        public const string Edrpou = "edrpou";
-    }
-
     public static class ExternalQuery
     {
         public const string UserId = "user_id";

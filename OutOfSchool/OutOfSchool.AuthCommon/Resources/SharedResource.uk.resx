@@ -441,4 +441,10 @@ Login: {0}
   <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
     <value>Зовнішні дані авторизації не можна використати для автентифікації.</value>
   </data>
+  <data name="ExternalProviderVerificationFailed" xml:space="preserve">
+    <value>Не вдалося перевірити вашу організацію в зовнішньому реєстрі. Спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.</value>
+  </data>
+  <data name="NotAProviderDirector" xml:space="preserve">
+    <value>Ви не зареєстровані як директор цієї організації. Лише директори організації можуть входити з роллю "Надавач послуг".</value>
+  </data>
 </root>

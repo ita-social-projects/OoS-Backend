@@ -13,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Validation.AspNetCore;
+using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -165,6 +166,7 @@ public static class Startup
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+
         services.AddOpenIddict()
             .AddValidation(options =>
             {
@@ -176,6 +178,18 @@ public static class Startup
 
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
+            });
+
+        var aikomConfiguration = services.RegisterAikomApiClient(configuration, builder.Environment);
+
+        services.AddOpenIddict()
+            .AddClient(options =>
+            {
+                options.AllowClientCredentialsFlow();
+                options.DisableTokenStorage();
+                options.UseSystemNetHttp();
+                options.UseAspNetCore();
+                options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
             });
 
         services.AddCors(confg =>
@@ -593,9 +607,10 @@ public static class Startup
             }
         });
 
-        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<CacheService>();
+        services.AddSingleton<ICacheService>(s => s.GetRequiredService<CacheService>());
+        services.AddSingleton<IReadWriteCacheService>(s => s.GetRequiredService<CacheService>());
         services.AddSingleton<IMultiLayerCacheService, MultiLayerCache>();
-        services.AddSingleton<IReadWriteCacheService, CacheService>();
         services.AddSingleton(typeof(ITempSaveService<>), typeof(TempSaveService<>));
 
         services.AddHealthChecks()

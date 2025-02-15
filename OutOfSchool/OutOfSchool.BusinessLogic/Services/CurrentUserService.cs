@@ -55,6 +55,8 @@ public class CurrentUserService : ICurrentUserService
 
     public bool HasClaim(string type, Func<string, bool>? valueComparer = null) =>
         currentUser.HasClaim(type, valueComparer);
+    
+    public string? GetClaimValue(string claimType) => currentUser.GetClaimValue(claimType);
 
     public bool IsInRole(Role role) => role switch
     {

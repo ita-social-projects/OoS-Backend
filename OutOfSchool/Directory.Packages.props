@@ -13,8 +13,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!--Basic Microsoft Packages-->
-    <PackageVersion Include="Elastic.CommonSchema" Version="8.11.1" />
-    <PackageVersion Include="Elastic.Transport" Version="0.4.22" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
@@ -46,6 +44,8 @@
     <PackageVersion Include="Google.Protobuf" Version="3.25.2" />
     <!--Elasticsearch-->
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.15.6" />
+    <PackageVersion Include="Elastic.CommonSchema" Version="8.11.1" />
+    <PackageVersion Include="Elastic.Transport" Version="0.4.22" />
     <!--Redis-->
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(RedisVersion)" />
@@ -58,6 +58,7 @@
     <!--OpenID Dict-->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Client.AspNetCore" Version="$(OpenIdDictVersion)" />
+    <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Quartz" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIdDictVersion)" />
