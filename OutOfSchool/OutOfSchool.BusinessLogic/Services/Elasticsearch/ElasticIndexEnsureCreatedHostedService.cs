@@ -8,10 +8,12 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
 {
     private readonly IServiceProvider services;
     private readonly ElasticsearchClient client;
-    private readonly string indexName;
+    private readonly string workshopIndexName;
+    private readonly string competitiveEventIndexName;
     private readonly int checkConnectivityDelayMs;
     private readonly int connectionWaitingTimeSec;
-    private readonly ElasticsearchWorkshopConfiguration configurator = new();
+    private readonly ElasticsearchWorkshopConfiguration workshopConfigurator = new();
+    private readonly ElasticsearchCompetitiveEventConfiguration competitiveEventConfigurator = new();
     private readonly ILogger<ElasticIndexEnsureCreatedHostedService> logger;
 
     public ElasticIndexEnsureCreatedHostedService(
@@ -25,8 +27,10 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
         this.logger = logger;
         var config = elasticOptions?.Value
             ?? throw new ArgumentNullException(nameof(elasticOptions));
-        indexName = config.WorkshopIndexName
+        workshopIndexName = config.WorkshopIndexName
             ?? throw new ArgumentNullException(nameof(elasticOptions), "WorkshopIndexName is null");
+        competitiveEventIndexName = config.CompetitiveEventIndexName
+            ?? throw new ArgumentNullException(nameof(elasticOptions), "CompetitiveEventIndexName is null");
         checkConnectivityDelayMs = config.CheckConnectivityDelayMs;
         connectionWaitingTimeSec = config.ConnectionWaitingTimeSec;
     }
@@ -58,22 +62,29 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
             // When attempting to create an index with an existing index name,
             // Elasticsearch v8.15.6 CreateAsync returns a response containing
             // 400 BadRequest error.
-            var createIndexResponse = await client.Indices.CreateAsync(indexName, configurator.Configure())
-                    .ConfigureAwait(false);
-            if (createIndexResponse.IsValidResponse)
-            {
-                logger.LogInformation("Elastic index {IndexName} created successfully", indexName);
-            }
-            else
-            {
-                logger.LogError(createIndexResponse.DebugInformation);
-            }
+            await TryCreateIndex(workshopIndexName, workshopConfigurator);
+            await TryCreateIndex(competitiveEventIndexName, competitiveEventConfigurator);
         }
         else
         {
-            logger.LogError("Failed to ensure Elastic index {IndexName}: Elastic is not healthy", indexName);
+            logger.LogError("Failed to ensure Elastic index {IndexName}: Elastic is not healthy", workshopIndexName);
         }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private async Task TryCreateIndex<TEntity>(string indexName, IElasticsearchEntityTypeConfiguration<TEntity> configurator)
+    {
+        var createIndexResponse = await client.Indices.CreateAsync(indexName, configurator.Configure())
+                    .ConfigureAwait(false);
+
+        if (createIndexResponse.IsValidResponse)
+        {
+            logger.LogInformation("Elastic index {IndexName} created successfully", indexName);
+        }
+        else
+        {
+            logger.LogError(createIndexResponse.DebugInformation);
+        }
+    }
 }

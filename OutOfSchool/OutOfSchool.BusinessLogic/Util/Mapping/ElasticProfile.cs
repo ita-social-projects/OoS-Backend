@@ -5,6 +5,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -196,5 +197,23 @@ public class ElasticProfile : Profile
                 opt =>
                     opt.MapFrom(src =>
                         src.Tags.Select(t => t.Name)));
+
+        CreateMap<CompetitiveEvent, CompetitiveEventES>()
+            .ForMember(
+                dest => dest.CompetitiveEventDescriptionItems,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.CompetitiveEventDescriptionItems
+                            .Aggregate(string.Empty, (accumulator, di) =>
+                                $"{accumulator}{di.SectionName}{Constants.MappingSeparator}{di.Description}{Constants.MappingSeparator}")))
+            .ForMember(
+                dest => dest.CompetitiveEventAccountingType,
+                opt => opt.MapFrom(src => src.CompetitiveEventAccountingType.Title))
+            .ForMember(
+                dest => dest.Coverage,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Coverage.Aggregate(string.Empty, (accumulator, di) =>
+                            $"{accumulator}{Constants.MappingSeparator}{di.Title}")));
     }
 }

@@ -21,7 +21,7 @@ public class CompetitiveEventES
 
     public DateTimeOffset RegistrationEndTime { get; set; }
 
-    public string CompetitiveEventDescriptionItems { get; set; } //sum of all competitive event descriptions
+    public string CompetitiveEventDescriptionItems { get; set; } //sum of all competitive event section names + descriptions
 
     public string AdditionalDescription { get; set; }
 
@@ -33,7 +33,7 @@ public class CompetitiveEventES
 
     public int CompetitiveEventAccountingTypeId { get; set; }
 
-    public string CompetitiveEventAccountingType { get; set; } //sum of all accounting type titles
+    public string CompetitiveEventAccountingType { get; set; } //accounting type title
 
     public string Description { get; set; }
 

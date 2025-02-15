@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -45,4 +46,5 @@ public interface ICompetitiveEventService
     /// The task result contains a <see cref="List{CompetitiveEventViewCard}"/> that contains elements from the input sequence.</returns>
     Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 
+    Task<IEnumerable<CompetitiveEvent>> GetByIds(IEnumerable<Guid> ids);
 }

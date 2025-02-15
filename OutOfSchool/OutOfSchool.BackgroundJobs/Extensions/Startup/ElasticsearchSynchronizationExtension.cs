@@ -4,7 +4,10 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BackgroundJobs.Jobs;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.Common.QuartzConstants;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using Quartz;
 
 namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
@@ -32,6 +35,7 @@ public static class ElasticsearchSynchronizationExtension
             builder.Bind(configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName));
 
         services.AddTransient<IElasticsearchSynchronizationService<IWorkshopService, Workshop>, WorkshopSynchronizationService>();
+        services.AddTransient<IElasticsearchSynchronizationService<ICompetitiveEventService, CompetitiveEvent>, CompetitiveEventSynchronizationService>();
 
         ArgumentNullException.ThrowIfNull(elasticsearchSynchronizationSchedulerConfig);
 
