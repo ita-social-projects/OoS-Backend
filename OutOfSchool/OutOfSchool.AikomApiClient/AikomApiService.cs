@@ -68,7 +68,11 @@ internal class AikomApiService : IAikomApiService
 
     private async Task<string> GetAccessTokenAsync()
     {
-        var result = await service.AuthenticateWithClientCredentialsAsync(new());
+        var registration = await service.GetClientRegistrationByProviderNameAsync("aikom").ConfigureAwait(false);
+        var result = await service.AuthenticateWithClientCredentialsAsync(new()
+        {
+            RegistrationId = registration.RegistrationId
+        });
 
         return result.AccessToken;
     }

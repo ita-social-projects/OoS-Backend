@@ -19,6 +19,7 @@ public static class OpenIddictClientRegistrationExtensions
 
         return clientBuilder.AddRegistration(new OpenIddictClientRegistration
         {
+            ProviderName = "aikom",
             Issuer = new Uri(config.ApiUrl, UriKind.Absolute),
             ClientId = config.ClientId,
             ClientSecret = config.ClientSecret,

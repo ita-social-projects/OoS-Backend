@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using OpenIddict.Client;
 using OpenIddict.Client.AspNetCore;
 using OutOfSchool.AikomApiClient;
 using OutOfSchool.AuthCommon.Config;
@@ -28,6 +29,7 @@ public class ExternalAuthController : Controller
     private readonly IGovIdentityCommunicationService communicationService;
     private readonly OutOfSchoolDbContext dbContext;
     private readonly IAikomProviderService aikomProviderService;
+    private readonly OpenIddictClientService openIddictClientService;
 
     public ExternalAuthController(
         SignInManager<User> signInManager,
@@ -38,7 +40,8 @@ public class ExternalAuthController : Controller
         IStringLocalizer<SharedResource> localizer,
         IGovIdentityCommunicationService communicationService,
         OutOfSchoolDbContext dbContext,
-        IAikomProviderService aikomProviderService)
+        IAikomProviderService aikomProviderService,
+        OpenIddictClientService openIddictClientService)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -49,6 +52,7 @@ public class ExternalAuthController : Controller
         this.communicationService = communicationService;
         this.dbContext = dbContext;
         this.aikomProviderService = aikomProviderService;
+        this.openIddictClientService = openIddictClientService;
     }
 
     [Route("~/external-login")]
@@ -75,6 +79,10 @@ public class ExternalAuthController : Controller
             _ => authServerConfig.ExternalLogin.Parameters.AuthType.Personal
         };
         properties.Parameters.Add(authServerConfig.ExternalLogin.Parameters.AuthType.Key, allowedAuthTypes);
+        
+        var registration = await openIddictClientService.GetClientRegistrationByProviderNameAsync(provider).ConfigureAwait(true);
+        
+        properties.Items.Add(OpenIddictClientAspNetCoreConstants.Properties.RegistrationId, registration.RegistrationId);
 
         return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
     }
