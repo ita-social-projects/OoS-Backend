@@ -4,9 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Util;
 
 namespace OutOfSchool.Services.Repository;
 
@@ -95,5 +97,25 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return await Task.FromResult(workshop).ConfigureAwait(false);
+    }
+
+    public async Task<List<WorkshopPendingApplications>> AmountOfPendingApplications(List<Guid> workshopIds)
+    {
+        return await dbSet
+            .Where(w => workshopIds.Contains(w.Id))
+            .Select(w => new
+            {
+                WorkshopId = w.Id,
+                PendingCount = w.Applications.Count(
+                    a => a.Status == ApplicationStatus.Pending
+                    && !a.IsDeleted
+                    && a.Child != null
+                    && !a.Child.IsDeleted
+                    && a.Parent != null
+                    && !a.Parent.IsDeleted)
+            })
+            .Where(w => w.PendingCount > 0)
+            .Select(w => new WorkshopPendingApplications(w.WorkshopId, w.PendingCount))
+            .ToListAsync();
     }
 }

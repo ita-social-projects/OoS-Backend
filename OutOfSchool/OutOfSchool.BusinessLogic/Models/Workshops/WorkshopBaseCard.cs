@@ -8,7 +8,7 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 public class WorkshopBaseCard : IHasRating
 {
     [Required]
-    public Guid WorkshopId { get; set; }
+    public Guid Id { get; set; }
 
     [Required]
     [MaxLength(Constants.MaxProviderFullTitleLength)]
@@ -63,6 +63,8 @@ public class WorkshopBaseCard : IHasRating
     public float Rating { get; set; }
 
     public int NumberOfRatings { get; set; }
+
+    public uint TakenSeats { get; set; } = 0;
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;

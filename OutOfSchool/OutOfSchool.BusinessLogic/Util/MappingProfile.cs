@@ -185,7 +185,7 @@ public class MappingProfile : Profile
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
             .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
@@ -406,23 +406,21 @@ public class MappingProfile : Profile
             .IncludeBase<Workshop, WorkshopBaseCard>()
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
-            .IncludeBase<object, IHasRating>()
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()));
+            .IncludeBase<object, IHasRating>();
 
         CreateMap<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
-                opt.MapFrom(src => src.Provider.LicenseStatus));
+                opt.MapFrom(src => src.Provider.LicenseStatus))
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
 
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()
-            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.MapFrom(src => src.Applications.AmountOfPendingApplications()))
-            .ForMember(dest => dest.TakenSeats, opt => opt.MapFrom(src => src.Applications.TakenSeats()))
+            .ForMember(dest => dest.AmountOfPendingApplications, opt => opt.Ignore())
             .ForMember(dest => dest.UnreadMessages, opt => opt.Ignore());
 
         CreateMap<Child, ChildDto>()

@@ -86,7 +86,7 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.ElasticRadius, opt => opt.MapFrom(src => $"{src.RadiusKm * 1000}m"));
 
         CreateMap<WorkshopES, WorkshopCard>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.DirectionIds));
 

@@ -51,6 +51,7 @@ public class WorkshopServiceDBTests
     private Mock<ITagService> tagServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
+    private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
     public async Task SetUp()
@@ -81,6 +82,7 @@ public class WorkshopServiceDBTests
         var searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
+        applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         workshopService =
                 new WorkshopService(
@@ -101,7 +103,8 @@ public class WorkshopServiceDBTests
                     codeficatorServiceMock.Object,
                     tagServiceMock.Object,
                     searchStringServiceMock.Object,
-                    contactsServiceMock.Object);
+                    contactsServiceMock.Object,
+                    applicationRepositoryMock.Object);
 
         Seed();
     }

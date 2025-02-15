@@ -49,6 +49,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ISearchStringService searchStringService;
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
+    private readonly IApplicationRepository applicationRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -89,7 +90,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ICodeficatorService codeficatorService,
         ITagService tagService,
         ISearchStringService searchStringService,
-        IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService)
+        IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
+        IApplicationRepository applicationRepository)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -109,6 +111,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.searchStringService = searchStringService;
         this.tagService = tagService;
         this.contactsService = contactsService;
+        this.applicationRepository = applicationRepository;
     }
 
     /// <inheritdoc/>
@@ -129,7 +132,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
-        return mapper.Map<WorkshopDto>(newWorkshop);
+        var workshopDtos = mapper.Map<WorkshopDto>(newWorkshop);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDtos, applicationRepository);
+
+        return workshopDtos;
     }
 
     /// <inheritdoc/>
@@ -218,6 +225,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             : $"All {workshops.Count} records were successfully received from the Workshop table");
 
         var dtos = mapper.Map<List<WorkshopDto>>(workshops);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(dtos, applicationRepository);
+
         var workshopsWithRating = await GetWorkshopsWithAverageRating(dtos).ConfigureAwait(false);
         return new SearchResult<WorkshopDto>() { TotalAmount = count, Entities = workshopsWithRating };
     }
@@ -237,6 +247,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
         var workshopDTO = mapper.Map<WorkshopDto>(workshop);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
 
         var rating = await averageRatingService.GetByEntityIdAsync(workshopDTO.Id).ConfigureAwait(false);
 
@@ -303,6 +315,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
+        await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopProviderViewCards, applicationRepository);
+        await FillPendingApplications(workshopProviderViewCards).ConfigureAwait(false);
+
         var workshopsIds = workshops.Select(x => x.Id).ToList();
 
         var query = chatrooms
@@ -321,7 +336,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         workshopProviderViewCards.ForEach(workshop =>
         {
-            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.WorkshopId);
+            var matchingItem = unreadMessages.FirstOrDefault(item => item.WorkshopId == workshop.Id);
             workshop.UnreadMessages = matchingItem?.UnreadMessageCount ?? 0;
         });
 
@@ -391,7 +406,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        return mapper.Map<WorkshopDto>(updatedWorkshop);
+        var workshopDTO = mapper.Map<WorkshopDto>(updatedWorkshop);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
+
+        return workshopDTO;
     }
 
     /// <inheritdoc/>
@@ -421,7 +440,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         await workshopRepository.Update(workshop);
 
-        return mapper.Map<WorkshopDto>(workshop);
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDto, applicationRepository);
+
+        return workshopDto;
     }
 
     /// <inheritdoc/>
@@ -636,6 +659,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var workshopCards = mapper.Map<List<WorkshopCard>>(workshops);
 
+        await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopCards, applicationRepository);
+
         var result = new SearchResult<WorkshopCard>()
         {
             TotalAmount = workshopsCount,
@@ -684,6 +709,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             .OrderBy(p => p.Distance).Take(filter.Size).Select(a => a.w);
 
         var workshopsDTO = mapper.Map<List<WorkshopCard>>(nearestWorkshops);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopsDTO, applicationRepository);
 
         var result = new SearchResult<WorkshopCard>()
         {
@@ -750,6 +777,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         logger.LogInformation("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopsCount);
 
         var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
+
+        await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopsDTO, applicationRepository);
 
         return new SearchResult<WorkshopDto>()
         {
@@ -1024,11 +1053,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private async Task<List<T>> GetWorkshopsWithAverageRating<T>(List<T> workshops)
         where T : WorkshopBaseCard
     {
-        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.WorkshopId)).ConfigureAwait(false);
+        var averageRatings = await averageRatingService.GetByEntityIdsAsync(workshops.Select(p => p.Id)).ConfigureAwait(false);
 
         foreach (var workshop in workshops)
         {
-            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.WorkshopId);
+            var averageRatingDto = averageRatings?.SingleOrDefault(r => r.EntityId == workshop.Id);
             workshop.Rating = averageRatingDto?.Rate ?? default;
             workshop.NumberOfRatings = averageRatingDto?.RateQuantity ?? default;
         }
@@ -1108,10 +1137,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task UpdateWorkshopStatusBySeatsLimitAndAvailability(uint newAvailableSeats, Workshop currentWorkshop)
     {
-        var currentWorkshopTakenSeats = currentWorkshop.Applications.TakenSeats();
+        var workshopsTakenSeats = await applicationRepository.CountTakenSeatsForWorkshops(new() { currentWorkshop.Id }).ConfigureAwait(false);
+
+        var currentWorkshopTakenSeatsCount = workshopsTakenSeats.Sum(elem => elem.TakenSeats);
 
         if (newAvailableSeats == uint.MaxValue
-            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeats
+            && currentWorkshop.AvailableSeats == currentWorkshopTakenSeatsCount
             && currentWorkshop.Status == WorkshopStatus.Closed)
         {
             await UpdateStatus(new()
@@ -1122,7 +1153,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         }
 
         if (newAvailableSeats < uint.MaxValue
-            && newAvailableSeats <= currentWorkshopTakenSeats
+            && newAvailableSeats <= currentWorkshopTakenSeatsCount
             && currentWorkshop.Status == WorkshopStatus.Open)
         {
             await UpdateStatus(new()
@@ -1200,6 +1231,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         {
             var errorMessage = $"The default Teacher (with id = {dto.DefaultTeacherId}) for the workshop being created was not found.";
             throw new InvalidOperationException(errorMessage);
+        }
+    }
+
+    private async Task FillPendingApplications(List<WorkshopProviderViewCard> viewCards)
+    {
+        var ids = viewCards.Select(w => w.Id).ToList();
+        var pendingApplicationsList = await workshopRepository.AmountOfPendingApplications(ids).ConfigureAwait(false);
+        foreach (var card in viewCards)
+        {
+            var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.Id)?.PendingApplications;
+            card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
     }
 }

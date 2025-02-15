@@ -19,7 +19,7 @@ public static class WorkshopBaseCardGenerator
         .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
         .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
         .RuleFor(x => x.ProviderId, f => Guid.NewGuid())
-        .RuleFor(x => x.WorkshopId, f => Guid.NewGuid());
+        .RuleFor(x => x.Id, f => Guid.NewGuid());
 
     public static WorkshopBaseCard Generate() => Faker.Generate();
 

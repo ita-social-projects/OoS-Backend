@@ -42,6 +42,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
+    private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -56,6 +57,7 @@ public class SensitiveWorkshopsServiceTests
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
+        applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         sensitiveWorkshopService =
             new WorkshopService(
@@ -76,7 +78,8 @@ public class SensitiveWorkshopsServiceTests
                 codeficatorServiceMock.Object,
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
-                contactsServiceMock.Object);
+                contactsServiceMock.Object,
+                applicationRepositoryMock.Object);
     }
 
     #region FetchByFilterForAdmins

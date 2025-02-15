@@ -46,6 +46,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
+    private Mock<IApplicationRepository> applicationRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -66,6 +67,7 @@ public class SensitiveWorkshopsServiceDBTests
         tagServiceMock = new Mock<ITagService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
+        applicationRepositoryMock = new Mock<IApplicationRepository>();
 
         searchStringServiceMock = new Mock<ISearchStringService>();
         sensitiveWorkshopService =
@@ -87,8 +89,9 @@ public class SensitiveWorkshopsServiceDBTests
                 codeficatorServiceMock.Object,
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
-                contactsServiceMock.Object);
-
+                contactsServiceMock.Object,
+                applicationRepositoryMock.Object);
+      
         Seed();
     }
 
