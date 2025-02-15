@@ -1,10 +1,11 @@
-﻿using OutOfSchool.Services.Enums;
+﻿using Elastic.Clients.Elasticsearch;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public interface IElasticsearchSynchronizationService
+public interface IElasticsearchSynchronizationService<TService, TEntity> : IAddNewRecordToESSynchronizationTableService
 {
-    Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, Guid id, ElasticsearchSyncOperation operation);
+    Func<TService, List<Guid>, Task<IEnumerable<TEntity>>> GetbyIds { get; }    
 
-    Task Synchronize(CancellationToken cancellationToken);
+    Task Synchronize(IndexName indexName, CancellationToken cancellationToken);
 }

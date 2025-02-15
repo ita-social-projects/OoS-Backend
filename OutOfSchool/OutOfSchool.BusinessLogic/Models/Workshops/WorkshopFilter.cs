@@ -68,9 +68,9 @@ public class WorkshopFilter : OffsetFilter
 
     public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
 
-    public IReadOnlyCollection<AgeComposition> AgeComposition { get; set; }
+    public IReadOnlyCollection<AgeComposition> AgeComposition { get; set; } = new List<AgeComposition>();
 
-    public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; }
+    public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; } = new List<EducationalShift>();
 
     public bool ShortStay { get; set; }
 
@@ -80,11 +80,11 @@ public class WorkshopFilter : OffsetFilter
 
     public bool IsSpecial { get; set; }
 
-    public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; }
+    public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; } = new List<SpecialNeedsType>();
 
     public bool IsInclusive { get; set; }
 
     public bool AreThereBenefits { get; set; }
 
-    public IReadOnlyCollection<Coverage> Coverage { get; set; }
+    public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
 }

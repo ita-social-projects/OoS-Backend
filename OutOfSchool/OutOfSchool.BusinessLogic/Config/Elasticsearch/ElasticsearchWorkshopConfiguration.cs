@@ -7,7 +7,7 @@ namespace OutOfSchool.BusinessLogic.Config.Elasticsearch;
 /// <summary>
 /// Contains methods to configure <see cref="WorkshopES"/> model into Elasticsearch index.
 /// </summary>
-public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfiguration
+public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfiguration<WorkshopES>
 {
     private const string DefaultLanguage = "uk";
     private const string DefaultCountry = "UA";

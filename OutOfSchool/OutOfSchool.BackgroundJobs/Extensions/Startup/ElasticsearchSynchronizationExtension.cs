@@ -31,7 +31,7 @@ public static class ElasticsearchSynchronizationExtension
         elasticsearchSynchronizationSchedulerConfig ??= builder =>
             builder.Bind(configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName));
 
-        services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
+        services.AddTransient<IElasticsearchSynchronizationService<IWorkshopService, Workshop>, WorkshopSynchronizationService>();
 
         ArgumentNullException.ThrowIfNull(elasticsearchSynchronizationSchedulerConfig);
 

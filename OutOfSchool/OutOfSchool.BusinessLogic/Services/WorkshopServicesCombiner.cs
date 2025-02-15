@@ -15,7 +15,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class WorkshopServicesCombiner : IWorkshopServicesCombiner
 {
     private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
-    private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
+    private protected readonly IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
     private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
@@ -29,7 +29,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
 
     public WorkshopServicesCombiner(
         IWorkshopService workshopService,
-        IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+        IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,

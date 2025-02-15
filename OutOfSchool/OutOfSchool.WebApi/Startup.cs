@@ -327,6 +327,8 @@ public static class Startup
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
+        services.AddTransient<IAddNewRecordToESSynchronizationTableService, AddNewRecordToESSynchronizationTableService>();
+
         // Search string options
         services.Configure<SearchStringOptions>(configuration.GetSection(nameof(SearchStringOptions)));
         services.AddScoped<ISearchStringService, SearchStringService>();

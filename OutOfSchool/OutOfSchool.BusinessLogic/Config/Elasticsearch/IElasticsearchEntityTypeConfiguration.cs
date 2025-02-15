@@ -5,12 +5,12 @@ namespace OutOfSchool.BusinessLogic.Config.Elasticsearch;
 /// <summary>
 /// Contains methods to configure models into Elasticsearch index.
 /// </summary>
-public interface IElasticsearchEntityTypeConfiguration
+public interface IElasticsearchEntityTypeConfiguration<TEntity>
 {
     /// <summary>
     /// Configures the particular model into Elasticsearch index.
     /// </summary>
     /// <param name="indexDescriptor">descriptor for configuring.</param>
     /// <returns>An instance of <see cref="ICreateIndexRequest"/>.</returns>
-    Action<CreateIndexRequestDescriptor<WorkshopES>> Configure();
+    Action<CreateIndexRequestDescriptor<TEntity>> Configure();
 }
