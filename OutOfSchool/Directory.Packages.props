@@ -1,8 +1,10 @@
 <Project>
   <PropertyGroup>
     <BaseVersion>8.0.0</BaseVersion>
-    <EFCoreVersion>8.0.7</EFCoreVersion>
-    <OpenIdDictVersion>5.8.0</OpenIdDictVersion>
+    <!-- TODO: Re-use base version again when we switch to Net 9 -->
+    <DIAbstractions>8.0.2</DIAbstractions>
+    <EFCoreVersion>8.0.13</EFCoreVersion>
+    <OpenIdDictVersion>6.1.0</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
     <QuartzVersion>3.13.1</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
@@ -16,7 +18,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DIAbstractions)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />

@@ -141,6 +141,14 @@ public static class Startup
             .AddCore(options =>
             {
                 options.UseEntityFrameworkCore()
+                    // There is an error in Pomelo that uses wrong translation of EF code to MySQL Dialect that leads to en exception:
+                    // "This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'"
+                    // OpenIdDict does not plan to re-implement or support MySQL bugs :)
+                    // https://github.com/openiddict/openiddict-core/issues/2229
+                    // Use `DisableBulkOperations` workaround to enable token & authorization pruning.
+                    // TODO: Check when the following issue is fixed
+                    // TODO: https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1903
+                    .DisableBulkOperations()
                     .UseDbContext<OpenIdDictDbContext>();
                 options.UseQuartz();
             })
@@ -150,10 +158,10 @@ public static class Startup
                 options.SetAuthorizationEndpointUris("connect/authorize")
                     //.SetDeviceEndpointUris("connect/device")
                     .SetIntrospectionEndpointUris("connect/introspect")
-                    .SetLogoutEndpointUris("connect/logout")
+                    .SetEndSessionEndpointUris("connect/logout")
                     .SetTokenEndpointUris("connect/token")
-                    .SetUserinfoEndpointUris("connect/userinfo")
-                    .SetVerificationEndpointUris("connect/verify");
+                    .SetUserInfoEndpointUris("connect/userinfo")
+                    .SetEndUserVerificationEndpointUris("connect/verify");
 
                 options.AllowAuthorizationCodeFlow()
                     .AllowHybridFlow()
@@ -168,9 +176,9 @@ public static class Startup
 
                 var aspNetCoreBuilder = options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()
-                    .EnableLogoutEndpointPassthrough()
+                    .EnableEndSessionEndpointPassthrough()
                     .EnableTokenEndpointPassthrough()
-                    .EnableUserinfoEndpointPassthrough()
+                    .EnableUserInfoEndpointPassthrough()
                     .EnableStatusCodePagesIntegration();
 
                 if (builder.Environment.IsDevelopment())
@@ -217,7 +225,7 @@ public static class Startup
                         TokenEndpoint = new Uri(authorizationConfig.ExternalLogin.IdServerUri, authorizationConfig.ExternalLogin.IdServerPaths.Token),
                         ResponseTypesSupported = { OpenIddictConstants.ResponseTypes.Code },
                         TokenEndpointAuthMethodsSupported = {OpenIddictConstants.ClientAuthenticationMethods.ClientSecretPost},
-                        UserinfoEndpoint = null,
+                        UserInfoEndpoint = null,
                     },
                 });
                 options.UseSystemNetHttp();
