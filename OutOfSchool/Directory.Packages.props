@@ -53,8 +53,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.1" />
     <PackageVersion Include="IdentityModel" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(EFCoreVersion)" />
-    <!-- TODO: check if this dep is needed -->
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.1.2" />
     <!--OpenID Dict-->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Client.AspNetCore" Version="$(OpenIdDictVersion)" />
