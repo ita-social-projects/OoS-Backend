@@ -46,5 +46,10 @@ public interface ICompetitiveEventService
     /// The task result contains a <see cref="List{CompetitiveEventViewCard}"/> that contains elements from the input sequence.</returns>
     Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
 
+    /// <summary>
+    /// Get multiple competitive events by their identifiers.
+    /// </summary>
+    /// <param name="ids">Collection of competitive event identifiers.</param>
+    /// <returns>A collection of competitive events.</returns>
     Task<IEnumerable<CompetitiveEvent>> GetByIds(IEnumerable<Guid> ids);
 }

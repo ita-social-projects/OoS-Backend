@@ -67,7 +67,7 @@ public class ElasticIndexEnsureCreatedHostedService : IHostedService
         }
         else
         {
-            logger.LogError("Failed to ensure Elastic index {IndexName}: Elastic is not healthy", workshopIndexName);
+            logger.LogError("Failed to ensure Elastic indexes. Elastic is not healthy");
         }
     }
 

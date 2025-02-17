@@ -101,9 +101,15 @@ public class ESCompetitiveEventProviderTests
         {
             SearchText = "test",
             MinimumAge = 15,
+            MaximumAge = 20,
             OptionsForPeopleWithDisabilities = true,
             PlannedFormatsOfClasses = [FormOfLearning.Offline, FormOfLearning.Mixed],
             States = [CompetitiveEventStates.Published, CompetitiveEventStates.Completed],
+            AreThereBenefits = true,
+            CompetitiveSelection = true,
+            MaxPrice = 1000,
+            MaxRegistrationEndTime = DateTime.UtcNow.AddDays(7),
+            MaxScheduledStartTime = DateTime.UtcNow.AddDays(7),
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);

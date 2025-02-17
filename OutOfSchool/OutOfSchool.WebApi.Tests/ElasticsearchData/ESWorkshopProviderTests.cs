@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -553,6 +554,10 @@ public class ESWorkshopProviderTests
             FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
             CATOTTGId = 31375,
             OrderByField = "Nearest",
+            AgeComposition = [AgeComposition.SameAge],
+            EducationalShift = [EducationalShift.First, EducationalShift.Second],
+            SpecialNeedsType = [SpecialNeedsType.None],
+            Coverage = [Coverage.AllUkraine]
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);

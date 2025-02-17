@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -50,8 +49,8 @@ public class ElasticsearchSynchronizationQuartzTests
         await job.Execute(jobExecutionContextMock.Object);
 
         // Assert
-        elasticsearchWorkshopSynchronizationServiceMock.Verify(x => x.Synchronize(It.IsAny<IndexName>(), It.IsAny<CancellationToken>()), Times.Once);
-        elasticsearchCompetitiveEventSynchronizationServiceMock.Verify(x => x.Synchronize(It.IsAny<IndexName>(), It.IsAny<CancellationToken>()), Times.Once);
+        elasticsearchWorkshopSynchronizationServiceMock.Verify(x => x.Synchronize(config.WorkshopIndexName, It.IsAny<CancellationToken>()), Times.Once);
+        elasticsearchCompetitiveEventSynchronizationServiceMock.Verify(x => x.Synchronize(config.CompetitiveEventIndexName, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
@@ -61,11 +60,18 @@ public class ElasticsearchSynchronizationQuartzTests
         var elasticsearchWorkshopSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
         var elasticsearchCompetitiveEventSynchronizationServiceMock = new Mock<IElasticsearchSynchronizationService<ICompetitiveEventService, CompetitiveEvent>>();
         var configMock = new Mock<IOptions<ElasticConfig>>();
+        var config = new ElasticConfig()
+        {
+            WorkshopIndexName = "test",
+            CompetitiveEventIndexName = "test1"
+        };
+
         var elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         var jobExecutionContextMock = new Mock<IJobExecutionContext>();
 
         elasticHealthServiceMock.SetupGet(x => x.IsHealthy).Returns(false);
         jobExecutionContextMock.SetupGet(x => x.CancellationToken).Returns(It.IsAny<CancellationToken>());
+        configMock.Setup(x => x.Value).Returns(config);
 
         var serviceProvider = CreateServiceProvider(
             elasticsearchWorkshopSynchronizationServiceMock.Object,
@@ -79,8 +85,8 @@ public class ElasticsearchSynchronizationQuartzTests
         await job.Execute(jobExecutionContextMock.Object);
 
         // Assert
-        elasticsearchWorkshopSynchronizationServiceMock.Verify(x => x.Synchronize(It.IsAny<IndexName>(), It.IsAny<CancellationToken>()), Times.Never);
-        elasticsearchCompetitiveEventSynchronizationServiceMock.Verify(x => x.Synchronize(It.IsAny<IndexName>(), It.IsAny<CancellationToken>()), Times.Never);
+        elasticsearchWorkshopSynchronizationServiceMock.Verify(x => x.Synchronize(config.WorkshopIndexName, It.IsAny<CancellationToken>()), Times.Never);
+        elasticsearchCompetitiveEventSynchronizationServiceMock.Verify(x => x.Synchronize(config.CompetitiveEventIndexName, It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private static IServiceProvider CreateServiceProvider(
