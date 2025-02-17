@@ -15,7 +15,7 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         filter ??= new CompetitiveEventFilterES();
 
         var query = this.CreateQueryFromFilter(filter);
-        var request = new SearchRequest<WorkshopES>()
+        var request = new SearchRequest<CompetitiveEventES>()
         {
             Query = query,
             From = filter.From,
@@ -33,7 +33,11 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
 
     private Query CreateQueryFromFilter(CompetitiveEventFilterES filter)
     {
-        var query = new BoolQuery();
+        var query = new BoolQuery()
+        {
+            Filter = [],
+            Must = []
+        };
 
         if (filter.Ids.Count != 0)
         {
