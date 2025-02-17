@@ -91,6 +91,14 @@ public class CommunicationService : ICommunicationService
                         MediaTypeNames.Application.Json);
             }
 
+            if (request.Headers != null)
+            {
+                foreach (var requestHeader in request.Headers)
+                {
+                    requestMessage.Headers.Add(requestHeader.Key, requestHeader.Value);
+                }
+            }
+
             requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
             using var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)

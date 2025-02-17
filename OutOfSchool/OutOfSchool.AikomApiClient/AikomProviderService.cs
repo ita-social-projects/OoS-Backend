@@ -127,11 +127,11 @@ internal class AikomProviderService : IAikomProviderService
             return aikomResponse.Match<Either<ErrorResponse, AikomProviderResponse?>>(
                 error =>
                 {
-                    var apiError = error.ApiErrorResponse.ApiErrors.FirstOrDefault();
+                    var apiError = error.ApiErrorResponse?.ApiErrors?.Count > 0 ? error.ApiErrorResponse.ApiErrors[0] : null;
                     logger.LogError(
                         "Error while verifying provider in external registry: Code - {Code}, Message - {Message}",
-                        apiError?.Code ?? "Unknown",
-                        apiError?.Message ?? string.Empty);
+                        apiError?.Code ?? error.HttpStatusCode.ToString(),
+                        apiError?.Message ?? error.Message ?? string.Empty);
                     return error;
                 },
                 result =>
@@ -172,7 +172,7 @@ internal class AikomProviderService : IAikomProviderService
             return aikomResponse.Match<Either<ErrorResponse, AikomProviderResponse?>>(
                 error =>
                 {
-                    var apiError = error.ApiErrorResponse.ApiErrors.FirstOrDefault();
+                    var apiError = error.ApiErrorResponse.ApiErrors.Count > 0 ? error.ApiErrorResponse.ApiErrors[0] : null;
                     logger.LogError(
                         "Error while verifying provider in external registry: Code - {Code}, Message - {Message}",
                         apiError?.Code ?? "Unknown",
