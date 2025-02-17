@@ -557,7 +557,12 @@ public class ESWorkshopProviderTests
             AgeComposition = [AgeComposition.SameAge],
             EducationalShift = [EducationalShift.First, EducationalShift.Second],
             SpecialNeedsType = [SpecialNeedsType.None],
-            Coverage = [Coverage.AllUkraine]
+            Coverage = [Coverage.AllUkraine],
+            ShortStay = true,
+            IsSelfFinanced = true,
+            IsSpecial = true,
+            IsInclusive = true,
+            AreThereBenefits = true,
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
