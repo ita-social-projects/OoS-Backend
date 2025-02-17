@@ -60,7 +60,7 @@ internal class AikomApiService : IAikomApiService
             {
                 Url = new Uri(endpoint),
                 Data = request,
-                Token = token,
+                Headers = [new KeyValuePair<string, string>("x-access-token", token)],
                 HttpMethodType = HttpMethodType.Post,
             };
             return await communicationService.SendRequest<TResponse, ErrorResponse>(req).ConfigureAwait(false);
