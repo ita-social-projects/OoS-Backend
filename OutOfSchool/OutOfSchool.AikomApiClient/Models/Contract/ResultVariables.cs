@@ -1,6 +1,6 @@
 namespace OutOfSchool.AikomApiClient.Models.Contract;
 
-internal class ResultVariables<TData> where TData : class
+internal class ResultVariables
 {
-    public required AikomResponse<TData> Response { get; set; }
+    public required string Response { get; set; }
 }
