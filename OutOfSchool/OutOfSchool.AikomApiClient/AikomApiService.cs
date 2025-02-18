@@ -34,9 +34,7 @@ internal class AikomApiService : IAikomApiService
     public Task<Either<ErrorResponse, SearchUniversityResponseData>> SearchUniversity(string edrpou)
     {
         var request = new SearchUniversityRequest(edrpou);
-        var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
-        return PostAsync<SearchUniversityRequest, SearchUniversityResponse>(
-            endpoint, request)
+        return PostAsync<SearchUniversityRequest, SearchUniversityResponse>(request)
             .FlatMapAsync(result => result.ToResponseData());
     }
 
@@ -44,21 +42,19 @@ internal class AikomApiService : IAikomApiService
     public Task<Either<ErrorResponse, GetUniversityResponseData>> GetUniversity(long id)
     {
         var request = new GetUniversityRequest(id);
-        var endpoint = apiUrl + request.BusinessProcessDefinitionKey;
 
-        return PostAsync<GetUniversityRequest, GetUniversityResponse>(
-                endpoint, request)
+        return PostAsync<GetUniversityRequest, GetUniversityResponse>(request)
             .FlatMapAsync(result => result.ToResponseData());
     }
 
-    private async Task<Either<ErrorResponse,TResponse>> PostAsync<TRequest, TResponse>(string endpoint, TRequest request)
+    private async Task<Either<ErrorResponse,TResponse>> PostAsync<TRequest, TResponse>(TRequest request)
     where TResponse : IResponse
     {
 
             var token = await GetAccessTokenAsync().ConfigureAwait(false);
             var req = new Request
             {
-                Url = new Uri(endpoint),
+                Url = new Uri(apiUrl),
                 Data = request,
                 Headers = [new KeyValuePair<string, string>("x-access-token", token)],
                 HttpMethodType = HttpMethodType.Post,
