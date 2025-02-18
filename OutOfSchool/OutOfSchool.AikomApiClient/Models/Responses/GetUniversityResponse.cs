@@ -1,11 +1,4 @@
-﻿using OutOfSchool.AikomApiClient.Models.Contract;
-using OutOfSchool.Common.Models;
-
-namespace OutOfSchool.AikomApiClient.Models.Responses;
-
-internal class GetUniversityResponse : ApiResponse<GetUniversityResponseData>, IResponse
-{
-}
+﻿namespace OutOfSchool.AikomApiClient.Models.Responses;
 
 internal class GetUniversityResponseData
 {

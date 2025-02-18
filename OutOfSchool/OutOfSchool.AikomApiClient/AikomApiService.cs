@@ -2,6 +2,7 @@
 using OpenIddict.Client;
 using OutOfSchool.AikomApiClient.Config;
 using OutOfSchool.AikomApiClient.Extensions;
+using OutOfSchool.AikomApiClient.Models.Contract;
 using OutOfSchool.AikomApiClient.Models.Requests;
 using OutOfSchool.AikomApiClient.Models.Responses;
 using OutOfSchool.Common.Communication;
@@ -34,8 +35,8 @@ internal class AikomApiService : IAikomApiService
     public Task<Either<ErrorResponse, SearchUniversityResponseData>> SearchUniversity(string edrpou)
     {
         var request = new SearchUniversityRequest(edrpou);
-        return PostAsync<SearchUniversityRequest, SearchUniversityResponse>(request)
-            .FlatMapAsync(result => result.ToResponseData());
+        return PostAsync<SearchUniversityRequest, ApiResponse>(request)
+            .FlatMapAsync(result => result.ToResponseData<SearchUniversityResponseData>());
     }
 
     /// <inheritdoc />
@@ -43,8 +44,8 @@ internal class AikomApiService : IAikomApiService
     {
         var request = new GetUniversityRequest(id);
 
-        return PostAsync<GetUniversityRequest, GetUniversityResponse>(request)
-            .FlatMapAsync(result => result.ToResponseData());
+        return PostAsync<GetUniversityRequest, ApiResponse>(request)
+            .FlatMapAsync(result => result.ToResponseData<GetUniversityResponseData>());
     }
 
     private async Task<Either<ErrorResponse,TResponse>> PostAsync<TRequest, TResponse>(TRequest request)

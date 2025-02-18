@@ -1,6 +1,8 @@
-﻿namespace OutOfSchool.AikomApiClient.Models.Contract;
+﻿using OutOfSchool.Common.Models;
 
-internal class ApiResponse<TData> where TData : class
+namespace OutOfSchool.AikomApiClient.Models.Contract;
+
+internal class ApiResponse : IResponse
 {
-    public required ResultVariables<TData> ResultVariables { get; set; }
+    public required ResultVariables ResultVariables { get; set; }
 }

@@ -1,5 +1,7 @@
 ﻿using System.Net;
+using System.Text.Json;
 using OutOfSchool.AikomApiClient.Models.Contract;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
 
@@ -8,33 +10,54 @@ namespace OutOfSchool.AikomApiClient.Extensions;
 internal static class ResponseMappingExtensions
 {
     internal static Either<ErrorResponse, TData> ToResponseData<TData>(
-        this ApiResponse<TData>? response)
+        this ApiResponse? response)
         where TData : class
     {
-        if (response?.ResultVariables.Response.Error != null)
+        if (response?.ResultVariables.Response is null or "")
         {
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
-                Message = response.ResultVariables.Response.Error.Message,
+                Message = "Aikom API returned an empty result"
+            };
+        }
+
+        AikomResponse<TData>? innerResponse;
+        try
+        {
+            innerResponse = JsonSerializerHelper.Deserialize<AikomResponse<TData>>(
+                response.ResultVariables.Response);
+        }
+        catch (JsonException ex)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = $"Failed to parse Aikom API response: {ex.Message}"
+            };
+        }
+
+        if (innerResponse?.Error is not null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = innerResponse.Error.Message,
                 ApiErrorResponse = new ApiErrorResponse([
-                    new ApiError("Aikom", response.ResultVariables.Response.Error.Code.ToString(),
-                        response.ResultVariables.Response.Error.Message)
-                ]),
+                    new ApiError("Aikom", innerResponse.Error.Code.ToString(), innerResponse.Error.Message)
+                ])
             };
         }
 
-        var data = response?.ResultVariables.Response.Data;
-
-        if (data is null)
+        if (innerResponse?.Data is null)
         {
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.BadRequest,
-                Message = "Aikom API returned an empty result",
+                Message = "Aikom API returned an empty result"
             };
         }
 
-        return data;
+        return innerResponse.Data;
     }
 }
