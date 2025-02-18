@@ -62,9 +62,9 @@ public class ProviderServiceTests
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Individual>> individualRepositoryMock;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Official>> officialRepositoryMock;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Position>> positionRepositoryMock;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Individual>> individualRepositoryMock;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Official>> officialRepositoryMock;
+    private Mock<IPositionRepository> positionRepositoryMock;
     private Mock<IContactsService<Provider, IHasContactsDto<Provider>>> providerContactsServiceMock;
 
     private List<Provider> fakeProviders;
@@ -100,9 +100,9 @@ public class ProviderServiceTests
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
-        individualRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
-        officialRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
-        positionRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
+        individualRepositoryMock = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
+        officialRepositoryMock = new Mock<ISensitiveEntityRepositorySoftDeleted<Official>>();
+        positionRepositoryMock = new Mock<IPositionRepository>();
         providerContactsServiceMock = new Mock<IContactsService<Provider, IHasContactsDto<Provider>>>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
@@ -1349,8 +1349,13 @@ public class ProviderServiceTests
     private static IEnumerable<Individual> GetFakeUploadIndividuals(UploadEmployeeRequestDto[] data,
                                                                     out Individual createdIndividual)
     {
-        var mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        var list = data.Select(mapper.Map<Individual>).ToList();
+        var list = data.Select(u => new Individual
+        {
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+            MiddleName = u.MiddleName,
+            Rnokpp = u.Rnokpp
+        }).ToList();
         list.ForEach(i => i.Id = Guid.NewGuid());
         int number = data.Length - 1;
         createdIndividual = list[number];

@@ -29,9 +29,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Individual> individualRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Official> officialRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Position> positionRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Official> officialRepository;
+    private readonly IPositionRepository positionRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
@@ -95,9 +95,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
-        IEntityRepositorySoftDeleted<Guid, Individual> individualRepository,
-        IEntityRepositorySoftDeleted<Guid, Official> officialRepository,
-        IEntityRepositorySoftDeleted<Guid, Position> positionRepository,
+        ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
+        ISensitiveEntityRepositorySoftDeleted<Official> officialRepository,
+        IPositionRepository positionRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
@@ -1089,7 +1089,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 new Position
                 {
                     ProviderId = providerId,
-                    FullName = uploadDictionary[key].AssignedRole
+                    FullName = uploadDictionary[key].AssignedRole,
+                    PositionType = uploadDictionary[key].PositionType,
                 }).ConfigureAwait(false);
                 uploadResponse.CountOfCreatedPositions++;
             }
@@ -1103,10 +1104,5 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
         }
-    }
-
-    public async Task HasProviderRights(Guid providerId)
-    {
-        await currentUserService.UserHasRights(new ProviderRights(providerId));
     }
 }

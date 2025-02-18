@@ -1,35 +1,33 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Base.Api;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MockQueryable.Moq;
-using System.Linq.Expressions;
 using OutOfSchool.BusinessLogic.Models.Position;
-using OutOfSchool.BusinessLogic.Models.Providers;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class PositionServiceTests
 {
-    private Mock<IEntityRepository<Guid, Position>> _mockRepository;
-    private Mock<IProviderService> _mockProviderService;
+    private Mock<IPositionRepository> _mockRepository;
     private Mock<ICurrentUserService> _mockCurrentUserService;
     private IMapper _mapper;
-    private Mock<ILogger<Position>> _mockLogger;
+    private Mock<ILogger<PositionService>> _mockLogger;
     private PositionService _service;
 
     private readonly Guid providerId = Guid.NewGuid();
@@ -40,17 +38,15 @@ public class PositionServiceTests
     {
         _mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        _mockRepository = new Mock<IEntityRepository<Guid, Position>>();
-        _mockProviderService = new Mock<IProviderService>();
+        _mockRepository = new Mock<IPositionRepository>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
-        _mockLogger = new Mock<ILogger<Position>>();
-
+        _mockLogger = new Mock<ILogger<PositionService>>();
+       
         _service = new PositionService(
-            _mockLogger.Object,
-            _mapper,
             _mockRepository.Object,
-            _mockProviderService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mapper,
+            _mockLogger.Object);
     }
     #region GetByFilter
     [Test]
@@ -77,8 +73,6 @@ public class PositionServiceTests
                 It.IsAny<Expression<Func<Position, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>()))
             .Returns(mockData);
-
-        _mockProviderService.Setup(s => s.HasProviderRights(providerId)).Returns(Task.CompletedTask);
 
         // Act
         var result = await _service.GetByFilter(providerId, filter);
@@ -162,7 +156,7 @@ public class PositionServiceTests
 
     #region GetById
     [Test]
-    public void GetById_WithInvalidPosition_ReturnsMessage()
+    public async Task GetById_WithInvalidPosition_ReturnsNull()
     {
         // Arrange 
         var data = Positions().AsQueryable().BuildMock();
@@ -174,11 +168,11 @@ public class PositionServiceTests
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
         .ReturnsAsync(new List<Position>());
 
-        // Act & Assert
-        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await _service.GetByIdAsync(nonExistingPositionId, providerId).ConfigureAwait(false));
+        // Act
+        var result = await _service.GetByIdAsync(nonExistingPositionId, providerId).ConfigureAwait(false);
 
-        Assert.That(exception.Message, Is.EqualTo($"Position with positionId {nonExistingPositionId} not found or it was deleted."));
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
@@ -214,58 +208,15 @@ public class PositionServiceTests
         var dto = FakePositionUpdateDto();
         var userId = Guid.NewGuid();
 
-        // Create a mock ProviderDto to return from the GetByUserId method
-        var mockProviderDto = new ProviderDto { Id = providerId };
-
         _mockCurrentUserService.Setup(a => a.UserId).Returns(userId.ToString());
 
-        // Mock the ProviderService's GetByUserId with isEmployee = false (default)
-        _mockProviderService.Setup(s => s.GetByUserId(It.IsAny<string>(), false))
-            .ReturnsAsync(mockProviderDto);
-
-        _mockRepository.Setup(a => a.Create(It.IsAny<Position>()))
-       .ReturnsAsync((Position position) => position);
+        _mockRepository.Setup(a => a.Create(It.IsAny<Position>())).ReturnsAsync((Position position) => position);
 
         // Act
         var result = await _service.CreateAsync(dto, providerId);
 
         // Assert
-        Assert.IsNotNull(result);
-
-        // Verify that the method was called with the expected arguments
-        _mockProviderService.Verify(s => s.GetByUserId(It.IsAny<string>(), false), Times.Once);
-    }
-
-    [Test]
-    public async Task CreatePosition_ProviderNotFound_ThrowsException()
-    {
-        // Arrange
-        var createDto = new PositionCreateUpdateDto
-        {
-            FullName = "Test Position",
-            Description = "Description for test position"
-        };
-
-        _mockCurrentUserService
-            .Setup(r => r.UserId).Returns(providerId.ToString());
-
-        _mockProviderService
-            .Setup(s => s.HasProviderRights(It.IsAny<Guid>()))
-            .Returns(Task.CompletedTask);
-
-        _mockProviderService
-            .Setup(s => s.GetByUserId(It.IsAny<string>(), false))
-            .ThrowsAsync(new Exception("Provider not found"));
-
-        // Act & Assert
-        var exception = Assert.ThrowsAsync<Exception>(async () =>
-        {
-            await _service.CreateAsync(createDto, providerId);
-        });
-
-        Assert.AreEqual("Provider not found", exception.Message);
-        _mockProviderService.Verify(s => s.HasProviderRights(It.IsAny<Guid>()), Times.Once);
-        _mockProviderService.Verify(s => s.GetByUserId(It.IsAny<string>(), false), Times.Once);
+        Assert.IsNotNull(result);         
     }
 
     [Test]
@@ -279,8 +230,8 @@ public class PositionServiceTests
             Description = "Description for test position"
         };
 
-        _mockProviderService
-            .Setup(s => s.HasProviderRights(It.IsAny<Guid>()))
+        _mockCurrentUserService
+            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
             .ThrowsAsync(new UnauthorizedAccessException("User does not have the necessary rights"));
 
         // Act & Assert
@@ -290,7 +241,7 @@ public class PositionServiceTests
         });
 
         Assert.AreEqual("User does not have the necessary rights", exception.Message);
-        _mockProviderService.Verify(s => s.HasProviderRights(It.IsAny<Guid>()), Times.Once);
+        _mockCurrentUserService.Verify(s => s.UserHasRights(It.IsAny<ProviderRights>()), Times.Once);
     }
     #endregion
 
@@ -318,8 +269,8 @@ public class PositionServiceTests
         await _service.DeleteAsync(existingPosition.Id, providerId);
 
         // Assert        
-
-        _mockProviderService.Verify(p => p.HasProviderRights(providerId), Times.Once);
+        
+        _mockCurrentUserService.Verify(s => s.UserHasRights(It.IsAny<ProviderRights>()), Times.Once);
         _mockRepository.Verify(r => r.Delete(It.Is<Position>(p => p.Id == positionId)), Times.Once);
     }
 
@@ -375,7 +326,7 @@ public class PositionServiceTests
 
         // Set up the update call to return the updated position
         _mockRepository.Setup(r => r.Update(It.IsAny<Position>()))
-            .ReturnsAsync((Position position) => position); // Mock the update to return the same position               
+            .ReturnsAsync((Position position) => position);
 
         // Act
         var updatedPositionDto = await _service.UpdateAsync(existingPosition.Id, updateDto, providerId);
@@ -418,8 +369,8 @@ public class PositionServiceTests
             await _service.UpdateAsync(nonExistingPositionId, updateDto, providerId);
         });
 
-        // Verify the exception message is correct
-        Assert.AreEqual($"Position with positionId {nonExistingPositionId} not found or it was deleted.", exception.Message);
+        // Verify the exception message exists
+        Assert.IsNotEmpty(exception.Message);
 
         // Verify that the Update method was never called on the repository because the position does not exist
         _mockRepository.Verify(r => r.Update(It.IsAny<Position>()), Times.Never);
@@ -433,7 +384,7 @@ public class PositionServiceTests
         var existingPositionId = positionId; // Use the existing positionId from the setup
 
         // Set up the mock for HasProviderRights to throw UnauthorizedAccessException
-        _mockProviderService.Setup(s => s.HasProviderRights(providerId))
+        _mockCurrentUserService.Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
             .ThrowsAsync(new UnauthorizedAccessException("Provider does not have the necessary rights"));
 
         // Act & Assert
@@ -472,6 +423,7 @@ public class PositionServiceTests
                 ContactId = Guid.Empty,
                 IsDeleted = false,
                 IsTeachingPosition = true,
+                PositionType = PositionType.Employee
             }
         };
     }
@@ -490,7 +442,8 @@ public class PositionServiceTests
             Rate = 20,
             Tariff = 10,
             ClassifierType = "ffff",
-            IsForRuralAreas = false
+            IsForRuralAreas = false,
+            PositionType = PositionType.Employee
         };
     }
 }

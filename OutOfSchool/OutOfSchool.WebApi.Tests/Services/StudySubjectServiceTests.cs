@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,7 +11,6 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
@@ -16,10 +19,6 @@ using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
@@ -30,7 +29,7 @@ public class StudySubjectServiceTests
     private StudySubjectService service;
     private IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
     private IEntityRepository<long, Language> languageRepository;
-    private Mock<IProviderService> providerService;
+    private Mock<ICurrentUserService> currentUserService;
     private Mock<ILogger<StudySubjectService>> logger;
     private IMapper mapper;
     private Guid providerId;
@@ -48,11 +47,11 @@ public class StudySubjectServiceTests
         languageRepository = new EntityRepository<long, Language>(context);
         providerId = Guid.NewGuid();
 
-        providerService = new Mock<IProviderService>();
+        currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<StudySubjectService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        service = new StudySubjectService(studySubjectRepository, languageRepository, providerService.Object, logger.Object, mapper);
+        service = new StudySubjectService(studySubjectRepository, languageRepository, currentUserService.Object, logger.Object, mapper);
 
         SeedDatabase();
     }
@@ -285,7 +284,7 @@ public class StudySubjectServiceTests
         service = new StudySubjectService(
             mockRepository.Object,
             languageRepository,
-            providerService.Object,
+            currentUserService.Object,
             logger.Object,
             mapper);
 
@@ -380,7 +379,7 @@ public class StudySubjectServiceTests
         service = new StudySubjectService(
             mockRepository.Object,
             languageRepository,
-            providerService.Object,
+            currentUserService.Object,
             logger.Object,
             mapper);
 

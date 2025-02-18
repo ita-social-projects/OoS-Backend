@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Services.Models;
 
@@ -48,6 +49,9 @@ public class Position : BusinessEntity
     [Required(ErrorMessage = "ClassifierType is required.")]
     [MaxLength(60)]
     public string ClassifierType { get; set; } = string.Empty;
+    
+    [Required]
+    public PositionType PositionType { get; set; }
 
     public virtual ICollection<Official> Officials { get; set; }
 }
