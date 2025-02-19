@@ -75,7 +75,6 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
                     Infer.Field<CompetitiveEventES>(e => e.CompetitiveEventDescriptionItems),
                     Infer.Field<CompetitiveEventES>(e => e.AdditionalDescription),
                     Infer.Field<CompetitiveEventES>(e => e.CompetitiveEventAccountingType),
-                    Infer.Field<CompetitiveEventES>(e => e.Description),
                     Infer.Field<CompetitiveEventES>(e => e.DescriptionOfTheEnrollmentProcedure),
                     Infer.Field<CompetitiveEventES>(e => e.VenueName),
                     Infer.Field<CompetitiveEventES>(e => e.TermsOfParticipation),

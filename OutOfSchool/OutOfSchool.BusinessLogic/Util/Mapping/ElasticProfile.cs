@@ -7,6 +7,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using Profile = AutoMapper.Profile;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 
@@ -125,6 +126,18 @@ public class ElasticProfile : Profile
                 dest => dest.CodeficatorAddressES,
                 opt => opt.MapFrom(c => c.CATOTTG));
 
+        CreateMap<ContactsAddressDto, AddressES>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.Point,
+                opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                {
+                    Lat = gl.Latitude,
+                    Lon = gl.Longitude,
+                })))
+            .ForMember(dest => dest.City, opt => opt.Ignore())
+            .ForMember(dest => dest.CodeficatorAddressES, opt => opt.Ignore());
+
         CreateMap<ContactsAddress, AddressES>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(
@@ -183,9 +196,9 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))   
+                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
-            
+
             // TODO: Copied this from base MappingProfile but this looks like some messed up lazy loading thing :)
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
@@ -213,7 +226,6 @@ public class ElasticProfile : Profile
                 dest => dest.Coverage,
                 opt =>
                     opt.MapFrom(src =>
-                        src.Coverage.Aggregate(string.Empty, (accumulator, di) =>
-                            $"{accumulator}{Constants.MappingSeparator}{di.Title}")));
+                        src.Coverage.Title));
     }
 }

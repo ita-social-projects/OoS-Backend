@@ -36,7 +36,6 @@ public class ElasticsearchCompetitiveEventConfiguration : IElasticsearchEntityTy
                    .UnsignedLongNumber(n => n.NumberOfSeats)
                    .Keyword(n => n.CompetitiveEventAccountingTypeId)
                    .Text(n => n.CompetitiveEventAccountingType)
-                   .Text(n => n.Description)
                    .Text(n => n.DescriptionOfTheEnrollmentProcedure)
                    .Keyword(n => n.OrganizerOfTheEventId)
                    .Keyword(n => n.PlannedFormatOfClasses)

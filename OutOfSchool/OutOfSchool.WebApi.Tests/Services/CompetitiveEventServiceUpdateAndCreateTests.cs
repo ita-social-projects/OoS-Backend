@@ -34,12 +34,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     [SetUp]
     public void SetUp()
     {
-<<<<<<< HEAD
-        mockCompetitiveEventRepository = new Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>>();
-=======
         mockCompetitiveEventRepository = new Mock<ICompetitiveEventRepository>();
-        mockJudgeRepository = new Mock<IEntityRepository<Guid, Judge>>();
->>>>>>> 1944a062 (fix tests)
         mockDescriptionItemRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>();
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();

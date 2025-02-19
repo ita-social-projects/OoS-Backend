@@ -10,7 +10,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.SubordinationStructure;

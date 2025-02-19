@@ -35,8 +35,6 @@ public class CompetitiveEventES
 
     public string CompetitiveEventAccountingType { get; set; } //accounting type title
 
-    public string Description { get; set; }
-
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public Guid? OrganizerOfTheEventId { get; set; }
@@ -61,7 +59,7 @@ public class CompetitiveEventES
 
     public int MaximumAge { get; set; }
 
-    public string Coverage { get; set; } //sum of all coverage titles
+    public string Coverage { get; set; } //coverage title
 
     public int Price { get; set; }
 
