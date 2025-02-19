@@ -185,7 +185,7 @@ public class ExternalExportService : IExternalExportService
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while processing workshops");
+            logger.LogError(ex, "An unexpected error occurred while processing competitive events");
             throw;
         }
     }
