@@ -406,7 +406,7 @@ public class ProviderControllerTests
     }
 
     [Test]
-    [TestCase(101)]
+    [TestCase(Constants.MaxNumberOfEmployeesToUpload + 1)]
     public async Task Upload_WhenServisThrowsArgumentOutOfRangeException_ReturnsBadRequestObjectResult(int entitiesCount)
     {
         // Arrange
