@@ -17,7 +17,7 @@ public class ExternalExportService : IExternalExportService
         "ProviderSectionItems,Images,Institution,ActualAddress,ActualAddress.CATOTTG.Parent.Parent.Parent.Parent,LegalAddress,LegalAddress.CATOTTG.Parent.Parent.Parent.Parent,Type";
 
     private const string WorkshopIncludes =
-        "WorkshopDescriptionItems,Tags,Address,Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
+        "WorkshopDescriptionItems,Tags,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
 
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
