@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -37,6 +37,9 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDt
     public Guid? BuildingHoldingId { get; set; }
 
     public Guid? ChildParticipantId { get; set; }
+    
+    [Required]
+    public int CoverageId { get; set; }
 
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
@@ -54,9 +57,6 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDt
 
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set; }
-
-    [MaxLength(Constants.MaxDescriptionLength)]
-    public string Description { get; set; }
 
     [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
@@ -102,7 +102,7 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDt
 
     public uint? NumberOfOccupiedSeats { get; set; }
 
-    public List<Guid> ParticipantsOfTheEvent { get; set; } = new List<Guid>();
+    public List<Guid> ParticipantsOfTheEvent { get; set; } = [];
 
     public string CoverImageId { get; set; } = string.Empty;
 

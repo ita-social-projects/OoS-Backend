@@ -68,9 +68,11 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
     public int CompetitiveEventAccountingTypeId { get; set;}
 
     public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
-
-    [MaxLength(2000)]
-    public string Description { get; set; }
+    
+    [Required]
+    public int CoverageId { get; set; }
+    
+    public virtual CompetitiveEventCoverage Coverage { get; set; }
 
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
@@ -117,8 +119,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
 
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaximumAge { get; set; }
-
-    public virtual ICollection<CompetitiveEventCoverage> Coverage { get; set; }
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public int Price { get; set; } = default;

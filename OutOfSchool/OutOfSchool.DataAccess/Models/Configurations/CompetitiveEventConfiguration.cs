@@ -16,6 +16,12 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
            .HasForeignKey(c => c.CompetitiveEventAccountingTypeId)
            .IsRequired(true)
            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne(c => c.Coverage)
+            .WithMany()
+            .HasForeignKey(c => c.CoverageId)
+            .IsRequired(true)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(c => c.Judges)
            .WithOne(j => j.CompetitiveEvent)

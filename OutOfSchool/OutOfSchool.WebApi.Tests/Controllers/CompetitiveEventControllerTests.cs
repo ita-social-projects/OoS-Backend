@@ -94,7 +94,6 @@ public class CompetitiveEventControllerTests
                 ScheduledEndTime = inputDto.ScheduledEndTime,
                 RegistrationStartTime = inputDto.RegistrationStartTime,
                 RegistrationEndTime = inputDto.RegistrationEndTime,
-                Description = inputDto.Description,
                 DescriptionOfTheEnrollmentProcedure = inputDto.DescriptionOfTheEnrollmentProcedure,
                 AreThereBenefits = inputDto.AreThereBenefits,
                 Benefits = inputDto.Benefits,
@@ -451,21 +450,6 @@ public class CompetitiveEventControllerTests
         }
     }
 
-    private void AssertJudgesAreEqual(List<JudgeDto> expectedJudges, List<JudgeDto> actualJudges)
-    {
-        Assert.That(actualJudges, Is.Not.Null, "Judges list should not be null");
-        Assert.AreEqual(expectedJudges.Count, actualJudges.Count, "Judges count should match");
-
-        for (int i = 0; i < expectedJudges.Count; i++)
-        {
-            Assert.AreEqual(expectedJudges[i].FirstName, actualJudges[i].FirstName, $"Judge #{i + 1} FirstName mismatch");
-            Assert.AreEqual(expectedJudges[i].LastName, actualJudges[i].LastName, $"Judge #{i + 1} LastName mismatch");
-            Assert.AreEqual(expectedJudges[i].Gender, actualJudges[i].Gender, $"Judge #{i + 1} Gender mismatch");
-            Assert.AreEqual(expectedJudges[i].MiddleName, actualJudges[i].MiddleName, $"Judge #{i + 1} MiddleName mismatch");
-            Assert.AreEqual(expectedJudges[i].Description, actualJudges[i].Description, $"Judge #{i + 1} Description mismatch");
-        }
-    }
-
     private static CompetitiveEventCreateUpdateDto FakeInvalidCreateDto()
     {
         return new CompetitiveEventCreateUpdateDto
@@ -484,7 +468,6 @@ public class CompetitiveEventControllerTests
             ScheduledEndTime = DateTime.UtcNow.AddHours(1),
             RegistrationStartTime = DateTime.UtcNow,
             RegistrationEndTime = DateTime.UtcNow.AddHours(1),
-            Description = "Event Description",
             DescriptionOfTheEnrollmentProcedure = "Event Description Of The Enrollment Procedure",
             AreThereBenefits = true,
             Benefits = "Event Benefits",
@@ -505,7 +488,6 @@ public class CompetitiveEventControllerTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Test1",
-                Description = "Test1",
                 RegistrationStartTime = DateTime.UtcNow,
                 RegistrationEndTime = DateTime.UtcNow.AddHours(1),
                 MaximumAge = 20,
@@ -517,13 +499,11 @@ public class CompetitiveEventControllerTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Test2",
-                Description = "Test2",
             },
             new CompetitiveEventDto
             {
                 Id = Guid.NewGuid(),
                 Title = "Test3",
-                Description = "Test3",
             },
         };
     }

@@ -10,5 +10,5 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
     public string InstitutionHierarchy { get; set; }
     public List<long> DirectionIds { get; set; }
 
-    public List<CompetitiveEventCoverageDto> Coverage { get; set; }
+    public CompetitiveEventCoverageDto Coverage { get; set; }
 }

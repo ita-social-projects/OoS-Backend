@@ -1,8 +1,10 @@
 using AutoMapper;
+using OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -93,5 +95,22 @@ public class ExternalExportMappingProfile : Profile
 
         CreateMap<Teacher, TeacherInfoDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
+        CreateMap<CompetitiveEventCoverage, CoverageInfoDto>();
+        CreateMap<CompetitiveEventAccountingType, AccountingTypeInfoDto>();
+        CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemInfoDto>();
+        CreateMap<CompetitiveEvent, CompetitiveEventInfoDto>()
+            .ForMember(dest => dest.ParentEventId, opt => opt.MapFrom(src => src.ParentId))
+            .ForMember(
+                dest => dest.DirectionIds,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.CompetitiveSelectionDescription, opt => opt.MapFrom(src => src.AdditionalDescription))
+            .ForMember(dest => dest.AccountingType, opt => opt.MapFrom(src => src.CompetitiveEventAccountingType))
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            .ForMember(dest => dest.Rating, opt => opt.Ignore())
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts));
     }
 }

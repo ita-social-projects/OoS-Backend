@@ -788,15 +788,6 @@ public class MappingProfile : Profile
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
             .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
 
-        CreateMap<Judge, JudgeDto>()
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty))
-            .ForMember(dest => dest.CompetetiveEventId, opt => opt.MapFrom(src => src.CompetitiveEventId));
-
-        CreateMap<JudgeDto, Judge>()
-        .ForMember(dest => dest.CompetitiveEventId, opt => opt.Ignore()) 
-        .ForMember(dest => dest.CompetitiveEvent, opt => opt.Ignore())
-        .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
-
         CreateMap<CompetitiveEvent, CompetitiveEventDto>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(

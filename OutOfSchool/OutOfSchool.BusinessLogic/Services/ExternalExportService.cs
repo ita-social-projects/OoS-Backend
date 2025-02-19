@@ -2,10 +2,12 @@
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -19,6 +21,9 @@ public class ExternalExportService : IExternalExportService
     private const string WorkshopIncludes =
         "WorkshopDescriptionItems,Tags,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
 
+    private const string CompetitiveEventsIncludes =
+        "CompetitiveEventDescriptionItems,Parent,CompetitiveEventAccountingType,InstitutionHierarchy,Coverage,Contacts.Address.CATOTTG";
+
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IApplicationRepository applicationRepository;
@@ -26,6 +31,7 @@ public class ExternalExportService : IExternalExportService
     private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private readonly ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository;
     private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportService> logger;
 
@@ -37,6 +43,7 @@ public class ExternalExportService : IExternalExportService
         IEntityRepositorySoftDeleted<long, Direction> directionRepository,
         ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository,
         IInstitutionHierarchyRepository institutionHierarchyRepository,
+        ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository,
         IMapper mapper,
         ILogger<ExternalExportService> logger)
     {
@@ -51,6 +58,8 @@ public class ExternalExportService : IExternalExportService
             institutionRepository ?? throw new ArgumentNullException(nameof(institutionRepository));
         this.institutionHierarchyRepository = institutionHierarchyRepository ??
                                               throw new ArgumentNullException(nameof(institutionHierarchyRepository));
+        this.competitiveEventRepository = competitiveEventRepository ??
+                                          throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -103,7 +112,7 @@ public class ExternalExportService : IExternalExportService
     {
         try
         {
-            logger.LogDebug("Getting all updated providers started");
+            logger.LogDebug("Getting all updated workshops started");
             offsetFilter ??= new OffsetFilter();
 
             Expression<Func<Workshop, bool>> filterExpression = updatedAfter == default
@@ -131,6 +140,47 @@ public class ExternalExportService : IExternalExportService
             {
                 TotalAmount = count,
                 Entities = workshopsDto,
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred while processing workshops");
+            throw;
+        }
+    }
+
+    public async Task<SearchResult<CompetitiveEventInfoBaseDto>> GetCompetitiveEvents(DateTime updatedAfter,
+        OffsetFilter offsetFilter)
+    {
+        try
+        {
+            logger.LogDebug("Getting all updated competitive events started");
+            offsetFilter ??= new OffsetFilter();
+
+            Expression<Func<CompetitiveEvent, bool>> filterExpression = updatedAfter == default
+                ? competitiveEvent => !competitiveEvent.IsDeleted
+                : competitiveEvent => competitiveEvent.UpdatedAt > updatedAfter || competitiveEvent.DeleteDate > updatedAfter;
+
+            var events = await competitiveEventRepository.Get(
+                    offsetFilter.From,
+                    offsetFilter.Size,
+                    CompetitiveEventsIncludes,
+                    filterExpression)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var eventsDto = events
+                .Select(MapToInfoDto<CompetitiveEvent, CompetitiveEventInfoBaseDto, CompetitiveEventInfoDto>)
+                .ToList();
+
+            await FillRatingsForType(eventsDto).ConfigureAwait(false);
+
+            var count = await competitiveEventRepository.Count(filterExpression).ConfigureAwait(false);
+
+            return new SearchResult<CompetitiveEventInfoBaseDto>
+            {
+                TotalAmount = count,
+                Entities = eventsDto,
             };
         }
         catch (Exception ex)
