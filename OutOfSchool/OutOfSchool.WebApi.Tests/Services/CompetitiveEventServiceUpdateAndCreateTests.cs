@@ -21,21 +21,19 @@ namespace OutOfSchool.WebApi.Tests.Services;
 class CompetitiveEventServiceUpdateAndCreateTests
 {
     private Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>> mockCompetitiveEventRepository;
-    private Mock<IEntityRepository<Guid, Judge>> mockJudgeRepository;
     private Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>> mockDescriptionItemRepository;
     private Mock<ILogger<CompetitiveEventService>> mockLogger;
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
     private Mock<IMapper> mockMapper;
     private Mock<ICurrentUserService> userService;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
-    
+
     private CompetitiveEventService service;
 
     [SetUp]
     public void SetUp()
     {
         mockCompetitiveEventRepository = new Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>>();
-        mockJudgeRepository = new Mock<IEntityRepository<Guid, Judge>>();
         mockDescriptionItemRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>();
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -45,7 +43,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
-            mockJudgeRepository.Object,
             mockDescriptionItemRepository.Object,
             mockLogger.Object,
             mockLocalizer.Object,
@@ -60,15 +57,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
         // Arrange
         var judge1Id = Guid.NewGuid();
         var judge2Id = Guid.NewGuid();
-        var input = new CompetitiveEventCreateDto
+        var input = new CompetitiveEventCreateUpdateDto
         {
             Title = "Test",
             CompetitiveEventAccountingTypeId = 1,
-            Judges = new List<JudgeDto>
-            {
-                new JudgeDto { Id = judge1Id, FirstName = "Judge 1" },
-                new JudgeDto { Id = judge2Id, FirstName = "Judge 2" }
-            }
         };
 
         var createdEvent = new CompetitiveEvent
@@ -76,15 +68,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
             Id = Guid.NewGuid(),
             Title = "Test",
             CompetitiveEventAccountingTypeId = 1,
-            Judges = input.Judges.Select(dto => new Judge
-            {
-                Id = dto.Id,
-                FirstName = dto.FirstName
-            }).ToList()
         };
 
         mockMapper
-            .Setup(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateDto>()))
+            .Setup(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateUpdateDto>()))
             .Returns(createdEvent);
 
         mockMapper
@@ -93,11 +80,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
             {
                 Id = createdEvent.Id,
                 Title = createdEvent.Title,
-                Judges = input.Judges,
             });
 
         contactsService
-            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateDto>()))
+            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
             .Verifiable();
 
         mockCompetitiveEventRepository
@@ -111,15 +97,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.IsNotNull(result, "Result should not be null.");
         Assert.AreEqual(input.Title, result.Title);
 
-        Assert.IsNotNull(result.Judges, "Judges should not be null.");
-        Assert.AreEqual(2, result.Judges.Count, "There should be 2 judges.");
-        Assert.AreEqual("Judge 1", result.Judges[0].FirstName, "First judge's name is incorrect.");
-        Assert.AreEqual("Judge 2", result.Judges[1].FirstName, "Second judge's name is incorrect.");
 
-        mockMapper.Verify(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateDto>()), Times.Once);
+        mockMapper.Verify(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
         mockMapper.Verify(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()), Times.Once);
         mockCompetitiveEventRepository.Verify(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()), Times.Once);
-        contactsService.Verify(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateDto>()), Times.Once);
+        contactsService.Verify(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
     }
 
     [Test]
@@ -131,20 +113,18 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = existingEventId,
             Title = "Old Title",
-            Judges = new List<Judge>(),
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
         };
 
-        var updateDto = new CompetitiveEventUpdateDto
+        var updateDto = new CompetitiveEventCreateUpdateDto
         {
             Id = existingEventId,
             Title = "New Title",
-            Judges = new List<JudgeDto>(),
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
         };
 
         mockCompetitiveEventRepository
-            .Setup(r => r.GetByIdWithDetails(existingEventId, "Judges,CompetitiveEventDescriptionItems"))
+            .Setup(r => r.GetByIdWithDetails(existingEventId, "CompetitiveEventDescriptionItems"))
             .ReturnsAsync(competitiveEvent);
 
         mockCompetitiveEventRepository
@@ -152,7 +132,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .ReturnsAsync((CompetitiveEvent input) => input);
 
         contactsService
-            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventUpdateDto>()))
+            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
             .Verifiable();
 
         mockCompetitiveEventRepository
@@ -168,9 +148,9 @@ class CompetitiveEventServiceUpdateAndCreateTests
         // Assert
         Assert.IsNotNull(result, "Result of Update should not be null.");
         Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(existingEventId, "Judges,CompetitiveEventDescriptionItems"), Times.Once);
+        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(existingEventId, "CompetitiveEventDescriptionItems"), Times.Once);
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
-        contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventUpdateDto>()), Times.Once);
+        contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
     }
 
     [Test]
@@ -178,16 +158,15 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         // Arrange
         var invalidEventId = Guid.NewGuid();
-        var updateDto = new CompetitiveEventUpdateDto
+        var updateDto = new CompetitiveEventCreateUpdateDto
         {
             Id = invalidEventId,
             Title = "Invalid Event",
-            Judges = new List<JudgeDto>(),
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
         };
 
         mockCompetitiveEventRepository
-            .Setup(r => r.GetByIdWithDetails(invalidEventId, "Judges,CompetitiveEventDescriptionItems"))
+            .Setup(r => r.GetByIdWithDetails(invalidEventId, "CompetitiveEventDescriptionItems"))
             .ReturnsAsync((CompetitiveEvent)null);
 
         // Act & Assert
@@ -195,12 +174,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
             async () => await service.Update(updateDto));
 
         Assert.That(ex.Message, Does.Contain($"CompetitiveEvent with Id = {invalidEventId} doesn't exist in the system."));
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(invalidEventId, "Judges,CompetitiveEventDescriptionItems"), Times.Once);
+        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(invalidEventId, "CompetitiveEventDescriptionItems"), Times.Once);
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
     }
 
     [Test]
-    public async Task Update_WhenDescriptionItemsAndJudgesAreUpdated_UpdatesCorrectly()
+    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
     {
         // Arrange
         var eventId = Guid.NewGuid();
@@ -208,12 +187,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var newDescriptionItemId = Guid.NewGuid();
         var mustBeDeletedDescItemId = Guid.NewGuid();
 
-        var existingJudgeId = Guid.NewGuid();
-        var newJudgeId = Guid.NewGuid();
-        var mustBeDeletedJudgeId = Guid.NewGuid();
-
-        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedDescItemId, existingJudgeId, mustBeDeletedJudgeId);
-        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId, existingJudgeId, newJudgeId);
+        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedDescItemId);
+        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId);
 
         SetupMocksForUpdateTest(competitiveEvent, eventId);
 
@@ -223,25 +198,134 @@ class CompetitiveEventServiceUpdateAndCreateTests
         // Assert
         AssertValidUpdateResult(result, mustBeDeletedDescItemId);
     }
-    private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedDescItemId, Guid existingJudgeId, Guid mustBeDeletedJudgeId)
+
+    [Test]
+    public async Task Create_WhenDescriptionItemsAreNullOrEmpty_DoesNotMapDescriptionItems()
+    {
+        // Arrange
+        var input = new CompetitiveEventCreateUpdateDto
+        {
+            Title = "Test Event",
+            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
+        };
+
+        var createdEvent = new CompetitiveEvent
+        {
+            Id = Guid.NewGuid(),
+            Title = input.Title,
+            CompetitiveEventAccountingTypeId = input.CompetitiveEventAccountingTypeId
+        };
+
+        mockMapper
+            .Setup(m => m.Map<CompetitiveEvent>(input))
+            .Returns(createdEvent);
+
+        mockMapper
+            .Setup(m => m.Map<CompetitiveEventDto>(createdEvent))//It.IsAny<CompetitiveEvent>()))
+            .Returns(new CompetitiveEventDto
+            {
+                Id = createdEvent.Id,
+                Title = createdEvent.Title,
+            });
+
+        contactsService
+            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
+            .Verifiable();
+
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .ReturnsAsync(createdEvent);
+
+        // Act
+        var result = await service.Create(input);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(input.Title, result.Title);
+        Assert.IsNull(createdEvent.CompetitiveEventDescriptionItems);
+        Assert.IsNull(createdEvent.CompetitiveEventDescriptionItems, "CompetitiveEventDescriptionItems should remain null if input is null.");
+
+        mockMapper.Verify(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()), Times.Never);
+        mockCompetitiveEventRepository.Verify(
+            r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task Create_WhenDescriptionItemsAreNotEmpty_MapsAndAddsThem()
+    {
+        // Arrange
+        var input = new CompetitiveEventCreateUpdateDto
+        {
+            Title = "Test Event",
+            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
+            {
+                new CompetitiveEventDescriptionItemDto { Description = "Desc 1", SectionName = "Section 1" },
+                new CompetitiveEventDescriptionItemDto { Description = "Desc 2", SectionName = "Section 2" }
+            }
+        };
+
+        var createdEvent = new CompetitiveEvent
+        {
+            Id = Guid.NewGuid(),
+            Title = input.Title,
+            CompetitiveEventAccountingTypeId = input.CompetitiveEventAccountingTypeId,
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
+        };
+
+        mockMapper
+            .Setup(m => m.Map<CompetitiveEvent>(input))
+            .Returns(createdEvent);
+
+        mockMapper
+            .Setup(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()))
+            .Returns<CompetitiveEventDescriptionItemDto>(dto => new CompetitiveEventDescriptionItem
+            {
+                Description = dto.Description,
+                SectionName = dto.SectionName
+            });
+
+        mockMapper
+       .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
+       .Returns((CompetitiveEvent ce) => new CompetitiveEventDto
+       {
+           Id = ce.Id,
+           Title = ce.Title,
+           CompetitiveEventAccountingTypeId = ce.CompetitiveEventAccountingTypeId
+       });
+
+        contactsService
+           .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
+           .Verifiable();
+
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .ReturnsAsync(createdEvent);
+
+        // Act
+        var result = await service.Create(input);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(input.Title, result.Title);
+        Assert.AreEqual(input.CompetitiveEventDescriptionItems.Count, createdEvent.CompetitiveEventDescriptionItems.Count);
+       
+        var expected = input.CompetitiveEventDescriptionItems[0];
+        var actual = createdEvent.CompetitiveEventDescriptionItems.First();
+        Assert.AreEqual(expected.Description, actual.Description, $"First description of item is not mapped correctly.");
+        Assert.AreEqual(expected.SectionName, actual.SectionName, $"First SectionName of item is not mapped correctly.");
+
+        mockMapper.Verify(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()), Times.Exactly(input.CompetitiveEventDescriptionItems.Count));
+    }
+
+    private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedDescItemId)
     {
         return new CompetitiveEvent
         {
             Id = eventId,
             Title = "Existing Event",
-            Judges = new List<Judge>()
-            {
-                new Judge
-                {
-                    Id = existingJudgeId,
-                    FirstName = "Old Judge's FirstName",
-                },
-                new Judge
-                {
-                    Id = mustBeDeletedJudgeId,
-                    FirstName = "Must delted Judge's FirstName",
-                },
-            },
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>
             {
                 new CompetitiveEventDescriptionItem
@@ -260,25 +344,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
         };
     }
 
-    private CompetitiveEventUpdateDto CreateUpdateDto(Guid eventId, Guid existingDescriptionItemId, Guid newDescriptionItemId, Guid existingJudgeId, Guid newJudgeId)
+    private CompetitiveEventCreateUpdateDto CreateUpdateDto(Guid eventId, Guid existingDescriptionItemId, Guid newDescriptionItemId)
     {
-        return new CompetitiveEventUpdateDto
+        return new CompetitiveEventCreateUpdateDto
         {
             Id = eventId,
             Title = "Updated Event",
-            Judges = new List<JudgeDto>()
-            {
-                new JudgeDto
-                {
-                    Id = existingJudgeId,
-                    FirstName = "Updated Judge's FirstName",
-                },
-                new JudgeDto
-                {
-                    Id = newJudgeId,
-                    FirstName = "New Judge's FirstName",
-                },
-            },
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
             {
                 new CompetitiveEventDescriptionItemDto
@@ -300,7 +371,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     private void SetupMocksForUpdateTest(CompetitiveEvent competitiveEvent, Guid eventId)
     {
         mockCompetitiveEventRepository
-            .Setup(r => r.GetByIdWithDetails(eventId, "Judges,CompetitiveEventDescriptionItems"))
+            .Setup(r => r.GetByIdWithDetails(eventId, "CompetitiveEventDescriptionItems"))
             .ReturnsAsync(competitiveEvent);
 
         mockCompetitiveEventRepository
@@ -328,15 +399,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 SectionName = dto.SectionName,
                 CompetitiveEventId = Guid.Empty
             });
-
-        mockMapper
-          .Setup(m => m.Map<Judge>(It.IsAny<JudgeDto>()))
-          .Returns<JudgeDto>(dto => new Judge
-          {
-              Id = dto.Id,
-              FirstName = dto.FirstName,
-              CompetitiveEventId = Guid.Empty
-          });
     }
 
     private void AssertValidUpdateResult(CompetitiveEventDto result, Guid mustBeDeletedId)
@@ -350,7 +412,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
             item.Id == mustBeDeletedId && item.Description == "Must deleted Description" && item.SectionName == "Must deleted Section"
         )), Times.Once);
 
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(It.IsAny<Guid>(), "Judges,CompetitiveEventDescriptionItems"), Times.Once);
+        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(It.IsAny<Guid>(), "CompetitiveEventDescriptionItems"), Times.Once);
 
         mockCompetitiveEventRepository.Verify(r => r.Update(It.Is<CompetitiveEvent>(e =>
             e.CompetitiveEventDescriptionItems.Count == 2

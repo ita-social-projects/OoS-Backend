@@ -58,16 +58,13 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CompetitiveEventCreateDto dto)
+    public async Task<IActionResult> Create([FromBody] CompetitiveEventCreateUpdateDto dto)
     {
         if (dto == null)
         {
             return BadRequest("The request body is empty.");
         }
-        if (!AreJudgesValid(dto.Judges))
-        {
-            return BadRequest("A competitive event can have no more than one chief judge.");
-        }
+       
         var competitiveEvent = await service.Create(dto).ConfigureAwait(false);
 
         return CreatedAtAction(
@@ -90,20 +87,15 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CompetitiveEventUpdateDto dto)
+    public async Task<IActionResult> Update([FromBody] CompetitiveEventCreateUpdateDto dto)
     {
         if (dto == null)
         {
             return BadRequest("The request body is empty.");
         }
 
-        dto.Judges ??= new List<JudgeDto>();
         dto.CompetitiveEventDescriptionItems ??= new List<CompetitiveEventDescriptionItemDto>();
 
-        if (!AreJudgesValid(dto.Judges))
-        {
-            return BadRequest("A competitive event can have no more than one chief judge.");
-        }
         try
         {
             return Ok(await service.Update(dto).ConfigureAwait(false));
@@ -175,14 +167,5 @@ public class CompetitiveEventController : ControllerBase
         SearchResult<CompetitiveEventViewCardDto> result = await service.GetByProviderId(id, filter).ConfigureAwait(false);
         return this.SearchResultToOkOrNoContent(result);
 
-    }
-    private static bool AreJudgesValid(IEnumerable<JudgeDto> judges)
-    {
-        if (judges != null && judges.Any())
-        {
-            var chiefJudgeCount = judges.Count(j => j.IsChiefJudge);
-            return chiefJudgeCount <= 1;
-        }
-        return true;
     }
 }
