@@ -35,4 +35,16 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus ProviderStatus { get; set; } = ProviderStatus.Pending;
+    
+    // TODO: for backward compatibility, remove when front changes
+    public string Phone { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+
+    public string Website { get; set; } = string.Empty;
+
+    public string Facebook { get; set; } = string.Empty;
+
+    public string Instagram { get; set; } = string.Empty;
+
+    public AddressDto Address { get; set; }
 }

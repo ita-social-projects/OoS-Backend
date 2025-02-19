@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
@@ -29,29 +28,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
-
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    public string Phone { get; set; } = string.Empty;
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]

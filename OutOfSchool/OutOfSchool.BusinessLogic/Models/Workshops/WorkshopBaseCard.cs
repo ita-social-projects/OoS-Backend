@@ -56,6 +56,7 @@ public class WorkshopBaseCard : IHasRating
     [Required]
     public Guid ProviderId { get; set; }
 
+    // TODO: for backward compatibility, remove when front changes
     public AddressDto Address { get; set; }
 
     public bool WithDisabilityOptions { get; set; }

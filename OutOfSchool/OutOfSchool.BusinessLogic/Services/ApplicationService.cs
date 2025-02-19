@@ -356,7 +356,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             take: filter.Size,
             whereExpression: predicate,
             orderBy: sortPredicate)
-            .Include(a => a.Workshop).ThenInclude(w => w.Address).ThenInclude(wa => wa.CATOTTG)
+            .Include(a => a.Workshop).ThenInclude(w => w.Contacts).ThenInclude(wa => wa.Address.CATOTTG)
                 .ThenInclude(wac => wac.Parent).ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Institution)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Directions)

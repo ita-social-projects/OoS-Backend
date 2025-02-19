@@ -266,14 +266,21 @@ public class StatisticServiceTest
                     },
                     InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 4970,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "M",
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 4970,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "M",
+                            },
+                        },
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb") },
@@ -296,14 +303,21 @@ public class StatisticServiceTest
                     },
                     InstitutionId = Guid.NewGuid(),
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 4970,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "M",
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 4970,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "M",
+                            },
+                        }
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be") },
@@ -327,14 +341,21 @@ public class StatisticServiceTest
                     },
                     InstitutionId = Guid.NewGuid(),
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 5000,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "C",
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 5000,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "C",
+                            },
+                        }
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d") },
@@ -365,15 +386,22 @@ public class StatisticServiceTest
                         },
                     },
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 31739,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "B",
-                        ParentId = 31737,
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 31739,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "B",
+                                ParentId = 31737,
+                            },
+                        }
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb") },
@@ -395,15 +423,22 @@ public class StatisticServiceTest
                         },
                     },
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 31737,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "K",
-                        ParentId = null,
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 31737,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "K",
+                                ParentId = null,
+                            },
+                        }
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be") },
@@ -426,15 +461,22 @@ public class StatisticServiceTest
                         },
                     },
                 },
-                Address = new Address
-                {
-                    CATOTTGId = 5000,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "C",
-                        ParentId = 4971,
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 5000,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "C",
+                                ParentId = 4971,
+                            },
+                        }
+                    }
+                ],
                 Applications = new List<Application>
                 {
                     new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d") },
@@ -577,7 +619,7 @@ public class StatisticServiceTest
         if (!string.IsNullOrWhiteSpace(city))
         {
             workshops = workshops
-                .Where(w => string.Equals(w.Address.CATOTTG.Name, city.Trim()));
+                .Where(w => string.Equals(w.Contacts.FirstOrDefault()?.Address.CATOTTG.Name, city.Trim()));
         }
 
         var workshopsWithApplications = workshops.Select(w => new
@@ -632,29 +674,43 @@ public class StatisticServiceTest
             {
                 Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
                 Title = "w2",
-                Address = new Address
-                {
-                    CATOTTGId = 31737,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "K",
-                        ParentId = null,
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 31737,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "K",
+                                ParentId = null,
+                            },
+                        }
+                    }
+                ],
             },
             new Workshop
             {
                 Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 Title = "w1",
-                Address = new Address
-                {
-                    CATOTTGId = 31739,
-                    CATOTTG = new CATOTTG
+                Contacts = [
+                    new ()
                     {
-                        Category = "B",
-                        ParentId = 31737,
-                    },
-                },
+                        Title = "Test",
+                        IsDefault = true,
+                        Address = new ()
+                        {
+                            CATOTTGId = 31739,
+                            CATOTTG = new CATOTTG
+                            {
+                                Category = "B",
+                                ParentId = 31737,
+                            },
+                        }
+                    }
+                ],
             },
         };
     }

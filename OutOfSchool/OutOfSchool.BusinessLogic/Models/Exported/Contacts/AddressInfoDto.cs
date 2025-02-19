@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.BusinessLogic.Models.Exported;
+﻿namespace OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 
 public class AddressInfoDto
 {

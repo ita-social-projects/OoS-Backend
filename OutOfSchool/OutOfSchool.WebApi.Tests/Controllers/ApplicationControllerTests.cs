@@ -727,7 +727,6 @@ public class ApplicationControllerTests
             CoverImageId = "image6",
             ProviderId = Guid.NewGuid(),
             InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            AddressId = 55,
             Address = new AddressDto
             {
                 Id = 55,

@@ -1,8 +1,9 @@
 using AutoMapper;
-using OutOfSchool.BusinessLogic.Models.Exported;
+using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 
@@ -10,9 +11,17 @@ public class ExternalExportMappingProfile : Profile
 {
     public ExternalExportMappingProfile()
     {
+        CreateMap<Contacts, ContactsInfoDto>();
+        CreateMap<ContactsAddress, AddressInfoDto>()
+            .ForMember(dest => dest.CodeficatorAddress, opt => opt.MapFrom(src => src.CATOTTG));
+        CreateMap<PhoneNumber, PhoneNumberInfoDto>();
+        CreateMap<Email, EmailInfoDto>();
+        CreateMap<SocialNetwork, SocialNetworkInfoDto>();
+        
+        // TODO: Remove when we remvoe address
         CreateMap<Address, AddressInfoDto>()
             .ForMember(dest => dest.CodeficatorAddress, opt => opt.MapFrom(src => src.CATOTTG));
-
+        
         CreateMap<CATOTTG, CodeficatorAddressInfoDto>()
             .ForMember(dest => dest.Settlement,
                 opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
@@ -55,7 +64,8 @@ public class ExternalExportMappingProfile : Profile
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(x => x.Name)))
             .ForMember(dest => dest.LanguageOfEducation, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts));
 
         CreateMap<Provider, ProviderInfoBaseDto>();
 

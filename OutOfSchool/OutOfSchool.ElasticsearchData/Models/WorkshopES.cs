@@ -45,8 +45,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public PayRateType PayRate { get; set; }
 
-    public long AddressId { get; set; }
-
     public AddressES Address { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }

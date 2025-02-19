@@ -78,8 +78,10 @@ public class StatisticService : IStatisticService
         {
             workshops = workshops
                 .Where(w =>
-                    w.Address.CATOTTGId == catottgId
-                    || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
+                    w.Contacts.Any(c => c.IsDefault && 
+                        (c.Address.CATOTTGId == catottgId || 
+                        (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                         c.Address.CATOTTG.ParentId == catottgId))));
         }
 
         var directionsWithWorkshops = workshops
@@ -172,7 +174,10 @@ public class StatisticService : IStatisticService
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Address.CATOTTGId == catottgId || (w.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && w.Address.CATOTTG.ParentId == catottgId));
+                .Where(w => w.Contacts.Any(c => c.IsDefault && 
+                    (c.Address.CATOTTGId == catottgId || 
+                    (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                     c.Address.CATOTTG.ParentId == catottgId))));
         }
 
         var workshopsWithApplications = workshops.Select(w => new
@@ -187,7 +192,7 @@ public class StatisticService : IStatisticService
             .Include(w => w.Applications).ThenInclude(a => a.Child)
             .Include(w => w.Applications).ThenInclude(a => a.Parent)
             .Include(w => w.Provider)
-            .Include(w => w.Address).ThenInclude(ad => ad.CATOTTG)
+            .Include(w => w.Contacts).ThenInclude(c => c.Address.CATOTTG)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Directions)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Institution)
             .Take(limit)

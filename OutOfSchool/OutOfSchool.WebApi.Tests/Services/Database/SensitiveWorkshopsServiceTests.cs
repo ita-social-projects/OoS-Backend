@@ -28,8 +28,9 @@ namespace OutOfSchool.WebApi.Tests.Services.Database;
 [TestFixture]
 public class SensitiveWorkshopsServiceTests
 {
-    private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)}," +
-        $"{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
+    private readonly string includingPropertiesForMappingDtoModel =
+        $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},"
+        + $"{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;

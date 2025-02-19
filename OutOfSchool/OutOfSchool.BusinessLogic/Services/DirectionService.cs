@@ -260,7 +260,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         if (!isAdmins)
         {
             workshopCountFilter = workshopCountFilter
-                .And<Workshop>(w => w.Address.CATOTTGId == filter.CatottgId);
+                .And<Workshop>(w => w.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == filter.CatottgId));
         }
 
         return (predicate, workshopCountFilter);

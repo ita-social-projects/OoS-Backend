@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.ContactInfo;
 using Profile = AutoMapper.Profile;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -14,7 +15,7 @@ public class ElasticProfile : Profile
 
     public ElasticProfile()
     {
-        CreateMap<WorkshopBaseDto, WorkshopES>()
+        CreateMap<WorkshopDto, WorkshopES>()
             .IncludeBase<object, IHasRating>()
             .ForMember(
                 dest => dest.Keywords,
@@ -36,10 +37,7 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
-
-        CreateMap<WorkshopDto, WorkshopES>()
-            .IncludeBase<WorkshopBaseDto, WorkshopES>()
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()
@@ -119,6 +117,21 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.CodeficatorAddressES,
                 opt => opt.MapFrom(c => c.CATOTTG));
+        CreateMap<ContactsAddress, AddressES>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.Point,
+                opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                {
+                    Lat = Math.Abs(gl.Latitude - 0d) < Epsilon ? gl.CATOTTG.Latitude : gl.Latitude,
+                    Lon = Math.Abs(gl.Longitude - 0d) < Epsilon ? gl.CATOTTG.Longitude : gl.Longitude,
+                })))
+            .ForMember(
+                dest => dest.City,
+                opt => opt.MapFrom(c => c.CATOTTG.Name))
+            .ForMember(
+                dest => dest.CodeficatorAddressES,
+                opt => opt.MapFrom(c => c.CATOTTG));
 
         CreateMap<CodeficatorAddressES, AllAddressPartsDto>()
             .ForMember(
@@ -163,7 +176,10 @@ public class ElasticProfile : Profile
                         src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
                                 $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
-
+            
+            // TODO: Refactor address
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
+            
             // TODO: Copied this from base MappingProfile but this looks like some messed up lazy loading thing :)
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>

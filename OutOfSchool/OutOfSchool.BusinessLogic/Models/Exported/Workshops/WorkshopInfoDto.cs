@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 
@@ -30,29 +30,6 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
-
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    public string Phone { get; set; } = string.Empty;
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -103,9 +80,6 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     public Guid SubDirectionId { get; set; }
 
     public IEnumerable<string> Keywords { get; set; } = default;
-
-    [Required]
-    public AddressInfoDto Address { get; set; }
 
     public List<TeacherInfoDto> Teachers { get; set; }
 
@@ -158,4 +132,6 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
+    
+    public List<ContactsInfoDto> Contacts { get; set; }
 }
