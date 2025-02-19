@@ -44,6 +44,7 @@ public class ElasticProfile : Profile
                 opt =>
                     opt.MapFrom(src =>
                         src.Tags.Select(t => t.Name)))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
             .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()
@@ -123,6 +124,7 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.CodeficatorAddressES,
                 opt => opt.MapFrom(c => c.CATOTTG));
+
         CreateMap<ContactsAddress, AddressES>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(
@@ -181,9 +183,7 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
-            
-            // TODO: Refactor address
+                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))   
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
             
             // TODO: Copied this from base MappingProfile but this looks like some messed up lazy loading thing :)
