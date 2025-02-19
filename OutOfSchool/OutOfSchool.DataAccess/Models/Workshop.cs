@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
@@ -130,37 +129,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public Guid? ParentWorkshopId { get; set; }
 
-    #region Contact information
-
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
-    public string Phone { get; set; } = string.Empty;
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
-
-    [Required]
-    public long AddressId { get; set; }
-
-    #endregion
-
     #region Navigation properties
 
     public virtual Provider Provider { get; set; }
@@ -187,8 +155,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
     public virtual List<Image<Workshop>> Images { get; set; }
-
-    public virtual Address Address { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
     #endregion

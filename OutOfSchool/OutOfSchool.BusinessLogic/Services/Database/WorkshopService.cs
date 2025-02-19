@@ -16,7 +16,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-
 using SendGrid.Helpers.Errors.Model;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -27,9 +26,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
     private readonly string includingPropertiesForMappingDtoModel =
-        $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)}";
-
-    private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
+        $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, Tag> tagRepository;
@@ -367,9 +364,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
-            dto.AddressId = currentWorkshop.AddressId;
-            dto.Address.Id = currentWorkshop.AddressId;
-
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
             
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
@@ -499,10 +493,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var multipleImageChangingResult = await workshopImagesService
                 .ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
-
-            // In case if AddressId was changed. AddressId is one and unique for workshop.
-            dto.AddressId = currentWorkshop.AddressId;
-            dto.Address.Id = currentWorkshop.AddressId;
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
             
@@ -684,12 +674,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var closestWorkshops = workshopRepository.Get(
                 skip: 0,
                 take: 0,
-                includeProperties: includingPropertiesForMappingWorkShopCard,
                 whereExpression: filterPredicate,
                 orderBy: null)
             .Where(w => neighbours
                 .Select(n => n.Value)
-                .Any(hash => hash == w.Address.GeoHash));
+                .Any(hash => w.Contacts.Any(c => c.IsDefault && c.Address.GeoHash == hash)));
 
         var workshopsCount = await closestWorkshops.CountAsync().ConfigureAwait(false);
 
@@ -701,8 +690,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 w,
                 Distance = GeoMathHelper
                     .GetDistanceFromLatLonInKm(
-                        w.Address.Latitude,
-                        w.Address.Longitude,
+                        w.Contacts.FirstOrDefault(c => c.IsDefault)?.Address.Latitude ?? 0,
+                        w.Contacts.FirstOrDefault(c => c.IsDefault)?.Address.Longitude ?? 0,
                         (double)filter.Latitude,
                         (double)filter.Longitude),
             })
@@ -738,8 +727,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
 
-        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
-        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
+        IEnumerable<long> allowedSettlementIdsForAdmin = [];
+        IEnumerable<long> subSettlementsIdsByFilter = [];
 
         if (catottgIdAdmin > 0)
         {
@@ -838,12 +827,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
         {
-            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.Address.CATOTTGId));
+            predicate = predicate.And(x => x.Contacts.Any(c => c.IsDefault && allowedSettlementIdsForAdmin.Contains(c.Address.CATOTTGId)));
         }
 
         if (subSettlementFilterIds != null && subSettlementFilterIds.Any())
         {
-            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.Address.CATOTTGId));
+            predicate = predicate.And(x => x.Contacts.Any(c => c.IsDefault && subSettlementFilterIds.Contains(c.Address.CATOTTGId)));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -860,7 +849,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                         x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                        x.Contacts.Any(c => c.Emails.Any(e => e.Address.Contains(word, StringComparison.InvariantCultureIgnoreCase))));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -922,7 +911,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             if (filter.CATOTTGId > 0)
             {
-                predicate = predicate.And(x => x.Address.CATOTTGId == filter.CATOTTGId);
+                predicate = predicate.And(x => x.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == filter.CATOTTGId));
             }
         }
 
@@ -1008,7 +997,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (!string.IsNullOrWhiteSpace(filter.City))
         {
-            predicate = predicate.And(x => x.Address.CATOTTG.Name == filter.City);
+            predicate = predicate.And(x => x.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name == filter.City));
         }
 
         if (filter.Statuses.Any())
@@ -1211,11 +1200,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private async Task SetIdsToDefaultValue(WorkshopCreateRequestDto dto)
     {
         dto.Id = Guid.Empty;
-
-        if (dto.Address is not null)
-        {
-            dto.Address.Id = default;
-        }
 
         if (dto.DefaultTeacher is not null)
         {

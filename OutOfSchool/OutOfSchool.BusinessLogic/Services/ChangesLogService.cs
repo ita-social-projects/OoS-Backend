@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Enums;
@@ -241,7 +240,7 @@ public class ChangesLogService : IChangesLogService
                         User = mapper.Map<ShortUserDto>(l.User),
                         ApplicationId = l.EntityIdGuid.Value,
                         WorkshopTitle = app.Workshop.Title,
-                        WorkshopCity = app.Workshop.Address.CATOTTG.Name,
+                        WorkshopCity = app.Workshop.Contacts.FirstOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
                         ProviderTitle = app.Workshop.ProviderTitle,
                         InstitutionTitle = app.Workshop.Provider.Institution.Title,
                     })

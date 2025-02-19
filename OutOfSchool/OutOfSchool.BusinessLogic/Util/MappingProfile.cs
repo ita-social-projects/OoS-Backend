@@ -12,12 +12,9 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Notifications;
+using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Models.Providers;
-using OutOfSchool.BusinessLogic.Models.Exported;
-using OutOfSchool.BusinessLogic.Models.Exported.Directions;
-using OutOfSchool.BusinessLogic.Models.Exported.Providers;
-using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
@@ -28,8 +25,8 @@ using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.BusinessLogic.Models.Official;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
@@ -188,11 +185,25 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.IsBlocked, opt => opt.MapFrom(src => src.Provider.IsBlocked))
-            .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
+            .ForMember(dest => dest.ImageIds,
+                opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
             .ForMember(dest => dest.ProviderStatus, opt => opt.MapFrom(src => src.Provider.Status))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
-            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id)));
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id)))
+            // TODO: for backward compatibility, remove when front changes
+            .ForMember(dest => dest.Address,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
+            .ForMember(dest => dest.Phone,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Phones.FirstOrDefault().Number))
+            .ForMember(dest => dest.Email,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Emails.FirstOrDefault().Address))
+            .ForMember(dest => dest.Website,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website).Url))
+            .ForMember(dest => dest.Facebook,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook).Url))
+            .ForMember(dest => dest.Instagram,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url));
 
         CreateMap<WorkshopDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>();
@@ -217,7 +228,7 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopCreateUpdateDto, WorkshopDto>()
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src =>
-                src.TagIds.Select(id => new TagDto { Id = id }).ToList()))
+                src.TagIds.Select(id => new TagDto {Id = id}).ToList()))
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
@@ -226,8 +237,21 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
+            
+            // TODO: Remove
+            .ForMember(dest => dest.Phone, opt => opt.Ignore())
+            .ForMember(dest => dest.Email, opt => opt.Ignore())
+            .ForMember(dest => dest.Website, opt => opt.Ignore())
+            .ForMember(dest => dest.Facebook, opt => opt.Ignore())
+            .ForMember(dest => dest.Instagram, opt => opt.Ignore())
+            .ForMember(dest => dest.Address, opt => opt.Ignore());
 
+        // TODO: Remove when fully refactor addresses
+        CreateMap<ContactsAddress, AddressDto>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
+        
         CreateMap<WorkshopCreateUpdateDto, IHasRating>();
 
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
@@ -416,7 +440,9 @@ public class MappingProfile : Profile
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus))
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore());
+            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(dest => dest.Address,
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address));
 
         _ = CreateMap<Workshop, WorkshopProviderViewCard>()
             .IncludeBase<Workshop, WorkshopBaseCard>()

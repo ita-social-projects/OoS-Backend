@@ -57,7 +57,12 @@ public class ChangesLogServiceTests
         provider = ProvidersGenerator.Generate();
         provider.Institution = InstitutionsGenerator.Generate();
         workshop = WorkshopGenerator.Generate();
-        workshop.Address = AddressGenerator.Generate();
+        workshop.Contacts = [new ()
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate()
+        }];
         workshop.Provider = provider;
         application = new Application()
         {
@@ -399,7 +404,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.All(x => x.ApplicationId == application.Id));
         Assert.True(result.Entities.All(x => x.WorkshopTitle == application.Workshop.Title));
-        Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
+        Assert.True(result.Entities.All(x => application.Workshop.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name == x.WorkshopCity)));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
@@ -468,7 +473,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.All(x => x.ApplicationId == application.Id));
         Assert.True(result.Entities.All(x => x.WorkshopTitle == application.Workshop.Title));
-        Assert.True(result.Entities.All(x => x.WorkshopCity == application.Workshop.Address.CATOTTG.Name));
+        Assert.True(result.Entities.All(x => application.Workshop.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name == x.WorkshopCity)));
         Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));

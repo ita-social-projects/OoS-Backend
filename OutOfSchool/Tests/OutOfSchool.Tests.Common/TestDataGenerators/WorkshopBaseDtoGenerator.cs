@@ -1,9 +1,9 @@
-﻿using Bogus;
-using OutOfSchool.Common.Enums;
+﻿using System;
+using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using System;
-using System.Collections.Generic;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -16,11 +16,6 @@ public static class WorkshopBaseDtoGenerator
         .RuleForType(typeof(string), f => f.Lorem.Word())
         .RuleFor(x => x.Id, f => f.Random.Guid())
         .RuleFor(x => x.Title, f => f.Company.CompanyName())
-        .RuleFor(x => x.Phone, f => f.Phone.ToString())
-        .RuleFor(x => x.Email, f => f.Person.Email)
-        .RuleFor(x => x.Website, f => f.Internet.Url())
-        .RuleFor(x => x.Facebook, f => f.Person.UserName)
-        .RuleFor(x => x.Instagram, f => f.Person.UserName)
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 15))
         .RuleFor(x => x.MaxAge, f => f.Random.Number(16, 18))
         .RuleFor(x => x.DateTimeRanges, f => DateTimeRangeDtoGenerator.Generate(4))
@@ -38,8 +33,6 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.InstitutionHierarchy, f => f.Lorem.Word())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
         .RuleFor(x => x.Keywords, f => f.Make(new Random().Next(1, 10), () => f.Lorem.Word()))
-        .RuleFor(x => x.AddressId, f => f.Random.Number(1, 1000))
-        .RuleFor(x => x.Address, f => AddressDtoGenerator.Generate())
         .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())

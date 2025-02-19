@@ -1,8 +1,8 @@
-﻿using Bogus;
+﻿using System;
 using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using OutOfSchool.Common.Enums;
-using System;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -16,8 +16,6 @@ public static class WorkshopMainRequiredPropertiesDtoGenerator
         .RuleFor(w => w.Id, f => f.Random.Guid())
         .RuleFor(w => w.Title, f => f.Name.FullName())
         .RuleFor(w => w.ShortTitle, f => f.Name.LastName())
-        .RuleFor(w => w.Phone, f => f.Phone.PhoneNumber())
-        .RuleFor(w => w.Email, f => f.Internet.Email())
         .RuleFor(w => w.MinAge, f => f.Random.Int(5, 9))
         .RuleFor(w => w.MaxAge, f => f.Random.Int(10, 13))
         .RuleFor(w => w.IsPaid, f => true)

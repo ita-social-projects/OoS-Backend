@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
@@ -23,23 +22,9 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
     }
 
     /// <inheritdoc/>
-    public new async Task Delete(Workshop entity)
-    {
-        db.Entry(entity).State = EntityState.Deleted;
-
-        if (entity.Address != null)
-        {
-            db.Entry(entity.Address).State = EntityState.Deleted;
-        }
-
-        await db.SaveChangesAsync();
-    }
-
-    /// <inheritdoc/>
     public async Task<Workshop> GetWithNavigations(Guid id, bool asNoTracking = false)
     {
         IQueryable<Workshop> query = db.Workshops
-            .Include(ws => ws.Address)
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)

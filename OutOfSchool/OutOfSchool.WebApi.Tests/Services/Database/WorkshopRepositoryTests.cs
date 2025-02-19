@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
@@ -49,12 +48,12 @@ public class WorkshopRepositoryTests
         using var context = GetContext();
         var workshopRepository = GetWorkshopRepository(context);
         var initialWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted);
-        var workshop = context.Workshops.IncludeProperties("Address").First();
+        var workshop = context.Workshops.Include(workshop => workshop.Applications)
+            .Include(workshop => workshop.Teachers).Include(workshop => workshop.Images).First();
         var expectedWorkshopsCount = initialWorkshopsCount - 1;
         var expectedApplicationsCount = context.Applications.Count(x => !x.IsDeleted) - workshop.Applications.Count;
         var expectedTeachersCount = context.Teachers.Count(x => !x.IsDeleted) - workshop.Teachers.Count;
         var expectedImagesCount = context.WorkshopImages.Count() - workshop.Images.Count;
-        var expectedAddressesCount = context.Addresses.Count() - 1;
 
         // Act
         await workshopRepository.Delete(workshop);
@@ -79,11 +78,9 @@ public class WorkshopRepositoryTests
         Assert.NotZero(expectedApplicationsCount);
         Assert.NotZero(expectedTeachersCount);
         Assert.NotZero(expectedImagesCount);
-        Assert.NotZero(expectedAddressesCount);
         Assert.AreEqual(expectedApplicationsCount, context.Applications.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedTeachersCount, context.Teachers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(workshop).State);

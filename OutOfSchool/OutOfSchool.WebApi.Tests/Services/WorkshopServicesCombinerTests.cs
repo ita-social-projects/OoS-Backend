@@ -183,9 +183,6 @@ public class WorkshopServicesCombinerTests
         var actual = result.Value;
         Assert.AreEqual(newWorkshopCreateUpdateDto.Title, actual.Title);
         Assert.AreEqual(newWorkshopCreateUpdateDto.ShortTitle, actual.ShortTitle);
-        Assert.AreEqual(newWorkshopCreateUpdateDto.Phone, actual.Phone);
-        Assert.AreEqual(newWorkshopCreateUpdateDto.Email, actual.Email);
-        Assert.AreEqual(newWorkshopCreateUpdateDto.Website, actual.Website);
         Assert.AreEqual(newWorkshopCreateUpdateDto.MinAge, actual.MinAge);
         Assert.AreEqual(newWorkshopCreateUpdateDto.MaxAge, actual.MaxAge);
         Assert.AreEqual(newWorkshopCreateUpdateDto.Price, actual.Price);

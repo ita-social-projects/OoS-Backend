@@ -4,6 +4,7 @@ using System.Linq;
 using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
@@ -13,11 +14,6 @@ public static class WorkshopGenerator
     private static Faker<Workshop> faker = new Faker<Workshop>()
         .RuleFor(x => x.Id, _ => Guid.NewGuid())
         .RuleFor(x => x.Title, f => f.Company.CompanyName())
-        .RuleFor(x => x.Phone, f => f.Phone.ToString())
-        .RuleFor(x => x.Email, f => f.Person.Email)
-        .RuleFor(x => x.Website, f => f.Internet.Url())
-        .RuleFor(x => x.Facebook, f => f.Internet.Url())
-        .RuleFor(x => x.Instagram, f => f.Internet.Url())
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal())
         .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
@@ -61,13 +57,19 @@ public static class WorkshopGenerator
     public static List<Workshop> WithProvider(this List<Workshop> workshops, Provider provider = null)
         => TestDataHelper.ApplyOnCollection(workshops, (workshop, provider) => WithProvider(workshop, provider), provider);
 
-    public static Workshop WithAddress(this Workshop workshop, Address address = null)
+    public static Workshop WithAddress(this Workshop workshop, ContactsAddress address = null)
     {
-        address ??= AddressGenerator.Generate();
-        return TestDataHelper.ApplyOnItem(workshop, (workshop, address) => { workshop.Address = address; workshop.AddressId = address.Id; }, address);
+        address ??= ContactsAddressGenerator.Generate();
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = address,
+        };
+        return TestDataHelper.ApplyOnItem(workshop, (workshop, contacts) => { workshop.Contacts = [contacts]; }, contacts);
     }
 
-    public static List<Workshop> WithAddress(this List<Workshop> workshops, Address address = null)
+    public static List<Workshop> WithAddress(this List<Workshop> workshops, ContactsAddress address = null)
         => workshops.Select(x => WithAddress(x, address)).ToList();
 
     public static Workshop WithInstitutionHierarchy(this Workshop workshop, InstitutionHierarchy direction)
