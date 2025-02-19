@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
@@ -10,6 +11,8 @@ public interface IExternalExportService
     Task<SearchResult<ProviderInfoBaseDto>> GetProviders(DateTime updatedAfter, OffsetFilter offsetFilter);
 
     Task<SearchResult<WorkshopInfoBaseDto>> GetWorkshops(DateTime updatedAfter, OffsetFilter offsetFilter);
+
+    Task<SearchResult<CompetitiveEventInfoBaseDto>> GetCompetitiveEvents(DateTime updatedAfter, OffsetFilter offsetFilter);
     
     Task<SearchResult<DirectionInfoBaseDto>> GetDirections(DateTime updatedAfter, OffsetFilter offsetFilter);
     

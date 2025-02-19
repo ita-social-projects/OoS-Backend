@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
@@ -48,6 +49,22 @@ public class ExternalExportController : ControllerBase
     public async Task<IActionResult> GetWorkshopsByFilter([FromQuery] DateTime updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
         await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
+
+    /// <summary>
+    /// Get CompetitiveEvents that match filter's parameters.
+    /// </summary>
+    /// <param name="updatedAfter">The date to filter competitive events based on their last update.</param>
+    /// <param name="offsetFilter">Filter to get a part of all competitive events that were found.</param>
+    /// <returns><see cref="SearchResult{CompetitiveEventInfoBaseDto}"/>, or no content.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventInfoBaseDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Route("competitiveevents")]
+    public async Task<IActionResult> GetCompetitiveEventsByFilter([FromQuery] DateTime updatedAfter,
+        [FromQuery] OffsetFilter offsetFilter) =>
+        await externalProviderService.GetCompetitiveEvents(updatedAfter, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>

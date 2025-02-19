@@ -11,10 +11,10 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
-using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
@@ -68,6 +68,7 @@ public class ExternalExportSubDirectionsTests
             new EntityRepositorySoftDeleted<long, Direction>(dbContext),
             new SensitiveEntityRepositorySoftDeleted<Institution>(dbContext),
             institutionHierarchyRepository,
+            new SensitiveEntityRepositorySoftDeleted<CompetitiveEvent>(dbContext),
             mockMapper,
             mockLogger.Object);
         

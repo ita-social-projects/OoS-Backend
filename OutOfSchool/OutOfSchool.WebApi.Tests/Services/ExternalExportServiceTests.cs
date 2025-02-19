@@ -9,9 +9,10 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
-using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -30,6 +31,7 @@ public class ExternalExportServiceTests
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> mockDirectionRepository;
     private Mock<ISensitiveEntityRepositorySoftDeleted<Institution>> mockInstitutionRepository;
     private Mock<IInstitutionHierarchyRepository> mockInstitutionHierarchyRepository;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>> mockCompetitiveEventRepository;
     private IMapper mockMapper;
     private Mock<ILogger<ExternalExportService>> mockLogger;
 
@@ -43,6 +45,7 @@ public class ExternalExportServiceTests
         mockDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         mockInstitutionRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<Institution>>();
         mockInstitutionHierarchyRepository = new Mock<IInstitutionHierarchyRepository>();
+        mockCompetitiveEventRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>>();
         mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ExternalExportMappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportService>>();
 
@@ -54,6 +57,7 @@ public class ExternalExportServiceTests
             mockDirectionRepository.Object,
             mockInstitutionRepository.Object,
             mockInstitutionHierarchyRepository.Object,
+            mockCompetitiveEventRepository.Object,
             mockMapper,
             mockLogger.Object);
     }
@@ -183,6 +187,65 @@ public class ExternalExportServiceTests
     }
     
     [Test]
+    public async Task GetCompetitiveEvents_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        List<CompetitiveEvent> fakeEvents = [];
+        
+        mockCompetitiveEventRepository
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<CompetitiveEvent,bool>>>(), null, false))
+            .Returns(fakeEvents.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await externalExportService.GetCompetitiveEvents(updatedAfter, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(0, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetCompetitiveEvents_ReturnsSearchResultData()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+
+        var fakeEvents = CompetitiveEvents();
+
+        mockCompetitiveEventRepository
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<CompetitiveEvent,bool>>>(), null, false))
+            .Returns(fakeEvents.AsTestAsyncEnumerableQuery());
+        
+        mockCompetitiveEventRepository.Setup(x => x.Count(It.IsAny<Expression<Func<CompetitiveEvent,bool>>>())).ReturnsAsync(3);
+
+        // Act
+        var result = await externalExportService.GetCompetitiveEvents(updatedAfter, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(fakeEvents.Count, result.TotalAmount);
+        Assert.AreEqual(fakeEvents.Count, result.Entities.Count);
+        mockCompetitiveEventRepository.Verify(x => x.Count(It.IsAny<Expression<Func<CompetitiveEvent,bool>>>()), Times.Once);
+    }
+
+    [Test]
+    public void GetCompetitiveEvents_ExceptionInGetCompetitiveEvents_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockCompetitiveEventRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Expression<Func<CompetitiveEvent,bool>>>(), null, false))
+            .Throws(new Exception("Simulated exception"));
+
+        // Act & Assert
+        Assert.CatchAsync<Exception>(() => externalExportService.GetCompetitiveEvents(updatedAfter, new OffsetFilter()));
+    }
+    
+    [Test]
     public async Task GetDirections_ReturnsEmptySearchResult()
     {
         // Arrange
@@ -278,7 +341,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -286,7 +349,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
     
     [Test]
@@ -294,7 +357,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IAverageRatingService>(), null, null , null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IAverageRatingService>(), null, null , null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -302,7 +365,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, null, Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, null, Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -310,7 +373,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null , null, Mock.Of<IMapper>(), null));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<IMapper>(), null));
     }
 
     [Test]
@@ -318,6 +381,54 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), null, null, null , null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), null, null, null , null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+    }
+    
+    private List<CompetitiveEvent> CompetitiveEvents()
+    {
+        var competitiveEvents = new List<CompetitiveEvent>()
+            {
+                new CompetitiveEvent()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Test1",
+                    ShortTitle = "Test1Short",
+                    State = CompetitiveEventStates.Draft,
+                    ScheduledStartTime = DateTime.UtcNow,
+                    ScheduledEndTime = DateTime.UtcNow,
+                    NumberOfSeats = 10,
+                    OrganizerOfTheEventId = Guid.NewGuid(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                    Judges = new List<Judge>
+                    {
+                        new Judge { Id =  Guid.NewGuid(), FirstName = "Judge A" },
+                    }
+                },
+                new CompetitiveEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Test2",
+                    ShortTitle = "Test2Short",
+                    State = CompetitiveEventStates.Draft,
+                    ScheduledStartTime = DateTime.UtcNow,
+                    ScheduledEndTime = DateTime.UtcNow,
+                    NumberOfSeats = 10,
+                    OrganizerOfTheEventId = Guid.NewGuid(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                },
+                new CompetitiveEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Test3",
+                    ShortTitle = "Test3Short",
+                    State = CompetitiveEventStates.Draft,
+                    ScheduledStartTime = DateTime.UtcNow,
+                    ScheduledEndTime = DateTime.UtcNow,
+                    NumberOfSeats = 10,
+                    OrganizerOfTheEventId = Guid.NewGuid(),
+                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                },
+            };
+        return competitiveEvents;
     }
 }
