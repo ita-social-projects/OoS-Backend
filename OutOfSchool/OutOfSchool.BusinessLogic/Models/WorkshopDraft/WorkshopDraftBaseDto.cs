@@ -3,7 +3,6 @@ using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.Common.Validators;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -137,29 +136,5 @@ public class WorkshopDraftBaseDto
     [MaxLength(Constants.WorkshopDraftDescriptionMaxLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    public Guid InstitutionHierarchyId { get; set; }
-
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.MaxPhoneNumberLengthWithPlusSign)]
-    public string Phone { get; set; }
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(Constants.MaxEmailAddressLength)]
-    public string Email { get; set; }
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; }
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; }
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; }
+    public Guid InstitutionHierarchyId { get; set; }    
 }
