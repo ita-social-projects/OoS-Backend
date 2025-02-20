@@ -76,7 +76,7 @@ public class OfficialServiceTests
     public async Task GetByFilter_ReturnsSearchResultWithFilteredListOfOfficials_WhenFilterIsSpecified()
     {
         // Arrange
-        var expected = Officials().FirstOrDefault();        
+        var expected = Officials().FirstOrDefault();
         var filter = new SearchStringFilter()
         {
             SearchString = "TestPosition1"
