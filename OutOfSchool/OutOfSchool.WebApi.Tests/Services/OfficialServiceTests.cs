@@ -76,7 +76,7 @@ public class OfficialServiceTests
     public async Task GetByFilter_ReturnsSearchResultWithFilteredListOfOfficials_WhenFilterIsSpecified()
     {
         // Arrange
-        var expected = Officials().FirstOrDefault();
+        var expected = Officials().FirstOrDefault();        
         var filter = new SearchStringFilter()
         {
             SearchString = "TestPosition1"
@@ -116,7 +116,8 @@ public class OfficialServiceTests
                 Position = new Position()
                 {
                     Id = Guid.NewGuid(),
-                    FullName = "TestPosition1"
+                    FullName = "TestPosition1",
+                    ProviderId = providerId
                 },
                 Individual = new Individual()
                 {
@@ -133,7 +134,8 @@ public class OfficialServiceTests
                 Position = new Position()
                 {
                     Id = Guid.NewGuid(),
-                    FullName = "TestPosition2"
+                    FullName = "TestPosition2",
+                    ProviderId = providerId
                 },
                 Individual = new Individual()
                 {
