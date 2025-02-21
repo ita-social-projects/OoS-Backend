@@ -11,7 +11,7 @@ public interface IStudySubjectService
     /// <param name="providerId">Provider Id.</param>
     /// <param name="filter">Filter for list of study subjects</param>
     /// <returns>List of all Subjects.</returns>
-    Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, SearchStringFilter filter);
+    Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, StudySubjectFilter filter);
 
     /// <summary>
     /// Get entity by it's key.

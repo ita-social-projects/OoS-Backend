@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -37,7 +36,7 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    public async Task<IActionResult> Get(Guid providerId, [FromQuery] SearchStringFilter filter = null) =>
+    public async Task<IActionResult> Get(Guid providerId, [FromQuery] StudySubjectFilter filter = null) =>
         await _studySubjectService.GetByFilter(providerId, filter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
