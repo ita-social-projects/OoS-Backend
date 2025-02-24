@@ -233,7 +233,7 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}/employees/upload")]
-    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeeRequestDto[] uploadEployees)
+    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeesRequestDto uploadEployees)
     {
         ArgumentNullException.ThrowIfNull(uploadEployees);
 
@@ -244,7 +244,7 @@ public class ProviderController : ControllerBase
 
         try
         {
-            _ = await providerService.UploadEmployeesForProvider(id, uploadEployees).ConfigureAwait(false);
+            _ = await providerService.UploadEmployeesForProvider(id, uploadEployees.Employees).ConfigureAwait(false);
 
             return Ok($"Success! Employees has been uploaded into the DB.");
         }

@@ -59,7 +59,7 @@ public class ProviderControllerTests
             providerService.Object,
             currentUserService.Object,
             logger.Object);
-        
+
         providerController.ControllerContext.HttpContext = this.GetFakeHttpContext();
 
         providers = ProvidersGenerator.Generate(10);
@@ -340,7 +340,10 @@ public class ProviderControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var data = new UploadEmployeesRequestDto
+        {
+            Employees = [.. UploadEmployeeDtoGenerator.Generate(entitiesCount)]
+        };
         providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
             .ReturnsAsync(It.IsAny<UploadEmployeeResponse>())
             .Verifiable(Times.Once);
@@ -363,7 +366,8 @@ public class ProviderControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var data = (UploadEmployeeRequestDto[])null;
+        var data = (UploadEmployeesRequestDto)null;
+
         providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
             .ReturnsAsync(It.IsAny<UploadEmployeeResponse>())
             .Verifiable(Times.Never);
@@ -379,7 +383,10 @@ public class ProviderControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var data = new UploadEmployeesRequestDto
+        {
+            Employees = [.. UploadEmployeeDtoGenerator.Generate(entitiesCount)]
+        };
         var errorMessage = "Error message";
         providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
             .ThrowsAsync(new InvalidOperationException(errorMessage))
@@ -399,12 +406,15 @@ public class ProviderControllerTests
     }
 
     [Test]
-    [TestCase(101)]
+    [TestCase(Constants.MaxNumberOfEmployeesToUpload + 1)]
     public async Task Upload_WhenServisThrowsArgumentOutOfRangeException_ReturnsBadRequestObjectResult(int entitiesCount)
     {
         // Arrange
         var id = Guid.NewGuid();
-        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var data = new UploadEmployeesRequestDto
+        {
+            Employees = [.. UploadEmployeeDtoGenerator.Generate(entitiesCount)]
+        };
         var errorMessage = "Error message";
         providerService.Setup(ps => ps.UploadEmployeesForProvider(It.IsAny<Guid>(), It.IsAny<UploadEmployeeRequestDto[]>()))
             .ThrowsAsync(new ArgumentOutOfRangeException(errorMessage))
@@ -430,7 +440,10 @@ public class ProviderControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var data = UploadEmployeeDtoGenerator.Generate(entitiesCount).ToArray();
+        var data = new UploadEmployeesRequestDto
+        {
+            Employees = [.. UploadEmployeeDtoGenerator.Generate(entitiesCount)]
+        };
         var dictionary = new ModelStateDictionary();
         dictionary.AddModelError("CreateProvider", "Invalid model state.");
         var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
