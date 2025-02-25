@@ -32,7 +32,7 @@
         <PackageReference Include="Quartz.Plugins.TimeZoneConverter" />
         <PackageReference Include="Quartz.Serialization.SystemTextJson" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
-        <PackageReference Include="MySql.Data" />
+        <PackageReference Include="MySqlConnector" />
         <PackageReference Include="Elastic.Apm.AspNetCore" />
         <PackageReference Include="Elastic.Apm.EntityFrameworkCore" />
         <PackageReference Include="Elastic.Apm.Elasticsearch" />

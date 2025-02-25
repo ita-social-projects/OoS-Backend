@@ -53,7 +53,7 @@
         <PackageReference Include="Microsoft.FeatureManagement" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
-        <PackageReference Include="MySql.Data" />
+        <PackageReference Include="MySqlConnector" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="Quartz.AspNetCore" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" />
