@@ -21,7 +21,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MockQueryable.EntityFrameworkCore" />
-    <PackageReference Include="MySql.Data" />
 	<PackageReference Include="FluentAssertions" />
 	<PackageReference Include="IdentityModel" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
