@@ -34,7 +34,7 @@ public static class QuartzExtension
             q.UsePersistentStore(s =>
             {
                 s.UseProperties = true;
-                s.UseMySql(sqlServer =>
+                s.UseMySqlConnector(sqlServer =>
                 {
                     sqlServer.ConnectionString = configuration.GetMySqlConnectionString<QuartzConnectionOptions>(
                         quartzConnectionString,
