@@ -18,5 +18,10 @@ public enum StorageProviderType
     /// <summary>
     /// Fake storage provider for testing
     /// </summary>
-    Fake
+    Fake,
+
+    /// <summary>
+    /// Google Cloud Storage provider
+    /// </summary>
+    FakeGoogleCloud
 } 

@@ -1,26 +1,21 @@
 using Google;
 using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
-using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace OutOfSchool.ExternalFileStore.Gcs;
 
 /// <summary>
-/// Represents a base file storage.
+/// Represents a base file storage for GCP.
 /// </summary>
 /// <typeparam name="TFile">File model.</typeparam>
 public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> storageContext)
-    : IObjectStorage<TFile, string>
+    : FilesStorageBase<TFile, StorageClient>(storageContext)
     where TFile : FileModel, new()
 {
-    private protected StorageClient StorageClient { get; } = storageContext.StorageClient;
-
-    private protected string BucketName { get; } = storageContext.BucketName;
-
     /// <inheritdoc/>
-    public IAsyncEnumerable<StorageObject> ListObjectsAsync(string? prefix = null, object? options = null)
+    protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         if (options is ListObjectsOptions opts)
         {
@@ -42,15 +37,13 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
+    protected override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default)
     {
-        _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        var fileStream = new MemoryStream();
         try
         {
             var fileObject = await StorageClient.GetObjectAsync(
                 BucketName,
-                fileId,
+                fullFileName,
                 cancellationToken: cancellationToken);
 
             await StorageClient.DownloadObjectAsync(
@@ -59,75 +52,50 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
                 cancellationToken: cancellationToken);
 
             fileStream.Position = 0;
-            return new TFile {ContentStream = fileStream, ContentType = fileObject.ContentType};
+            return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
         }
         catch (GoogleApiException)
         {
             await fileStream.DisposeAsync();
             return null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await fileStream.DisposeAsync();
-            throw new FileStorageException(ex);
+            throw;
         }
     }
 
     /// <inheritdoc/>
-    public virtual async Task<string> UploadAsync(TFile file, string cacheControl,
+    protected override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl, 
         IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
     {
-        _ = file ?? throw new ArgumentNullException(nameof(file));
-        metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
-
-        try
+        var storageObject = new Object
         {
-            var fileId = this.GenerateFileId();
-            var storageObject = new Object
-            {
-                Bucket = BucketName,
-                Name = fileId,
-                ContentType = file.ContentType,
-            };
-            if (!string.IsNullOrEmpty(cacheControl))
-            {
-                storageObject.CacheControl = cacheControl;
-            }
+            Bucket = BucketName,
+            Name = fullFileName,
+            ContentType = file.ContentType,
+        };
 
-            if (metadata.Count > 0)
-            {
-                storageObject.Metadata = metadata;
-            }
-            file.ContentStream.Position = 0;
-            var dataObject = await StorageClient.UploadObjectAsync(
-                storageObject,
-                file.ContentStream,
-                cancellationToken: cancellationToken);
-            return dataObject.Name;
-        }
-        catch (Exception ex)
+        if (!string.IsNullOrEmpty(cacheControl))
         {
-            throw new FileStorageException(ex);
+            storageObject.CacheControl = cacheControl;
         }
+
+        if (metadata?.Count > 0)
+        {
+            storageObject.Metadata = metadata;
+        }
+
+        file.ContentStream.Position = 0;
+        var dataObject = await StorageClient.UploadObjectAsync(
+            storageObject,
+            file.ContentStream,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual async Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
+    protected override async Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
     {
-        _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        try
-        {
-            await StorageClient.DeleteObjectAsync(BucketName, fileId, cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            throw new FileStorageException(ex);
-        }
-    }
-
-    /// <inheritdoc/>
-    public virtual string GenerateFileId()
-    {
-        return Guid.NewGuid().ToString();
+        await StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
     }
 }

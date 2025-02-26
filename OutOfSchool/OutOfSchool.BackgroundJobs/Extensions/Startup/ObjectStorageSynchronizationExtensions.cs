@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Jobs;
 using OutOfSchool.Common.QuartzConstants;
@@ -6,7 +7,7 @@ using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.S3;
 using OutOfSchool.Services.Repository.Files;
-using Quartz;
+using OutOfSchool.ExternalFileStore.FakeGcs;
 
 namespace OutOfSchool.BackgroundJobs.Extensions.Startup;
 
@@ -37,6 +38,9 @@ public static class ObjectStorageSynchronizationExtensions
                 break;
             case StorageProviderType.AmazonS3:
                 services.AddScoped<IObjectStorageSynchronizationService, S3ImagesStorageSynchronizationService>();
+                break;
+            case StorageProviderType.FakeGoogleCloud:
+                services.AddScoped<IObjectStorageSynchronizationService, FakeGcsImagesStorageSynchronizationService>();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(providerType), 
