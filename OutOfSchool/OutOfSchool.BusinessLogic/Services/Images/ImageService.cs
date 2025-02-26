@@ -54,7 +54,8 @@ public class ImageService : IImageService
 
             var imageDto = new ImageDto
             {
-                ContentStream = externalImageModel.ContentStream, ContentType = externalImageModel.ContentType,
+                ContentStream = externalImageModel.ContentStream,
+                ContentType = externalImageModel.ContentType,
             };
 
             logger.LogDebug("Image with id='{ImageId}' was successfully got", imageId);
@@ -96,7 +97,7 @@ public class ImageService : IImageService
                 }
 
                 var imageUploadResult =
-                    await UploadImageProcessAsync(stream, images[i].ContentType).ConfigureAwait(false);
+                    await UploadImageProcessAsync(stream, images[i].ContentType, typeof(TEntity).Name).ConfigureAwait(false);
                 uploadingImagesResults.Results.Add(i, imageUploadResult.OperationResult);
                 if (imageUploadResult.Succeeded)
                 {
@@ -137,7 +138,7 @@ public class ImageService : IImageService
                 return Result<string>.Failed(validationResult.Errors.ToArray());
             }
 
-            var imageUploadResult = await UploadImageProcessAsync(stream, image.ContentType).ConfigureAwait(false);
+            var imageUploadResult = await UploadImageProcessAsync(stream, image.ContentType, typeof(TEntity).Name).ConfigureAwait(false);
             if (!imageUploadResult.Succeeded)
             {
                 return imageUploadResult;
@@ -198,13 +199,14 @@ public class ImageService : IImageService
         return await RemovingImageProcessAsync(imageId).ConfigureAwait(false);
     }
 
-    private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
+    private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType, string? main_subfolder = null)
     {
         try
         {
             var imageStorageId = await imageStorage
                 .UploadAsync(
                     new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
+                    main_subfolder,
                     Constants.PublicImageCacheControl)
                 .ConfigureAwait(false);
 
