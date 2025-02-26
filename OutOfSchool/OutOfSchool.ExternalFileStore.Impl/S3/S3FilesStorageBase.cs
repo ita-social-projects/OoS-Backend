@@ -41,11 +41,10 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
             metadata["Cache-Control"] = cacheControl;
         }
 
-        var fileId = this.GenerateFileId();
         file.ContentStream.Position = 0;
         var args = new PutObjectArgs()
             .WithBucket(BucketName)
-            .WithObject(fileId)
+            .WithObject(fullFileName)
             .WithStreamData(file.ContentStream)
             .WithObjectSize(file.ContentStream.Length)
             .WithContentType(file.ContentType)

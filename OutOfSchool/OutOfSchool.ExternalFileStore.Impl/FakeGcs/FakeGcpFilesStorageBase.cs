@@ -10,7 +10,7 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
     : FilesStorageBase<TFile, StorageClient>(storageContext)
     where TFile : FileModel, new()
 {
-    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, 
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream,
         CancellationToken cancellationToken = default)
     {
         var fileObject = await StorageClient.GetObjectAsync(
@@ -29,8 +29,7 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
 
     protected sealed override Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
     {
-        StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
-        return Task.CompletedTask;
+        return StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
     }
 
     protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
