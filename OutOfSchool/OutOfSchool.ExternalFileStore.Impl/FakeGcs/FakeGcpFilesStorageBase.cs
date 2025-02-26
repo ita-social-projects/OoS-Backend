@@ -29,6 +29,6 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
 
     protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
-        return null;
+        return AsyncEnumerable.Empty<StorageObject>();
     }
 }
