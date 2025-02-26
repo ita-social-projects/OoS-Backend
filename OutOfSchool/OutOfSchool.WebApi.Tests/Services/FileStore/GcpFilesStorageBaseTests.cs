@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Google.Apis.Download;
 using Google.Cloud.Storage.V1;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.Models;
 using Object = Google.Apis.Storage.v1.Data.Object;
@@ -67,6 +69,30 @@ public class GcpFilesStorageBaseTests
     }
 
     [Test]
+    public async Task GetByIdAsync_ExceptionInGcp_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        var contentType = "image/png";
+        var fileContent = new MemoryStream([1, 2, 3]);
+
+        var fileObject = new Object
+        {
+            Name = fileId,
+            ContentType = contentType
+        };
+
+        storageClientMock
+            .Setup(s => s.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
+            .Throws<Exception>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.GetByIdAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        storageClientMock.Verify(s => s.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None), Times.Once);
+    }
+
+    [Test]
     public async Task UploadAsync_ValidFile_ReturnsFileId()
     {
         // Arrange
@@ -98,6 +124,28 @@ public class GcpFilesStorageBaseTests
     }
 
     [Test]
+    public async Task UploadAsync__ExceptionInGcp_ThrowsFileStorageException()
+    {
+        // Arrange
+        var file = new ImageFileModel()
+        {
+            ContentType = "image/png",
+            ContentStream = new MemoryStream([1, 2, 3])
+        };
+        var cacheControl = "max-age=3600";
+        var metadata = new Dictionary<string, string> { { "key", "value" } };
+
+        storageClientMock
+            .Setup(s => s.UploadObjectAsync(It.IsAny<Object>(), It.IsAny<Stream>(), null, CancellationToken.None, null))
+            .Throws<Exception>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.UploadAsync(file, cacheControl, metadata))
+            .Should().ThrowAsync<FileStorageException>();
+        storageClientMock.Verify(s => s.UploadObjectAsync(It.IsAny<Object>(), It.IsAny<Stream>(), null, CancellationToken.None, null), Times.Once);
+    }
+
+    [Test]
     public async Task DeleteAsync_ExistingFile_DeletesSuccessfully()
     {
         // Arrange
@@ -115,6 +163,22 @@ public class GcpFilesStorageBaseTests
     }
 
     [Test]
+    public async Task DeleteAsync_ExceptionInGcp_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+
+        storageClientMock
+            .Setup(x => x.DeleteObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
+            .Throws<Exception>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.DeleteAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        storageClientMock.Verify(x => x.DeleteObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None), Times.Once);
+    }
+
+    [Test]
     public void GenerateFileId_ReturnsValidGuid()
     {
         // Act
@@ -123,4 +187,4 @@ public class GcpFilesStorageBaseTests
         // Assert
         Assert.True(Guid.TryParse(fileId, out _));
     }
-} 
+}
