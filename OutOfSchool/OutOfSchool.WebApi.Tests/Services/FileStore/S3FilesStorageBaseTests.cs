@@ -4,13 +4,16 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Minio;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.Response;
+using Minio.Exceptions;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.ExternalFileStore.S3;
 
@@ -60,6 +63,20 @@ public class S3FilesStorageBaseTests
     }
 
     [Test]
+    public async Task GetByIdAsync_ExceptionInGcp_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        minioClientMock.Setup(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None))
+            .Throws<MinioException>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.GetByIdAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        minioClientMock.Verify(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None), Times.Once);
+    }
+
+    [Test]
     public async Task UploadAsync_ValidFile_ReturnsFileId()
     {
         // Arrange
@@ -69,7 +86,7 @@ public class S3FilesStorageBaseTests
             ContentStream = new MemoryStream([1, 2, 3])
         };
         var cacheControl = "max-age=3600";
-        var metadata = new Dictionary<string, string> {{"key", "value"}};
+        var metadata = new Dictionary<string, string> { { "key", "value" } };
 
         minioClientMock
             .Setup(x => x.PutObjectAsync(

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Google;
 using Google.Apis.Download;
 using Google.Cloud.Storage.V1;
 using Moq;
@@ -90,6 +91,31 @@ public class GcpFilesStorageBaseTests
         await storage.Invoking(s => s.GetByIdAsync(fileId))
             .Should().ThrowAsync<FileStorageException>();
         storageClientMock.Verify(s => s.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None), Times.Once);
+    }
+
+    [Test]
+    public async Task GetByIdAsync_GoogleApiExceptionInGcp_ReturnsNull()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        var contentType = "image/png";
+        var fileContent = new MemoryStream([1, 2, 3]);
+
+        var fileObject = new Object
+        {
+            Name = fileId,
+            ContentType = contentType
+        };
+
+        storageClientMock
+            .Setup(s => s.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
+            .Throws(() =>new GoogleApiException("GcpFilesStorage", "GoogleApiException"));
+
+        // Act
+        var result = await storage.GetByIdAsync(fileId);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
