@@ -96,7 +96,7 @@ public class S3FilesStorageBaseTests
                 "new-file-id"));
 
         // Act
-        var result = await storage.UploadAsync(file, cacheControl, metadata);
+        var result = await storage.UploadAsync(file, null, cacheControl, metadata);
 
         // Assert
         Assert.NotNull(result);

@@ -140,7 +140,7 @@ public class GcpFilesStorageBaseTests
             .ReturnsAsync(new Object { Name = "new-file-id" });
 
         // Act
-        var result = await storage.UploadAsync(file, cacheControl, metadata);
+        var result = await storage.UploadAsync(file, null, cacheControl, metadata);
 
         // Assert
         Assert.NotNull(result);
@@ -166,7 +166,7 @@ public class GcpFilesStorageBaseTests
             .Throws<Exception>();
 
         // Act and Assert
-        await storage.Invoking(s => s.UploadAsync(file, cacheControl, metadata))
+        await storage.Invoking(s => s.UploadAsync(file, null, cacheControl, metadata))
             .Should().ThrowAsync<FileStorageException>();
         storageClientMock.Verify(s => s.UploadObjectAsync(It.IsAny<Object>(), It.IsAny<Stream>(), null, CancellationToken.None, null), Times.Once);
     }

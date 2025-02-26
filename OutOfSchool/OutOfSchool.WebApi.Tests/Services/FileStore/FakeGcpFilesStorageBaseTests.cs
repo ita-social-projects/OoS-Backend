@@ -89,7 +89,7 @@ public class FakeGcpFilesStorageBaseTests
             .ReturnsAsync(new Object { Name = "new-file-id" });
 
         // Act
-        var result = await storage.UploadAsync(file, cacheControl, metadata);
+        var result = await storage.UploadAsync(file, It.IsAny<string>(), cacheControl, metadata);
 
         // Assert
         Assert.NotNull(result);

@@ -17,7 +17,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     protected string BucketName { get; } = storageContext.BucketName;
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         var fullFileName = CreateFullPathFromFileId(fileId);
@@ -39,7 +39,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     }
 
     /// <inheritdoc/>
-    public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
+    public async Task<TFile> GetByIdAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         var fileStream = new MemoryStream();
@@ -62,7 +62,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     }
 
     /// <inheritdoc/>
-    public async Task<string> UploadAsync(TFile file, string cacheControl = "", IDictionary<string, string>? metadata = null, 
+    public async Task<string> UploadAsync(TFile file, string? main_subfolder = null, string cacheControl = "", IDictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
@@ -84,7 +84,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     protected abstract Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default);
     protected abstract Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default);
     protected abstract IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null);
-    protected abstract Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
+    protected abstract Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
 
     private static int GetHashCodeString(string s)
