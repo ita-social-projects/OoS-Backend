@@ -59,15 +59,15 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
             await fileStream.DisposeAsync();
             return null;
         }
-        catch (Exception)
+        catch
         {
             throw;
         }
     }
 
     /// <inheritdoc/>
-    protected override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl, 
-        IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
+    protected override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
+        IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         var storageObject = new Object
         {

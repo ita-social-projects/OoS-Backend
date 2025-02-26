@@ -16,8 +16,8 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
         return await Task.FromResult(new TFile());
     }
 
-    protected sealed override Task UploadOperationAsync(TFile? file, string fullFileName, string cacheControl,
-        IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
+    protected sealed override Task UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
+        IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
