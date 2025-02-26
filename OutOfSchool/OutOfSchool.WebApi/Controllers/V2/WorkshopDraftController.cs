@@ -168,9 +168,9 @@ public class WorkshopDraftController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] WorkshopDraftRejectionDto workshopDraftRejection)
     {
-        if (string.IsNullOrWhiteSpace(workshopDraftRejection.RejectionMessage))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("RejectionMessage can`t be empty");
+            return BadRequest(ModelState);
         }
 
         try
@@ -219,7 +219,7 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{id}")]
+    [HttpGet("provider/{id}/drafts")]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter) =>
         await workshopDraftService.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
     
@@ -248,8 +248,8 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetByDraftId(Guid id)
+    [HttpGet("drafts/{id}")]
+    public async Task<IActionResult> Get(Guid id)
     {
         var responseDto = await workshopDraftService.GetWorkshopDraftByIdMapped(id);
         return responseDto is not null ? Ok(responseDto) : NotFound();

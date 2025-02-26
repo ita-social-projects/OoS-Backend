@@ -149,8 +149,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
 
-        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
-        // createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
+        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);        
 
         logger.LogDebug("WorkshopDraft created successfully.");
 

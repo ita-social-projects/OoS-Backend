@@ -189,16 +189,20 @@ public class WorkshopDraftControllerTests
     {
         // Arrange        
         var rejectionDto = new WorkshopDraftRejectionDto
-        {            
+        {
             RejectionMessage = string.Empty
         };
+
+        controller.ModelState.AddModelError(nameof(rejectionDto.RejectionMessage), "Rejection message is required");
 
         // Act
         var result = await controller.Reject(workshopV2Dto.Id, rejectionDto).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert             
-        Assert.AreEqual(BadRequest, result.StatusCode);
+        Assert.AreEqual(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.IsInstanceOf<SerializableError>(result.Value);
     }
+
     #endregion 
 
     #region Approve
