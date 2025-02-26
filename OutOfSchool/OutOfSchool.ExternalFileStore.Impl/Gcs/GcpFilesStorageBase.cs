@@ -15,7 +15,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     where TFile : FileModel, new()
 {
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
+    protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         if (options is ListObjectsOptions opts)
         {
@@ -37,7 +37,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    protected override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default)
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -62,7 +62,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    protected override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
+    protected sealed override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         var storageObject = new Object
@@ -90,7 +90,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    protected override async Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
+    protected sealed override async Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
     {
         await StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
     }

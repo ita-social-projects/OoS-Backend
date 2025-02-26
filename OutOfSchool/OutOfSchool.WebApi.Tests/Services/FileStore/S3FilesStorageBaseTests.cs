@@ -83,7 +83,9 @@ public class S3FilesStorageBaseTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual("new-file-id", result);
+        Assert.IsInstanceOf<string>(result);
+        Assert.AreEqual(32, result.Replace("-", "").Length);
+        Assert.True(Guid.TryParse(result, out _));
     }
 
     [Test]
