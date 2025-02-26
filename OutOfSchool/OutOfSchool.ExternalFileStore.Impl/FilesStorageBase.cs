@@ -42,7 +42,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        using var fileStream = new MemoryStream();
+        var fileStream = new MemoryStream();
         var fullFileName = CreateFullPathFromFileId(fileId);
 
         try
