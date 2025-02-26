@@ -80,7 +80,7 @@ public class StudySubjectServiceTests
     {
         // Arrange
         var expected = StudySubjects().FirstOrDefault(x => x.NameInInstructionLanguage == "test");
-        var filter = new SearchStringFilter() { SearchString = "test" };
+        var filter = new StudySubjectFilter() { SearchString = "test" };
 
         // Act
         var result = await service.GetByFilter(providerId, filter);
@@ -95,7 +95,10 @@ public class StudySubjectServiceTests
     public async Task GetByFilter_ReturnsEmptyList_WhenSearchStringDoesNotMatch()
     {
         // Arrange
-        var filter = new SearchStringFilter() { SearchString = "nonexistent" };
+        var filter = new StudySubjectFilter() { 
+            SearchString = "nonexistent" , 
+            StartDate = DateTime.Today, 
+            EndDate = DateTime.Today};
 
         // Act
         var result = await service.GetByFilter(providerId, filter);

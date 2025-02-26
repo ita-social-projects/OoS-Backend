@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class StudySubjectService : IStudySubjectService
@@ -99,23 +100,14 @@ public class StudySubjectService : IStudySubjectService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, SearchStringFilter filter)
+    public async Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, StudySubjectFilter filter)
     {
         await providerService.HasProviderRights(providerId).ConfigureAwait(false);
 
         logger.LogDebug("Getting all StudySubjects by filter started");
 
-        filter ??= new SearchStringFilter();
-        var predicate = PredicateBuilder.True<StudySubject>();
-
-        if (!string.IsNullOrEmpty(filter.SearchString))
-        {
-            predicate = predicate
-                .And(s => s.NameInUkrainian.Contains(filter.SearchString)
-                || s.NameInInstructionLanguage.Contains(filter.SearchString));
-        }
-
-        predicate = predicate.And(s => !s.IsDeleted);
+        filter ??= new StudySubjectFilter();
+        var predicate = BuildPredicate(filter);
 
         int count = await studySubjectRepository.Count(predicate).ConfigureAwait(false);
 
@@ -214,6 +206,32 @@ public class StudySubjectService : IStudySubjectService
                 Description = "Updating failed. StudySubject to update was not found",
             });
         }
+    }
+
+    private static Expression<Func<StudySubject, bool>> BuildPredicate(StudySubjectFilter filter)
+    {
+        var predicate = PredicateBuilder.True<StudySubject>();
+
+        if (!string.IsNullOrEmpty(filter.SearchString))
+        {
+            predicate = predicate
+                .And(s => s.NameInUkrainian.Contains(filter.SearchString)
+                || s.NameInInstructionLanguage.Contains(filter.SearchString));
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            predicate = predicate.And(s => s.ActiveFrom >= DateOnly.FromDateTime(filter.StartDate.Value.Date));
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            predicate = predicate.And(s => s.ActiveFrom <= DateOnly.FromDateTime(filter.EndDate.Value.Date));
+        }
+
+        predicate = predicate.And(s => !s.IsDeleted);
+
+        return predicate;
     }
 
     private async Task CheckIfLanguageIdIsCorrect(StudySubjectCreateUpdateDto dto)
