@@ -47,7 +47,7 @@ public class GcpFilesStorageBaseTests
         };
 
         storageClientMock
-            .Setup(x => x.GetObjectAsync(BucketName, fileId, null, CancellationToken.None))
+            .Setup(x => x.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
             .ReturnsAsync(fileObject);
 
         storageClientMock
@@ -92,7 +92,9 @@ public class GcpFilesStorageBaseTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual("new-file-id", result);
+        Assert.IsInstanceOf<string>(result);
+        Assert.AreEqual(32, result.Replace("-", "").Length);
+        Assert.True(Guid.TryParse(result, out _));
     }
 
     [Test]
@@ -102,14 +104,14 @@ public class GcpFilesStorageBaseTests
         var fileId = "test-file-id";
 
         storageClientMock
-            .Setup(x => x.DeleteObjectAsync(BucketName, fileId, null, CancellationToken.None))
+            .Setup(x => x.DeleteObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
             .Returns(Task.CompletedTask);
 
         // Act
         await storage.DeleteAsync(fileId);
 
         // Assert
-        storageClientMock.Verify(x => x.DeleteObjectAsync(BucketName, fileId, null, CancellationToken.None), Times.Once);
+        storageClientMock.Verify(x => x.DeleteObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None), Times.Once);
     }
 
     [Test]

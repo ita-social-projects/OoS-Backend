@@ -87,7 +87,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
         }
 
         file.ContentStream.Position = 0;
-        var dataObject = await StorageClient.UploadObjectAsync(
+        _ = await StorageClient.UploadObjectAsync(
             storageObject,
             file.ContentStream,
             cancellationToken: cancellationToken);
