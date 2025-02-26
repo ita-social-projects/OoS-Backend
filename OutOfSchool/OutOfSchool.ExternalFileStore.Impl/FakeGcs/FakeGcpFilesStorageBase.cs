@@ -13,7 +13,12 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
     protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, 
         CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(new TFile());
+        var fileObject = await StorageClient.GetObjectAsync(
+                BucketName,
+                fullFileName,
+                cancellationToken: cancellationToken);
+
+        return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
     }
 
     protected sealed override Task UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
@@ -24,6 +29,7 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
 
     protected sealed override Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
     {
+        StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
         return Task.CompletedTask;
     }
 
