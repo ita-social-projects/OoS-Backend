@@ -7,8 +7,7 @@ internal class DateTimeRangeConfiguration : IEntityTypeConfiguration<DateTimeRan
 {
     public void Configure(EntityTypeBuilder<DateTimeRange> builder)
     {
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.Property(x => x.WorkshopId).HasColumnType("UUID");
+        builder.ConfigureKeyedSoftDeleted<long, DateTimeRange>();
     }
 }

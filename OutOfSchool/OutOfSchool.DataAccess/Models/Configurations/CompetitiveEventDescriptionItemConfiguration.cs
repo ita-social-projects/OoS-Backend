@@ -8,5 +8,7 @@ internal class CompetitiveEventDescriptionItemConfiguration : IEntityTypeConfigu
 {
     public void Configure(EntityTypeBuilder<CompetitiveEventDescriptionItem> builder)
     {
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.HasKey(x => x.Id);
     }
 }

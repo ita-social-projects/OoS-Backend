@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
@@ -10,11 +11,8 @@ internal class ChildConfiguration : IEntityTypeConfiguration<Child>
 {
     public void Configure(EntityTypeBuilder<Child> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.ConfigureKeyedSoftDeleted<Guid, Child>();
 
         builder.Property(x => x.FirstName)
             .IsRequired()

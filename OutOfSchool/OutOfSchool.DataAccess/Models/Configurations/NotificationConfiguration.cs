@@ -9,6 +9,8 @@ internal class NotificationConfiguration : IEntityTypeConfiguration<Notification
 {
     public void Configure(EntityTypeBuilder<Notification> builder)
     {
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.Property(x => x.ObjectId).HasColumnType("UUID");
         builder.HasKey(x => x.Id);
 
         builder.HasIndex(x => x.UserId);

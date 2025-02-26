@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
@@ -8,10 +9,7 @@ internal class InstitutionFieldDescriptionConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<InstitutionFieldDescription> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.ConfigureKeyedSoftDeleted<Guid, InstitutionFieldDescription>();
     }
 }

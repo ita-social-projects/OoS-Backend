@@ -1,13 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
+using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-public class PositionConfiguration: IEntityTypeConfiguration<Position>
+public class PositionConfiguration: BusinessEntityConfiguration<Position>
 {
-    public void Configure(EntityTypeBuilder<Position> builder)
+    public override void Configure(EntityTypeBuilder<Position> builder)
     {
+        base.Configure(builder);
+
         builder.HasOne(p => p.Provider)
             .WithMany(pr => pr.Positions)
             .HasForeignKey(p => p.ProviderId);

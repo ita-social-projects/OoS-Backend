@@ -1,10 +1,12 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.Services.Models.ChatWorkshop;
+namespace OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 
 public class ParentInfoForChatList
 {
+    [Column(TypeName = "UUID")]
     public Guid Id { get; set; }
 
     public string UserId { get; set; }

@@ -1,17 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Common;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
-namespace OutOfSchool.Services.Models.Configurations;
+namespace OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
 
-internal class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
+public class TeacherDraftConfiguration : IEntityTypeConfiguration<TeacherDraft>
 {
-    public void Configure(EntityTypeBuilder<Teacher> builder)
+    public void Configure(EntityTypeBuilder<TeacherDraft> builder)
     {
         builder.Property(x => x.Id).HasColumnType("UUID");
-        builder.ConfigureKeyedSoftDeleted<Guid, Teacher>();
+        builder.HasKey(x => x.Id);
 
         builder.Property(x => x.FirstName)
             .IsRequired()
@@ -31,9 +31,18 @@ internal class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
 
         builder.Property(x => x.Description)
             .IsRequired()
-            .HasMaxLength(300); // ??
+            .HasMaxLength(ModelsConfigurationConstants.TeacherDescriptionCharacterLimit);
 
-        builder.Ignore(x => x.Workshop);
+        builder.Property(x => x.CoverImageId)
+            .HasColumnType(ModelsConfigurationConstants.Char36Type);
+
+        builder.Property(x => x.Version)
+            .IsRowVersion();
+
+        builder.HasOne(x => x.WorkshopDraft)
+           .WithMany(x => x.Teachers)
+           .HasForeignKey(x => x.WorkshopDraftId)
+           .IsRequired();
 
         builder.Ignore(x => x.Images);
     }

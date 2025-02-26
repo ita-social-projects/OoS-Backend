@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.Services.Repository;

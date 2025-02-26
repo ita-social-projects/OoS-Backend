@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 
 namespace OutOfSchool.Services.Repository.Api;
 

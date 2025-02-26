@@ -1,12 +1,14 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
 
-public class OfficialConfiguration: IEntityTypeConfiguration<Official>
+public class OfficialConfiguration: BusinessEntityConfiguration<Official>
 {
-    public void Configure(EntityTypeBuilder<Official> builder)
+    public override void Configure(EntityTypeBuilder<Official> builder)
     {
+        base.Configure(builder);
+
         builder.HasOne(o => o.Individual)
             .WithMany(i => i.Officials)
             .HasForeignKey(o => o.IndividualId);

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -7,8 +8,7 @@ internal class ProviderSectionItemConfiguration : IEntityTypeConfiguration<Provi
 {
     public void Configure(EntityTypeBuilder<ProviderSectionItem> builder)
     {
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.ConfigureKeyedSoftDeleted<Guid, ProviderSectionItem>();
     }
 }

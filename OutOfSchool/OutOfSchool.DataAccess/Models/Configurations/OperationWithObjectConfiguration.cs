@@ -7,7 +7,10 @@ internal class OperationWithObjectConfiguration : IEntityTypeConfiguration<Opera
 {
     public void Configure(EntityTypeBuilder<OperationWithObject> builder)
     {
+        builder.Property(x => x.Id).HasColumnType("UUID");
         builder.HasKey(x => x.Id);
+        
+        builder.Property(x => x.EntityId).HasColumnType("UUID");
 
         builder.HasIndex(x => x.OperationType);
         builder.HasIndex(x => x.EntityId);

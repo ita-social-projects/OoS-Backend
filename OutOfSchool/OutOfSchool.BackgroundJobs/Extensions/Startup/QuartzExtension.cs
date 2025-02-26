@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using Quartz;
 
@@ -45,6 +46,7 @@ public static class QuartzExtension
                             UserID = options.UserId,
                             Password = options.Password,
                             Database = options.Database,
+                            SslMode = options.SslMode.ToEnum(MySqlSslMode.None)
                         });
                 });
                 s.UseSystemTextJsonSerializer();

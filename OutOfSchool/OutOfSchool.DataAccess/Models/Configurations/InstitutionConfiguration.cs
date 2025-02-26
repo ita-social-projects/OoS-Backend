@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
@@ -8,11 +9,8 @@ internal class InstitutionConfiguration : IEntityTypeConfiguration<Institution>
 {
     public void Configure(EntityTypeBuilder<Institution> builder)
     {
-        builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.Property(x => x.Id).HasColumnType("UUID");
+        builder.ConfigureKeyedSoftDeleted<Guid, Institution>();
 
         // This is needed only for external system sync at the moment
         // It relies on MySQL default value on update feature

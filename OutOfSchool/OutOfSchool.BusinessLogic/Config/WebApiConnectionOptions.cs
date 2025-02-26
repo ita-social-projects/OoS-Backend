@@ -14,5 +14,7 @@ public class WebApiConnectionOptions : IMySqlGuidConnectionOptions
 
     public string Password { get; set; }
 
+    public string SslMode { get; set; }
+
     public string GuidFormat { get; set; }
 }

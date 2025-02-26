@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OutOfSchool.Services.Models.ChatWorkshop;
+namespace OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 
 public class ChatMessageInfoForChatList
 {
+    [Column(TypeName = "UUID")]
     public Guid Id { get; set; }
 
     public Guid ChatRoomId { get; set; }

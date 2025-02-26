@@ -7,8 +7,6 @@ internal class SocialGroupConfiguration : IEntityTypeConfiguration<SocialGroup>
 {
     public void Configure(EntityTypeBuilder<SocialGroup> builder)
     {
-        builder.HasIndex(x => x.IsDeleted);
-
-        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        builder.ConfigureKeyedSoftDeleted<long, SocialGroup>();
     }
 }

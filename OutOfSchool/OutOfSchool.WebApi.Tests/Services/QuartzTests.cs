@@ -13,13 +13,13 @@ public class QuartzTests
     public void CheckExistingMigrationFile_ReturnsTrueIfExists()
     {
         // Arrange
-        DirectoryInfo directory = TryGetSolutionDirectoryInfo();
-        string path = @"OutOfSchool.Migrations\Data\Migrations\OutOfSchoolMigrations\20220523184345_Quartz.cs";
-        var paths = new string[] {directory.FullName}.Concat(path.Split(@"\"));
+        var directory = TryGetSolutionDirectoryInfo();
+        var path = @"OutOfSchool.Migrations\Data\Migrations\OutOfSchoolMigrations\20250227100501_QuartzMigration.cs";
+        var paths = new[] {directory.FullName}.Concat(path.Split(@"\"));
         path = Path.Combine(paths.ToArray());
 
         // Act
-        bool exists = File.Exists(path);
+        var exists = File.Exists(path);
 
         // Assert
         Assert.IsTrue(exists);

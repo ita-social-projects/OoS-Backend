@@ -8,7 +8,6 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
-using OutOfSchool.Services.Models.Configurations.WorkshopDraftConfig;
 using OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -207,6 +206,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
         builder.ApplyConfiguration(new WorkshopDraftConfiguration());
         builder.ApplyConfiguration(new TeacherDraftConfiguration());
+        builder.ApplyConfiguration(new ChangesLogConfiguration());
+        builder.ApplyConfiguration(new CompanyInformationConfiguration());
+        builder.ApplyConfiguration(new CompanyInformationItemConfiguration());
+        builder.ApplyConfiguration(new ElasticsearchSyncRecordConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();
