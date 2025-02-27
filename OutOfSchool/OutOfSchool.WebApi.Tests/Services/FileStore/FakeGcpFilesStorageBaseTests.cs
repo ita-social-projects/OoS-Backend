@@ -86,9 +86,10 @@ public class FakeGcpFilesStorageBaseTests
         // Assert
         Assert.NotNull(result);
         Assert.IsInstanceOf<string>(result);
-        // 32 - count of symbols in Guid without '-' char
-        // 8 - count of separator char ('\') in the full file name
-        Assert.AreEqual(32 + 8 + main_subfolder.Length, result.Replace("-", "").Length);
+        // 32 - number of characters in Guid without '-'
+        // 4 - number of separator characters ('/') in full filename
+        // 4 - number of characters in directory names
+        Assert.AreEqual(32 + 4 + 4 + main_subfolder.Length, result.Replace("-", "").Length);
     }
 
     [Test]

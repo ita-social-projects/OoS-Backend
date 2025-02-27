@@ -106,13 +106,13 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
 
         // Build the path using the directory separator and formatting each byte as two-digit hexadecimal.
         return new StringBuilder()
-            .Append(main_subfolder is null ? string.Empty : Path.DirectorySeparatorChar)
+            .Append(main_subfolder is null ? string.Empty : '/')
             .Append(main_subfolder is null ? string.Empty : main_subfolder.ToLower())
-            .Append(Path.DirectorySeparatorChar)
+            .Append('/')
             .Append(firstDir.ToString("x2"))
-            .Append(Path.DirectorySeparatorChar)
+            .Append('/')
             .Append(secondDir.ToString("x2"))
-            .Append(Path.DirectorySeparatorChar)
+            .Append('/')
             .Append(fileId)
             .ToString();
     }
