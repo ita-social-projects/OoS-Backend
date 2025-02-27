@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.ExternalFileStore;
-using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.WebApi.Tests.Services.FileStore;
