@@ -47,13 +47,25 @@ public static class ElasticsearchSynchronizationExtension
             .GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)
             .Get<ElasticsearchSynchronizationSchedulerConfig>();
 
-        var jobKey = new JobKey(JobConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch);
+        var workshopSyncJobKey = new JobKey(JobConstants.ElasticSearchWorkshopSynchronization, GroupConstants.ElasticSearch);
 
-        quartz.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
+        quartz.AddJob<ElasticsearchWorkshopSynchronizationQuartzJob>(j => j.WithIdentity(workshopSyncJobKey));
         // TODO: rewrite as a cron trigger
         quartz.AddTrigger(t => t
-            .WithIdentity(JobTriggerConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch)
-            .ForJob(jobKey)
+            .WithIdentity(JobTriggerConstants.ElasticSearchWorkshopSynchronization, GroupConstants.ElasticSearch)
+            .ForJob(workshopSyncJobKey)
+            .StartNow()
+            .WithSimpleSchedule(x =>
+                x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig
+                    .DelayBetweenTasksInMilliseconds)).RepeatForever()));
+
+        var competitiveEventSyncJobKey = new JobKey(JobConstants.ElasticSearchCompetitiveEventSynchronization, GroupConstants.ElasticSearch);
+
+        quartz.AddJob<ElasticsearchCompetitiveEventSynchronizationQuartzJob>(j => j.WithIdentity(competitiveEventSyncJobKey));
+        // TODO: rewrite as a cron trigger
+        quartz.AddTrigger(t => t
+            .WithIdentity(JobTriggerConstants.ElasticSearchCompetitiveEventSynchronization, GroupConstants.ElasticSearch)
+            .ForJob(competitiveEventSyncJobKey)
             .StartNow()
             .WithSimpleSchedule(x =>
                 x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig

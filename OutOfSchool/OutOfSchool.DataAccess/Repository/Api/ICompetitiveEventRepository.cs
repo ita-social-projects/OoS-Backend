@@ -6,7 +6,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.Services.Repository.Api;
 
-public interface ICompetitiveEventRepository : IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>
+public interface ICompetitiveEventRepository : ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>
 {
     Task<IEnumerable<CompetitiveEvent>> GetByIds(IEnumerable<Guid> ids);
 }

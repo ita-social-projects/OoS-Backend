@@ -55,6 +55,7 @@ public class ElasticsearchSynchronizationExtensionTests
         // Assert
         var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
 
-        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch)));
+        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobConstants.ElasticSearchWorkshopSynchronization, GroupConstants.ElasticSearch)));
+        Assert.IsTrue(await scheduler.CheckExists(new JobKey(JobConstants.ElasticSearchCompetitiveEventSynchronization, GroupConstants.ElasticSearch)));
     }
 }
