@@ -41,7 +41,9 @@ public class OfficialService : IOfficialService
         logger.LogDebug("Getting Officials by filter started.");
 
         filter ??= new SearchStringFilter();
-        var predicate = BuildPredicate(filter);
+        var predicate = BuildPredicate(filter);              
+        predicate = predicate.And(p => p.Position.ProviderId == providerId);
+        
         int count = await officialRepository.Count(predicate).ConfigureAwait(false);
 
         var officials = await officialRepository

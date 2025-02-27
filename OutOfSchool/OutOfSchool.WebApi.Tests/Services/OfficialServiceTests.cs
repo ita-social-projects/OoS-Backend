@@ -116,7 +116,8 @@ public class OfficialServiceTests
                 Position = new Position()
                 {
                     Id = Guid.NewGuid(),
-                    FullName = "TestPosition1"
+                    FullName = "TestPosition1",
+                    ProviderId = providerId
                 },
                 Individual = new Individual()
                 {
@@ -133,7 +134,8 @@ public class OfficialServiceTests
                 Position = new Position()
                 {
                     Id = Guid.NewGuid(),
-                    FullName = "TestPosition2"
+                    FullName = "TestPosition2",
+                    ProviderId = providerId
                 },
                 Individual = new Individual()
                 {
