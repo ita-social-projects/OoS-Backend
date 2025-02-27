@@ -20,7 +20,7 @@ public static class Constants
 
     public const string PhoneErrorMessage = "Error! Please check the number is correct";
 
-    public const int MySQLServerMinimalMajorVersion = 8;
+    public const int MariaDbServerMinimalMajorVersion = 11;
 
     public const string NameRegexViewModel = @"^[А-Яа-яҐґЄєІіЇї](([\'\-][А-Яа-яҐґЄєІіЇї])?[А-Яа-яҐґЄєІіЇї]*)*$";
 

@@ -9,6 +9,7 @@ public abstract class BusinessEntityConfiguration<TBase> : IEntityTypeConfigurat
 {
     public virtual void Configure(EntityTypeBuilder<TBase> entityTypeBuilder)
     {
+        entityTypeBuilder.Property(x => x.Id).HasColumnType("UUID");
         entityTypeBuilder.HasKey(x => x.Id);
 
         entityTypeBuilder.HasIndex(x => x.IsDeleted);

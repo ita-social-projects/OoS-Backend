@@ -12,11 +12,11 @@ var host = Host.CreateDefaultBuilder(args)
     {
         var config = context.Configuration;
         // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = config["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+        var mariaDbServerVersion = config["MariaDbServerVersion"];
+        var serverVersion = new MariaDbServerVersion(new Version(mariaDbServerVersion));
+        if (serverVersion.Version.Major < Constants.MariaDbServerMinimalMajorVersion)
         {
-            throw new InvalidOperationException("MySQL Server version should be 8 or higher.");
+            throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
         }
 
         var connectionString = config.GetConnectionString("DefaultConnection");

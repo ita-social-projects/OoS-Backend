@@ -41,6 +41,7 @@ public static class QuartzExtension
                             UserID = options.UserId,
                             Password = options.Password,
                             Database = options.Database,
+                            SslMode = options.SslMode.ToEnum(MySqlSslMode.None),
                         });
                 });
                 s.UseSystemTextJsonSerializer();

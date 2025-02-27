@@ -7,6 +7,8 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
 {
     public override void Configure(EntityTypeBuilder<StudySubject> builder)
     {
+        base.Configure(builder);
+
         builder.Property(x => x.NameInUkrainian)
             .IsRequired()
             .HasMaxLength(100);
@@ -22,7 +24,5 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
             .WithMany()
             .HasForeignKey(x => x.LanguageId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        base.Configure(builder);
     }
 }

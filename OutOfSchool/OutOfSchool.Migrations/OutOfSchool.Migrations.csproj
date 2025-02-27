@@ -23,4 +23,8 @@
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
+  </ItemGroup>
 </Project>
