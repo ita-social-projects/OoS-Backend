@@ -41,7 +41,6 @@ public class StorageOptions : IValidatableObject
         {
             StorageProviderType.GoogleCloud => ValidateGoogleCloud(),
             StorageProviderType.AmazonS3 => ValidateAmazonS3(),
-            StorageProviderType.FakeGoogleCloud => ValidateGoogleCloud(),
             _ => []
         };
 

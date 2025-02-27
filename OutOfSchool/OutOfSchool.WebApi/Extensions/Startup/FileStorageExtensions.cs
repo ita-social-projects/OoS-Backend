@@ -5,7 +5,6 @@ using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.ExternalFileStore.Extensions;
-using OutOfSchool.ExternalFileStore.FakeGcs;
 using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.S3;
 
@@ -43,17 +42,6 @@ public static class FileStorageExtensions
 
         switch (options.Provider)
         {
-            case StorageProviderType.FakeGoogleCloud:
-                {
-                    var storageClient = StorageClient.CreateUnauthenticated();
-
-                    services.AddSingleton<IStorageContext<StorageClient>, GcpStorageContext>(_ =>
-                        new GcpStorageContext(storageClient, options.Containers.Images.BucketName));
-
-                    services.AddScoped<FakeGcpImagesStorage>();
-                    services.AddScoped<IImageStorage>(p => p.GetRequiredService<FakeGcpImagesStorage>());
-                    return services.AddScoped<IObjectImageStorage>(p => p.GetRequiredService<FakeGcpImagesStorage>());
-                }
             case StorageProviderType.GoogleCloud:
             {
                 var googleCredential = options.Providers.GoogleCloud.RetrieveGoogleCredential();
