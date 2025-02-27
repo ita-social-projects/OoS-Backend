@@ -11,19 +11,20 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
     : FilesStorageBase<TFile, IMinioClient>(storageContext)
     where TFile : FileModel, new()
 {
-    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default)
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default)
     {
         try
         {
             var args = new GetObjectArgs()
                 .WithBucket(BucketName)
-                .WithObject(fullFileName)
+                .WithObject(fileId)
                 .WithCallbackStream(stream => stream.CopyTo(fileStream));
             var fileObject = await StorageClient.GetObjectAsync(
                 args,
                 cancellationToken);
 
             fileStream.Position = 0;
+
             return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
         }
         catch (MinioException ex)
@@ -33,7 +34,7 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
     }
 
-    protected sealed override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
+    protected sealed override async Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(cacheControl))
@@ -49,16 +50,19 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
             .WithObjectSize(file.ContentStream.Length)
             .WithContentType(file.ContentType)
             .WithHeaders(metadata);
-        _ = await StorageClient.PutObjectAsync(
-            args,
-            cancellationToken);
+        var dataObject = await StorageClient.PutObjectAsync(
+                args,
+                cancellationToken);
+
+        return dataObject.ObjectName;
     }
 
-    protected sealed override async Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
+    protected sealed override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
         var args = new RemoveObjectArgs()
             .WithBucket(BucketName)
-            .WithObject(fullFileName);
+            .WithObject(fileId);
+
         await StorageClient.RemoveObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 

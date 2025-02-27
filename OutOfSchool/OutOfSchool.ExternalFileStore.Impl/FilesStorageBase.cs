@@ -1,6 +1,6 @@
-﻿using OutOfSchool.ExternalFileStore.Exceptions;
+﻿using System.Text;
+using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
-using System.Text;
 
 namespace OutOfSchool.ExternalFileStore;
 
@@ -20,11 +20,10 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     public async Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        var fullFileName = CreateFullPathFromFileId(fileId);
 
         try
         {
-            await DeleteOperationAsync(fullFileName, cancellationToken);
+            await DeleteOperationAsync(fileId, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -43,11 +42,10 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         var fileStream = new MemoryStream();
-        var fullFileName = CreateFullPathFromFileId(fileId);
 
         try
         {
-            return await GetByIdOperationAsync(fullFileName, fileStream, cancellationToken);
+            return await GetByIdOperationAsync(fileId, fileStream, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -72,8 +70,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
 
         try
         {
-            await UploadOperationAsync(file, fullFileName, cacheControl, metadata, cancellationToken);
-            return fileId;
+            return await UploadOperationAsync(file, fullFileName, cacheControl, metadata, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -81,10 +78,10 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         }
     }
 
-    protected abstract Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default);
-    protected abstract Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default);
+    protected abstract Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default);
+    protected abstract Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default);
     protected abstract IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null);
-    protected abstract Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
+    protected abstract Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
 
     private static int GetHashCodeString(string s)
@@ -110,7 +107,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         // Build the path using the directory separator and formatting each byte as two-digit hexadecimal.
         return new StringBuilder()
             .Append(main_subfolder is null ? string.Empty : Path.DirectorySeparatorChar)
-            .Append(main_subfolder ?? string.Empty)
+            .Append(main_subfolder is null ? string.Empty : main_subfolder.ToLower())
             .Append(Path.DirectorySeparatorChar)
             .Append(firstDir.ToString("x2"))
             .Append(Path.DirectorySeparatorChar)

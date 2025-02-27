@@ -10,26 +10,26 @@ public class FakeGcpFilesStorageBase<TFile>(IStorageContext<StorageClient> stora
     : FilesStorageBase<TFile, StorageClient>(storageContext)
     where TFile : FileModel, new()
 {
-    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream,
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream,
         CancellationToken cancellationToken = default)
     {
         var fileObject = await StorageClient.GetObjectAsync(
                 BucketName,
-                fullFileName,
+                fileId,
                 cancellationToken: cancellationToken);
 
         return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
     }
 
-    protected sealed override Task UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
+    protected sealed override Task<string> UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(fullFileName);
     }
 
-    protected sealed override Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
+    protected sealed override Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
-        return StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
+        return StorageClient.DeleteObjectAsync(BucketName, fileId, cancellationToken: cancellationToken);
     }
 
     protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)

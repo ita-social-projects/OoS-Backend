@@ -37,13 +37,13 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    protected sealed override async Task<TFile> GetByIdOperationAsync(string fullFileName, MemoryStream fileStream, CancellationToken cancellationToken = default)
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default)
     {
         try
         {
             var fileObject = await StorageClient.GetObjectAsync(
                 BucketName,
-                fullFileName,
+                fileId,
                 cancellationToken: cancellationToken);
 
             await StorageClient.DownloadObjectAsync(
@@ -62,7 +62,7 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     }
 
     /// <inheritdoc/>
-    protected sealed override async Task UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
+    protected sealed override async Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "", 
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
         var storageObject = new Object
@@ -83,15 +83,17 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
         }
 
         file.ContentStream.Position = 0;
-        _ = await StorageClient.UploadObjectAsync(
-            storageObject,
-            file.ContentStream,
-            cancellationToken: cancellationToken);
+        var dataObject = await StorageClient.UploadObjectAsync(
+                storageObject,
+                file.ContentStream,
+                cancellationToken: cancellationToken);
+
+        return dataObject.Name;
     }
 
     /// <inheritdoc/>
-    protected sealed override async Task DeleteOperationAsync(string fullFileName, CancellationToken cancellationToken = default)
+    protected sealed override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
-        await StorageClient.DeleteObjectAsync(BucketName, fullFileName, cancellationToken: cancellationToken);
+        await StorageClient.DeleteObjectAsync(BucketName, fileId, cancellationToken: cancellationToken);
     }
 }

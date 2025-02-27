@@ -71,6 +71,7 @@ public class FakeGcpFilesStorageBaseTests
     public async Task UploadAsync_ValidFile_ReturnsFileId()
     {
         // Arrange
+        var main_subfolder = "provider";
         var file = new ImageFileModel()
         {
             ContentType = "image/png",
@@ -79,23 +80,15 @@ public class FakeGcpFilesStorageBaseTests
         var cacheControl = "max-age=3600";
         var metadata = new Dictionary<string, string> { { "key", "value" } };
 
-        storageClientMock
-            .Setup(x => x.UploadObjectAsync(
-                It.IsAny<Object>(),
-                It.IsAny<Stream>(),
-                null,
-                CancellationToken.None,
-                null))
-            .ReturnsAsync(new Object { Name = "new-file-id" });
-
         // Act
-        var result = await storage.UploadAsync(file, It.IsAny<string>(), cacheControl, metadata);
+        var result = await storage.UploadAsync(file, main_subfolder, cacheControl, metadata);
 
         // Assert
         Assert.NotNull(result);
         Assert.IsInstanceOf<string>(result);
-        Assert.AreEqual(32, result.Replace("-", "").Length);
-        Assert.True(Guid.TryParse(result, out _));
+        // 32 - count of symbols in Guid without '-' char
+        // 8 - count of separator char ('\') in the full file name
+        Assert.AreEqual(32 + 8 + main_subfolder.Length, result.Replace("-", "").Length);
     }
 
     [Test]
