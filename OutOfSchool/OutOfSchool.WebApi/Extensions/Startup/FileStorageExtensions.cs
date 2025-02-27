@@ -30,9 +30,8 @@ public static class FileStorageExtensions
         // Use fake storage if images are disabled or fake provider is configured
         if (!isImagesFeatureEnabled || options.Provider == StorageProviderType.Fake)
         {
-            var storageClient = new FakeStorageClient();
-            services.AddSingleton<IStorageContext<FakeStorageClient>, FakeStorageContext>(_ =>
-                new FakeStorageContext(storageClient, "FakeBucket"));
+            services.AddSingleton<IStorageContext<IFakeStorageClient>, FakeStorageContext>(_ =>
+                new FakeStorageContext(null, "FakeBucket"));
             services.AddScoped<FakeImagesStorage>();
             services.AddScoped<IImageStorage>(p => p.GetRequiredService<FakeImagesStorage>());
             return services.AddScoped<IObjectImageStorage>(p => p.GetRequiredService<FakeImagesStorage>());

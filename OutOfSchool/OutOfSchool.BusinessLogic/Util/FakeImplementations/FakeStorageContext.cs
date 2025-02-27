@@ -2,9 +2,9 @@
 
 namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
 
-public class FakeStorageContext(FakeStorageClient client, string bucketName) : IStorageContext<FakeStorageClient>
+public class FakeStorageContext(IFakeStorageClient client, string bucketName) : IStorageContext<IFakeStorageClient>
 {
-    public FakeStorageClient StorageClient { get; } = client;
+    public IFakeStorageClient StorageClient { get; } = client;
 
     public string BucketName { get; } = bucketName;
 }

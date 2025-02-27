@@ -6,5 +6,5 @@ namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
 /// <summary>
 /// Represents a fake image storage.
 /// </summary>
-public class FakeImagesStorage(IStorageContext<FakeStorageClient> storageContext)
+public class FakeImagesStorage(IStorageContext<IFakeStorageClient> storageContext)
     : FakeFilesStorageBase<ImageFileModel>(storageContext), IObjectImageStorage;

@@ -14,16 +14,16 @@ namespace OutOfSchool.WebApi.Tests.Services.FileStore;
 [TestFixture]
 public class FakeFilesStorageBaseTests
 {
-    private Mock<IStorageContext<FakeStorageClient>> storageContextMock;
-    private Mock<FakeStorageClient> storageClientMock;
+    private Mock<IStorageContext<IFakeStorageClient>> storageContextMock;
+    private Mock<IFakeStorageClient> storageClientMock;
     private const string BucketName = "test-bucket";
     private FakeFilesStorageBase<ImageFileModel> storage;
 
     [SetUp]
     public void Setup()
     {
-        storageClientMock = new Mock<FakeStorageClient>();
-        storageContextMock = new Mock<IStorageContext<FakeStorageClient>>();
+        storageClientMock = new Mock<IFakeStorageClient>();
+        storageContextMock = new Mock<IStorageContext<IFakeStorageClient>>();
         storageContextMock.Setup(x => x.StorageClient).Returns(storageClientMock.Object);
         storageContextMock.Setup(x => x.BucketName).Returns(BucketName);
         storage = new FakeImagesStorage(storageContextMock.Object);

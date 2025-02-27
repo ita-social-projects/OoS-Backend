@@ -6,8 +6,8 @@ namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
 /// <summary>
 /// Only for development purposes. Used as a fake storage whenever no need to interplay with storage.
 /// </summary>
-public class FakeFilesStorageBase<TFile>(IStorageContext<FakeStorageClient> storageContext) 
-    : FilesStorageBase<TFile, FakeStorageClient>(storageContext)
+public class FakeFilesStorageBase<TFile>(IStorageContext<IFakeStorageClient> storageContext) 
+    : FilesStorageBase<TFile, IFakeStorageClient>(storageContext)
 where TFile : FileModel, new()
 {
     protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream,
