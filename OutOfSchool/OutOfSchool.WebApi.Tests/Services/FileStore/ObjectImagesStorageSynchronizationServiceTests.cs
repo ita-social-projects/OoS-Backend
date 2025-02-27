@@ -134,8 +134,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         var dbFileIds = ImagesGenerator.CreateRandomImageIds(3);
         imageFilesStorageMock.Setup(x => x.ListObjectsAsync(It.IsAny<string>(), It.IsAny<ListObjectsOptions>()))
             .Returns(gcpObjects.ToAsyncEnumerable());
-        imageFilesStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>(), null, CancellationToken.None))
-            .Callback<string, string, CancellationToken>((fileId, prefix, cancellationToken) => DeleteObjectWithName(gcpObjects, fileId));
+        imageFilesStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>(), CancellationToken.None))
+            .Callback<string, CancellationToken>((fileId, cancellationToken) => DeleteObjectWithName(gcpObjects, fileId));
         this.SetupDefaultGcpImagesSyncDataRepositoryMock(dbFileIds);
 
         // Act
@@ -241,8 +241,8 @@ public class ObjectImagesStorageSynchronizationServiceTests
         var objectNames = objects.Select(x => x.Name);
         imageFilesStorageMock.Setup(x => x.ListObjectsAsync(It.IsAny<string>(), It.IsAny<ListObjectsOptions>()))
             .Returns(objects.ToAsyncEnumerable());
-        imageFilesStorageMock.Setup(x => x.DeleteAsync(It.Is<string>(id => objectNames.Contains(id)), null, CancellationToken.None))
-            .Callback<string, string, CancellationToken>((fileId, prefix, cancellationToken) => DeleteObjectWithName(copy, fileId));
+        imageFilesStorageMock.Setup(x => x.DeleteAsync(It.Is<string>(id => objectNames.Contains(id)), CancellationToken.None))
+            .Callback<string, CancellationToken>((fileId, cancellationToken) => DeleteObjectWithName(copy, fileId));
         return copy;
     }
 

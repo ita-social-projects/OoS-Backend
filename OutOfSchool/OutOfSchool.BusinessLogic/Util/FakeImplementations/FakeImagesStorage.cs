@@ -8,7 +8,7 @@ namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
 /// </summary>
 public class FakeImagesStorage : IImageStorage
 {
-    public Task<ImageFileModel> GetByIdAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
+    public Task<ImageFileModel> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new ImageFileModel());
     }
@@ -19,7 +19,7 @@ public class FakeImagesStorage : IImageStorage
         return Task.FromResult(GenerateFileId());
     }
 
-    public Task DeleteAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

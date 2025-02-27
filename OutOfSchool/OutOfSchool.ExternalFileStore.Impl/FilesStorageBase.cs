@@ -17,7 +17,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     protected string BucketName { get; } = storageContext.BucketName;
 
     /// <inheritdoc/>
-    public async Task DeleteAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         var fullFileName = CreateFullPathFromFileId(fileId);
@@ -39,7 +39,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     }
 
     /// <inheritdoc/>
-    public async Task<TFile> GetByIdAsync(string fileId, string? main_subfolder = null, CancellationToken cancellationToken = default)
+    public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
         var fileStream = new MemoryStream();

@@ -59,7 +59,7 @@ internal class ImageServiceTests
         // Arrange
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         var externalImageModel = TakeFirstFromTestData(ExternalImageModelsWithMockedStreamTestDataSource);
-        externalStorageMock.Setup(x => x.GetByIdAsync(imageId, It.IsAny<string>(), CancellationToken.None)).
+        externalStorageMock.Setup(x => x.GetByIdAsync(imageId, CancellationToken.None)).
             ReturnsAsync(externalImageModel);
 
         // Act
@@ -76,7 +76,7 @@ internal class ImageServiceTests
     {
         // Arrange
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
-        externalStorageMock.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>(), CancellationToken.None)).ThrowsAsync(new FileStorageException());
+        externalStorageMock.Setup(x => x.GetByIdAsync(It.IsAny<string>(), CancellationToken.None)).ThrowsAsync(new FileStorageException());
 
         // Act
         var result = await imageService.GetByIdAsync(imageId);
@@ -306,7 +306,7 @@ internal class ImageServiceTests
     {
         // Arrange
         externalStorageMock
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -350,7 +350,7 @@ internal class ImageServiceTests
         const byte countOfImageIds = 3, countOfDeleted = 1;
         var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfImageIds);
         externalStorageMock
-            .SetupSequence(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .SetupSequence(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Throws<FileStorageException>()
             .Throws<FileStorageException>();
@@ -371,7 +371,7 @@ internal class ImageServiceTests
         // Arrange
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         externalStorageMock
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -410,7 +410,7 @@ internal class ImageServiceTests
         // Arrange
         var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
         externalStorageMock
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Throws<FileStorageException>();
 
         // Act
