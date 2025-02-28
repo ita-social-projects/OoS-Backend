@@ -18,7 +18,7 @@ where TFile : FileModel, new()
             return null;
         }
 
-       return new TFile { ContentStream = fileStream, ContentType = "Fake_type" }; ;
+       return new TFile { ContentStream = fileStream, ContentType = "Fake_type" };
     }
 
     protected sealed override Task<string> UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
