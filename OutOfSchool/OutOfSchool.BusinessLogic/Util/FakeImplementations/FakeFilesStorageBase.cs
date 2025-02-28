@@ -6,7 +6,13 @@ namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
 /// <summary>
 /// Only for development purposes. Used as a fake storage whenever no need to interplay with storage.
 /// </summary>
-public class FakeFilesStorageBase<TFile>(IStorageContext<IFakeStorageClient> storageContext) 
+/// <remarks>
+/// This class provides a mock implementation of File Cloud Storage operations.
+/// It does not interact with actual cloud storage and is intended for local development,
+/// testing, and scenarios where cloud storage dependencies are not available.
+/// All operations simulate success without performing actual storage operations.
+/// </remarks>
+public class FakeFilesStorageBase<TFile>(IStorageContext<IFakeStorageClient> storageContext)
     : FilesStorageBase<TFile, IFakeStorageClient>(storageContext)
 where TFile : FileModel, new()
 {
@@ -18,7 +24,7 @@ where TFile : FileModel, new()
             return null;
         }
 
-       return new TFile { ContentStream = fileStream, ContentType = "Fake_type" };
+        return new TFile { ContentStream = fileStream, ContentType = "Fake_type" };
     }
 
     protected sealed override Task<string> UploadOperationAsync(TFile? file, string fullFileName, string cacheControl = "",
