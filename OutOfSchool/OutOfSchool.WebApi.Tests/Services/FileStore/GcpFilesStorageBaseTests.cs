@@ -65,7 +65,7 @@ public class GcpFilesStorageBaseTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual(result.ContentType, contentType);
+        Assert.AreEqual(contentType, result.ContentType);
         Assert.NotNull(result.ContentStream);
     }
 
