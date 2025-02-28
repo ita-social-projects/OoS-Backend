@@ -63,6 +63,23 @@ public class S3FilesStorageBaseTests
     }
 
     [Test]
+    public async Task GetByIdAsync_ExceptionInS3_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        minioClientMock
+            .Setup(x => x.GetObjectAsync(
+                It.IsAny<GetObjectArgs>(),
+                CancellationToken.None))
+            .Throws<Exception>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.GetByIdAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        minioClientMock.Verify(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None), Times.Once);
+    }
+
+    [Test]
     public async Task GetByIdAsync_MinioException_ThrowsFileStorageException()
     {
         // Arrange
