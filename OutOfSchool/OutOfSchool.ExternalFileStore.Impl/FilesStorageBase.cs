@@ -49,6 +49,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         }
         catch (Exception ex)
         {
+            await fileStream.DisposeAsync();
             throw new FileStorageException(ex);
         }
     }
