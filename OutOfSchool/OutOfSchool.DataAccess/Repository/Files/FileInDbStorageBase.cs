@@ -11,6 +11,7 @@ using OutOfSchool.Services.Repository.Api.Files;
 
 namespace OutOfSchool.Services.Repository.Files;
 
+[Obsolete("This class is obsolete. Use FileStorage classes for the specific storage instead.")]
 public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
     where TFile : FileModel, new()
 {
