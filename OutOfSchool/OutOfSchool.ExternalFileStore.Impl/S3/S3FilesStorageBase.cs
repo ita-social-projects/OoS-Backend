@@ -32,6 +32,11 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
             await fileStream.DisposeAsync();
             throw new FileStorageException(ex);
         }
+        catch
+        {
+            await fileStream.DisposeAsync();
+            throw;
+        }
     }
 
     protected sealed override async Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",

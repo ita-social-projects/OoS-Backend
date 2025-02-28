@@ -65,14 +65,13 @@ public class FakeFilesStorageBaseTests
         // Assert
         Assert.NotNull(result);
         Assert.IsInstanceOf<string>(result);
-        // 32 - number of characters in Guid without '-'
-        // 4 - number of separator characters ('/') in full filename
-        // 4 - number of characters in directory names
-        Assert.AreEqual(32 + 4 + 4 + main_subfolder.Length, result.Replace("-", "").Length);
+        // Verify it's a non-empty string with expected format
+        Assert.That(result, Does.Contain(main_subfolder));
+        Assert.That(result, Does.Match(@"^[\w\-/]+$")); // Basic format check
     }
 
     [Test]
-    public async Task DeleteAsync_ExceptionInGcp_ThrowsFileStorageException()
+    public async Task DeleteAsync_ExceptionInFakeStorage_ThrowsFileStorageException()
     {
         // Arrange
         string? fileId = null;

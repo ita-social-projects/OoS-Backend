@@ -109,7 +109,7 @@ public class GcpFilesStorageBaseTests
 
         storageClientMock
             .Setup(s => s.GetObjectAsync(BucketName, It.IsAny<string>(), null, CancellationToken.None))
-            .Throws(() =>new GoogleApiException("GcpFilesStorage", "GoogleApiException"));
+            .Throws(() => new GoogleApiException("GcpFilesStorage", "GoogleApiException"));
 
         // Act
         var result = await storage.GetByIdAsync(fileId);
@@ -148,7 +148,7 @@ public class GcpFilesStorageBaseTests
     }
 
     [Test]
-    public async Task UploadAsync__ExceptionInGcp_ThrowsFileStorageException()
+    public async Task UploadAsync_ExceptionInGcp_ThrowsFileStorageException()
     {
         // Arrange
         var file = new ImageFileModel()

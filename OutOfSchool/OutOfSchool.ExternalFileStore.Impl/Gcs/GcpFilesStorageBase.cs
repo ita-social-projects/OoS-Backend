@@ -59,6 +59,11 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
             await fileStream.DisposeAsync();
             return null;
         }
+        catch
+        {
+            await fileStream.DisposeAsync();
+            throw;
+        }
     }
 
     /// <inheritdoc/>

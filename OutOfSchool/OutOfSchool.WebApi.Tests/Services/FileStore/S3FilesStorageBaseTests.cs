@@ -63,7 +63,7 @@ public class S3FilesStorageBaseTests
     }
 
     [Test]
-    public async Task GetByIdAsync_ExceptionInGcp_ThrowsFileStorageException()
+    public async Task GetByIdAsync_MinioException_ThrowsFileStorageException()
     {
         // Arrange
         var fileId = "test-file-id";

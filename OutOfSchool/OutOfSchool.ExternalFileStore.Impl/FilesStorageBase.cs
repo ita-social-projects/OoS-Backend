@@ -78,12 +78,15 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         }
     }
 
+    // These protected abstract methods must be overridden for each store that will be used in the application.
     protected abstract Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default);
     protected abstract Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default);
     protected abstract IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null);
     protected abstract Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
 
+    // Custom hash implementation used for consistent directory structure across platforms.
+    // This approach avoids the platform-dependent behavior of string.GetHashCode().
     private static int GetHashCodeString(string s)
     {
         int h = 0;
