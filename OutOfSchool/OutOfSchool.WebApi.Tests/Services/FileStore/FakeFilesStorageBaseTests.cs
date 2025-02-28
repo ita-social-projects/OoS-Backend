@@ -37,6 +37,9 @@ public class FakeFilesStorageBaseTests
         var contentType = "Fake_type";
         var fileContent = new MemoryStream([1, 2, 3]);
 
+        storageClientMock.Setup(x => x.GetByIdAsync(fileId))
+            .ReturnsAsync(new FileModel()).Verifiable(Times.Once);
+
         // Act
         var result = await storage.GetByIdAsync(fileId);
 
@@ -44,6 +47,22 @@ public class FakeFilesStorageBaseTests
         Assert.NotNull(result);
         Assert.AreEqual(result.ContentType, contentType);
         Assert.NotNull(result.ContentStream);
+    }
+
+    [Test]
+    public async Task GetByIdAsync_WhenFileDoesNotExist_ReturnsNull()
+    {
+        // Arrange
+        var fileId = "non-existent-file-id";
+        storageClientMock.Setup(x => x.GetByIdAsync(fileId))
+            .ReturnsAsync((FileModel)null).Verifiable(Times.Once);
+
+        // Act
+        var result = await storage.GetByIdAsync(fileId);
+
+        // Assert
+        Assert.IsNull(result);
+        storageClientMock.VerifyAll();
     }
 
     [Test]
@@ -68,6 +87,20 @@ public class FakeFilesStorageBaseTests
         // Verify it's a non-empty string with expected format
         Assert.That(result, Does.Contain(main_subfolder));
         Assert.That(result, Does.Match(@"^[\w\-/]+$")); // Basic format check
+    }
+
+    [Test]
+    public async Task DeleteAsync_ValidFileId_DeletesSuccessfully()
+    {
+        // Arrange
+        var fileId = "valid-file-id";
+        storageClientMock.Setup(x => x.DeleteAsync(fileId)).Returns(Task.CompletedTask);
+
+        // Act
+        await storage.DeleteAsync(fileId);
+
+        // Assert
+        storageClientMock.Verify(x => x.DeleteAsync(fileId), Times.Once);
     }
 
     [Test]

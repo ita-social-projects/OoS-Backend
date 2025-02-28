@@ -109,15 +109,25 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         int secondDir = (hash >> 8) & mask;
 
         // Build the path using the directory separator and formatting each byte as two-digit hexadecimal.
-        return new StringBuilder()
-            .Append(main_subfolder is null ? string.Empty : '/')
-            .Append(main_subfolder is null ? string.Empty : main_subfolder.ToLower())
-            .Append('/')
-            .Append(firstDir.ToString("x2"))
-            .Append('/')
-            .Append(secondDir.ToString("x2"))
-            .Append('/')
-            .Append(fileId)
-            .ToString();
+        var sb = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(main_subfolder))
+        {
+            sb.Append('/')
+              .Append(main_subfolder.ToLower())
+              .Append('/');
+        }
+        else
+        {
+            sb.Append('/');
+        }
+
+        sb.Append(firstDir.ToString("x2"))
+          .Append('/')
+          .Append(secondDir.ToString("x2"))
+          .Append('/')
+          .Append(fileId);
+
+        return sb.ToString();
     }
 }

@@ -13,6 +13,11 @@ where TFile : FileModel, new()
     protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream,
         CancellationToken cancellationToken = default)
     {
+        if (await StorageClient.GetByIdAsync(fileId) is null)
+        {
+            return null;
+        }
+
         return await Task.FromResult(new TFile { ContentStream = fileStream, ContentType = "Fake_type" });
     }
 
@@ -22,9 +27,9 @@ where TFile : FileModel, new()
         return Task.FromResult(fullFileName);
     }
 
-    protected override Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
+    protected override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        await StorageClient.DeleteAsync(fileId);
     }
 
     protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string prefix = null, object options = null)
