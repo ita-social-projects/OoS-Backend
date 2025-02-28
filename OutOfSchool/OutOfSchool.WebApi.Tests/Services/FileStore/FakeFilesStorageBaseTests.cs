@@ -71,7 +71,7 @@ public class FakeFilesStorageBaseTests
     }
 
     [Test]
-    public async Task DeleteAsync_ExceptionInFakeStorage_ThrowsFileStorageException()
+    public async Task DeleteAsync_fileIdisNull_ThrowsArgumentNullException()
     {
         // Arrange
         string? fileId = null;
