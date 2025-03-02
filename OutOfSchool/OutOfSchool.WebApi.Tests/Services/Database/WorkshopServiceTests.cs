@@ -23,6 +23,7 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -879,8 +880,23 @@ public class WorkshopServiceTests
         var guids = WithWorkshopsList().Select(w => w.Id);
         SetupGetByFilter(WithWorkshopsList(), WithAvarageRatings(guids));
 
+        var filter = new WorkshopFilter()
+        {
+            WithDisabilityOptions = true,
+            Statuses = [WorkshopStatus.Open],
+            ShortStay = true,
+            IsSelfFinanced = true,
+            IsSpecial = true,
+            IsInclusive = true,
+            AreThereBenefits = true,
+            AgeComposition = [AgeComposition.SameAge, AgeComposition.DifferentAge],
+            EducationalShift = [EducationalShift.First],
+            SpecialNeedsType = [SpecialNeedsType.Intelligence],
+            Coverage = [Coverage.International],
+        };
+
         // Act
-        var result = await workshopService.GetByFilter(It.IsAny<WorkshopFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));

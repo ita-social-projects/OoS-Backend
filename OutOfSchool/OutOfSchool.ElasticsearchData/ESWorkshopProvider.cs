@@ -88,6 +88,15 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddCATOTTGIdQuery(query, filter);
         AddGeoNearestQuery(query, filter);
         AddTimeQuery(query, filter);
+        AddAgeCompositionQuery(query, filter);
+        AddEducationalShiftQuery(query, filter);
+        AddSpecialNeedsTypeQuery(query, filter);
+        AddCoverageQuery(query, filter);
+        AddShortStayQuery(query, filter);
+        AddIsSelfFinancedQuery(query, filter);
+        AddIsSpecialQuery(query, filter);
+        AddIsInclusiveQuery(query, filter);
+        AddAreThereBenefitsQuery(query, filter);
 
         return query;
     }
@@ -184,6 +193,11 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                     Infer.Field<WorkshopES>(w => w.ProviderTitle),
                     Infer.Field<WorkshopES>(w => w.Keywords),
                     Infer.Field<WorkshopES>(w => w.Description),
+                    Infer.Field<WorkshopES>(w => w.CompetitiveSelectionDescription),
+                    Infer.Field<WorkshopES>(w => w.DisabilityOptionsDesc),
+                    Infer.Field<WorkshopES>(w => w.EnrollmentProcedureDescription),
+                    Infer.Field<WorkshopES>(w => w.PreferentialTermsOfParticipation),
+                    Infer.Field<WorkshopES>(w => w.Tags),
                 },
 
                 // Query allows results where up to 2 chars may differ from the search keyword
@@ -219,14 +233,14 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
 
     private void AddPriceQuery(BoolQuery query, WorkshopFilterES filter)
     {
-        if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        if (filter.IsFree && !filter.IsPaid)
         {
             query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.Price))
             {
                 Value = 0,
             });
         }
-        else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        else if (!filter.IsFree && filter.IsPaid)
         {
             query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.Price))
             {
@@ -234,7 +248,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 Lte = filter.MaxPrice,
             });
         }
-        else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+        else
         {
             query.Must.Add(new BoolQuery()
             {
@@ -425,6 +439,113 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                     },
                 });
             }
+        }
+    }
+
+    private void AddAgeCompositionQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.AgeComposition.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.AgeComposition),
+                Term = new(filter.AgeComposition
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddEducationalShiftQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.EducationalShift.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.EducationalShift),
+                Term = new(filter.EducationalShift
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddSpecialNeedsTypeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.SpecialNeedsType.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.SpecialNeedsType),
+                Term = new(filter.SpecialNeedsType
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddCoverageQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.Coverage.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.Coverage),
+                Term = new(filter.Coverage
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddShortStayQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.ShortStay)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.ShortStay))
+            {
+                Value = filter.ShortStay,
+            });
+        }
+    }
+   
+    private void AddIsSelfFinancedQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsSelfFinanced)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsSelfFinanced))
+            {
+                Value = filter.IsSelfFinanced,
+            });
+        }
+    }
+
+    private void AddIsSpecialQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsSpecial)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsSpecial))
+            {
+                Value = filter.IsSpecial,
+            });
+        }
+    }
+
+    private void AddIsInclusiveQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsInclusive)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsInclusive))
+            {
+                Value = filter.IsInclusive,
+            });
+        }
+    }
+
+    private void AddAreThereBenefitsQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.AreThereBenefits)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.AreThereBenefits))
+            {
+                Value = filter.AreThereBenefits,
+            });
         }
     }
 }

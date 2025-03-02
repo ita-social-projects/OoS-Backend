@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
@@ -9,64 +10,52 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the operations for synchronization databases.
 /// </summary>
-public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
+public abstract class ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES> : 
+    IElasticsearchSynchronizationService<TService, TEntity>
+    where TEntityES : class, new()
+    where TEntityFilterES : class, new()
 {
-    private readonly IWorkshopService databaseService;
-    private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
-    private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-    private readonly ILogger<ElasticsearchSynchronizationService> logger;
-    private readonly IMapper mapper;
-    private readonly IOptions<ElasticsearchSynchronizationSchedulerConfig> options;
+    protected readonly TService databaseService;
+    protected readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
+    protected readonly IElasticsearchProvider<TEntityES, TEntityFilterES> esProvider;
+    protected readonly ILogger<ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>> logger;
+    protected readonly IMapper mapper;
+    protected readonly IOptions<ElasticsearchSynchronizationSchedulerConfig> options;
+    protected readonly IAddNewRecordToESSynchronizationTableService addNewRecordToESSynchronizationTableService;
 
-    public ElasticsearchSynchronizationService(
-        IWorkshopService workshopService,
+    protected ElasticsearchSynchronizationService(
+        TService databaseService,
         IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
-        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        ILogger<ElasticsearchSynchronizationService> logger,
+        IElasticsearchProvider<TEntityES, TEntityFilterES> esProvider,
+        ILogger<ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>> logger,
         IMapper mapper,
-        IOptions<ElasticsearchSynchronizationSchedulerConfig> options)
+        IOptions<ElasticsearchSynchronizationSchedulerConfig> options,
+        IAddNewRecordToESSynchronizationTableService addNewRecordToESSynchronizationTableService)
     {
-        this.databaseService = workshopService;
+        this.databaseService = databaseService;
         this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
         this.esProvider = esProvider;
         this.logger = logger;
         this.mapper = mapper;
         this.options = options;
+        this.addNewRecordToESSynchronizationTableService = addNewRecordToESSynchronizationTableService;
     }
+
+    public abstract Func<TService, List<Guid>, Task<IEnumerable<TEntity>>> GetbyIds { get; }
 
     public async Task AddNewRecordToElasticsearchSynchronizationTable(
         ElasticsearchSyncEntity entity,
         Guid id,
-        ElasticsearchSyncOperation operation)
-    {
-        var elasticsearchSyncRecord = new ElasticsearchSyncRecord()
-        {
-            Entity = entity,
-            RecordId = id,
-            OperationDate = DateTimeOffset.UtcNow,
-            Operation = operation,
-        };
-
-        try
-        {
-            await elasticsearchSyncRecordRepository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
-
-            logger.LogInformation("ElasticsearchSyncRecord created successfully");
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            logger.LogError("Creating new record to ElasticserchSyncRecord failed");
-            throw;
-        }
-    }
-
-    public async Task Synchronize(CancellationToken cancellationToken)
+        ElasticsearchSyncOperation operation) => 
+            await addNewRecordToESSynchronizationTableService.AddNewRecordToElasticsearchSynchronizationTable(entity, id, operation);
+    
+    public async Task Synchronize(IndexName indexName, CancellationToken cancellationToken)
     {
         logger.LogInformation("Elasticsearch synchronization started");
 
         try
         {
-            var result = await DoSynchronization().WaitAsync(cancellationToken);
+            var result = await DoSynchronization(indexName).WaitAsync(cancellationToken);
             if (!result)
             {
                 Log.Information("Elasticsearch synchronization failed");
@@ -80,14 +69,26 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         logger.LogInformation("Elasticsearch synchronization finished");
     }
 
-    private async Task<bool> DoSynchronization()
+    private async Task<bool> DoSynchronization(IndexName indexName)
     {
+        var syncEntityName = typeof(TEntity).Name;
+
+        var isValidSyncEnity = Enum.TryParse<ElasticsearchSyncEntity>(syncEntityName, out var syncEntityEnum);
+
+        if (!isValidSyncEnity)
+        {
+            logger.LogError(
+                "Synchronization of Elasticsearch has failed because synchronization entity is invalid. Synchronization Entity = {SyncEntity}",
+                syncEntityName);
+            return false;
+        }
+
         var elasticsearchSyncRecords = (await elasticsearchSyncRecordRepository.GetByEntity(
-            ElasticsearchSyncEntity.Workshop,
+            syncEntityEnum,
             options.Value.OperationsPerTask)).ToList();
 
         var resultCreate =
-            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create)
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create, indexName)
                 .ConfigureAwait(false);
         if (!resultCreate)
         {
@@ -98,7 +99,7 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         }
 
         var resultUpdate =
-            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Update)
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Update, indexName)
                 .ConfigureAwait(false);
         if (!resultUpdate)
         {
@@ -109,7 +110,7 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
         }
 
         var resultDelete =
-            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Delete)
+            await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Delete, indexName)
                 .ConfigureAwait(false);
         if (!resultDelete)
         {
@@ -126,7 +127,8 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
 
     private async Task<bool> Synchronize(
         IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords,
-        ElasticsearchSyncOperation elasticsearchSyncOperation)
+        ElasticsearchSyncOperation elasticsearchSyncOperation,
+        IndexName indexName)
     {
         var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation)
             .Select(es => es.RecordId).ToList();
@@ -155,14 +157,14 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
             }
         }
         else
-        {
-            var workshops = await databaseService.GetByIds(ids).ConfigureAwait(false);
+        {       
+            var entities = await GetbyIds.Invoke(databaseService, ids);
 
-            var source = mapper.Map<List<WorkshopES>>(workshops);
+            var source = mapper.Map<List<TEntityES>>(entities);
 
             try
             {
-                var result = esProvider.IndexAll(source);
+                var result = esProvider.IndexAll(source, indexName);
 
                 if (result != Result.Updated)
                 {
@@ -182,11 +184,14 @@ public class ElasticsearchSynchronizationService : IElasticsearchSynchronization
 
     private async Task<bool> SynchronizeAndDeleteRecords(
         IReadOnlyCollection<ElasticsearchSyncRecord> elasticsearchSyncRecords,
-        ElasticsearchSyncOperation elasticsearchSyncOperation)
+        ElasticsearchSyncOperation elasticsearchSyncOperation,        
+        IndexName indexName)
     {
         try
         {
-            var result = await Synchronize(elasticsearchSyncRecords, elasticsearchSyncOperation).ConfigureAwait(false);
+            var result = await Synchronize(elasticsearchSyncRecords, elasticsearchSyncOperation, indexName)
+                .ConfigureAwait(false);
+
             if (result)
             {
                 await elasticsearchSyncRecordRepository.DeleteRange(

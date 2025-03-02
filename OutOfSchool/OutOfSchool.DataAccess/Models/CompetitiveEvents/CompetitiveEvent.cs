@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 

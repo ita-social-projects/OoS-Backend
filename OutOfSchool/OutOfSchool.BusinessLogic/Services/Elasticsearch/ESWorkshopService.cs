@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 
@@ -14,6 +15,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
     private readonly IElasticsearchHealthService elasticHealthService;
     private readonly ILogger<ESWorkshopService> logger;
     private readonly IMapper mapper;
+    private readonly IOptions<ElasticConfig> config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ESWorkshopService"/> class.
@@ -30,7 +32,8 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
         IElasticsearchHealthService elasticHealthService,
         ILogger<ESWorkshopService> logger,
         IAverageRatingService averageRatingService,
-        IMapper mapper)
+        IMapper mapper,
+        IOptions<ElasticConfig> config)
     {
         this.workshopService = workshopService;
         this.esProvider = esProvider;
@@ -38,6 +41,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
         this.logger = logger;
         this.averageRatingService = averageRatingService;
         this.mapper = mapper;
+        this.config = config;
     }
 
     /// <inheritdoc/>
@@ -112,7 +116,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
                 data = await workshopService.GetAll(filter).ConfigureAwait(false);
             }
 
-            var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);
+            var resp = await esProvider.ReIndexAll(source, config.Value.WorkshopIndexName).ConfigureAwait(false);
 
             if (resp == Result.Updated)
             {

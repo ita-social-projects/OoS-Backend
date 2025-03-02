@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -15,7 +16,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
 
-    private readonly IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository;
+    private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly ILogger<CompetitiveEventService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -24,7 +25,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
 
     public CompetitiveEventService(
-        IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> competitiveEventRepository,
+        ICompetitiveEventRepository competitiveEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
         ILogger<CompetitiveEventService> logger,
         IStringLocalizer<SharedResource> localizer,
@@ -183,6 +184,11 @@ public class CompetitiveEventService : ICompetitiveEventService
         };
 
         return result;
+    }
+
+    public async Task<IEnumerable<CompetitiveEvent>> GetByIds(IEnumerable<Guid> ids)
+    {
+        return await competitiveEventRepository.GetByIds(ids).ConfigureAwait(false);
     }
 
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>

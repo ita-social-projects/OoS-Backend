@@ -34,14 +34,14 @@ public class WorkshopServicesCombinerTests
     private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProvider;
-    private Mock<IElasticsearchSynchronizationService> elasticsearchSynchronizationService;
+    private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
     private IWorkshopServicesCombiner service;
 
     [SetUp]
     public void SetUp()
     {
         workshopService = new Mock<IWorkshopService>();
-        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService>();
+        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();

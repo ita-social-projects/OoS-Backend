@@ -14,9 +14,11 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -29,7 +31,7 @@ public class CompetitiveEventServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private TestOutOfSchoolDbContext context;
-    private IEntityRepositorySoftDeleted<Guid, CompetitiveEvent> repo;
+    private ICompetitiveEventRepository repo;
     private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private IEntityRepository<Guid, Judge> judgeRepository;
@@ -55,7 +57,7 @@ public class CompetitiveEventServiceTests
         options = builder.Options;
         context = new TestOutOfSchoolDbContext(options);
 
-        repo = new EntityRepositorySoftDeleted<Guid, CompetitiveEvent>(context);
+        repo = new CompetitiveEventRepository(context);
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
         descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
 

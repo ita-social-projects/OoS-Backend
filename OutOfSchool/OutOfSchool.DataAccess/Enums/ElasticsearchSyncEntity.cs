@@ -3,4 +3,5 @@
 public enum ElasticsearchSyncEntity
 {
     Workshop,
+    CompetitiveEvent
 }

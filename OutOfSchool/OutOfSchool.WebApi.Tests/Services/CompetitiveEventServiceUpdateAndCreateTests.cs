@@ -13,6 +13,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -20,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 class CompetitiveEventServiceUpdateAndCreateTests
 {
-    private Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>> mockCompetitiveEventRepository;
+    private Mock<ICompetitiveEventRepository> mockCompetitiveEventRepository;    
     private Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>> mockDescriptionItemRepository;
     private Mock<ILogger<CompetitiveEventService>> mockLogger;
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
@@ -33,7 +34,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     [SetUp]
     public void SetUp()
     {
-        mockCompetitiveEventRepository = new Mock<IEntityRepositorySoftDeleted<Guid, CompetitiveEvent>>();
+        mockCompetitiveEventRepository = new Mock<ICompetitiveEventRepository>();
         mockDescriptionItemRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>();
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();

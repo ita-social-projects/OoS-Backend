@@ -12,7 +12,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
 {
     public WorkshopServicesCombinerV2(
         IWorkshopService workshopService,
-        IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+        IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
         INotificationService notificationService,
         IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository,

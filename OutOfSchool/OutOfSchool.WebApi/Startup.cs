@@ -328,6 +328,10 @@ public static class Startup
         services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
         services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
+        services.AddTransient<IElasticsearchProvider<CompetitiveEventES, CompetitiveEventFilterES>, ESCompetitiveEventProvider>();
+
+        services.AddTransient<IAddNewRecordToESSynchronizationTableService, AddNewRecordToESSynchronizationTableService>();
+
         // Search string options
         services.Configure<SearchStringOptions>(configuration.GetSection(nameof(SearchStringOptions)));
         services.AddScoped<ISearchStringService, SearchStringService>();
@@ -444,6 +448,8 @@ public static class Startup
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
+
+        services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
 
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;

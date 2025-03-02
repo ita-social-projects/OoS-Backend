@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -167,6 +168,8 @@ public class ESWorkshopProviderTests
     [Test]
     public async Task ReIndexAll_WhenReIndexSuccessful_ShouldReturnUpdatedResult()
     {
+        string indexName = "test";
+
         var source = WorkshopESGenerator.Generate(5);
         elasticClientMock
             .Setup(x => x.BulkAll(
@@ -179,7 +182,7 @@ public class ESWorkshopProviderTests
                 CancellationToken.None));
 
         // Act
-        var result = await provider.ReIndexAll(source);
+        var result = await provider.ReIndexAll(source, indexName);
 
         // Assert
         elasticClientMock.Verify(
@@ -198,6 +201,8 @@ public class ESWorkshopProviderTests
     [Test]
     public void ReIndexAll_WhenReIndexFails_ShouldThrowException()
     {
+        string indexName = "test";
+
         var source = WorkshopESGenerator.Generate(3);
         var exceptionMessage = "Test exception";
         elasticClientMock
@@ -209,7 +214,7 @@ public class ESWorkshopProviderTests
 
         // Act & Assert
         Exception ex = Assert.ThrowsAsync<Exception>(
-            async () => await provider.ReIndexAll(source));
+            async () => await provider.ReIndexAll(source, indexName));
         Assert.AreEqual(exceptionMessage, ex.Message);
         elasticClientMock.Verify(
             x => x.DeleteByQueryAsync<WorkshopES>(
@@ -230,6 +235,8 @@ public class ESWorkshopProviderTests
     [Test]
     public async Task IndexAll_WhenIndexingSuccessful_ShouldReturnUpdatedResult()
     {
+        var indexName = "test";
+
         var source = WorkshopESGenerator.Generate(6);
         elasticClientMock
             .Setup(x => x.BulkAll(
@@ -242,7 +249,7 @@ public class ESWorkshopProviderTests
                 CancellationToken.None));
 
         // Act
-        var result = provider.IndexAll(source);
+        var result = provider.IndexAll(source, indexName);
 
         // Assert
         elasticClientMock.Verify(
@@ -257,6 +264,8 @@ public class ESWorkshopProviderTests
     [Test]
     public void ReIndexAll_WhenIndexingFails_ShouldThrowException()
     {
+        var indexName = "test";
+
         var source = WorkshopESGenerator.Generate(4);
         var exceptionMessage = "Test exception";
         elasticClientMock
@@ -267,7 +276,7 @@ public class ESWorkshopProviderTests
             .Throws(new Exception(exceptionMessage));
 
         // Act & Assert
-        Exception ex = Assert.Throws<Exception>(() => provider.IndexAll(source));
+        Exception ex = Assert.Throws<Exception>(() => provider.IndexAll(source, indexName));
         Assert.AreEqual(exceptionMessage, ex.Message);
         elasticClientMock.Verify(
             x => x.BulkAll(
@@ -545,6 +554,15 @@ public class ESWorkshopProviderTests
             FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
             CATOTTGId = 31375,
             OrderByField = "Nearest",
+            AgeComposition = [AgeComposition.SameAge],
+            EducationalShift = [EducationalShift.First, EducationalShift.Second],
+            SpecialNeedsType = [SpecialNeedsType.None],
+            Coverage = [Coverage.AllUkraine],
+            ShortStay = true,
+            IsSelfFinanced = true,
+            IsSpecial = true,
+            IsInclusive = true,
+            AreThereBenefits = true,
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);

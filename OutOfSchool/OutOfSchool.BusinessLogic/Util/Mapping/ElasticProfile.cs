@@ -5,7 +5,9 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using Profile = AutoMapper.Profile;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 
@@ -38,6 +40,12 @@ public class ElasticProfile : Profile
             .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.Tags,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Tags.Select(t => t.Name)))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
             .CommonFieldsMapping();
 
         CreateMap<WorkshopV2Dto, WorkshopES>()
@@ -117,6 +125,19 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.CodeficatorAddressES,
                 opt => opt.MapFrom(c => c.CATOTTG));
+
+        CreateMap<ContactsAddressDto, AddressES>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.Point,
+                opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                {
+                    Lat = gl.Latitude,
+                    Lon = gl.Longitude,
+                })))
+            .ForMember(dest => dest.City, opt => opt.Ignore())
+            .ForMember(dest => dest.CodeficatorAddressES, opt => opt.Ignore());
+
         CreateMap<ContactsAddress, AddressES>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(
@@ -176,15 +197,35 @@ public class ElasticProfile : Profile
                         src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)
                             .Aggregate(string.Empty, (accumulator, wdi) =>
                                 $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
-            
-            // TODO: Refactor address
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
-            
+
             // TODO: Copied this from base MappingProfile but this looks like some messed up lazy loading thing :)
             .ForMember(dest => dest.TakenSeats, opt =>
                 opt.MapFrom(src =>
                     src.Applications.Count(x =>
                         !x.IsDeleted && (x.Status == ApplicationStatus.Approved
-                        || x.Status == ApplicationStatus.StudyingForYears))));
+                        || x.Status == ApplicationStatus.StudyingForYears))))
+            .ForMember(
+                dest => dest.Tags,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Tags.Select(t => t.Name)));
+
+        CreateMap<CompetitiveEvent, CompetitiveEventES>()
+            .ForMember(
+                dest => dest.CompetitiveEventDescriptionItems,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.CompetitiveEventDescriptionItems
+                            .Aggregate(string.Empty, (accumulator, di) =>
+                                $"{accumulator}{di.SectionName}{Constants.MappingSeparator}{di.Description}{Constants.MappingSeparator}")))
+            .ForMember(
+                dest => dest.CompetitiveEventAccountingType,
+                opt => opt.MapFrom(src => src.CompetitiveEventAccountingType.Title))
+            .ForMember(
+                dest => dest.Coverage,
+                opt =>
+                    opt.MapFrom(src =>
+                        src.Coverage.Title));
     }
 }
