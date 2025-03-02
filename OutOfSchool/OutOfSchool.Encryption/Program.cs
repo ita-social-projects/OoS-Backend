@@ -12,8 +12,8 @@ using Serilog.Exceptions.Core;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration
-    .AddJsonFile("appsettings.jsonc", false, true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.jsonc", true, true)
+    .AddJsonFile("appsettings.jsonc", false, false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.jsonc", true, false)
     .AddUserSecrets<Program>()
     .AddEnvironmentVariables();
 
