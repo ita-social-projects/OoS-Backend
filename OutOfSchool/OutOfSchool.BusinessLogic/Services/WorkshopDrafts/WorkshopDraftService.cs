@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
@@ -16,6 +15,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using SendGrid.Helpers.Errors.Model;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
@@ -149,8 +149,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
 
-        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
-        createdDraftDto.Tags = mapper.Map<List<TagDto>>(tags);
+        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);        
 
         logger.LogDebug("WorkshopDraft created successfully.");
 
@@ -354,7 +353,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopDraftResponseDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
     {
         logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
 
@@ -378,14 +377,14 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
-        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
+        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
 
         logger.LogDebug(
             "From Workshop Drafts table for provider {Id} were successfully received {Count} records", 
             id, 
             workshopDraftResponseDtos.Count);
 
-        return new SearchResult<WorkshopDraftResponseDto>()
+        return new SearchResult<WorkshopDraftViewCardDto>()
         {
             TotalAmount = workshopBaseCardsCount,
             Entities = workshopDraftResponseDtos,
@@ -393,9 +392,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopV2Dto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
     {
-        logger.LogDebug("Started retrieving Workshops by filter for admins.");
+        logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
 
         filter ??= new WorkshopDraftFilterAdministration();
 
@@ -438,12 +437,12 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
 
-        var workshopDraftsDTO = mapper.Map<List<WorkshopV2Dto>>(workshopDrafts);
+        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftViewCardDto>(draft)).ToList();
 
-        return new SearchResult<WorkshopV2Dto>()
+        return new SearchResult<WorkshopDraftViewCardDto>()
         {
             TotalAmount = workshopDraftsCount,
-            Entities = workshopDraftsDTO,
+            Entities = entities,
         };
     }
 
@@ -463,6 +462,23 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
 
         return workshopDraft;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
+    {       
+        var draft = await workshopDraftRepository.GetById(id);
+        
+        if (draft == null)
+        {
+            throw new NotFoundException($"WorkshopDraft with id {id} not found.");
+        }
+
+        if (!await IsUserProviderOrProviderEmployee(draft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+        return mapper.Map<WorkshopDraftResponseDto>(draft);
     }
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
@@ -694,4 +710,5 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         return predicate;
     }
+   
 }

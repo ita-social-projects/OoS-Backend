@@ -28,6 +28,7 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -656,10 +657,15 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         var filter = new WorkshopDraftFilterAdministration();
-        var expected = new SearchResult<WorkshopV2Dto>
+        var expected = new SearchResult<WorkshopDraftViewCardDto>
         {
-            TotalAmount = 5,
-            Entities = WorkshopV2DtoGenerator.Generate(5),
+            TotalAmount = 3,
+            Entities = new List<WorkshopDraftViewCardDto>
+        {
+            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" },
+            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" },
+            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" }
+        }
         };
 
         sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
@@ -679,10 +685,10 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.Moderator);
         var filter = new WorkshopDraftFilterAdministration();
-        var expected = new SearchResult<WorkshopV2Dto>
+        var expected = new SearchResult<WorkshopDraftViewCardDto>
         {
             TotalAmount = 0,
-            Entities = new List<WorkshopV2Dto>(),
+            Entities = new List<WorkshopDraftViewCardDto>(),
         };
 
         sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);

@@ -72,7 +72,7 @@ public class WorkshopDraftController : ControllerBase
 
         return CreatedAtAction(
             nameof(Create),
-            new { id = result.WorkshopDraft.Id },
+            new { id = result.WorkshopDraft.WorkshopDraftId },
             result);
     }
     
@@ -166,16 +166,16 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Reject(Guid id, [FromBody] string rejectionMessage)
+    public async Task<IActionResult> Reject(Guid id, [FromBody] WorkshopDraftRejectionDto workshopDraftRejection)
     {
-        if (string.IsNullOrWhiteSpace(rejectionMessage))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("RejectionMessage can`t be empty");
+            return BadRequest(ModelState);
         }
 
         try
         {
-            await workshopDraftService.Reject(id, rejectionMessage);
+            await workshopDraftService.Reject(id, workshopDraftRejection.RejectionMessage);
             return Ok();
         }
         catch (EntityDeletedConflictException ex)
@@ -215,11 +215,11 @@ public class WorkshopDraftController : ControllerBase
     }
 
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftViewCardDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{id}")]
+    [HttpGet("provider/{id}/drafts")]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter) =>
         await workshopDraftService.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
     
@@ -241,5 +241,17 @@ public class WorkshopDraftController : ControllerBase
         }
 
         return null;
+    }
+
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("drafts/{id}")]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var responseDto = await workshopDraftService.GetWorkshopDraftByIdMapped(id);
+        return responseDto is not null ? Ok(responseDto) : NotFound();
     }
 }
