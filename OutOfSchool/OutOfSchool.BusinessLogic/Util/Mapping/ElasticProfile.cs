@@ -135,8 +135,8 @@ public class ElasticProfile : Profile
                     Lat = gl.Latitude,
                     Lon = gl.Longitude,
                 })))
-            .ForMember(dest => dest.City, opt => opt.Ignore())
-            .ForMember(dest => dest.CodeficatorAddressES, opt => opt.Ignore());
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.CodeficatorAddressDto.Settlement))
+            .ForMember(dest => dest.CodeficatorAddressES, opt => opt.MapFrom(src => src.CodeficatorAddressDto));
 
         CreateMap<ContactsAddress, AddressES>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())

@@ -104,7 +104,8 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     PhoneNumber = item.Parent.User.PhoneNumber,
                 },
                 IsBlockedByProvider = item.IsBlockedByProvider,
-                LastMessage = item.ChatMessages.Where(mess => !mess.IsDeleted && mess.CreatedDateTime == item.ChatMessages.Where(m => !m.IsDeleted).Max(m => m.CreatedDateTime))
+                LastMessage = item.ChatMessages.Where(mess => !mess.IsDeleted)
+                    .OrderByDescending(m => m.CreatedDateTime)
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
