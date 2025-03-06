@@ -1,11 +1,9 @@
-using System;
 using System.Linq;
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
@@ -37,24 +35,6 @@ public class TestMappingProfile : Profile
             .IncludeBase<Workshop, WorkshopCreateRequestDto>()
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore());
-
-        // Used in OutOfSchool.WebApi.Tests.Controllers.WorkshopControllerTests
-        // Used in OutOfSchool.WebApi.Tests.Services.WorkshopServicesCombinerTests
-        CreateMap<Workshop, WorkshopCreateRequestDto>()
-            .ForMember(
-                dest => dest.Keywords,
-                opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
-            .ForMember(
-                dest => dest.DirectionIds,
-                opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
-            .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
-            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.DateTimeRanges,
-                opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.WorkshopDescriptionItems,
-                opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
 
         // Used in OutOfSchool.WebApi.Tests.Services.WorkshopServicesCombinerTests
         CreateMap<WorkshopCreateUpdateDto, IHasRating>();
@@ -118,15 +98,6 @@ public class TestMappingProfile : Profile
         // CreateMap<Individual, UploadEmployeeRequestDto>()
         //     .ForMember(dest => dest.AssignedRole, opt => opt.Ignore());
         // CreateMap<SocialGroup, SocialGroupCreate>();
-        // CreateMap<WorkshopDto, WorkshopCreateUpdateDto>()
-        //     .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
-        // CreateMap<Workshop, WorkshopV2CreateRequestDto>()
-        //     .IncludeBase<Workshop, WorkshopCreateRequestDto>()
-        //     .ForMember(dest => dest.ImageIds,
-        //         opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
-        //     .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
-        //     .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-        //     .ForMember(dest => dest.CoverImage, opt => opt.Ignore());
         // CreateMap<WorkshopDto, Workshop>()
         //     .IncludeBase<WorkshopBaseDto, Workshop>();
         // CreateMap<WorkshopV2Dto, Workshop>()

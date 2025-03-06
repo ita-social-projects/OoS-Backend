@@ -194,6 +194,32 @@ public class MappingProfile : Profile
             .IncludeBase<WorkshopBaseDto, Workshop>()
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
+        // TODO: Refactor mapping to ES model, so that we do not use these 3 mappings
+        CreateMap<WorkshopDto, WorkshopCreateUpdateDto>()
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+        CreateMap<Workshop, WorkshopCreateRequestDto>()
+            .ForMember(
+                dest => dest.Keywords,
+                opt => opt.MapFrom(src => src.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None)))
+            .ForMember(
+                dest => dest.DirectionIds,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.DateTimeRanges,
+                opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.WorkshopDescriptionItems,
+                opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+        CreateMap<Workshop, WorkshopV2CreateRequestDto>()
+            .IncludeBase<Workshop, WorkshopCreateRequestDto>()
+            .ForMember(dest => dest.ImageIds,
+                opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
+            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImage, opt => opt.Ignore());
+
         // TODO: Remove when fully refactor addresses
         CreateMap<ContactsAddress, AddressDto>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
