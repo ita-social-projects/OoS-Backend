@@ -72,7 +72,7 @@ public class WorkshopControllerTests
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();

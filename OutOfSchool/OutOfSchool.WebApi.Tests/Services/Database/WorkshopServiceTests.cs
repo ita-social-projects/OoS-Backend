@@ -70,7 +70,7 @@ public class WorkshopServiceTests
         logger = new Mock<ILogger<WorkshopService>>();
         mapperMock = new Mock<IMapper>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ContactsProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ContactsProfile, TestMappingProfile, MappingProfile>();
         providerAdminRepository = new Mock<IEmployeeRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();

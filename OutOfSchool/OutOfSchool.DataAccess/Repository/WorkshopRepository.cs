@@ -28,7 +28,17 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             .Include(ws => ws.Teachers)
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
-            .Include(ws => ws.Tags);
+            .Include(ws => ws.Tags)
+            .Include(ws => ws.Contacts).ThenInclude(c => c.Emails)
+            .Include(ws => ws.Contacts).ThenInclude(c => c.Phones)
+            .Include(ws => ws.Contacts).ThenInclude(c => c.SocialNetworks)
+            .Include(ws => ws.Contacts)
+            .ThenInclude(c => c.Address)
+            .ThenInclude(a => a.CATOTTG)
+            .ThenInclude(c => c.Parent)
+            .ThenInclude(c => c.Parent)
+            .ThenInclude(c => c.Parent)
+            .ThenInclude(c => c.Parent);
 
         if (asNoTracking)
         {

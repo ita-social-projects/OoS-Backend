@@ -43,7 +43,7 @@ public class WorkshopServicesCombinerV2Tests
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var esProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         service = new WorkshopServicesCombinerV2(
             workshopService.Object,

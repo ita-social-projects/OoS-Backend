@@ -19,13 +19,13 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Communication.ICommunication;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -36,7 +36,7 @@ public class ProviderServiceUpdate
 {
     private IProviderService providerService;
 
-    private Mapper mapper;
+    private IMapper mapper;
     private DbContextOptions<OutOfSchoolDbContext> unitTestDbOptions;
 
     private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(this.unitTestDbOptions);
@@ -54,7 +54,7 @@ public class ProviderServiceUpdate
             await context.SaveChangesAsync();
         }
 
-        this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.UseProfile<CommonProfile>().UseProfile<MappingProfile>()));
+        this.mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
