@@ -253,16 +253,8 @@ public class TokenController : Controller
                 await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
                 
                 // Verify provider access if the user has the Provider role
-                if (await this.ShouldForbidBasedOnProviderAccess(identity))
-                {
-                    return Forbid(
-                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        properties: new AuthenticationProperties(new Dictionary<string, string>
-                        {
-                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
-                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
-                        }));
-                }
+                // TODO: while AIKOM is not operational, do not check anything.
+                // TODO: usage is in ShouldForbidBasedOnProviderAccess docs.
 
                 await _profileService.GetProfileDataAsync(identity);
 
@@ -369,16 +361,8 @@ public class TokenController : Controller
         await EnsureRequiredIdentityClaimsAsync(identity, User, user);
         
         // Verify provider access if the user has the Provider role
-        if (await this.ShouldForbidBasedOnProviderAccess(identity))
-        {
-            return Forbid(
-                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
-                {
-                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
-                }));
-        }
+        // TODO: while AIKOM is not operational, do not check anything.
+        // TODO: usage is in ShouldForbidBasedOnProviderAccess docs.
 
         await _profileService.GetProfileDataAsync(identity);
 
@@ -522,16 +506,8 @@ public class TokenController : Controller
         await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
 
         // Verify provider access if the user has the Provider role
-        if (await this.ShouldForbidBasedOnProviderAccess(identity))
-        {
-            return Forbid(
-                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties(new Dictionary<string, string>
-                {
-                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
-                }));
-        }
+        // TODO: while AIKOM is not operational, do not check anything.
+        // TODO: usage is in ShouldForbidBasedOnProviderAccess docs.
 
         identity.SetDestinations(this.GetDestinations);
 
@@ -679,6 +655,21 @@ public class TokenController : Controller
     /// <summary>
     /// Checks if the user has the Provider role and verifies their director status through the Aikom API.
     /// </summary>
+    /// <example>
+    /// Using method to verify provider access
+    /// <code>
+    /// if (await this.ShouldForbidBasedOnProviderAccess(identity))
+    /// {
+    ///     return Forbid(
+    ///         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+    ///         properties: new AuthenticationProperties(new Dictionary&lt;string, string&gt;
+    ///         {
+    ///             [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.AccessDenied,
+    ///             [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "Provider access verification failed."
+    ///         }));
+    /// }
+    /// </code>
+    /// </example>
     /// <param name="identity">The claims identity containing provider verification claims (EDRPOU, RNOKPP, AikomProviderId).</param>
     /// <returns>
     ///   <c>true</c> if the user has the Provider role and does NOT have valid director access, indicating that the request should be forbidden; otherwise, <c>false</c>.

@@ -159,24 +159,11 @@ public class ExternalAuthController : Controller
         try
         {
             var selectedRole = result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
-            long? externalProviderId = null;
             
             // For provider role, verify director access before proceeding to database operations.
-            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
-            {
-                var verificationResult = await VerifyProviderAccessAsync(userInfo);
-                if (verificationResult.errorResult != null)
-                {
-                    ModelState.AddModelError(string.Empty, verificationResult.errorResult);
-                    return View("~/Views/Auth/Login.cshtml", new LoginViewModel
-                    {
-                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                        ReturnUrl = $"~/{AuthServerConstants.LoginPath}",
-                    });
-                }
-
-                externalProviderId = verificationResult.externalProviderId;
-            }
+            long? externalProviderId = null;
+            // TODO: while AIKOM is not operational, do not check anything.
+            // TODO: usage is in VerifyProviderAccessAsync docs.
 
             var user = await GetOrCreateUserAsync(userInfo, selectedRole);
             var individual = await GetOrCreateIndividualAsync(userInfo, user);
@@ -204,10 +191,30 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Verifies if the user has access as a provider director.
+    /// Verifies if the user has access as a provider director. While AIKOM is not operational, do not check anything.
+    /// <example>
+    /// Usage in SignInUserAsync should be lke the following.
+    /// <code>
+    /// if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+    /// {
+    ///     var verificationResult = await VerifyProviderAccessAsync(userInfo);
+    ///     if (verificationResult.errorResult != null)
+    ///     {
+    ///         ModelState.AddModelError(string.Empty, verificationResult.errorResult);
+    ///         return View("~/Views/Auth/Login.cshtml", new LoginViewModel
+    ///             {
+    ///                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+    ///                 ReturnUrl = $"~/{AuthServerConstants.LoginPath}",
+    ///             });
+    ///     }
+    ///     externalProviderId = verificationResult.externalProviderId;
+    /// }
+    /// </code>
+    /// </example>
     /// </summary>
     /// <param name="userInfo">User information from external provider.</param>
     /// <returns>A tuple containing error result (if any) and external provider ID (if verified).</returns>
+    // ReSharper disable once UnusedMember.Local
     private async Task<(LocalizedString? errorResult, long? externalProviderId)> VerifyProviderAccessAsync(
         UserInfoResponse userInfo)
     {
