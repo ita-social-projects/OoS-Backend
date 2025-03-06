@@ -681,6 +681,7 @@ public class TokenController : Controller
     ///     <item>Provider is not verified as a director.</item>
     ///   </list>
     /// </returns>
+    // ReSharper disable once UnusedMember.Local
     private async Task<bool> ShouldForbidBasedOnProviderAccess(ClaimsIdentity identity)
     {
         // TODO: As we have two options to log in (password for dev and external for prod)
