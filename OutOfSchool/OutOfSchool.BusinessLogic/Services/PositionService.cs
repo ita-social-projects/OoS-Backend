@@ -73,6 +73,7 @@ public class PositionService : IPositionService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
+                includeProperties: "Provider,Officials",
                 whereExpression: predicate,
                 orderBy: sortPredicate)
             .ToListAsync()
@@ -125,7 +126,9 @@ public class PositionService : IPositionService
     private async Task CheckIfExist(Guid positionId, Guid providerId)
     {
         var position = await _entityRepositoryBase.GetByFilter(
-                x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
+                x => x.Id == positionId && 
+                x.ProviderId == providerId && !x.IsDeleted, 
+                includeProperties: "Provider,Officials").ConfigureAwait(false);
 
         if (position.Count() == 0 || position.Single().IsDeleted == true)
         {
@@ -139,8 +142,9 @@ public class PositionService : IPositionService
         await CheckIfExist(positionId, providerId);
 
         var position = await _entityRepositoryBase.GetByFilter(
-            x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted)
-            .ConfigureAwait(false);
+            x => x.Id == positionId && 
+            x.ProviderId == providerId && !x.IsDeleted,
+            includeProperties: "Provider,Officials").ConfigureAwait(false);
 
         return position.SingleOrDefault();
     }
