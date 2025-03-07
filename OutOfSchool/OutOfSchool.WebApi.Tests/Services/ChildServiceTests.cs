@@ -77,8 +77,11 @@ public class ChildServiceTests
         };
         var expectedTotalAmount = 2;
 
-        applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _) =>
+        applicationRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _, Func<IQueryable<Application>, IQueryable<Application>> includeExpression) =>
             {
                 var predicate = filter.Compile();
                 return applications.Where(predicate);
@@ -87,6 +90,7 @@ public class ChildServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
                 false))
@@ -117,8 +121,11 @@ public class ChildServiceTests
             new Application() { WorkshopId = workshopId, ChildId = children[2].Id, Status = ApplicationStatus.Pending },
         };
 
-        applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _) =>
+        applicationRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync((Expression<Func<Application, bool>> filter, string _, Func<IQueryable<Application>, IQueryable<Application>> includeExpression) =>
             {
                 var predicate = filter.Compile();
                 return applications.Where(predicate);
@@ -127,6 +134,7 @@ public class ChildServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
                 false))
@@ -273,7 +281,11 @@ public class ChildServiceTests
 
         var childList = new List<Child> { child }.BuildMock();
 
-        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
+        childRepositoryMock
+            .Setup(m => m.GetByFilterNoTracking(
+                It.IsAny<Expression<Func<Child, bool>>>(), 
+                nameof(Child.Parent),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
         childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
@@ -294,7 +306,11 @@ public class ChildServiceTests
 
         var childList = new List<Child> { child }.BuildMock();
 
-        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), nameof(Child.Parent)))
+        childRepositoryMock
+            .Setup(m => m.GetByFilterNoTracking(
+                It.IsAny<Expression<Func<Child, bool>>>(), 
+                nameof(Child.Parent),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
         childRepositoryMock.Setup(m => m.Delete(child)).Returns(Task.CompletedTask);
@@ -319,7 +335,11 @@ public class ChildServiceTests
 
         var childList = new List<Child> { child }.BuildMock();
 
-        childRepositoryMock.Setup(m => m.GetByFilterNoTracking(It.IsAny<Expression<Func<Child, bool>>>(), It.IsAny<string>()))
+        childRepositoryMock
+            .Setup(m => m.GetByFilterNoTracking(
+                It.IsAny<Expression<Func<Child, bool>>>(), It.
+                IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
         // Act and assert

@@ -16,6 +16,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -174,6 +175,7 @@ public class StatisticServiceTest
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -197,6 +199,7 @@ public class StatisticServiceTest
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -214,6 +217,7 @@ public class StatisticServiceTest
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -224,6 +228,7 @@ public class StatisticServiceTest
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -234,6 +239,7 @@ public class StatisticServiceTest
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Direction>, IQueryable<Direction>>>(),
                 It.IsAny<Expression<Func<Direction, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Direction, object>>, SortDirection>>(),
                 It.IsAny<bool>()))

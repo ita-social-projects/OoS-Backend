@@ -19,6 +19,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Common.Models;
+using Microsoft.EntityFrameworkCore.Query;
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
@@ -74,6 +75,7 @@ public class PositionServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>(),
                 It.IsAny<Expression<Func<Position, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -116,6 +118,7 @@ public class PositionServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>(),
                 It.IsAny<Expression<Func<Position, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -150,6 +153,7 @@ public class PositionServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>(),
                 It.IsAny<Expression<Func<Position, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -175,7 +179,8 @@ public class PositionServiceTests
       
         _mockRepository.Setup(r => r.GetByFilter(
             It.IsAny<Expression<Func<Position, bool>>>(),
-            It.IsAny<string>()))
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
         .ReturnsAsync(new List<Position>());
 
         // Act & Assert
@@ -192,8 +197,11 @@ public class PositionServiceTests
         var data = Positions().AsQueryable().BuildMock(); 
         var existingPosition = data.First();
                         
-        _mockRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), It.IsAny<string>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties) =>
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
         {            
             var mockData = data; // List of mock positions
             return mockData.AsQueryable().Where(predicate.Compile()).ToList();
@@ -303,8 +311,11 @@ public class PositionServiceTests
         var data = Positions().AsQueryable().BuildMock(); 
         var existingPosition = data.First();        
         
-        _mockRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), It.IsAny<string>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties) =>
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
         {
             var mockData = data;
             return mockData.AsQueryable().Where(predicate.Compile()).ToList();
@@ -331,8 +342,11 @@ public class PositionServiceTests
 
         _mockRepository.Setup(r => r.Any(It.IsAny<Expression<Func<Position, bool>>>())).ReturnsAsync(true);
 
-        _mockRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), It.IsAny<string>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties) =>
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
         {
             throw new KeyNotFoundException($"Position with positionId {existingPosition.Id} not found or it was deleted.");
         });
@@ -362,7 +376,10 @@ public class PositionServiceTests
         var updateDto = FakePositionUpdateDto();
 
         // Set up the mock repository to return the existing position
-        _mockRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), It.IsAny<string>()))
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
             .ReturnsAsync(new List<Position> { existingPosition });
 
         // Set up the update call to return the updated position
@@ -398,7 +415,10 @@ public class PositionServiceTests
         var nonExistingPositionId = Guid.NewGuid(); // A non-existing positionId
 
         // Set up the mock repository to return an empty list for the non-existing position
-        _mockRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), It.IsAny<string>()))
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
             .ReturnsAsync(new List<Position>()); // Simulate that the position doesn't exist
         
         // Act & Assert

@@ -69,35 +69,50 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
     /// </summary>
     /// <param name="id">Key in database.</param>
     /// <param name="includeProperties">Name of properties which should be included.</param>
+    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains an entity that was found, or null.</returns>
-    Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "");
+    Task<TEntity> GetByIdWithDetails(
+        TKey id,
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
 
     /// <summary>
     /// Get all elements with details.
     /// </summary>
     /// <param name="includeProperties">Name of properties which should be included.</param>
+    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-    Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "");
+    Task<IEnumerable<TEntity>> GetAllWithDetails(
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
 
     /// <summary>
     /// Get elements by a specific filter.
     /// </summary>
     /// <param name="whereExpression">Filter with key.</param>
     /// <param name="includeProperties">Name of properties which should be included.</param>
+    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-    Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> whereExpression, string includeProperties = "");
+    Task<IEnumerable<TEntity>> GetByFilter(
+        Expression<Func<TEntity, bool>> whereExpression, 
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
 
     /// <summary>
     /// Get elements by a specific filter with no tracking.
     /// </summary>
     /// <param name="whereExpression">Filter with key.</param>
     /// <param name="includeProperties">Name of properties which should be included.</param>
+    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate.
-    IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> whereExpression, string includeProperties = "");
+    IQueryable<TEntity> GetByFilterNoTracking(
+        Expression<Func<TEntity, bool>> whereExpression, 
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
 
     /// <summary>
     /// Get the amount of elements with filter or without it.
@@ -122,6 +137,7 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
     /// <param name="skip">How many records we want tp skip.</param>
     /// <param name="take">How many records we want to take.</param>
     /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>
+    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <param name="whereExpression">Filter.</param>
     /// <param name="orderBy">Filter that defines by wich properties we want to order by with ascending or descending ordering.</param>
     /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
@@ -131,6 +147,7 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
         int skip = 0,
         int take = 0,
         string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false);

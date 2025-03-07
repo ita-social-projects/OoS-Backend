@@ -129,7 +129,11 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
-        tagRepositoryMoq.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Tag, bool>>>(), It.IsAny<string>()))
+        tagRepositoryMoq
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Tag, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
             .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
         
         // Act 
@@ -390,6 +394,7 @@ public class WorkshopDraftServiceTests
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
@@ -431,6 +436,7 @@ public class WorkshopDraftServiceTests
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
                     It.IsAny<bool>()))

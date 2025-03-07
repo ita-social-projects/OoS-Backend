@@ -2,7 +2,6 @@
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using System.Collections.Generic;
@@ -214,6 +213,7 @@ public class SensitiveWorkshopDraftServiceTests
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
                     It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null),
                     It.Is<bool>(x => x.Equals(true))))

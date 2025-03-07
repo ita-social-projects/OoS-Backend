@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Authentication;
 using System.Security.Claims;
@@ -219,7 +220,11 @@ public class ChatWorkshopHubTests
 
         var validWorkshops = new List<Workshop>() { new Workshop() { Id = validWorkshopId, Provider = new Provider() { UserId = "someId" } } };
 
-        workshopRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>())).ReturnsAsync(validWorkshops);
+        workshopRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(), 
+            It.IsAny<string>(), 
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(validWorkshops);
 
         groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -227,7 +232,11 @@ public class ChatWorkshopHubTests
         clientsMock.Setup(clients => clients.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
         var validProviderAdmins = new List<Employee>();
-        employeeRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Employee, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
+        employeeRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Employee, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Employee>, IQueryable<Employee>>>()))
+            .ReturnsAsync(validProviderAdmins);
 
         workshopRepositoryMock
             .Setup(x => x.GetById(validWorkshopId))

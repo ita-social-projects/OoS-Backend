@@ -81,6 +81,7 @@ public class ExternalExportService : IExternalExportService
                     offsetFilter.From,
                     offsetFilter.Size,
                     ProviderIncludes,
+                    null, 
                     filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
@@ -123,6 +124,7 @@ public class ExternalExportService : IExternalExportService
                     offsetFilter.From,
                     offsetFilter.Size,
                     WorkshopIncludes,
+                    null,
                     filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
@@ -165,6 +167,7 @@ public class ExternalExportService : IExternalExportService
                     offsetFilter.From,
                     offsetFilter.Size,
                     CompetitiveEventsIncludes,
+                    null, 
                     filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
