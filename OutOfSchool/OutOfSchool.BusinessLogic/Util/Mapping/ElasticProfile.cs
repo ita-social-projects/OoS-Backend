@@ -18,7 +18,6 @@ public class ElasticProfile : Profile
     public ElasticProfile()
     {
         CreateMap<WorkshopDto, WorkshopES>()
-            .IncludeBase<object, IHasRating>()
             .ForMember(
                 dest => dest.Keywords,
                 opt =>
@@ -31,15 +30,7 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.WorkshopDescriptionItems
                             .Aggregate(string.Empty, (accumulator, wdi) =>
-                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderOwnership, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderStatus, opt => opt.Ignore())
-            .ForMember(dest => dest.Status, opt => opt.Ignore())
-            .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
+                                $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}")))           
             .ForMember(
                 dest => dest.Tags,
                 opt =>
@@ -47,11 +38,6 @@ public class ElasticProfile : Profile
                         src.Tags.Select(t => t.Name)))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
             .CommonFieldsMapping();
-
-        CreateMap<WorkshopV2Dto, WorkshopES>()
-            .IncludeBase<WorkshopDto, WorkshopES>()
-            .CommonFieldsMapping()
-            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId));
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(
