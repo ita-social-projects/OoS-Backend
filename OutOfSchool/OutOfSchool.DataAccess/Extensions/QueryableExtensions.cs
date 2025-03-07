@@ -16,9 +16,7 @@ public static class QueryableExtensions
 
         if (includeExpression != null)
         {
-            _ = includeExpression?.Invoke(query);
-
-            return query;
+            return includeExpression(query);
         }
 
         if (string.IsNullOrWhiteSpace(properties))

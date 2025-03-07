@@ -192,13 +192,11 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository.Get(
-                filter.From,
-                filter.Size,
-                string.Empty,
-                null,
-                filterPredicate,
-                sortExpression,
-                true)
+                skip: filter.From,
+                take: filter.Size,
+                whereExpression: filterPredicate,
+                orderBy: sortExpression,
+                asNoTracking: true)
             .Include(c => c.SocialGroups)
             .Include(c => c.Parent).ThenInclude(p => p.User)
             .ToListAsync()
@@ -274,7 +272,12 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository
-            .Get(offsetFilter.From, offsetFilter.Size, "SocialGroups", null, x => x.ParentId == parentId, sortExpression)
+            .Get(
+            skip: offsetFilter.From,
+            take: offsetFilter.Size,
+            includeProperties: "SocialGroups", 
+            whereExpression: x => x.ParentId == parentId,
+            orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -314,7 +317,7 @@ public class ChildService : IChildService
         };
 
         var children = await childRepository
-            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, null, predicate, sortExpression)
+            .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: predicate, orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 

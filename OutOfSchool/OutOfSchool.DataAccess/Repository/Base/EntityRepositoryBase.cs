@@ -146,8 +146,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetByIdWithDetails(
-        TKey id        , 
-        string includeProperties = ""        , 
+        TKey id, 
+        string includeProperties = "", 
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
                 .FirstOrDefaultAsync();

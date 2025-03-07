@@ -109,6 +109,7 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
     /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate.
+    /// </returns>
     IQueryable<TEntity> GetByFilterNoTracking(
         Expression<Func<TEntity, bool>> whereExpression, 
         string includeProperties = "",

@@ -78,11 +78,10 @@ public class ExternalExportService : IExternalExportService
                               provider.Workshops.Any(w => w.UpdatedAt > updatedAfter);
 
             var providers = await providerRepository.Get(
-                    offsetFilter.From,
-                    offsetFilter.Size,
-                    ProviderIncludes,
-                    null, 
-                    filterExpression)
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    includeProperties: ProviderIncludes,
+                    whereExpression: filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -121,11 +120,10 @@ public class ExternalExportService : IExternalExportService
                 : workshop => workshop.UpdatedAt > updatedAfter || workshop.DeleteDate > updatedAfter;
 
             var workshops = await workshopRepository.Get(
-                    offsetFilter.From,
-                    offsetFilter.Size,
-                    WorkshopIncludes,
-                    null,
-                    filterExpression)
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    includeProperties: WorkshopIncludes,
+                    whereExpression: filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -164,11 +162,10 @@ public class ExternalExportService : IExternalExportService
                 : competitiveEvent => competitiveEvent.UpdatedAt > updatedAfter || competitiveEvent.DeleteDate > updatedAfter;
 
             var events = await competitiveEventRepository.Get(
-                    offsetFilter.From,
-                    offsetFilter.Size,
-                    CompetitiveEventsIncludes,
-                    null, 
-                    filterExpression)
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    includeProperties: CompetitiveEventsIncludes,
+                    whereExpression: filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

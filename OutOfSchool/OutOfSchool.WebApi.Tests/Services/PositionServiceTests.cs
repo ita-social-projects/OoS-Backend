@@ -19,7 +19,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Common.Models;
-using Microsoft.EntityFrameworkCore.Query;
+
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
@@ -201,7 +201,7 @@ public class PositionServiceTests
             It.IsAny<Expression<Func<Position, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
         {            
             var mockData = data; // List of mock positions
             return mockData.AsQueryable().Where(predicate.Compile()).ToList();
@@ -315,7 +315,7 @@ public class PositionServiceTests
             It.IsAny<Expression<Func<Position, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
         {
             var mockData = data;
             return mockData.AsQueryable().Where(predicate.Compile()).ToList();
@@ -346,7 +346,7 @@ public class PositionServiceTests
             It.IsAny<Expression<Func<Position, bool>>>(), 
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
-        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Parent>, IQueryable<Parent>> includeExpression) =>
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
         {
             throw new KeyNotFoundException($"Position with positionId {existingPosition.Id} not found or it was deleted.");
         });

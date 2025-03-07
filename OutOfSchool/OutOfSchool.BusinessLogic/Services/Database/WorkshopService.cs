@@ -220,7 +220,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    //includeProperties: includingPropertiesForMappingDtoModel,
                     includeExpression: includeFunc,
                     orderBy: sortExpression)
                 .ToList();
@@ -308,7 +307,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
                 includeExpression: includeFunc,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
