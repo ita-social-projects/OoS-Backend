@@ -138,7 +138,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties)
+        .IncludeProperties(includeProperties, includeExpression)
         .AsNoTracking();
 
     /// <inheritdoc/>

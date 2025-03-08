@@ -27,13 +27,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
     private readonly string includingPropertiesForMappingDtoModel =
         $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
-    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = (w) =>
-    {
-        return w.Include(w => w.Teachers)
-                .Include(w => w.DateTimeRanges)
-                .Include(w => w.InstitutionHierarchy)
-                .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG);
-    };
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = 
+        w => w.Include(w => w.Teachers)
+              .Include(w => w.DateTimeRanges)
+              .Include(w => w.InstitutionHierarchy)
+              .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG);
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, Tag> tagRepository;
