@@ -83,5 +83,5 @@ public class WorkshopFilterES
 
     public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
 
-    public PayRateType PayRate { get; set; } = PayRateType.None;
+    public PayRateType PayRateType { get; set; } = PayRateType.None;
 }
