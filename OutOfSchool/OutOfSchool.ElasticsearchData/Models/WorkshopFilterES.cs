@@ -82,4 +82,6 @@ public class WorkshopFilterES
     public bool AreThereBenefits { get; set; }
 
     public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
+
+    public PayRateType PayRateType { get; set; } = PayRateType.None;
 }
