@@ -1,3 +1,5 @@
+# Trigger extracts the commit timestamp as _COMMIT_DATE_RAW from $(commit.commit.committer.date) event payload
+# and uses bash variable expansion to convert it to _COMMIT_DATE as ${_COMMIT_DATE_RAW//:/-}
 steps:
 # Build the container image
 - name: 'buildpacksio/pack'
@@ -5,6 +7,7 @@ steps:
   args:
     - build
     - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-auth:$SHORT_SHA
+    - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-auth:$SHORT_SHA-${_COMMIT_DATE}
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:auth
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --buildpack=gcr.io/paketo-buildpacks/environment-variables
@@ -14,3 +17,4 @@ steps:
     - --publish
 options:
   logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true
