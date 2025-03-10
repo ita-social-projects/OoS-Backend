@@ -19,7 +19,7 @@ public class ChildRepositoryTests
 {
     private static User user = UserGenerator.Generate();
     private static Parent parent = ParentGenerator.Generate().WithUserId(user.Id);
-    private static SocialGroup socialGroup = new SocialGroup();
+    private static SocialGroup socialGroup = new();
 
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
     private List<Child> children;

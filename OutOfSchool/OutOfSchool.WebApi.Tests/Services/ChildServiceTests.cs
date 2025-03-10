@@ -25,6 +25,10 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class ChildServiceTests
 {
+    private static User user = UserGenerator.Generate();
+    private static Parent parent = ParentGenerator.Generate().WithUserId(user.Id);
+    private static readonly SocialGroup socialGroup = new();
+    private static List<Child> children;
     private Mock<IParentRepository> parentRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> childRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<long, SocialGroup>> socialGroupRepositoryMock;
@@ -39,6 +43,8 @@ public class ChildServiceTests
     [SetUp]
     public void SetUp()
     {
+        parent.User = user;
+        children = ChildGenerator.Generate(5).WithParent(parent).WithSocial(socialGroup);
         parentRepositoryMock = new Mock<IParentRepository>();
         childRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
         socialGroupRepositoryMock = new Mock<IEntityRepositorySoftDeleted<long, SocialGroup>>();
@@ -78,7 +84,7 @@ public class ChildServiceTests
         var expectedTotalAmount = 2;
 
         applicationRepositoryMock.Setup(x => x.GetByFilter(
-            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<Expression<Func<Application, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .ReturnsAsync((Expression<Func<Application, bool>> filter, string _, Func<IQueryable<Application>, IQueryable<Application>> includeExpression) =>
@@ -122,7 +128,7 @@ public class ChildServiceTests
         };
 
         applicationRepositoryMock.Setup(x => x.GetByFilter(
-            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<Expression<Func<Application, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .ReturnsAsync((Expression<Func<Application, bool>> filter, string _, Func<IQueryable<Application>, IQueryable<Application>> includeExpression) =>
@@ -283,7 +289,7 @@ public class ChildServiceTests
 
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
-                It.IsAny<Expression<Func<Child, bool>>>(), 
+                It.IsAny<Expression<Func<Child, bool>>>(),
                 nameof(Child.Parent),
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
@@ -308,7 +314,7 @@ public class ChildServiceTests
 
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
-                It.IsAny<Expression<Func<Child, bool>>>(), 
+                It.IsAny<Expression<Func<Child, bool>>>(),
                 nameof(Child.Parent),
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
@@ -337,12 +343,45 @@ public class ChildServiceTests
 
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
-                It.IsAny<Expression<Func<Child, bool>>>(), It.
-                IsAny<string>(),
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
         // Act and assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => childService.DeleteChildCheckingItsUserIdProperty(child.Id, Guid.NewGuid().ToString(), false));
+    }
+
+    [Test]
+    public async Task GetByFilter_GetChild()
+    {
+        // Arrange
+        childRepositoryMock
+            .Setup(m => m.Get(
+                It.IsAny<int>(), 
+                It.IsAny<int>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(children.BuildMock())
+            .Verifiable(Times.Once);
+        childRepositoryMock
+            .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
+            .ReturnsAsync(children.Count)
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
+            .Returns(new List<ChildDto>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetByFilter(null);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(children.Count, result.TotalAmount);
+
+        Mock.VerifyAll();
     }
 }

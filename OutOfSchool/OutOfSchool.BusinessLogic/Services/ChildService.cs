@@ -191,14 +191,17 @@ public class ChildService : IChildService
             { x => x.Id, SortDirection.Ascending },
         };
 
-        var children = await childRepository.Get(
-                skip: filter.From,
-                take: filter.Size,
-                whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: true)
-            .Include(c => c.SocialGroups)
-            .Include(c => c.Parent).ThenInclude(p => p.User)
+        var includedFunc = (IQueryable<Child> p) => p.Include(p => p.SocialGroups)
+                                                     .Include(p => p.Parent).ThenInclude(p => p.User);
+
+        var children = await childRepository
+            .Get(
+                 skip: filter.From,
+                 take: filter.Size,
+                 includeExpression: includedFunc,
+                 whereExpression: filterPredicate,
+                 orderBy: sortExpression,
+                 asNoTracking: true)
             .ToListAsync()
             .ConfigureAwait(false);
 
