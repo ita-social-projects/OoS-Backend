@@ -1055,6 +1055,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(x => filter.Coverage.Contains(x.Coverage));
         }
 
+        if (filter.PayRate != PayRateType.None)
+        {
+            predicate = predicate.And(x => x.PayRate == filter.PayRate);
+        }
+
         return predicate;
     }
 
