@@ -37,7 +37,13 @@ public class AchievementService : IAchievementService
     {
         logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
-        var achievements = await achievementRepository.GetByFilter(x => x.Id == id && !x.AchievementType.IsDeleted).ConfigureAwait(false);
+        var achievements = await achievementRepository
+            .GetByFilter(
+                x => x.Id == id && 
+                !x.AchievementType.IsDeleted, 
+                includeProperties: "Children,Teachers")
+            .ConfigureAwait(false);
+
         var achievement = achievements.SingleOrDefault();
 
         if (achievement == null)
@@ -75,7 +81,7 @@ public class AchievementService : IAchievementService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Children",
+                includeProperties: "Children,Teachers",
                 whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);
