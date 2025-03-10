@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
@@ -16,6 +17,8 @@ namespace OutOfSchool.Tests.Common;
 // TODO: Need to refactor tests that use mappings in this file
 public class TestMappingProfile : Profile
 {
+    public const char MappingSeparator = '¤';
+
     public TestMappingProfile()
     {
         // User in OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests.
@@ -92,7 +95,7 @@ public class TestMappingProfile : Profile
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
-        
+
         // TODO: These impossible mappings are not used in tests. Leave commented for one PR
         // TODO: Remove only if they are not used in real code
         // CreateMap<Individual, UploadEmployeeRequestDto>()
@@ -102,6 +105,41 @@ public class TestMappingProfile : Profile
         //     .IncludeBase<WorkshopBaseDto, Workshop>();
         // CreateMap<WorkshopV2Dto, Workshop>()
         //     .IncludeBase<WorkshopDto, Workshop>();
+
+        //Used in OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests.ProviderServiceUpdate
+        //Used in OutOfSchool.WebApi.Tests.Services.ProviderServicesTests.ProviderServiceV2Tests
+        //Used in OutOfSchool.WebApi.Tests.Services.ProviderServicesTests.ProviderServiceTests
+        //Used in OutOfSchool.WebApi.Tests.Services.WorkshopServiceTests
+        //Used in OutOfSchool.WebApi.Tests.Services.WorkshopServicesCombinerV2Tests
+        //Used in OutOfSchool.WebApi.Tests.Services.WorkshopServicesCombinerTests
+        //Used in OutOfSchool.WebApi.Tests.Services.ProviderServiceTests
+        //Used in OutOfSchool.WebApi.Tests.Controllers.WorkshopControllerV2Tests
+        //Used in OutOfSchool.WebApi.Tests.Controllers.WorkshopControllerTests
+        //Used in OutOfSchool.WebApi.Tests.Controllers.ProviderControllersTests.ProviderControllerTests
+        CreateMap<WorkshopDto, WorkshopCreateUpdateDto>()
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+        CreateMap<Workshop, WorkshopCreateRequestDto>()
+            .ForMember(
+                dest => dest.Keywords,
+                opt => opt.MapFrom(src => src.Keywords.Split(MappingSeparator, StringSplitOptions.None)))
+            .ForMember(
+                dest => dest.DirectionIds,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+            .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.DateTimeRanges,
+                opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.WorkshopDescriptionItems,
+                opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src => src.Tags.Select(tag => tag.Id).ToList()));
+        CreateMap<Workshop, WorkshopV2CreateRequestDto>()
+            .IncludeBase<Workshop, WorkshopCreateRequestDto>()
+            .ForMember(dest => dest.ImageIds,
+                opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
+            .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImage, opt => opt.Ignore());
     }
 
     private IMappingExpression<Provider, T> AddCommonProvider2ProviderBaseDto<T>(
