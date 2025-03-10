@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
@@ -597,5 +598,36 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 Value = filter.PayRate.ToString(),
             });
         }
+    }
+
+    public async Task<(decimal MinPrice, decimal MaxPrice)> GetPriceRangeAsync(WorkshopFilterES filter)
+    {
+        var query = CreateQueryFromFilter(filter);
+
+        var request = new SearchRequest<WorkshopES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    "min_price", Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                },
+                {
+                    "max_price", Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<WorkshopES>(request);
+        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+
+        return ((decimal)minPrice, (decimal)maxPrice);
     }
 }
