@@ -62,7 +62,7 @@ public class ChildRepositoryTests
         // Assert
         Assert.AreEqual(initialChildrenCount, context.Children.IgnoreQueryFilters().Count());
         Assert.AreEqual(EntityState.Unchanged, context.Entry(child).State);
-        Assert.AreEqual(true, context.Entry(child).CurrentValues["IsDeleted"]);
+        Assert.IsTrue((bool)context.Entry(child).CurrentValues["IsDeleted"]);
     }
     #endregion
 
