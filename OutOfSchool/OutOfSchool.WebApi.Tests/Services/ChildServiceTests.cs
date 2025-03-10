@@ -353,7 +353,7 @@ public class ChildServiceTests
     }
 
     [Test]
-    public async Task GetByFilter_GetChild()
+    public async Task GetByFilter_GetChildren()
     {
         // Arrange
         childRepositoryMock
@@ -381,7 +381,70 @@ public class ChildServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(children.Count, result.TotalAmount);
+        Mock.VerifyAll();
+    }
 
+    [Test]
+    public async Task GetByParentIdOrderedByFirstName_GetChildren()
+    {
+        // Arrange
+        childRepositoryMock
+            .Setup(m => m.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(children.BuildMock())
+            .Verifiable(Times.Once);
+        childRepositoryMock
+            .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
+            .ReturnsAsync(children.Count)
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
+            .Returns(new List<ChildDto>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetByParentIdOrderedByFirstName(parent.Id, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(children.Count, result.TotalAmount);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetByUserId_GetChildren()
+    {
+        // Arrange
+        childRepositoryMock
+            .Setup(m => m.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(children.BuildMock())
+            .Verifiable(Times.Once);
+        childRepositoryMock
+            .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
+            .ReturnsAsync(children.Count)
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
+            .Returns(new List<ChildDto>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetByUserId(parent.UserId,true, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(children.Count, result.TotalAmount);
         Mock.VerifyAll();
     }
 }
