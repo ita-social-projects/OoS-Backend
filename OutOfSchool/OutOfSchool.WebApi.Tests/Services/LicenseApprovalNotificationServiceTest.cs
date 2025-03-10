@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,9 @@ public class LicenseApprovalNotificationServiceTest
 
         userRepository.Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<User, bool>>>(),
-                string.Empty)).ReturnsAsync(users.AsTestAsyncEnumerableQuery());
+                string.Empty,
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .ReturnsAsync(users.AsTestAsyncEnumerableQuery());
 
         // Act
         await licenseApprovalNotificationService.Generate().ConfigureAwait(false);

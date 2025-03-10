@@ -148,7 +148,10 @@ public class EmployeeServiceTest
             .ApiErrorResponse
             .ApiErrors
             .First();
-        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<User, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
 
         providerAdminRepository.Setup(r => r.IsExistEmployeeWithUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))

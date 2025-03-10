@@ -16,6 +16,7 @@ using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -85,9 +86,9 @@ public class ChangesLogServiceTests
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
-        regionAdminServiceMock= new Mock<IRegionAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
-        codeficatorServiceMock= new Mock<ICodeficatorService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
     }
 
     #region AddEntityChangesToDbContext
@@ -189,6 +190,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -197,6 +199,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -255,6 +258,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -263,6 +267,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -327,6 +332,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -335,6 +341,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -383,6 +390,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -391,6 +399,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -452,6 +461,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -460,6 +470,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -512,6 +523,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                 It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -571,6 +583,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -635,6 +648,7 @@ public class ChangesLogServiceTests
                 request.From,
                 request.Size,
                 string.Empty,
+                It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -702,12 +716,13 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
             .Returns(fakeData.AsTestAsyncEnumerableQuery());
 
-         // Act
+        // Act
         var result = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request);
 
         // Assert
@@ -784,6 +799,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -848,6 +864,7 @@ public class ChangesLogServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))

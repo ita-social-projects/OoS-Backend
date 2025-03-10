@@ -9,10 +9,16 @@ public static class QueryableExtensions
     public const char PROPERTIES_SEPARATOR = ',';
     private static char[] propertiesSplitSymbols = new char[] { PROPERTIES_SEPARATOR };
 
-    public static IQueryable<T> IncludeProperties<T>(this IQueryable<T> query, string properties)
+    public static IQueryable<T> IncludeProperties<T>(this IQueryable<T> query, string properties = "", Func<IQueryable<T>, IQueryable<T>> includeExpression = null)
         where T : class
     {
         ArgumentNullException.ThrowIfNull(query);
+
+        if (includeExpression != null)
+        {
+            return includeExpression(query);
+        }
+
         if (string.IsNullOrWhiteSpace(properties))
         {
             return query;

@@ -152,7 +152,9 @@ public class AreaAdminServiceTests
         var expected = mapper.Map<AreaAdminDto>(areaAdmin);
         areaAdminRepositoryMock
             .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<AreaAdmin, bool>>>(), It.IsAny<string>()))
+                .GetByFilter(It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<AreaAdmin>>(new List<AreaAdmin> { areaAdmin }));
 
         // Act
@@ -170,7 +172,10 @@ public class AreaAdminServiceTests
         // Arrange
         areaAdminRepositoryMock
             .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<AreaAdmin, bool>>>(), It.IsAny<string>()))
+                .GetByFilter(
+                It.IsAny<Expression<Func<AreaAdmin, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<AreaAdmin>>(new List<AreaAdmin>()));
 
         // Act, Assert
@@ -199,6 +204,7 @@ public class AreaAdminServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>(),
                 It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -315,7 +321,10 @@ public class AreaAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<User, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var areaAdminBaseDto = new AreaAdminBaseDto();
@@ -398,6 +407,7 @@ public class AreaAdminServiceTests
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
                 It.Is<string>(x => x == includeProperties),
+                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>(),
                 It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>(),
                 It.Is<bool>(x => x)))

@@ -158,7 +158,10 @@ public class NotificationServiceTests
 
         var unreadNotifications = new Faker<Notification>().GenerateBetween(0, faker.Random.Number(10));
         notificationRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Notification, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Notification, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult(unreadNotifications.AsEnumerable()));
         notificationRepositoryMock.Setup(x => x.Create(It.IsAny<Notification>())).Returns<Notification>(Task.FromResult);
 
@@ -213,7 +216,10 @@ public class NotificationServiceTests
 
         var unreadNotifications = new Faker<Notification>().GenerateBetween(0, faker.Random.Number(10));
         notificationRepositoryMock
-            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Notification, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Notification, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult(unreadNotifications.AsEnumerable()));
         notificationRepositoryMock.Setup(x => x.Create(It.IsAny<Notification>())).ReturnsAsync(new Notification() { Id = notificationId });
 
@@ -282,7 +288,8 @@ public class NotificationServiceTests
         notificationRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<Notification, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
 
         var expectedGrouped = notifications
@@ -340,7 +347,8 @@ public class NotificationServiceTests
         notificationRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<Notification, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
         var expected = notifications
             .Where(n => n.Type == notificationType)
@@ -365,7 +373,8 @@ public class NotificationServiceTests
         notificationRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<Notification, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
         var expected = notifications
             .Select(n => mapper.Map<NotificationDto>(n))
