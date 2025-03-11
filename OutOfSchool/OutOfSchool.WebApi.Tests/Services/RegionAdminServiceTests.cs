@@ -144,8 +144,10 @@ public class RegionAdminServiceTests
         // Arrange
         var expected = mapper.Map<RegionAdminDto>(regionAdmin);
         regionAdminRepositoryMock
-            .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin> { regionAdmin }));
 
         // Act
@@ -163,8 +165,10 @@ public class RegionAdminServiceTests
         // Arrange
         var expected = mapper.Map<RegionAdminDto>(regionAdmin);
         regionAdminRepositoryMock
-            .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<RegionAdmin, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin>()));
 
         // Act, Assert
@@ -193,6 +197,7 @@ public class RegionAdminServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>(),
                 It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -289,7 +294,11 @@ public class RegionAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<User, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var regionAdminBaseDto = new RegionAdminBaseDto();
@@ -367,6 +376,7 @@ public class RegionAdminServiceTests
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
                     It.Is<string>(x => x == includeProperties),
+                    It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>(),
                     It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
                     It.Is<bool>(x => x)))

@@ -26,7 +26,12 @@ public static class ProviderTestsHelper
     {
         var usersRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-        usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+        usersRepository
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<User, bool>>>(), 
+                string.Empty,
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 
         return usersRepository;
     }

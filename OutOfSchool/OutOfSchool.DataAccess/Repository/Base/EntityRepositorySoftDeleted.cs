@@ -31,37 +31,45 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     }
 
     /// <inheritdoc/>
-    public override async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
+    public override async Task<IEnumerable<TEntity>> GetAllWithDetails(
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
     {
         IQueryable<TEntity> query = dbSet.Where(x => !x.IsDeleted);
-        query = query.IncludeProperties(includeProperties);
+        query = query.IncludeProperties(includeProperties, includeExpression);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
-        string includeProperties = "")
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
     {
         whereExpression = this.GetWhereExpression(whereExpression);
-        return await base.GetByFilter(whereExpression, includeProperties).ConfigureAwait(false);
+        return await base.GetByFilter(whereExpression, includeProperties, includeExpression).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override IQueryable<TEntity> GetByFilterNoTracking(
         Expression<Func<TEntity, bool>> whereExpression,
-        string includeProperties = "")
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
     {
         whereExpression = this.GetWhereExpression(whereExpression);
-        return base.GetByFilterNoTracking(whereExpression, includeProperties);
+        return base.GetByFilterNoTracking(whereExpression, includeProperties, includeExpression);
     }
 
     /// <inheritdoc/>
     public override Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => !x.IsDeleted && x.Id.Equals(id));
 
     /// <inheritdoc/>
-    public override Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
-        => dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
+    public override Task<TEntity> GetByIdWithDetails(
+        TKey id,
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
+        => dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
+                .FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public override Task<int> Count(Expression<Func<TEntity, bool>> whereExpression = null)
@@ -78,11 +86,12 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         int skip = 0,
         int take = 0,
         string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
-        return base.Get(skip, take, includeProperties, this.GetWhereExpression(whereExpression), orderBy, asNoTracking);
+        return base.Get(skip, take, includeProperties, includeExpression, this.GetWhereExpression(whereExpression), orderBy, asNoTracking);
     }
 
     private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> whereExpression)

@@ -114,35 +114,43 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
+    public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => await dbSet
-        .IncludeProperties(includeProperties)
+        .IncludeProperties(includeProperties, includeExpression)
         .ToListAsync();
 
     public virtual async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
-        string includeProperties = "")
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => await this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties)
+        .IncludeProperties(includeProperties, includeExpression)
         .ToListAsync()
         .ConfigureAwait(false);
 
     /// <inheritdoc/>
     public virtual IQueryable<TEntity> GetByFilterNoTracking(
         Expression<Func<TEntity, bool>> whereExpression,
-        string includeProperties = "")
+        string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties)
+        .IncludeProperties(includeProperties, includeExpression)
         .AsNoTracking();
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
     /// <inheritdoc/>
-    public virtual Task<TEntity> GetByIdWithDetails(TKey id, string includeProperties = "")
-        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties).FirstOrDefaultAsync();
+    public virtual Task<TEntity> GetByIdWithDetails(
+        TKey id, 
+        string includeProperties = "", 
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
+                .FirstOrDefaultAsync();
 
     /// <inheritdoc/>
     public virtual async Task<TEntity> Update(TEntity entity)
@@ -191,11 +199,15 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         int skip = 0,
         int take = 0,
         string includeProperties = "",
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
         IQueryable<TEntity> query = dbSet;
+
+        query = query.IncludeProperties(includeProperties, includeExpression);
+
         if (whereExpression != null)
         {
             query = query.Where(whereExpression);
@@ -226,8 +238,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         {
             query = query.Take(take);
         }
-
-        query = query.IncludeProperties(includeProperties);
 
         return query.If(asNoTracking, q => q.AsNoTracking());
     }

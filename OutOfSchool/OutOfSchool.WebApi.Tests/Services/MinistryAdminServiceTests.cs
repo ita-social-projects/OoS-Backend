@@ -153,6 +153,7 @@ public class MinistryAdminServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -207,7 +208,10 @@ public class MinistryAdminServiceTests
             .ApiErrorResponse
             .ApiErrors
             .First();
-        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<string>()))
+        apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<User, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
 
         var ministryAdminBaseDto = new MinistryAdminBaseDto();
@@ -281,6 +285,7 @@ public class MinistryAdminServiceTests
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
                 It.Is<string>(x => x == includeProperties),
+                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>(),
                 It.Is<bool>(x => x)

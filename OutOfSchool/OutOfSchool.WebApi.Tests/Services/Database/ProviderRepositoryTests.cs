@@ -47,7 +47,9 @@ public class ProviderRepositoryTests
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
         var initialProvidersCount = context.Providers.Count(x => !x.IsDeleted);
-        var provider = context.Providers.IncludeProperties("LegalAddress,ActualAddress").First();
+        IQueryable<Provider> includeFunc(IQueryable<Provider> p) => p.Include(p => p.LegalAddress)
+                  .Include(p => p.ActualAddress);
+        var provider = context.Providers.IncludeProperties("LegalAddress,ActualAddress", includeFunc).First();
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
         var expectedAddressesCount = context.Addresses.Count() - 2; // 2 = Legal + Actual

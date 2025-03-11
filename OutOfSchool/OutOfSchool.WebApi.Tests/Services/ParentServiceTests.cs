@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -252,7 +253,7 @@ public class ParentServiceTests
         };
         var resultOfSavingToDb = 1;
         parentRepositoryMock
-            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(parent);
         parentRepositoryMock
             .Setup(x => x.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -287,7 +288,7 @@ public class ParentServiceTests
         Parent parent = null;
 
         parentRepositoryMock
-            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(parent);
 
         // Act
@@ -320,7 +321,7 @@ public class ParentServiceTests
         };
 
         parentRepositoryMock
-            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(parent);
 
         // Act

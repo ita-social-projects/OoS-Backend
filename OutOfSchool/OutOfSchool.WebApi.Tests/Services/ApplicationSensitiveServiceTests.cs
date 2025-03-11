@@ -255,6 +255,7 @@ public class ApplicationSensitiveServiceTests
                 appFilter.From,
                 appFilter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.Is<Expression<Func<Application, bool>>>(
                     // here main magic goes - verification that predicate built in service and passed to applicationRepository should behave correctly on "correct" and "wrong" applications
                     expr => correctApplications.All(expr.Compile())

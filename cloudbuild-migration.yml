@@ -1,3 +1,5 @@
+# Trigger extracts the commit timestamp as _COMMIT_DATE_RAW from $(commit.commit.committer.date) event payload
+# and uses bash variable expansion to convert it to _COMMIT_DATE as ${_COMMIT_DATE_RAW//:/-}
 steps:
 # Build .Net Migrations Bundle as container image
 - name: gcr.io/kaniko-project/executor:latest
@@ -5,6 +7,7 @@ steps:
   - --dockerfile=OutOfSchool/OutOfSchool.Migrations/Dockerfile
   - --context=dir://OutOfSchool
   - --destination=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-migrations:$SHORT_SHA
+  - --destination=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-migrations:$SHORT_SHA-${_COMMIT_DATE}
   - --cache=true
   - --cache-repo=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/kaniko-cache
   - --reproducible
@@ -12,3 +15,4 @@ steps:
   - --use-new-run
 options:
   logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true
