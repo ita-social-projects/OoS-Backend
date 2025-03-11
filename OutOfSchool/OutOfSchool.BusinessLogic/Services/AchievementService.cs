@@ -83,6 +83,7 @@ public class AchievementService : IAchievementService
                 take: filter.Size,
                 includeProperties: "Children,Teachers",
                 whereExpression: predicate)
+            .AsSingleQuery()
             .ToListAsync()
             .ConfigureAwait(false);
 
