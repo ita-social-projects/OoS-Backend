@@ -99,4 +99,12 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// <param name="partial">Object representing the fields to update.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial);
+
+    /// <summary>
+    /// Use this method to get the price range of the entities.
+    /// </summary>
+    /// <param name="filter">The filter parameters.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains the price range of the entities.</returns>
+    Task<PriceRangeES> GetPriceRangeAsync(TSearch filter = null);
 }
