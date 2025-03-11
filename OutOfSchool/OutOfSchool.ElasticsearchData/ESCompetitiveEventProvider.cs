@@ -245,4 +245,9 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
             });
         }
     }
+
+    public override Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
+    {
+        throw new NotImplementedException();
+    }
 }
