@@ -28,7 +28,6 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -657,15 +656,10 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
         var filter = new WorkshopDraftFilterAdministration();
-        var expected = new SearchResult<WorkshopDraftViewCardDto>
+        var expected = new SearchResult<WorkshopDraftResponseDto>
         {
-            TotalAmount = 3,
-            Entities = new List<WorkshopDraftViewCardDto>
-        {
-            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" },
-            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" },
-            new WorkshopDraftViewCardDto { WorkshopDraftId = Guid.NewGuid(), DraftStatus = WorkshopDraftStatus.PendingModeration, Title = "img1" }
-        }
+            TotalAmount = 5,            
+            Entities = new List<WorkshopDraftResponseDto>(5),
         };
 
         sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
@@ -685,10 +679,10 @@ public class AdminControllerTests
         controller.ControllerContext.HttpContext = fakeHttpContext;
         controller.ControllerContext.HttpContext.SetContextUser(Role.Moderator);
         var filter = new WorkshopDraftFilterAdministration();
-        var expected = new SearchResult<WorkshopDraftViewCardDto>
+        var expected = new SearchResult<WorkshopDraftResponseDto>
         {
             TotalAmount = 0,
-            Entities = new List<WorkshopDraftViewCardDto>(),
+            Entities = new List<WorkshopDraftResponseDto>(),
         };
 
         sensitiveWorkshopDraftService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
