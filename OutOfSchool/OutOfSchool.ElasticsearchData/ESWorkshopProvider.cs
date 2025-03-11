@@ -562,7 +562,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         }
     }
 
-    public async Task<(decimal MinPrice, decimal MaxPrice)> GetPriceRangeAsync(WorkshopFilterES filter)
+    public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
     {
         var query = CreateQueryFromFilter(filter);
 
@@ -590,6 +590,10 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
         var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
 
-        return ((decimal)minPrice, (decimal)maxPrice);
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
     }
 }
