@@ -37,11 +37,14 @@ public class AchievementService : IAchievementService
     {
         logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
+        var includedFunc = (IQueryable<Achievement> p) => p.Include(p => p.Children)
+                                                           .Include(p => p.Teachers)
+                                                           .Include(p => p.AchievementType);
         var achievements = await achievementRepository
             .GetByFilter(
                 x => x.Id == id && 
-                !x.AchievementType.IsDeleted, 
-                includeProperties: "Children,Teachers,AchievementType")
+                !x.AchievementType.IsDeleted,
+                includeExpression: includedFunc)
             .ConfigureAwait(false);
 
         var achievement = achievements.SingleOrDefault();
@@ -77,13 +80,16 @@ public class AchievementService : IAchievementService
 
         int count = await achievementRepository.Count(predicate).ConfigureAwait(false);
 
+        var includedFunc = (IQueryable<Achievement> p) => p.Include(p => p.Children)
+                                                           .Include(p => p.Teachers)
+                                                           .Include(p => p.AchievementType);
+
         var achievements = await achievementRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Children,Teachers,AchievementType",
-                whereExpression: predicate)
-            //.AsSingleQuery()
+                includeExpression: includedFunc,
+                whereExpression: predicate)            
             .ToListAsync()
             .ConfigureAwait(false);
 
