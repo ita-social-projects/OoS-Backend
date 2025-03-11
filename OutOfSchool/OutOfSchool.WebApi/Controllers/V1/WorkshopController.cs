@@ -521,6 +521,27 @@ public class WorkshopController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Gets price range of filtered workshops.
+    /// </summary>
+    /// <param name="filter">Filter for workshop entities.</param>
+    /// <returns><see cref="PriceRange"/></returns>
+    /// <response code="200">If the price range was returned.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+    /// <response code="500">If any server error occures.</response>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("price-range")]
+    public async Task<IActionResult> GetPriceRange(WorkshopFilter filter = null)
+    {
+        var priceRange = await combinedWorkshopService.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        return Ok(priceRange);
+    }
+
     private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
     {
         if (User.IsInRole(nameof(Role.Provider).ToLower()))
