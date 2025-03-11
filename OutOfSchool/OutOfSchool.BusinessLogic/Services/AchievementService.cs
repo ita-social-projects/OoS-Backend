@@ -41,7 +41,7 @@ public class AchievementService : IAchievementService
             .GetByFilter(
                 x => x.Id == id && 
                 !x.AchievementType.IsDeleted, 
-                includeProperties: "Children,Teachers")
+                includeProperties: "Children,Teachers,AchievementType") // try to add workshop
             .ConfigureAwait(false);
 
         var achievement = achievements.SingleOrDefault();
@@ -81,9 +81,9 @@ public class AchievementService : IAchievementService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Children,Teachers",
+                includeProperties: "Children,Teachers,AchievementType",
                 whereExpression: predicate)
-            .AsSingleQuery()
+            //.AsSingleQuery()
             .ToListAsync()
             .ConfigureAwait(false);
 
