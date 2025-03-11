@@ -41,7 +41,7 @@ public class AchievementService : IAchievementService
             .GetByFilter(
                 x => x.Id == id && 
                 !x.AchievementType.IsDeleted, 
-                includeProperties: "Children,Teachers,AchievementType") // try to add workshop
+                includeProperties: "Children,Teachers,AchievementType")
             .ConfigureAwait(false);
 
         var achievement = achievements.SingleOrDefault();
