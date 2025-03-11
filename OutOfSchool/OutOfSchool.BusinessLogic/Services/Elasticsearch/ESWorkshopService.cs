@@ -159,6 +159,23 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
         return false;
     }
 
+    /// <inheritdoc/>
+    public async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter)
+    {
+        try
+        {
+            var result = await esProvider.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch price range for filter: {@Filter}", filter);
+
+            return new PriceRangeES();
+        }
+    }
+
     private void NullCheck(WorkshopES entity)
     {
         if (entity is null)
