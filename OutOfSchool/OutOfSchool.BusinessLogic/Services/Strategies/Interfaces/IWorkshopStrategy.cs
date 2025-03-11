@@ -6,4 +6,6 @@ namespace OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 public interface IWorkshopStrategy
 {
     Task<SearchResult<WorkshopCard>> SearchAsync(WorkshopFilter filter);
+
+    Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter);
 }

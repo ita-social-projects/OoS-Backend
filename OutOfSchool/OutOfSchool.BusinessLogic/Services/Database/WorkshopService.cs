@@ -781,6 +781,32 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         };
     }
 
+    /// <inheritdoc/>
+    public async Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter = null)
+    {
+        logger.LogDebug("Getting Price Range for workshops by filter started.");
+
+        filter ??= new WorkshopFilter();
+
+        var filterPredicate = PredicateBuild(filter);
+
+        var minPrice = await workshopRepository.Get()
+            .Where(filterPredicate)
+            .MinAsync(w => w.Price)
+            .ConfigureAwait(false);
+
+        var maxPrice = await workshopRepository.Get()
+            .Where(filterPredicate)
+            .MaxAsync(w => w.Price)
+            .ConfigureAwait(false);
+
+        return new PriceRange
+        {
+            MinPrice = minPrice,
+            MaxPrice = maxPrice,
+        };
+    }
+
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
         if (currentUserService.IsMinistryAdmin())
