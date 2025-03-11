@@ -36,7 +36,7 @@ public class WorkshopServiceStrategy : IWorkshopStrategy
     {
         filter ??= new WorkshopFilter();
 
-        var databaseResult = await workshopService.GetPriceRange(filter).ConfigureAwait(false);
+        var databaseResult = await workshopService.GetPriceRangeAsync(filter).ConfigureAwait(false);
 
         if (databaseResult.MinPrice == 0 && databaseResult.MaxPrice == 0)
         {

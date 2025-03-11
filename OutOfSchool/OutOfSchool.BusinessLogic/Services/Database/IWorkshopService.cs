@@ -167,5 +167,5 @@ public interface IWorkshopService
     /// <param name="filter">Workshop's filter.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains the price range of the entities.</returns>
-    Task<PriceRange> GetPriceRange(WorkshopFilter filter = null);
+    Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter = null);
 }
