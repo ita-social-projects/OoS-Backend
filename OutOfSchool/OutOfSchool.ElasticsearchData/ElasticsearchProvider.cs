@@ -124,4 +124,7 @@ public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchPr
 
         return result.Result;
     }
+
+    /// <inheritdoc/>
+    public abstract Task<PriceRangeES> GetPriceRangeAsync(TSearch filter = null);
 }
