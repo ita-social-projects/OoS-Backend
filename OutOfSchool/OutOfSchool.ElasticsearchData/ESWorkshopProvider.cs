@@ -40,6 +40,41 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         };
     }
 
+    public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
+    {
+        var query = CreateQueryFromFilter(filter);
+
+        var request = new SearchRequest<WorkshopES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    "min_price", Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                },
+                {
+                    "max_price", Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<WorkshopES>(request);
+        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
+    }
+
     private Query CreateQueryFromFilter(WorkshopFilterES filter)
     {
         var query = new BoolQuery
@@ -560,40 +595,5 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 Value = filter.PayRate.ToString(),
             });
         }
-    }
-
-    public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
-    {
-        var query = CreateQueryFromFilter(filter);
-
-        var request = new SearchRequest<WorkshopES>
-        {
-            Query = query,
-            Aggregations = new Dictionary<string, Aggregation>
-            {
-                {
-                    "min_price", Aggregation.Min(new MinAggregation
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.Price)
-                    })
-                },
-                {
-                    "max_price", Aggregation.Max(new MaxAggregation
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.Price)
-                    })
-                }
-            }
-        };
-
-        var response = await ElasticClient.SearchAsync<WorkshopES>(request);
-        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
-        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
-
-        return new PriceRangeES()
-        {
-            MaxPrice = Convert.ToDecimal(maxPrice),
-            MinPrice = Convert.ToDecimal(minPrice),
-        };
     }
 }
