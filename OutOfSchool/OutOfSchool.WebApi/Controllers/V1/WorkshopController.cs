@@ -534,8 +534,8 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("price-range")]
-    public async Task<IActionResult> GetPriceRange(WorkshopFilter filter = null)
+    [HttpGet]
+    public async Task<IActionResult> GetPriceRange([FromQuery] WorkshopFilter filter = null)
     {
         var priceRange = await combinedWorkshopService.GetPriceRangeAsync(filter).ConfigureAwait(false);
 
