@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Google.Cloud.Storage.V1;
 using Minio;
-using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.ExternalFileStore.Extensions;
+using OutOfSchool.ExternalFileStore.FakeImplementations;
 using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.S3;
 

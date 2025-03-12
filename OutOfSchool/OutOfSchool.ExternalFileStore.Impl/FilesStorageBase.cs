@@ -101,7 +101,7 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         return h;
     }
 
-    private static string CreateFullPathFromFileId(string fileId, string? main_subfolder = null)
+    private static string CreateFullPathFromFileId(string fileId, string? prefix = null)
     {
         int hash = GetHashCodeString(fileId);
         int mask = 255;
@@ -111,10 +111,10 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         // Build the path using the directory separator and formatting each byte as two-digit hexadecimal.
         var sb = new StringBuilder();
 
-        if (!string.IsNullOrEmpty(main_subfolder))
+        if (!string.IsNullOrEmpty(prefix))
         {
             sb.Append('/')
-              .Append(main_subfolder.ToLower())
+              .Append(prefix.ToLower())
               .Append('/');
         }
         else

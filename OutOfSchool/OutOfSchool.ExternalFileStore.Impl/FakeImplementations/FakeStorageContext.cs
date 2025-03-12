@@ -1,6 +1,4 @@
-﻿using OutOfSchool.ExternalFileStore;
-
-namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
+﻿namespace OutOfSchool.ExternalFileStore.FakeImplementations;
 
 /// <summary>
 /// Represents a storage context for fake File Storage.

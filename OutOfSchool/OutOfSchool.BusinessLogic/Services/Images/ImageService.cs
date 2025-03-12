@@ -199,14 +199,14 @@ public class ImageService : IImageService
         return await RemovingImageProcessAsync(imageId).ConfigureAwait(false);
     }
 
-    private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType, string? main_subfolder = null)
+    private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType, string? prefix = null)
     {
         try
         {
             var imageStorageId = await imageStorage
                 .UploadAsync(
                     new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
-                    main_subfolder,
+                    prefix,
                     Constants.PublicImageCacheControl)
                 .ConfigureAwait(false);
 

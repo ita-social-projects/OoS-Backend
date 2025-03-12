@@ -1,7 +1,6 @@
-using OutOfSchool.ExternalFileStore;
-using OutOfSchool.ExternalFileStore.Models;
+﻿using OutOfSchool.ExternalFileStore.Models;
 
-namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
+namespace OutOfSchool.ExternalFileStore.FakeImplementations;
 
 /// <summary>
 /// Only for development purposes. Used as a fake storage whenever no need to interplay with storage.
@@ -38,7 +37,7 @@ where TFile : FileModel, new()
         await StorageClient.DeleteAsync(fileId);
     }
 
-    protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string prefix = null, object options = null)
+    protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         return AsyncEnumerable.Empty<StorageObject>();
     }

@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.ExternalFileStore.Models;
 
-namespace OutOfSchool.BusinessLogic.Util.FakeImplementations;
+namespace OutOfSchool.ExternalFileStore.FakeImplementations;
 
 /// <summary>
 /// Only for development purposes. Used as fake storage client interface whenever no need to interplay with storage.
