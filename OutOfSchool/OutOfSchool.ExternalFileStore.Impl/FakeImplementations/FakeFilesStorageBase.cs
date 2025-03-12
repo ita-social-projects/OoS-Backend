@@ -32,12 +32,12 @@ where TFile : FileModel, new()
         return Task.FromResult(fullFileName);
     }
 
-    protected override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
+    protected sealed override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
         await StorageClient.DeleteAsync(fileId);
     }
 
-    protected override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
+    protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         return AsyncEnumerable.Empty<StorageObject>();
     }
