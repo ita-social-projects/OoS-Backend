@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Google.Cloud.Storage.V1;
 using Minio;
-using OutOfSchool.BusinessLogic.Util.FakeImplementations;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.ExternalFileStore.Extensions;
+using OutOfSchool.ExternalFileStore.FakeImplementations;
 using OutOfSchool.ExternalFileStore.Gcs;
 using OutOfSchool.ExternalFileStore.S3;
 
@@ -30,7 +30,11 @@ public static class FileStorageExtensions
         // Use fake storage if images are disabled or fake provider is configured
         if (!isImagesFeatureEnabled || options.Provider == StorageProviderType.Fake)
         {
-            return services.AddTransient<IImageStorage, FakeImagesStorage>();
+            services.AddSingleton<IStorageContext<IFakeStorageClient>, FakeStorageContext>(_ =>
+                new FakeStorageContext(null, "FakeBucket"));
+            services.AddScoped<FakeImagesStorage>();
+            services.AddScoped<IImageStorage>(p => p.GetRequiredService<FakeImagesStorage>());
+            return services.AddScoped<IObjectImageStorage>(p => p.GetRequiredService<FakeImagesStorage>());
         }
         
         ValidateOptions(options);

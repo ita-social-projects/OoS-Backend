@@ -1,24 +1,18 @@
 using Google.Apis.Util;
 using Minio;
 using Minio.DataModel.Args;
+using Minio.Exceptions;
 using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 
 namespace OutOfSchool.ExternalFileStore.S3;
 
 public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> storageContext)
-    : IObjectStorage<TFile, string>
+    : FilesStorageBase<TFile, IMinioClient>(storageContext)
     where TFile : FileModel, new()
 {
-    private protected IMinioClient StorageClient { get; } = storageContext.StorageClient;
-
-    private protected string BucketName { get; } = storageContext.BucketName;
-
-
-    public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
+    protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default)
     {
-        _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        var fileStream = new MemoryStream();
         try
         {
             var args = new GetObjectArgs()
@@ -30,65 +24,54 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
                 cancellationToken);
 
             fileStream.Position = 0;
-            return new TFile {ContentStream = fileStream, ContentType = fileObject.ContentType};
+
+            return new TFile { ContentStream = fileStream, ContentType = fileObject.ContentType };
         }
-        catch (Exception ex)
+        catch (MinioException ex)
         {
             await fileStream.DisposeAsync();
             throw new FileStorageException(ex);
         }
+        catch
+        {
+            await fileStream.DisposeAsync();
+            throw;
+        }
     }
 
-    public async Task<string> UploadAsync(TFile file, string cacheControl,
-        IDictionary<string, string>? metadata, CancellationToken cancellationToken = default)
+    protected sealed override async Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
+        IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
     {
-        _ = file ?? throw new ArgumentNullException(nameof(file));
-        metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
-
         if (!string.IsNullOrEmpty(cacheControl))
         {
             metadata["Cache-Control"] = cacheControl;
         }
 
-        try
-        {
-            var fileId = this.GenerateFileId();
-            file.ContentStream.Position = 0;
-            var args = new PutObjectArgs()
-                .WithBucket(BucketName)
-                .WithObject(fileId)
-                .WithStreamData(file.ContentStream)
-                .WithObjectSize(file.ContentStream.Length)
-                .WithContentType(file.ContentType)
-                .WithHeaders(metadata);
-            var dataObject = await StorageClient.PutObjectAsync(
+        file.ContentStream.Position = 0;
+        var args = new PutObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(fullFileName)
+            .WithStreamData(file.ContentStream)
+            .WithObjectSize(file.ContentStream.Length)
+            .WithContentType(file.ContentType)
+            .WithHeaders(metadata);
+        var dataObject = await StorageClient.PutObjectAsync(
                 args,
                 cancellationToken);
-            return dataObject.ObjectName;
-        }
-        catch (Exception ex)
-        {
-            throw new FileStorageException(ex);
-        }
+
+        return dataObject.ObjectName;
     }
 
-    public async Task DeleteAsync(string fileId, CancellationToken cancellationToken = default)
+    protected sealed override async Task DeleteOperationAsync(string fileId, CancellationToken cancellationToken = default)
     {
-        _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
-        try
-        {
-            var args = new RemoveObjectArgs()
-                .WithBucket(BucketName)
-                .WithObject(fileId);
-            await StorageClient.RemoveObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new FileStorageException(ex);
-        }
+        var args = new RemoveObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(fileId);
+
+        await StorageClient.RemoveObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    public IAsyncEnumerable<StorageObject> ListObjectsAsync(string? prefix = null, object? options = null)
+    protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         if (options is ListObjectsArgs args)
         {
@@ -105,11 +88,5 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
 
         throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsArgs)}", nameof(options));
-    }
-
-    /// <inheritdoc/>
-    public virtual string GenerateFileId()
-    {
-        return Guid.NewGuid().ToString();
     }
 }
