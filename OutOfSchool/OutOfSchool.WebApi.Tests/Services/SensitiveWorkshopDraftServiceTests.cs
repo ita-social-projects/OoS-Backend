@@ -158,7 +158,7 @@ public class SensitiveWorkshopDraftServiceTests
     }
     #endregion
 
-    private SearchResult<WorkshopDraftViewCardDto> SetupFetchByFilterForAdmins(
+    private SearchResult<WorkshopDraftResponseDto> SetupFetchByFilterForAdmins(
         string userId = null,
         bool isRegionAdmin = false,
         bool isMinistryAdmin = false,
@@ -171,7 +171,7 @@ public class SensitiveWorkshopDraftServiceTests
     {
         var workshops = WorkshopGenerator.Generate(5).ToList();
         var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshops);
-        var workshopDraftDtos = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
+        var workshopDraftDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
         SetUpWorkshopsRepository(workshopDrafts, filter);
@@ -188,7 +188,7 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);
 
-        return new SearchResult<WorkshopDraftViewCardDto>()
+        return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftDtos.Count,
             Entities = workshopDraftDtos,
