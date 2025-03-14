@@ -1,7 +1,9 @@
 ﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.ElasticsearchData.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -60,6 +62,41 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         AddScheduledStartTimeQuery(query, filter);
 
         return query;
+    }
+
+    public override async Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
+    {
+        var query = CreateQueryFromFilter(filter);
+
+        var request = new SearchRequest<CompetitiveEventES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    "min_price", Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                },
+                {
+                    "max_price", Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<CompetitiveEventES>(request);
+        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
     }
 
     private void AddSearchTextQuery(BoolQuery query, CompetitiveEventFilterES filter)
@@ -205,10 +242,5 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
                 Lte = filter.MaxScheduledStartTime.ToString(),
             });
         }
-    }
-
-    public override Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
-    {
-        throw new NotImplementedException();
     }
 }
