@@ -101,6 +101,41 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         return query;
     }
 
+    public override async Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
+    {
+        var query = CreateQueryFromFilter(filter);
+
+        var request = new SearchRequest<CompetitiveEventES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    "min_price", Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                },
+                {
+                    "max_price", Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<CompetitiveEventES>(request);
+        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
+    }
+
     private void AddSearchTextQuery(BoolQuery query, CompetitiveEventFilterES filter)
     {
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
@@ -244,10 +279,5 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
                 Lte = filter.MaxScheduledStartTime.ToString(),
             });
         }
-    }
-
-    public override Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
-    {
-        throw new NotImplementedException();
     }
 }
