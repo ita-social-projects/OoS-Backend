@@ -15,6 +15,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
+    private readonly string includeProperties = $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
 
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -47,7 +48,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogDebug("Getting CompetitiveEvent by Id started. Looking Id = {id}.", id);
 
-        var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false));
+        var competitiveEvent = (await competitiveEventRepository.GetByIdWithDetails(id, includeProperties).ConfigureAwait(false));
 
         var logMessage = competitiveEvent is null
             ? "CompetitiveEvent with Id = {id} doesn't exist in the system."
@@ -69,7 +70,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
 
-        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty()) // test please
+        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty())
         {
             competitiveEvent.CompetitiveEventDescriptionItems =
             dto.CompetitiveEventDescriptionItems.Select(mapper.Map<CompetitiveEventDescriptionItem>).ToList();
@@ -90,7 +91,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 
-        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, "CompetitiveEventDescriptionItems").ConfigureAwait(false);
+        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, includeProperties).ConfigureAwait(false);
 
         if (competitiveEvent is null)
         {
