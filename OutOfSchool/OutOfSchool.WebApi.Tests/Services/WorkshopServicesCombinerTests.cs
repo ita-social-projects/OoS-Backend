@@ -431,4 +431,22 @@ public class WorkshopServicesCombinerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(priceRange, result);
     }
+
+    [Test]
+    public async Task GetPriceRangeAsync_WhenFilterIsNotValid_ReturnsDefaultPriceRange()
+    {
+        // Arrange
+        var priceRange = new PriceRange();
+        WorkshopFilter filter = null;
+
+        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(priceRange.MaxPrice, result.MaxPrice);
+        Assert.AreEqual(priceRange.MinPrice, result.MinPrice);
+    }
 }
