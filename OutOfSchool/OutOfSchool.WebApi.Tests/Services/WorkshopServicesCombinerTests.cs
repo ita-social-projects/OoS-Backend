@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
@@ -35,6 +36,7 @@ public class WorkshopServicesCombinerTests
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProvider;
     private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
+    private Mock<IWorkshopStrategy> workshopStrategy;
     private IWorkshopServicesCombiner service;
 
     [SetUp]
@@ -46,7 +48,7 @@ public class WorkshopServicesCombinerTests
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         applicationRepository = new Mock<IApplicationRepository>();
-        var workshopStrategy = new Mock<IWorkshopStrategy>();
+        workshopStrategy = new Mock<IWorkshopStrategy>();
         var currentUserService = new Mock<ICurrentUserService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var regionAdminService = new Mock<IRegionAdminService>();
@@ -406,5 +408,27 @@ public class WorkshopServicesCombinerTests
                 It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c[titleKey] == workshop.Title),
                 null),
             Times.Once);
+    }
+
+    [Test]
+    public async Task GetPriceRangeAsync_WhenCalled_ReturnsPriceRange()
+    {
+        // Arrange
+        var priceRange = new PriceRange()
+        {
+            MinPrice = 100,
+            MaxPrice = 200
+        };
+        var filter = new WorkshopFilter();
+
+        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+        workshopStrategy.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(priceRange, result);
     }
 }
