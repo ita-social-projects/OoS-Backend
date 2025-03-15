@@ -417,7 +417,7 @@ public class WorkshopServicesCombinerTests
         };
         var filter = new WorkshopFilter();
 
-        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
+        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
         workshopStrategy.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
 
         // Act
