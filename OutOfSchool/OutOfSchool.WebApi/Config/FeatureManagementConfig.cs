@@ -19,4 +19,6 @@ public class FeatureManagementConfig
     public bool TechAdminExport { get; set; }
 
     public bool DirectionManagement { get; set; }
+
+    public bool CreateAchievement { get; set; }
 }
