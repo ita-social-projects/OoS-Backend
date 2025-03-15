@@ -435,7 +435,7 @@ public class WorkshopServicesCombinerTests
         var priceRange = new PriceRange();
         WorkshopFilter filter = null;
 
-        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
+        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
 
         // Act
         var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
