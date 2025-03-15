@@ -13,5 +13,6 @@ public enum Feature
     TechAdminImport,
     TechAdminExport,
     DirectionManagement,
-    CreateAchievement
+    CreateAchievement,
+    AdminsChildernParentsManagement
 }
