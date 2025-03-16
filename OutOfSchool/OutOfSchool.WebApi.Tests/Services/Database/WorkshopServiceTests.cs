@@ -1276,7 +1276,7 @@ public class WorkshopServiceTests
 
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
-        var queryableWorkshops = workshops.AsQueryable();
+        var queryableWorkshops = workshops.AsQueryable().BuildMock();
 
         workshopRepository.Setup(w => w
             .GetByFilter(
