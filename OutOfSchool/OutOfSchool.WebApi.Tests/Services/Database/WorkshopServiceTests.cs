@@ -944,21 +944,7 @@ public class WorkshopServiceTests
         SetupGetPriceRange(workshops);
 
         // Act
-        var result = await workshopService.GetPriceRange(null).ConfigureAwait(false);
-
-        // Assert
-        result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
-    }
-
-    [Test]
-    public async Task GetPriceRange_WhenQueryIsEmpty_ReturnsDefaultPriceRange()
-    {
-        // Arrange
-        var workshops = new List<Workshop>();
-        SetupGetPriceRange(workshops);
-
-        // Act
-        var result = await workshopService.GetPriceRange(null).ConfigureAwait(false);
+        var result = await workshopService.GetPriceRangeAsync(null).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
@@ -1290,15 +1276,23 @@ public class WorkshopServiceTests
 
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
-        var queryableWorkshops = workshops.AsQueryable();
-
+        var queryableWorkshops = workshops.AsQueryable().BuildMock();
         workshopRepository.Setup(w => w
-            .GetByFilter(
+                .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .ReturnsAsync(workshops.Count());
+        workshopRepository.Setup(w => w
+            .Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<string>()))
-            .ReturnsAsync(queryableWorkshops).Verifiable();
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
+        mapperMock
+            .Setup(m => m.Map<List<WorkshopCard>>(workshops))
+            .Returns(workshops
+                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, Id = w.Id, }).ToList());
     }
-
     #endregion
 
     #region Expected
@@ -1370,11 +1364,6 @@ public class WorkshopServiceTests
 
     private PriceRange ExpectedPriceRange(IEnumerable<Workshop> workshops)
     {
-        if (!workshops.Any())
-        {
-            return new PriceRange();
-        }
-
         var minPrice = workshops.Min(w => w.Price);
         var maxPrice = workshops.Max(w => w.Price);
         return new PriceRange() { MinPrice = minPrice, MaxPrice = maxPrice };

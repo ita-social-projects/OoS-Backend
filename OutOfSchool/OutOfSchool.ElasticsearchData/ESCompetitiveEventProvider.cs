@@ -103,6 +103,8 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
 
     public override async Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
     {
+        filter ??= new CompetitiveEventFilterES();
+
         var query = CreateQueryFromFilter(filter);
 
         var request = new SearchRequest<CompetitiveEventES>
@@ -134,6 +136,37 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
             MaxPrice = Convert.ToDecimal(maxPrice),
             MinPrice = Convert.ToDecimal(minPrice),
         };
+    }
+
+    private Query CreateQueryFromFilter(CompetitiveEventFilterES filter)
+    {
+        var query = new BoolQuery()
+        {
+            Filter = [],
+            Must = []
+        };
+
+        if (filter.Ids.Count != 0)
+        {
+            query.Filter.Add(new IdsQuery()
+            {
+                Values = filter.Ids.Select(id => id.ToString()).ToArray(),
+            });
+            return query;
+        }
+
+        AddSearchTextQuery(query, filter);
+        AddStatesQuery(query, filter);
+        AddPlannedFormatOfClassesQuery(query, filter);
+        AddOptionsForPeopleWithDisabilitiesQuery(query, filter);
+        AddAreThereBenefitsQuery(query, filter);
+        AddCompetitiveSelectionQuery(query, filter);
+        AddPriceQuery(query, filter);
+        AddAgeQuery(query, filter);
+        AddRegistrationEndTimeQuery(query, filter);
+        AddScheduledStartTimeQuery(query, filter);
+
+        return query;
     }
 
     private void AddSearchTextQuery(BoolQuery query, CompetitiveEventFilterES filter)
