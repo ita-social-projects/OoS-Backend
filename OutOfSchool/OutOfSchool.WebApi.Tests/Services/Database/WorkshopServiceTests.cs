@@ -1276,14 +1276,17 @@ public class WorkshopServiceTests
 
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
-        var queryableWorkshops = workshops.AsQueryable().BuildMock();
+        var queryableWorkshops = workshops.AsQueryable();
 
         workshopRepository.Setup(w => w
-            .GetByFilter(
+            .Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                ""
-            ))
-            .ReturnsAsync(queryableWorkshops);
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(queryableWorkshops);
     }
     #endregion
 
