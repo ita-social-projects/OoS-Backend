@@ -1276,8 +1276,10 @@ public class WorkshopServiceTests
 
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
-        var queryableWorkshops = workshops.AsQueryable().BuildMock();
-
+        var queryableWorkshops = workshops.AsQueryable().BuildMockDbSet().Object;
+        workshopRepository.Setup(w => w
+                .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .ReturnsAsync(workshops.Count());
         workshopRepository.Setup(w => w
             .Get(
                 It.IsAny<int>(),
