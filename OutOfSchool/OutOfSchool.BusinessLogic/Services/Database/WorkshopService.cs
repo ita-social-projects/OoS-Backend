@@ -790,15 +790,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var filterPredicate = PredicateBuild(filter);
 
-        var minPrice = await workshopRepository.Get()
-            .Where(filterPredicate)
-            .MinAsync(w => w.Price)
-            .ConfigureAwait(false);
-
-        var maxPrice = await workshopRepository.Get()
-            .Where(filterPredicate)
-            .MaxAsync(w => w.Price)
-            .ConfigureAwait(false);
+        var query = workshopRepository
+            .Get(whereExpression: filterPredicate);
+        var minPrice = await query.MinAsync(w => w.Price).ConfigureAwait(false);
+        var maxPrice = await query.MaxAsync(w => w.Price).ConfigureAwait(false);
 
         return new PriceRange
         {

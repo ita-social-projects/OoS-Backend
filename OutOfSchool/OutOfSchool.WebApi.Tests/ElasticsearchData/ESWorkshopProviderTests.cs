@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Transport;
 using Microsoft.AspNetCore.Http;
@@ -653,6 +654,47 @@ public class ESWorkshopProviderTests
                 It.IsAny<UpdateRequestDescriptor<WorkshopES, object>>(), CancellationToken.None),
             Times.Once);
         Assert.AreEqual(operationResult, result);
+    }
+
+    #endregion
+
+    #region GetPriceRangeAsyc
+
+    [Test]
+    public async Task GetPriceRange_WhenFilterIsNull_ShouldReturnPriceRange()
+    {
+        // Arrange
+        var expectedMinPrice = 100;
+        var expectedMaxPrice = 200;
+        WorkshopFilterES filter = null;
+
+        var aggregations = new Dictionary<string, IAggregate>
+        {
+            { "min_price", new MinAggregate { Value = expectedMinPrice } },
+            { "max_price", new MaxAggregate { Value = expectedMaxPrice } }
+        };
+
+        var response = new SearchResponse<WorkshopES>
+        {
+            Aggregations = new AggregateDictionary(aggregations)
+        };
+
+        elasticClientMock.Setup(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await provider.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        elasticClientMock.Verify(
+            x => x.SearchAsync<WorkshopES>(
+                It.IsAny<SearchRequest<WorkshopES>>(), CancellationToken.None),
+            Times.Once);
+        Assert.IsInstanceOf<PriceRangeES>(result);
+        Assert.AreEqual(expectedMinPrice, result.MinPrice);
+        Assert.AreEqual(expectedMaxPrice, result.MaxPrice);
     }
 
     #endregion
