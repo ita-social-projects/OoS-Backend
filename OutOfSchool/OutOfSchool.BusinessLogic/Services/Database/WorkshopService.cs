@@ -777,7 +777,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter = null)
+    public async Task<PriceRange> GetPriceRange(WorkshopFilter filter = null)
     {
         logger.LogDebug("Getting Price Range for workshops by filter started.");
 
@@ -785,10 +785,12 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var filterPredicate = PredicateBuild(filter);
 
-        var query = workshopRepository
-            .Get(whereExpression: filterPredicate);
-        var minPrice = await query.MinAsync(w => w.Price).ConfigureAwait(false);
-        var maxPrice = await query.MaxAsync(w => w.Price).ConfigureAwait(false);
+        var query = await workshopRepository.GetByFilter(
+            whereExpression: filterPredicate);
+
+        var minPrice = query.Min(w => w.Price);
+        var maxPrice = query.Max(w => w.Price);
+
 
         return new PriceRange
         {
