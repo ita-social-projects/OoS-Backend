@@ -1291,7 +1291,7 @@ public class WorkshopServiceTests
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
-            .Returns(queryableWorkshops);
+            .Returns(queryableWorkshops).Verifiable();
     }
     #endregion
 
