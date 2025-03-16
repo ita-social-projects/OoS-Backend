@@ -421,7 +421,7 @@ public class WorkshopServicesCombinerTests
         };
         var filter = new WorkshopFilter();
 
-        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
         workshopStrategy.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
 
         // Act
@@ -439,7 +439,7 @@ public class WorkshopServicesCombinerTests
         var priceRange = new PriceRange();
         WorkshopFilter filter = null;
 
-        workshopService.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
 
         // Act
         var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);

@@ -944,7 +944,7 @@ public class WorkshopServiceTests
         SetupGetPriceRange(workshops);
 
         // Act
-        var result = await workshopService.GetPriceRangeAsync(null).ConfigureAwait(false);
+        var result = await workshopService.GetPriceRange(null).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
@@ -1281,22 +1281,18 @@ public class WorkshopServiceTests
 
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
-        var queryableWorkshops = workshops.AsQueryable().BuildMock();
+        var queryableWorkshops = workshops.AsQueryable();
 
         workshopRepository.Setup(w => w
-            .Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
+            .GetByFilter(
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()
+                It.IsAny<string>()
             ))
-            .Returns(queryableWorkshops);
+            .ReturnsAsync(queryableWorkshops);
     }
     #endregion
 
-        #region Expected
+    #region Expected
 
     private WorkshopDto ExpectedWorkshopDtoCreateSuccess(Workshop workshop)
     {
