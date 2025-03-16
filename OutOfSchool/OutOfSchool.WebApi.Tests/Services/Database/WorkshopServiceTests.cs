@@ -934,6 +934,24 @@ public class WorkshopServiceTests
 
     #endregion
 
+    #region GetPriceRange
+
+    [Test]
+    public async Task GetPriceRange_WhenFilterIsNull_ReturnsPriceRange()
+    {
+        // Arrange
+        var workshops = WithWorkshopsList();
+        SetupGetPriceRange(workshops);
+
+        // Act
+        var result = await workshopService.GetPriceRangeAsync(null).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
+    }
+
+    #endregion
+
     #region With
     private static IEnumerable<Workshop> WithWorkshopsList()
     {
@@ -949,6 +967,7 @@ public class WorkshopServiceTests
                 Title = "10",
                 DateTimeRanges = new List<DateTimeRange>(),
                 Keywords = "хореографічний",
+                Price = 100
             },
             new Workshop()
             {
@@ -959,6 +978,7 @@ public class WorkshopServiceTests
                 AvailableSeats = 30,
                 Title = "9",
                 Keywords = "атлетика",
+                Price = 200
             },
             new Workshop()
             {
@@ -1253,6 +1273,26 @@ public class WorkshopServiceTests
 
         return applications;
     }
+
+    private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
+    {
+        var queryableWorkshops = workshops.AsQueryable().BuildMock();
+        workshopRepository.Setup(w => w
+                .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
+            .ReturnsAsync(workshops.Count());
+        workshopRepository.Setup(w => w
+            .Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
+        mapperMock
+            .Setup(m => m.Map<List<WorkshopCard>>(workshops))
+            .Returns(workshops
+                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, Id = w.Id, }).ToList());
+    }
     #endregion
 
     #region Expected
@@ -1320,6 +1360,13 @@ public class WorkshopServiceTests
         var predicate = PredicateBuilder.True<Workshop>();
         predicate = predicate.And(x => filter.Ids.Any(g => g == x.Id));
         return predicate;
+    }
+
+    private PriceRange ExpectedPriceRange(IEnumerable<Workshop> workshops)
+    {
+        var minPrice = workshops.Min(w => w.Price);
+        var maxPrice = workshops.Max(w => w.Price);
+        return new PriceRange() { MinPrice = minPrice, MaxPrice = maxPrice };
     }
 
     #endregion

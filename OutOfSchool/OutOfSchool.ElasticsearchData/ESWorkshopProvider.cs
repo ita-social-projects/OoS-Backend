@@ -42,6 +42,8 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
 
     public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
     {
+        filter ??= new WorkshopFilterES();
+
         var query = CreateQueryFromFilter(filter);
 
         var request = new SearchRequest<WorkshopES>
