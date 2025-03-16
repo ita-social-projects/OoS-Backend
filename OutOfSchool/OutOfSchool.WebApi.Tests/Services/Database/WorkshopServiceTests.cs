@@ -1277,9 +1277,7 @@ public class WorkshopServiceTests
     private void SetupGetPriceRange(IEnumerable<Workshop> workshops)
     {
         var queryableWorkshops = workshops.AsQueryable().BuildMock();
-        workshopRepository.Setup(w => w
-                .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
-            .ReturnsAsync(workshops.Count());
+
         workshopRepository.Setup(w => w
             .Get(
                 It.IsAny<int>(),
@@ -1287,15 +1285,13 @@ public class WorkshopServiceTests
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
-        mapperMock
-            .Setup(m => m.Map<List<WorkshopCard>>(workshops))
-            .Returns(workshops
-                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId, Id = w.Id, }).ToList());
+                It.IsAny<bool>()
+            ))
+            .Returns(queryableWorkshops);
     }
     #endregion
 
-    #region Expected
+        #region Expected
 
     private WorkshopDto ExpectedWorkshopDtoCreateSuccess(Workshop workshop)
     {
