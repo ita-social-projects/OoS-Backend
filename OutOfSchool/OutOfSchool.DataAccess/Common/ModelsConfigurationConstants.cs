@@ -7,7 +7,7 @@ internal class ModelsConfigurationConstants
 
     public const string DateColumnType = "date";
 
-    public const string Char36Type = "char(36)";
+    public const string Char255Type = "char(255)";
 
     public const string JsonType = "json";
 

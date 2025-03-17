@@ -18,7 +18,7 @@ public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<Works
             .IsRequired();
 
         builder.Property(x => x.CoverImageId)
-            .HasColumnType(ModelsConfigurationConstants.Char36Type);
+            .HasColumnType(ModelsConfigurationConstants.Char255Type);
 
         builder.Property(x => x.WorkshopDraftContent)
             .IsRequired()
