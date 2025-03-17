@@ -62,6 +62,7 @@ public class BusinessEntityInterceptor : SaveChangesInterceptor
             {
                 SetCurrentValue(entry, "CreatedAt", now);
                 SetCurrentValue(entry, "CreatedBy", userId);
+                SetCurrentValue(entry, "ActiveFrom", DateOnly.FromDateTime(now));
             }
 
             if (entry.State == EntityState.Modified)
