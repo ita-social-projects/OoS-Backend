@@ -789,9 +789,14 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             whereExpression: filterPredicate,
             includeProperties: "").ConfigureAwait(false);
 
+        if (!query.Any())
+        {
+            logger.LogInformation("No matching records found for the specified filter.");
+            return new PriceRange();
+        }
+
         var minPrice = query.Min(w => w.Price);
         var maxPrice = query.Max(w => w.Price);
-
 
         return new PriceRange
         {
