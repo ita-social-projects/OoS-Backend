@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -33,6 +34,7 @@ public class StudySubjectServiceTests
     private Mock<ILogger<StudySubjectService>> logger;
     private IMapper mapper;
     private Guid providerId;
+    private Mock<IWorkshopRepository> workshopRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -50,8 +52,16 @@ public class StudySubjectServiceTests
         currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<StudySubjectService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
+        workshopRepositoryMock = new Mock<IWorkshopRepository>();
 
-        service = new StudySubjectService(studySubjectRepository, languageRepository, currentUserService.Object, logger.Object, mapper);
+        service = new StudySubjectService(
+            studySubjectRepository, 
+            workshopRepositoryMock.Object,
+            languageRepository,
+            currentUserService.Object,
+            logger.Object, 
+            mapper
+            );
 
         SeedDatabase();
     }
@@ -283,6 +293,7 @@ public class StudySubjectServiceTests
 
         service = new StudySubjectService(
             mockRepository.Object,
+            workshopRepositoryMock.Object,
             languageRepository,
             currentUserService.Object,
             logger.Object,
@@ -378,6 +389,7 @@ public class StudySubjectServiceTests
 
         service = new StudySubjectService(
             mockRepository.Object,
+            workshopRepositoryMock.Object,
             languageRepository,
             currentUserService.Object,
             logger.Object,

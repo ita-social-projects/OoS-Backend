@@ -3,6 +3,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Linq.Expressions;
 
@@ -12,6 +13,7 @@ public class StudySubjectService : IStudySubjectService
     private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
     private readonly IEntityRepository<long, Language> languageRepository;
     private readonly ICurrentUserService currentUserService;
+    private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<StudySubjectService> logger;
     private readonly IMapper mapper;
 
@@ -19,12 +21,14 @@ public class StudySubjectService : IStudySubjectService
     /// Initializes a new instance of the <see cref="StudySubjectService"/> class.
     /// </summary>
     /// <param name="studySubjectRepository">Repository for StudySubject.</param>
+    /// <param name="workshopRepository">Repository for Workshop.</param>
     /// <param name="languageRepository">Repository for Language.</param>
     /// <param name="currentUserService">Current User service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public StudySubjectService(
         IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
+        IWorkshopRepository workshopRepository,
         IEntityRepository<long, Language> languageRepository,
         ICurrentUserService currentUserService,
         ILogger<StudySubjectService> logger,
@@ -35,6 +39,7 @@ public class StudySubjectService : IStudySubjectService
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
     }
 
     /// <inheritdoc/>
@@ -261,6 +266,122 @@ public class StudySubjectService : IStudySubjectService
                 logger.LogDebug("Ukrainian language was set in dto as the primary language");
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<StudySubjectDto>> UpdateWorkshopsForStudySubject(
+        Guid studySubjectId,
+        IEnumerable<Guid> workshopIdsToAttach,
+        IEnumerable<Guid> workshopIdsToDetach,
+        Guid providerId)
+    {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
+        // Load the study subject with its workshops
+        var studySubject = await studySubjectRepository
+            .GetByIdWithDetails(studySubjectId, includeProperties: "Workshops")
+            .ConfigureAwait(false);
+
+        if (studySubject == null)
+        {
+            return NotFoundResult<StudySubjectDto>(studySubjectId);
+        }
+
+        // Load all workshops by given Ids to attach and detach
+        var allWorkshops = await workshopRepository
+            .GetByIds(workshopIdsToAttach.Concat(workshopIdsToDetach))
+            .ConfigureAwait(false);
+
+        var workshopsToAttach = allWorkshops.Where(w => workshopIdsToAttach.Contains(w.Id)).ToList();
+        var workshopsToDetach = allWorkshops.Where(w => workshopIdsToDetach.Contains(w.Id)).ToList();
+
+        // Check if all workshops to attach were found
+        var existingWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToHashSet();
+
+        foreach (var workshop in workshopsToAttach)
+        {
+            if (!existingWorkshopIds.Contains(workshop.Id))
+            {
+                studySubject.Workshops.Add(workshop);
+            }
+        }
+
+        // Remove workshops that are not in the list of workshops to attach
+        studySubject.Workshops.RemoveAll(workshopsToDetach.Contains);
+
+        try
+        {
+            await studySubjectRepository.Update(studySubject).ConfigureAwait(false);
+            logger.LogDebug("Updated workshop attachments for StudySubject with Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Failed to update workshop attachments for StudySubject with Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Failed to update workshop attachments for StudySubject with Id = {studySubjectId}"
+            });
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<StudySubjectDto>> DetachAllWorkshops(Guid studySubjectId, Guid providerId)
+    {
+        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+
+        // Load the study subject with its workshops
+        var studySubject = await studySubjectRepository
+            .GetByIdWithDetails(studySubjectId, includeProperties: "Workshops")
+            .ConfigureAwait(false);
+
+        if (studySubject == null)
+        {
+            return NotFoundResult<StudySubjectDto>(studySubjectId);
+        }
+
+        if (!studySubject.Workshops.Any())
+        {
+            logger.LogInformation("No workshops to detach for StudySubject with Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+        }
+
+        // Clear the workshops collection
+        studySubject.Workshops.Clear();
+
+        try
+        {
+            await studySubjectRepository.Update(studySubject).ConfigureAwait(false);
+            logger.LogDebug("Detached all workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Failed to detach all workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Failed to detach all workshops from StudySubject with Id = {studySubjectId}"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Returns a standardized "Not Found" result for an entity.
+    /// </summary>
+    /// <typeparam name="T">The type of the entity that was not found.</typeparam>
+    /// <param name="id">The unique identifier of the missing entity.</param>
+    /// <returns>A failed <see cref="Result{T}"/> indicating that the entity was not found.</returns>
+    private Result<T> NotFoundResult<T>(Guid id)
+    {
+        var entityName = typeof(T).Name;
+        logger.LogWarning("{EntityName} with Id = {Id} was not found", entityName, id);
+        return Result<T>.Failed(new OperationError
+        {
+            Code = "404",
+            Description = $"{entityName} with Id = {id} was not found"
+        });
     }
 
     private async Task UpdateEntityLanguages(StudySubjectCreateUpdateDto dto, StudySubject studySubject)

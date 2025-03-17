@@ -552,8 +552,7 @@ public class StudySubjectControllerTests
             },
             NameInInstructionLanguage = "тест",
             NameInUkrainian = "тест",
-            LanguageId = 1,
-            WorkshopId = Guid.NewGuid()
+            LanguageId = 1
         };
     }
 
