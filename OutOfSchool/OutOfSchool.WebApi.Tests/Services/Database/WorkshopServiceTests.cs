@@ -1294,8 +1294,8 @@ public class WorkshopServiceTests
 
         workshopRepository.Setup(w => w
             .GetByFilter(
-                It.Is<Expression<Func<Workshop, bool>>>(x => x != null),
-                It.Is<string>(s => s == "")))
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<string>()))
             .ReturnsAsync(queryableWorkshops).Verifiable();
     }
 

@@ -791,7 +791,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (!query.Any())
         {
-            logger.LogInformation("No matching records found for the specified filter.");
+            logger.LogDebug("No matching records found for the specified filter.");
             return new PriceRange();
         }
 
