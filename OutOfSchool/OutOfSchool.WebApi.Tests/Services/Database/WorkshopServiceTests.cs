@@ -950,6 +950,20 @@ public class WorkshopServiceTests
         result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
     }
 
+    [Test]
+    public async Task GetPriceRange_WhenQueryIsEmpty_ReturnsDefaultPriceRange()
+    {
+        // Arrange
+        var workshops = new List<Workshop>();
+        SetupGetPriceRange(workshops);
+
+        // Act
+        var result = await workshopService.GetPriceRange(null).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));
+    }
+
     #endregion
 
     #region With
@@ -1280,10 +1294,11 @@ public class WorkshopServiceTests
 
         workshopRepository.Setup(w => w
             .GetByFilter(
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                ""))
+                default,
+                default))
             .ReturnsAsync(queryableWorkshops).Verifiable();
     }
+
     #endregion
 
     #region Expected
@@ -1355,6 +1370,11 @@ public class WorkshopServiceTests
 
     private PriceRange ExpectedPriceRange(IEnumerable<Workshop> workshops)
     {
+        if (!workshops.Any())
+        {
+            return new PriceRange();
+        }
+
         var minPrice = workshops.Min(w => w.Price);
         var maxPrice = workshops.Max(w => w.Price);
         return new PriceRange() { MinPrice = minPrice, MaxPrice = maxPrice };
