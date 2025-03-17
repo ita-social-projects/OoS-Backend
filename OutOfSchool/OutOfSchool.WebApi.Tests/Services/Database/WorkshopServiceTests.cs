@@ -1284,14 +1284,10 @@ public class WorkshopServiceTests
         var queryableWorkshops = workshops.AsQueryable();
 
         workshopRepository.Setup(w => w
-            .Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
+            .GetByFilter(
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(queryableWorkshops).Verifiable();
+                ""))
+            .ReturnsAsync(queryableWorkshops).Verifiable();
     }
     #endregion
 

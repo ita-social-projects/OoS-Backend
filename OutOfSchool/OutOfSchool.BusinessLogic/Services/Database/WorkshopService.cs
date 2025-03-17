@@ -790,9 +790,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var filterPredicate = PredicateBuild(filter);
 
-        var query = workshopRepository.Get(
+        var query = await workshopRepository.GetByFilter(
             whereExpression: filterPredicate,
-            includeProperties: "");
+            includeProperties: "").ConfigureAwait(false);
 
         var minPrice = query.Min(w => w.Price);
         var maxPrice = query.Max(w => w.Price);
