@@ -24,5 +24,13 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
             .WithMany()
             .HasForeignKey(x => x.LanguageId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.Workshops)
+            .WithMany(x => x.StudySubjects);
+
+        builder.HasOne(x => x.Provider)
+            .WithMany(x => x.StudySubjects)
+            .HasForeignKey(x => x.ProviderId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

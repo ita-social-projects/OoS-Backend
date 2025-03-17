@@ -132,6 +132,8 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
 
     public virtual Institution Institution { get; set; }
     
+    public virtual List<StudySubject> StudySubjects { get; set; }
+
     #endregion
 
     #region Owned entities
