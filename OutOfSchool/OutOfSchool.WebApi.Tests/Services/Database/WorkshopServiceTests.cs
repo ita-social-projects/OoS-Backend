@@ -1300,7 +1300,8 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w
             .GetByFilter(
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(queryableWorkshops).Verifiable();
     }
 
