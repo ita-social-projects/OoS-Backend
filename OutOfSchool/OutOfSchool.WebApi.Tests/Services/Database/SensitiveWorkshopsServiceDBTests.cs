@@ -49,6 +49,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>> studySubjectRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -70,6 +71,7 @@ public class SensitiveWorkshopsServiceDBTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
+        studySubjectRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>>();
 
         searchStringServiceMock = new Mock<ISearchStringService>();
         sensitiveWorkshopService =
@@ -91,7 +93,9 @@ public class SensitiveWorkshopsServiceDBTests
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
-                applicationRepositoryMock.Object);
+                applicationRepositoryMock.Object,
+                studySubjectRepositoryMock.Object
+                );
 
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();

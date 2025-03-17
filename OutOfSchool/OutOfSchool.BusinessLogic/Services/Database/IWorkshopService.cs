@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -122,6 +123,18 @@ public interface IWorkshopService
     Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
 
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
+
+    /// <summary>
+    /// Get a list of workshops with their attachment status for a given provider and study subject.
+    /// </summary>
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="Result"/> object 
+    /// which holds an <see cref="IEnumerable{WorkshopAttachmentStatusDto}"/> representing the list of workshops 
+    /// with their attachment status.</returns>
+    Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
+            Guid studySubjectId,
+            Guid providerId);
 
     /// <summary>
     /// Update ProviderTitle property in all workshops with specified provider.

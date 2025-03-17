@@ -58,6 +58,7 @@ public class WorkshopServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
+    private Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>> studySubjectRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -81,6 +82,7 @@ public class WorkshopServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
+        studySubjectRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>>();
 
         workshopService =
                 new WorkshopService(
@@ -101,7 +103,9 @@ public class WorkshopServiceTests
                     tagServiceMock.Object,
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
-                    applicationRepository.Object);
+                    applicationRepository.Object,
+                    studySubjectRepositoryMock.Object
+                    );
     }
 
     #region Create

@@ -52,6 +52,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -73,6 +74,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
     /// <param name="tagService">Service for Tag entity.</param>
+    /// <param name="studySubjectRepository">Repository for StudySubject entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, Tag> tagRepository,
@@ -91,7 +93,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -111,6 +114,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
+        this.studySubjectRepository = studySubjectRepository;
     }
 
     /// <inheritdoc/>
@@ -333,6 +337,48 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
+           Guid studySubjectId,
+           Guid providerId)
+    {
+        // Get all workshops for the provider
+        var allWorkshops = await workshopRepository
+            .GetByFilter(whereExpression: x => x.ProviderId == providerId)
+            .ConfigureAwait(false);
+
+        // Get the study subject with the specified Id and include the workshops
+        var studySubject = await studySubjectRepository
+            .GetByIdWithDetails(studySubjectId, includeProperties: "Workshops")
+            .ConfigureAwait(false);
+
+        if (studySubject == null)
+        {
+            logger.LogWarning("StudySubject with Id = {StudySubjectId} was not found", studySubjectId);
+            return Result<IEnumerable<WorkshopAttachmentStatusDto>>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"StudySubject with Id = {studySubjectId} was not found"
+            });
+        }
+
+        // Get the IDs of the already attached workshops
+        var attachedWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToHashSet();
+
+        // Map the workshops to the DTOs and set the IsAttached property
+        var result = allWorkshops
+            .Select(w =>
+            {
+                var dto = mapper.Map<WorkshopAttachmentStatusDto>(w);
+                dto.IsAttached = attachedWorkshopIds.Contains(w.Id);
+                return dto;
+            })
+            .OrderBy(w => w.Title)
+            .ToList();
+
+        return Result<IEnumerable<WorkshopAttachmentStatusDto>>.Success(result);
     }
 
     /// <inheritdoc/>
