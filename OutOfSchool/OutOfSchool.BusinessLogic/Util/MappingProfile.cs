@@ -192,7 +192,8 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopCreateUpdateDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>()
-            .ForMember(dest => dest.Tags, opt => opt.Ignore());
+            .ForMember(dest => dest.Tags, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
         // TODO: Remove when fully refactor addresses
         CreateMap<ContactsAddress, AddressDto>()
@@ -205,6 +206,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Title, opt => opt.Ignore());
 
         CreateMap<WorkshopStatusWithTitleDto, WorkshopStatusDto>();
+
+        CreateMap<Workshop, WorkshopAttachmentStatusDto>()
+            .ForMember(dest => dest.IsAttached, opt => opt.Ignore());
 
         CreateMap<Address, AddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
@@ -294,7 +298,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Positions, opt => opt.Ignore())
-            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore());
+            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
         CreateSoftDeletedMap<TeacherDTO, Teacher>()
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
