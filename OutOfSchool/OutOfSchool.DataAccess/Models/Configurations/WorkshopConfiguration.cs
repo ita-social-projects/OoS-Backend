@@ -38,5 +38,8 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
 
         builder.HasMany(x => x.Tags)
             .WithMany(x => x.Workshops);
+
+        builder.HasMany(x => x.StudySubjects)
+            .WithMany(x => x.Workshops);
     }
 }
