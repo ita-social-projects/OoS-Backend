@@ -955,10 +955,25 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshops = new List<Workshop>();
+        var filter = new WorkshopFilter()
+        {
+            WithDisabilityOptions = true,
+            Statuses = [WorkshopStatus.Open],
+            ShortStay = true,
+            IsSelfFinanced = true,
+            IsSpecial = true,
+            IsInclusive = true,
+            AreThereBenefits = true,
+            AgeComposition = [AgeComposition.SameAge, AgeComposition.DifferentAge],
+            EducationalShift = [EducationalShift.First],
+            SpecialNeedsType = [SpecialNeedsType.Intelligence],
+            Coverage = [Coverage.International],
+            PayRate = PayRateType.Day
+        };
         SetupGetPriceRange(workshops);
 
         // Act
-        var result = await workshopService.GetPriceRange(null).ConfigureAwait(false);
+        var result = await workshopService.GetPriceRange(filter).ConfigureAwait(false);
 
         // Assert
         result.Should().BeEquivalentTo(ExpectedPriceRange(workshops));

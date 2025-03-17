@@ -564,6 +564,7 @@ public class ESWorkshopProviderTests
             IsSpecial = true,
             IsInclusive = true,
             AreThereBenefits = true,
+            PayRate = PayRateType.Day,
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
