@@ -31,6 +31,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
     private CompetitiveEventService service;
 
+    private string includeProperties = $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
+
     [SetUp]
     public void SetUp()
     {
@@ -133,12 +135,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
         };
 
         mockCompetitiveEventRepository
-           .Setup(r => r.GetByIdWithDetails(existingEventId, "CompetitiveEventDescriptionItems", It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
+           .Setup(r => r.GetByIdWithDetails(existingEventId,
+           includeProperties,//"CompetitiveEventDescriptionItems",
+           //It.IsAny<string>(),
+           It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
            .ReturnsAsync(competitiveEvent);
-
-           //.Setup(r => r.GetByIdWithDetails(existingEventId, It.IsAny<string>())) my code
-           //.ReturnsAsync(competitiveEvent);
-
 
         mockCompetitiveEventRepository
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
@@ -163,13 +164,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
 
         mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
-            existingEventId, "CompetitiveEventDescriptionItems",
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once); // somebody code
+           existingEventId, It.IsAny<string>(), //"CompetitiveEventDescriptionItems",
+            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
-//        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(existingEventId, It.IsAny<string>()), Times.Once); //my code
-
-        mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
-        contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
+       mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
+       contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
     }
 
     [Test]
@@ -186,14 +185,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockCompetitiveEventRepository
 
-            .Setup(r => r.GetByIdWithDetails( // somebody
-                invalidEventId, "CompetitiveEventDescriptionItems", 
+            .Setup(r => r.GetByIdWithDetails(
+                invalidEventId, It.IsAny<string>(), // "CompetitiveEventDescriptionItems", 
                 It.IsAny<Func<IQueryable<CompetitiveEvent>, 
                 IQueryable<CompetitiveEvent>>>()))
-            .ReturnsAsync((CompetitiveEvent)null); // smbody
-
-       //  .Setup(r => r.GetByIdWithDetails(invalidEventId, It.IsAny<string>())) my cide
-      //   .ReturnsAsync((CompetitiveEvent)null);
+            .ReturnsAsync((CompetitiveEvent)null); 
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -201,12 +197,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         Assert.That(ex.Message, Does.Contain($"CompetitiveEvent with Id = {invalidEventId} doesn't exist in the system."));
 
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails( // somebody
-            invalidEventId, 
-            "CompetitiveEventDescriptionItems",
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once); // somebody
-
-        //mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(invalidEventId, It.IsAny<string>()), Times.Once); // my code
+        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
+            invalidEventId,
+            It.IsAny<string>(),
+            //"CompetitiveEventDescriptionItems",
+            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
     }
@@ -405,12 +400,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         mockCompetitiveEventRepository
 
-            .Setup(r => r.GetByIdWithDetails( // somebody
+            .Setup(r => r.GetByIdWithDetails(
                 eventId, 
-                "CompetitiveEventDescriptionItems", 
-                It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>())) // end smbody
-
-            //.Setup(r => r.GetByIdWithDetails(eventId, It.IsAny<string>())) // my code
+                It.IsAny<string>(),// "CompetitiveEventDescriptionItems", 
+                It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync(competitiveEvent);
 
         mockCompetitiveEventRepository
@@ -452,13 +445,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
         )), Times.Once);
 
 
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails( // somebody
+        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
             It.IsAny<Guid>(), 
-            "CompetitiveEventDescriptionItems",
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once); // end somebody
-
-        //mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>()), Times.Once); // mycode
-
+            It.IsAny<string>(), //"CompetitiveEventDescriptionItems",
+            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
         mockCompetitiveEventRepository.Verify(r => r.Update(It.Is<CompetitiveEvent>(e =>
             e.CompetitiveEventDescriptionItems.Count == 2
