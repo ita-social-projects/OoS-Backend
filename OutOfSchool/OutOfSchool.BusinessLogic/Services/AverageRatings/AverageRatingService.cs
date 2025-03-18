@@ -218,7 +218,7 @@ public class AverageRatingService : IAverageRatingService
 
             if (entity != null)
             {
-                entity.Rate = rating.Value.Item1;
+                entity.Rate = (decimal) rating.Value.Item1;
                 entity.RateQuantity = rating.Value.Item2;
                 await averageRatingRepository.Update(entity).ConfigureAwait(false);
             }
@@ -228,7 +228,7 @@ public class AverageRatingService : IAverageRatingService
                     .Create(
                         new AverageRating()
                         {
-                            Rate = rating.Value.Item1,
+                            Rate = (decimal) rating.Value.Item1,
                             RateQuantity = rating.Value.Item2,
                             EntityId = rating.Key,
                         })
