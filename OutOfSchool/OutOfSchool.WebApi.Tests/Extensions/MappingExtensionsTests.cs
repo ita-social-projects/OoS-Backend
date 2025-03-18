@@ -49,7 +49,8 @@ public class MappingExtensionsTests
     {
         // act
         var configuration = new MapperConfiguration(cfg =>
-            cfg.UseProfile<CommonProfile>().UseProfile<WorkshopDraftMappingProfile>());
+            cfg.UseProfile<CommonProfile>().UseProfile<WorkshopDraftMappingProfile>().UseProfile<ContactsProfile>()
+                .UseProfile<MappingProfile>());
 
         // assert
         configuration.AssertConfigurationIsValid();

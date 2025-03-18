@@ -15,9 +15,9 @@ public abstract class TrackableBaseEntityConfiguration<TEntity> : IEntityTypeCon
     public virtual void Configure(EntityTypeBuilder<TEntity> builder)
     {
         builder.Property(e => e.CreatedBy)
-            .HasColumnType(ModelsConfigurationConstants.Char36Type);
+            .HasColumnType(ModelsConfigurationConstants.Char255Type);
 
         builder.Property(e => e.ModifiedBy)
-            .HasColumnType(ModelsConfigurationConstants.Char36Type);
+            .HasColumnType(ModelsConfigurationConstants.Char255Type);
     }
 }

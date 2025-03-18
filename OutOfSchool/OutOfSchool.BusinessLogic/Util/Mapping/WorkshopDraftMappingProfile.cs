@@ -86,7 +86,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.ModifiedBy, opt => opt.MapFrom(src => src.ModifiedBy))            
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.ProviderId))
-            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id));            
+            .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id));
 
 
         CreateMap<WorkshopDraft, WorkshopDraftViewCardDto>()
@@ -94,7 +94,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.DraftStatus, opt => opt.MapFrom(src => src.DraftStatus))
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.WorkshopDraftContent.Title))
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(src => src.RejectionMessage))
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
+            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.WorkshopDraftContent.DirectionIds));
 
 
         CreateMap<WorkshopV2Dto, WorkshopDraftContent>()
@@ -139,9 +139,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
-            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.Contacts, opt => opt.Ignore());
-
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore());
 
         CreateMap<WorkshopDraft, WorkshopV2Dto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
@@ -161,8 +159,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.DefaultTeacher,
                 opt => opt.MapFrom(src => src.Teachers.FirstOrDefault(t => t.IsDefaultTeacher)))
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
-            .ForMember(dest => dest.Tags, opt => opt.Ignore())
-            .ForMember(dest => dest.Contacts, opt => opt.Ignore());
+            .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
         CreateMap<WorkshopDraftContent, WorkshopV2CreateRequestDto>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
