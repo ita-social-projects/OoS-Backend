@@ -2,6 +2,7 @@
 
 namespace OutOfSchool.BusinessLogic.Extensions;
 
+// TODO: Methods of this class are used only in the ApplicationExtensionTests class
 public static class ApplicationExtensions
 {
     public static int AmountOfPendingApplications(this IEnumerable<Application> entities)

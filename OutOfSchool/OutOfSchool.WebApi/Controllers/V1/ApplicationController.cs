@@ -379,6 +379,7 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
+    // TODO: We are only updating Status property, so we don't need to include WorkshopId and ParentId properties in the ApplicationUpdate dto.
     public async Task<IActionResult> Update([FromBody] ApplicationUpdate applicationDto)
     {
         if (applicationDto is null)
