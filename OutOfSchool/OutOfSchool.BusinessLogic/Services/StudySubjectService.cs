@@ -53,7 +53,7 @@ public class StudySubjectService : IStudySubjectService
         {
             logger.LogError("Creating failed, dto is null");
             return null;
-        }
+        }   
 
         await CheckIfLanguageIdIsCorrect(dto);
 
@@ -287,9 +287,11 @@ public class StudySubjectService : IStudySubjectService
             return NotFoundResult<StudySubjectDto>(studySubjectId);
         }
 
-        // Load all workshops by given Ids to attach and detach
+        // Retrieves only the workshops that belong to the specified provider 
+        // and are included in either the attachment or detachment list.
         var allWorkshops = await workshopRepository
-            .GetByIds(workshopIdsToAttach.Concat(workshopIdsToDetach))
+            .GetByFilter(w => w.ProviderId == providerId &&
+                        (workshopIdsToAttach.Contains(w.Id) || workshopIdsToDetach.Contains(w.Id)))
             .ConfigureAwait(false);
 
         var workshopsToAttach = allWorkshops.Where(w => workshopIdsToAttach.Contains(w.Id)).ToList();
@@ -347,22 +349,32 @@ public class StudySubjectService : IStudySubjectService
             return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
         }
 
-        // Clear the workshops collection
-        studySubject.Workshops.Clear();
+        // Load workshops that belong to the given provider
+        var providerWorkshops = await workshopRepository
+            .GetByFilter(w => w.ProviderId == providerId && studySubject.Workshops.Select(ws => ws.Id).Contains(w.Id))
+            .ConfigureAwait(false);
+
+        if (!providerWorkshops.Any())
+        {
+            return NotFoundResult<StudySubjectDto>(providerId);
+        }
+
+        // Detach only provider's workshops from the study subject
+        studySubject.Workshops.RemoveAll(ws => providerWorkshops.Contains(ws));
 
         try
         {
             await studySubjectRepository.Update(studySubject).ConfigureAwait(false);
-            logger.LogDebug("Detached all workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
+            logger.LogDebug("Detached all provider-owned workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
             return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError(ex, "Failed to detach all workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
+            logger.LogError(ex, "Failed to detach provider-owned workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
             return Result<StudySubjectDto>.Failed(new OperationError
             {
                 Code = "400",
-                Description = $"Failed to detach all workshops from StudySubject with Id = {studySubjectId}"
+                Description = $"Failed to detach provider-owned workshops from StudySubject with Id = {studySubjectId}."
             });
         }
     }
