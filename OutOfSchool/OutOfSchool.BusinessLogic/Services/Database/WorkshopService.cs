@@ -1008,11 +1008,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 : predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
         }
 
-        if (filter.WithDisabilityOptions)
-        {
-            predicate = predicate.And(x => x.WithDisabilityOptions);
-        }
-
         if (filter.Workdays.Any())
         {
             var workdaysBitMask = filter.Workdays.Aggregate((prev, next) => prev | next);

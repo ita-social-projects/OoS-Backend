@@ -653,7 +653,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
-            .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore())

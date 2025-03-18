@@ -59,8 +59,6 @@ public class WorkshopBaseCard : IHasRating
     // TODO: for backward compatibility, remove when front changes
     public AddressDto Address { get; set; }
 
-    public bool WithDisabilityOptions { get; set; }
-
     public float Rating { get; set; }
 
     public int NumberOfRatings { get; set; }

@@ -882,7 +882,6 @@ public class WorkshopServiceTests
 
         var filter = new WorkshopFilter()
         {
-            WithDisabilityOptions = true,
             Statuses = [WorkshopStatus.Open],
             ShortStay = true,
             IsSelfFinanced = true,

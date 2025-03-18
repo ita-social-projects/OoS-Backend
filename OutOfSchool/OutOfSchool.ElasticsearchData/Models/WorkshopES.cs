@@ -56,8 +56,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public string Institution { get; set; }
 
-    public bool WithDisabilityOptions { get; set; }
-
     public string Keywords { get; set; }
 
     public List<long> DirectionIds { get; set; }
