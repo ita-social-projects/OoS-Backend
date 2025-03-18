@@ -464,7 +464,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             skip: filter.From,
             take: filter.Size,
             includeProperties: "Workshop,Child,Parent",
-            includeExpression: null,
+            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate)
             .ToListAsync()
@@ -958,7 +958,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
             {
                 var providerOwnership = await workshopRepository.GetByFilter(
-                    whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State);
+                    whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State,
+                    includeProperties: "Provider",
+                    includeExpression: q => q.Select(
+                        w => new Workshop { Id = w.Id, Provider = new Provider { Ownership = w.Provider.Ownership } }));
+
 
                 if (providerOwnership.Any())
                 {
@@ -994,13 +998,13 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             var groupedData = updatedApplication.Status.ToString();
             var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication).ConfigureAwait(false);
 
-                await notificationService.Create(
-                NotificationType.Application,
-                NotificationAction.Update,
-                updatedApplication.Id,
-                recipientsIds,
-                additionalData,
-                groupedData).ConfigureAwait(false);
+            await notificationService.Create(
+            NotificationType.Application,
+            NotificationAction.Update,
+            updatedApplication.Id,
+            recipientsIds,
+            additionalData,
+            groupedData).ConfigureAwait(false);
 
             if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
             {
