@@ -465,6 +465,7 @@ public class AccountController : Controller
         return await userService.LogOutUserById(userId);
     }
 
+    [FeatureGate(AuthServerConstants.FeatureManagement.EmailConfirmation)]
     [Obsolete("Confirm email API is no longer supported. Exists only for testing purposes.")]
     private async Task<IActionResult> SendConfirmEmailProcess(string action, User user, string razorTemplate, object passedData)
     {

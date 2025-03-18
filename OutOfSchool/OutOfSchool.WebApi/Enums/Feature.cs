@@ -15,5 +15,10 @@ public enum Feature
     DirectionManagement,
     CreateAchievement,
     AdminsChildernParentsManagement,
-    MessagingFeature
+    MessagingFeature,
+    PasswordLogin,
+    PasswordRegistration,
+    EmailConfirmation,
+    EmailManagement,
+    PasswordManagement
 }
