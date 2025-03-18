@@ -42,6 +42,7 @@ using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
+using OutOfSchool.WebApi.Enums;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -139,7 +140,7 @@ public static class Startup
 
         var featureManager = app.Services.GetRequiredService<IFeatureManager>();
 
-        if (featureManager.IsEnabledAsync("MessagingFeature").Result)
+        if (featureManager.IsEnabledAsync(nameof(Feature.MessagingFeature)).GetAwaiter().GetResult())
         {
             app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
         }
