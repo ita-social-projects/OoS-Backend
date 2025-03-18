@@ -15,7 +15,8 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
-    private readonly string includeProperties = $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
+    private readonly string includeProperties = 
+        $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
 
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -25,6 +26,14 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly ICurrentUserService currentUserService;
     private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
 
+    private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> includeFunc =
+    query => query
+        .Include(e => e.InstitutionHierarchy)
+        .Include(e => e.CompetitiveEventDescriptionItems)
+        .Include(e => e.Coverage)
+        .Include(e => e.Contacts)
+            .ThenInclude(c => c.Address)
+                .ThenInclude(a => a.CATOTTG);
     public CompetitiveEventService(
         ICompetitiveEventRepository competitiveEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
@@ -48,7 +57,9 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogDebug("Getting CompetitiveEvent by Id started. Looking Id = {id}.", id);
 
-        var competitiveEvent = (await competitiveEventRepository.GetByIdWithDetails(id, includeProperties).ConfigureAwait(false));
+        var competitiveEvent = (await competitiveEventRepository
+            .GetByIdWithDetails(id, includeProperties, includeFunc)
+            .ConfigureAwait(false));
 
         var logMessage = competitiveEvent is null
             ? "CompetitiveEvent with Id = {id} doesn't exist in the system."
@@ -91,7 +102,8 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 
-        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, includeProperties).ConfigureAwait(false);
+        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
+                dto.Id, includeProperties, includeFunc).ConfigureAwait(false);
 
         if (competitiveEvent is null)
         {
