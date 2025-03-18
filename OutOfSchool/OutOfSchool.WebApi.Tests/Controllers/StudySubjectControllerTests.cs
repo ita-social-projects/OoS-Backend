@@ -19,14 +19,16 @@ public class StudySubjectControllerTests
     private StudySubjectController controller;
     private Guid providerId;
     private Mock<IStudySubjectService> studySubjectService;
+    private Mock<IWorkshopService> workshopServiceMock;
 
     [SetUp]
     public void SetUp()
     {
         studySubjectService = new Mock<IStudySubjectService>();
+        workshopServiceMock = new Mock<IWorkshopService>();
         providerId = Guid.NewGuid();
 
-        controller = new StudySubjectController(studySubjectService.Object);
+        controller = new StudySubjectController(studySubjectService.Object, workshopServiceMock.Object);
     }
 
     #region Get
