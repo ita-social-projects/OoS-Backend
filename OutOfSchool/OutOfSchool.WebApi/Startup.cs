@@ -136,7 +136,14 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+
+        var featureManager = app.Services.GetRequiredService<IFeatureManager>();
+
+        if (featureManager.IsEnabledAsync("MessagingFeature").Result)
+        {
+            app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+        }
+
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 

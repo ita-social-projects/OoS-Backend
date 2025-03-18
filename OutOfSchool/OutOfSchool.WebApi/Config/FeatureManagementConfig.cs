@@ -23,4 +23,6 @@ public class FeatureManagementConfig
     public bool CreateAchievement { get; set; }
 
     public bool AdminsChildernParentsManagement { get; set; }
+
+    public bool MessagingFeature { get; set; }
 }
