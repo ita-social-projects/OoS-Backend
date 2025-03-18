@@ -347,7 +347,6 @@ public static class Startup
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
-        services.AddTransient<ISensitiveApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();

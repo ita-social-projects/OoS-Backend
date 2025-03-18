@@ -21,7 +21,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Application entity.
 /// </summary>
-public class ApplicationService : IApplicationService, ISensitiveApplicationService
+public class ApplicationService : IApplicationService
 {
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";
