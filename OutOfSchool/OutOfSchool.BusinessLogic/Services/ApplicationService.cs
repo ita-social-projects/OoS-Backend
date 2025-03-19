@@ -206,7 +206,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
             includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
@@ -248,7 +247,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
             includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
@@ -308,7 +306,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         var applications = (await applicationRepository.GetByFilter(
             whereExpression: filter,
-            includeProperties: "Workshop,Child,Parent",
             includeExpression: includeFunc))
             .ToList();
 
@@ -344,7 +341,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
             includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
@@ -463,7 +459,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
             includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate)
@@ -498,7 +493,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         var applications = await applicationRepository.GetByFilter(
                 whereExpression: filter,
-                includeProperties: "Workshop,Child,Parent",
                 includeExpression: includeFunc).ConfigureAwait(false);
         var application = applications.FirstOrDefault();
 
@@ -520,7 +514,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
     public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto)
     {
-        logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
+        logger.LogDebug("Updating Application with Id = {Id} started", applicationDto?.Id);
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
         return ExecuteUpdateAsync(applicationDto);
@@ -565,7 +559,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     {
         var result = await applicationRepository.UpdateAllApprovedApplications().ConfigureAwait(false);
 
-        logger.LogInformation("Updated statuses to Studying of {count} applications.", result);
+        logger.LogDebug("Updated statuses to Studying of {count} applications.", result);
 
         return result;
     }
@@ -739,7 +733,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         if (application == null)
         {
-            logger.LogInformation("Application with Id = {Id} doesn't exist in the system", id);
+            logger.LogDebug("Application with Id = {Id} doesn't exist in the system", id);
         }
 
         return application;
@@ -948,7 +942,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         if (currentApplication.Status == applicationDto.Status)
         {
-            logger.LogInformation("Application with Id = {Id} doesn't need to update", currentApplication.Id);
+            logger.LogDebug("Application with Id = {Id} doesn't need to update", currentApplication.Id);
             return mapper.Map<ApplicationDto>(currentApplication);
         }
 
@@ -958,10 +952,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             {
                 var providerOwnership = await workshopRepository.GetByFilter(
                     whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State,
-                    includeProperties: "Provider",
-                    includeExpression: q => q.Select(
-                        w => new Workshop { Id = w.Id, Provider = new Provider { Ownership = w.Provider.Ownership } }));
-
+                    includeExpression: w => w.Include(w => w.Provider));
 
                 if (providerOwnership.Any())
                 {
@@ -989,7 +980,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
                     x => changesLogService.AddEntityChangesToDbContext(x, currentUserService.UserId))
                 .ConfigureAwait(false);
 
-                logger.LogInformation("Application with Id = {Id} updated successfully", updatedApplication.Id);
+                logger.LogDebug("Application with Id = {Id} updated successfully", updatedApplication.Id);
 
                 var additionalData = new Dictionary<string, string>()
                 {
