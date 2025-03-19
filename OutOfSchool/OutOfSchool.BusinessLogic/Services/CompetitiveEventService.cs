@@ -15,8 +15,8 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class CompetitiveEventService : ICompetitiveEventService
 {
     private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
-    private readonly string includeProperties = 
-        $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
+   // private readonly string includeProperties = 
+     //   $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
 
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -33,7 +33,8 @@ public class CompetitiveEventService : ICompetitiveEventService
         .Include(e => e.Coverage)
         .Include(e => e.Contacts)
             .ThenInclude(c => c.Address)
-                .ThenInclude(a => a.CATOTTG);
+                .ThenInclude(a => a.CATOTTG)
+                .ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent);
     public CompetitiveEventService(
         ICompetitiveEventRepository competitiveEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
@@ -58,7 +59,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         logger.LogDebug("Getting CompetitiveEvent by Id started. Looking Id = {id}.", id);
 
         var competitiveEvent = (await competitiveEventRepository
-            .GetByIdWithDetails(id, includeProperties, includeFunc)
+            .GetByIdWithDetails(id, String.Empty, includeFunc)
             .ConfigureAwait(false));
 
         var logMessage = competitiveEvent is null
@@ -103,7 +104,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 
         var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
-                dto.Id, includeProperties, includeFunc).ConfigureAwait(false);
+                dto.Id, String.Empty, includeFunc).ConfigureAwait(false);
 
         if (competitiveEvent is null)
         {

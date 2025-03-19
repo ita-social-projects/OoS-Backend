@@ -31,8 +31,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
     private CompetitiveEventService service;
 
-    private string includeProperties = $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
-
     [SetUp]
     public void SetUp()
     {
@@ -136,8 +134,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockCompetitiveEventRepository
            .Setup(r => r.GetByIdWithDetails(existingEventId,
-           includeProperties,//"CompetitiveEventDescriptionItems",
-           //It.IsAny<string>(),
+           String.Empty,
            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
            .ReturnsAsync(competitiveEvent);
 
@@ -164,7 +161,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
 
         mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
-           existingEventId, It.IsAny<string>(), //"CompetitiveEventDescriptionItems",
+           existingEventId, It.IsAny<string>(),
             It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
        mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
@@ -186,7 +183,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockCompetitiveEventRepository
 
             .Setup(r => r.GetByIdWithDetails(
-                invalidEventId, It.IsAny<string>(), // "CompetitiveEventDescriptionItems", 
+                invalidEventId, It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<CompetitiveEvent>, 
                 IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync((CompetitiveEvent)null); 
@@ -200,7 +197,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
             invalidEventId,
             It.IsAny<string>(),
-            //"CompetitiveEventDescriptionItems",
             It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
@@ -250,7 +246,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .Returns(createdEvent);
 
         mockMapper
-            .Setup(m => m.Map<CompetitiveEventDto>(createdEvent))//It.IsAny<CompetitiveEvent>()))
+            .Setup(m => m.Map<CompetitiveEventDto>(createdEvent))
             .Returns(new CompetitiveEventDto
             {
                 Id = createdEvent.Id,
@@ -402,7 +398,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
             .Setup(r => r.GetByIdWithDetails(
                 eventId, 
-                It.IsAny<string>(),// "CompetitiveEventDescriptionItems", 
+                It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync(competitiveEvent);
 
@@ -447,7 +443,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
             It.IsAny<Guid>(), 
-            It.IsAny<string>(), //"CompetitiveEventDescriptionItems",
+            It.IsAny<string>(),
             It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
 
         mockCompetitiveEventRepository.Verify(r => r.Update(It.Is<CompetitiveEvent>(e =>
