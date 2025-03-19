@@ -27,6 +27,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
     private readonly string includingPropertiesForMappingDtoModel =
         $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
+
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = 
         w => w.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
@@ -297,23 +298,18 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         filter ??= new WorkshopFilterTitle();
         ValidateWorkshopTitleFilter(filter);
 
-        var workshopBaseCardsCount = await workshopRepository.Count(whereExpression: x =>
-                (x.ProviderId == id) &&
-                (filter.ExcludedId == null || x.Id != filter.ExcludedId) &&
-                (string.IsNullOrEmpty(filter.SearchText) || x.Title.Contains(filter.SearchText)))
+        var filterPredicate = PredicateBuild(filter, id);
+
+        var workshopBaseCardsCount = await workshopRepository.Count(filterPredicate)
                 .ConfigureAwait(false);
 
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
-                    whereExpression: x =>
-                    (x.ProviderId == id) &&
-                    (filter.ExcludedId == null || x.Id != filter.ExcludedId) &&
-                    (string.IsNullOrEmpty(filter.SearchText) || x.Title.Contains(filter.SearchText)))
+                    whereExpression: filterPredicate)
                 .ToListAsync()
                 .ConfigureAwait(false);
-
 
         var chatrooms = roomRepository.Get(
             skip: 0,
@@ -1063,6 +1059,25 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (filter.Coverage.Any())
         {
             predicate = predicate.And(x => filter.Coverage.Contains(x.Coverage));
+        }
+
+        return predicate;
+    }
+
+    private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilterTitle filter, Guid providerId)
+    {
+        var predicate = PredicateBuilder.True<Workshop>();
+
+        predicate = predicate.And(x => x.ProviderId == providerId);
+
+        if (filter.ExcludedId.HasValue)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            predicate = predicate.And(x => x.Title.Contains(filter.SearchText));
         }
 
         return predicate;
