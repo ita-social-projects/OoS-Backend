@@ -35,5 +35,7 @@ public class FeatureManagementConfig
     public bool EmailManagement { get; set; }
     
     public bool PasswordManagement { get; set; }
+
+    public bool OnlyUkrainianLanguage {  get; set; }
 }
     

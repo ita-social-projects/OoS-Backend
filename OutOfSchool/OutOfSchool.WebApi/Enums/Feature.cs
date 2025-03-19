@@ -20,5 +20,6 @@ public enum Feature
     PasswordRegistration,
     EmailConfirmation,
     EmailManagement,
-    PasswordManagement
+    PasswordManagement,
+    OnlyUkrainianLanguage
 }
