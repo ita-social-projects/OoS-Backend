@@ -158,15 +158,36 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public Task<ShortUserDto> Update(ShortUserDto dto)
+    public async Task<BaseUpdateUserDto> Update(BaseUpdateUserDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Gender is null || dto.DateOfBirth is null)
-        {
-            throw new ArgumentException($"{nameof(dto.Gender)} and/or {nameof(dto.DateOfBirth)} are required but were not provided.");
-        }
+        logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
 
-        return ExecuteUpdate(dto);
+        try
+        {
+            var parent = (await repositoryParent.GetByFilter(x => x.UserId == dto.Id))
+                .FirstOrDefault();
+
+            if (parent is null)
+            {
+                throw new ArgumentException("No parent with id, given in model was not found");
+            }
+
+            await currentUserService.UserHasRights(new ParentRights(parent.Id));
+
+            mapper.Map(dto, parent.User);
+
+            logger.LogInformation("Parent with UserId = {ParentId} updated successfully", parent.Id);
+
+            await repositoryParent.SaveChangesAsync();
+
+            return mapper.Map<BaseUpdateUserDto>(parent);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Updating Parent with UserId = {ParentId} failed", dto.Id);
+            throw;
+        }
     }
 
     /// <inheritdoc/>
@@ -191,50 +212,5 @@ public class ParentService : IParentService
             parentBlockUnblock.IsBlocked).ConfigureAwait(false);
         logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockUnblock.ParentId);
         return Result<bool>.Success(true);
-    }
-
-    private async Task<ShortUserDto> ExecuteUpdate(ShortUserDto dto)
-    {
-        logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
-
-        try
-        {
-            var parent = (await repositoryParent.GetByFilter(x => x.UserId == dto.Id))
-                .FirstOrDefault();
-
-            if (parent is null)
-            {
-                throw new ArgumentException("No parent with id, given in model was not found");
-            }
-
-            await currentUserService.UserHasRights(new ParentRights(parent.Id));
-
-            mapper.Map(dto, parent.User);
-            parent.Gender = dto.Gender;
-            parent.DateOfBirth = dto.DateOfBirth;
-
-            logger.LogInformation("Parent with UserId = {ParentId} updated successfully", parent.Id);
-
-            var child = (await repositoryChild.GetByFilter(c => c.Parent.UserId == dto.Id && c.IsParent))
-                .SingleOrDefault();
-
-            if (child is not null)
-            {
-                child.FirstName = dto.FirstName;
-                child.MiddleName = dto.MiddleName;
-                child.LastName = dto.LastName;
-                child.Gender = dto.Gender;
-                child.DateOfBirth = dto.DateOfBirth;
-            }
-
-            await repositoryParent.SaveChangesAsync();
-
-            return mapper.Map<ShortUserDto>(parent);
-        }
-        catch (DbUpdateException ex)
-        {
-            logger.LogError(ex, "Updating Parent with UserId = {ParentId} failed", dto.Id);
-            throw;
-        }
     }
 }

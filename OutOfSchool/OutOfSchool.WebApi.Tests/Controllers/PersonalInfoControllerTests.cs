@@ -98,15 +98,11 @@ public class PersonalInfoControllerTests
     {
         // Arrange
         var controller = SetupParentTests();
-        var changedParent = new ShortUserDto()
+        var changedParent = new BaseUpdateUserDto()
         {
             Id = "38776161-734b-4aec-96eb-4a1f87a2e5f3",
             PhoneNumber = "1160327456",
-            LastName = "LastName",
-            MiddleName = "MiddleName",
-            FirstName = "FirstName",
-            Gender = Gender.Male,
-            DateOfBirth = DateTime.Today,
+            Email = "aleksandretst@gmail.com"
         };
         parentService.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
         currentUserService.Setup(c => c.UserId).Returns("38776161-734b-4aec-96eb-4a1f87a2e5f3");
@@ -125,13 +121,13 @@ public class PersonalInfoControllerTests
     {
         // Arrange
         var controller = SetupParentTests();
-        parentService.Setup(x => x.Update(It.IsAny<ShortUserDto>()))
+        parentService.Setup(x => x.Update(It.IsAny<BaseUpdateUserDto>()))
             .ThrowsAsync(new UnauthorizedAccessException());
         currentUserService.Setup(c => c.UserId).Returns("38776161-734b-4aec-96eb-4a1f87a2e5f3");
         currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(true);
 
         // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.UpdatePersonalInfo(new ShortUserDto()));
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.UpdatePersonalInfo(new BaseUpdateUserDto()));
     }
 
     #endregion

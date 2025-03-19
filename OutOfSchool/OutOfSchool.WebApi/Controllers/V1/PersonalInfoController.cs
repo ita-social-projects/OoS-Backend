@@ -61,14 +61,14 @@ public class PersonalInfoController : ControllerBase
     /// <returns>Updated User's personal information.</returns>
     [HttpPut]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BaseUpdateUserDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdatePersonalInfo([FromBody] ShortUserDto dto)
+    public async Task<IActionResult> UpdatePersonalInfo([FromBody] BaseUpdateUserDto dto)
     {
-        ShortUserDto result;
+        BaseUpdateUserDto result;
         if (currentUserService.IsInRole(Role.Parent))
         {
             result = await parentService.Update(dto);

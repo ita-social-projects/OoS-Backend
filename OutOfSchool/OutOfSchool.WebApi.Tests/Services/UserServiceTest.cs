@@ -96,13 +96,11 @@ public class UserServiceTest
     public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
     {
         // Arrange
-        var changedEntity = new ShortUserDto()
+        var changedEntity = new BaseUpdateUserDto()
         {
             Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
             PhoneNumber = "1160327456",
-            LastName = "LastName",
-            MiddleName = "MiddleName",
-            FirstName = "FirstName",
+            Email = "gsdfgfdg@gmail.com"
         };
         Expression<Func<User, bool>> filter = p => p.Id == changedEntity.Id;
 
@@ -112,25 +110,21 @@ public class UserServiceTest
         var result = await repo.Update(mapper.Map(changedEntity, users.FirstOrDefault())).ConfigureAwait(false);
 
         // Assert
-        Assert.That(changedEntity.FirstName, Is.EqualTo(result.FirstName));
-        Assert.That(changedEntity.LastName, Is.EqualTo(result.LastName));
-        Assert.That(changedEntity.MiddleName, Is.EqualTo(result.MiddleName));
         Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));
+        Assert.That(changedEntity.Email, Is.EqualTo(result.Email));
+        Assert.That(changedEntity.Id, Is.EqualTo(result.Id));
     }
 
     [Test]
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedEntity = new ShortUserDto()
+        var changedEntity = new BaseUpdateUserDto()
         {
             Id = "Invalid Id",
             PhoneNumber = "1160327456",
-            LastName = "LastName",
-            MiddleName = "MiddleName",
-            FirstName = "FirstName",
-        };
 
+        };
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             async () => await service.Update(changedEntity).ConfigureAwait(false));
