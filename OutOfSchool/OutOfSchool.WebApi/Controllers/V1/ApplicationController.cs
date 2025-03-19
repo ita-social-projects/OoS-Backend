@@ -366,7 +366,7 @@ public class ApplicationController : ControllerBase
     /// <summary>
     /// Update info about a specific application in the database.
     /// </summary>
-    /// <param name="applicationDto">Application entity.</param>
+    /// <param name="applicationUpdateDto">Application entity.</param>
     /// <returns><see cref="ApplicationDto"/>.</returns>
     /// <response code="200">Entity was updated and returned.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
@@ -379,12 +379,18 @@ public class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    // TODO: We are only updating Status property, so we don't need to include WorkshopId and ParentId properties in the ApplicationUpdate dto.
-    public async Task<IActionResult> Update([FromBody] ApplicationUpdate applicationDto)
+    public async Task<IActionResult> Update([FromBody] ApplicationUpdate applicationUpdateDto)
     {
-        if (applicationDto is null)
+        if (applicationUpdateDto is null)
         {
             return BadRequest("Application data is not provided.");
+        }
+
+        var applicationDto = await applicationService.GetById(applicationUpdateDto.Id).ConfigureAwait(false);
+
+        if (applicationDto is null)
+        {
+            return BadRequest("Application does not exist.");
         }
 
         if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
@@ -397,17 +403,10 @@ public class ApplicationController : ControllerBase
             return StatusCode(403, "Forbidden to update the application by the blocked user.");
         }
 
-        var workshop = await workshopService.GetById(applicationDto.WorkshopId).ConfigureAwait(false);
-
-        if (workshop is null)
-        {
-            return BadRequest("Workshop does not exist.");
-        }
-
         try
         {
             var result =
-                await applicationService.Update(applicationDto, workshop.ProviderId).ConfigureAwait(false);
+                await applicationService.Update(applicationUpdateDto/*, workshop.ProviderId*/).ConfigureAwait(false);
 
             return result.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),

@@ -226,8 +226,8 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public async Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
     {
         logger.LogInformation("Getting Applications by Parent Id started. Looking Parent Id = {Id}", id);
-        // TODO: ask Dmitro Minochkin for clarification - Why Provider can't  get all Applications by Parent?
-        if (!currentUserService.IsAdmin() && !currentUserService.IsInRole(Role.Provider))
+
+        if (!currentUserService.IsAdmin())
         {
             await currentUserService.UserHasRights(new ParentRights(id));
         }
@@ -268,7 +268,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public async Task<int> GetCountByParentId(Guid id)
     {
         logger.LogInformation("Getting Applications count by Parent Id started. Looking Parent Id = {Id}", id);
-        // TODO: ask Dmitro Minochkin for clarification
+
         if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsInRole(Role.Employee))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation");
@@ -518,12 +518,12 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto)
     {
         logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
-        return ExecuteUpdateAsync(applicationDto, providerId);
+        return ExecuteUpdateAsync(applicationDto);
     }
 
     /// <inheritdoc/>
@@ -930,19 +930,19 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         };
     }
 
-    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto)
     {
-        await currentUserService.UserHasRights(
-            new ParentRights(applicationDto.ParentId),
-            new ProviderRights(providerId),
-            new EmployeeWorkshopRights(providerId, applicationDto.WorkshopId));
-
         var currentApplication = await this.CheckApplicationExists(applicationDto.Id);
 
         if (currentApplication is null)
         {
             return ErrorResponse.BadRequest(ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()).ToResponse());
         }
+
+        await currentUserService.UserHasRights(
+            new ParentRights(currentApplication.ParentId),
+            new ProviderRights(currentApplication.Workshop.ProviderId),
+            new EmployeeWorkshopRights(currentApplication.Workshop.ProviderId, currentApplication.WorkshopId));
 
         var previewAppStatus = currentApplication.Status;
 

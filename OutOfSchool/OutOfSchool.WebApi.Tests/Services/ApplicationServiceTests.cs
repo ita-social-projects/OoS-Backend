@@ -603,15 +603,12 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = statusTo,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = uint.MaxValue,
                 Status = WorkshopStatus.Open,
             });
@@ -641,7 +638,7 @@ public class ApplicationServiceTests
         }
 
         // Act
-        var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update).ConfigureAwait(false);
         ApplicationDto result = new();
         response.Match(
             errResult => result = null,
@@ -692,18 +689,16 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = 5,
                 Status = WorkshopStatus.Open,
             });
+
 
         workshopRepositoryMock.Setup(w => w.GetByFilter(
             It.IsAny<Expression<Func<Workshop, bool>>>(),
@@ -716,7 +711,7 @@ public class ApplicationServiceTests
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
 
         // Act
-        var response = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update).ConfigureAwait(false);
         ApplicationDto result = new ApplicationDto();
         response.Match(
             actionResult => result = null,
@@ -734,12 +729,11 @@ public class ApplicationServiceTests
         var application = new ApplicationUpdate()
         {
             Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
             Status = ApplicationStatus.Pending,
         };
 
         // Act
-        var response = await service.Update(application, Guid.NewGuid());
+        var response = await service.Update(application);
 
         // Assert
         Assert.IsInstanceOf<ErrorResponse>(response.Match(
@@ -772,15 +766,12 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = 0,
                 Status = WorkshopStatus.Open,
             });
@@ -793,7 +784,7 @@ public class ApplicationServiceTests
             {
                 new Workshop()
                 {
-                    Id = update.WorkshopId,
+                    Id = changedEntity.WorkshopId,
                 },
             });
 
@@ -804,7 +795,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
         // Act
-        var response = await service.Update(update, Guid.NewGuid());
+        var response = await service.Update(update);
 
         // Assert
         Assert.IsInstanceOf<ErrorResponse>(response.Match(
@@ -840,15 +831,12 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = 0,
                 Status = WorkshopStatus.Open,
             });
@@ -861,7 +849,7 @@ public class ApplicationServiceTests
             {
                 new Workshop()
                 {
-                    Id = update.WorkshopId,
+                    Id = changedEntity.WorkshopId,
                 },
             });
 
@@ -872,7 +860,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
-        var response = await service.Update(update, Guid.NewGuid());
+        var response = await service.Update(update);
 
         // Assert
         Assert.IsInstanceOf<ApplicationDto>(response.Match(
@@ -905,15 +893,12 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = 0,
                 Status = WorkshopStatus.Open,
             });
@@ -926,7 +911,7 @@ public class ApplicationServiceTests
             {
                 new Workshop()
                 {
-                    Id = update.WorkshopId,
+                    Id = changedEntity.WorkshopId,
                 },
             });
 
@@ -937,7 +922,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
         // Act
-        var response = await service.Update(update, Guid.NewGuid());
+        var response = await service.Update(update);
 
         // Assert
         Assert.IsInstanceOf<ErrorResponse>(response.Match(
@@ -949,7 +934,7 @@ public class ApplicationServiceTests
     public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
     {
         // Act and Assert
-        service.Invoking(s => s.Update(null, Guid.NewGuid())).Should().ThrowAsync<ArgumentException>();
+        service.Invoking(s => s.Update(null)).Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
@@ -994,15 +979,12 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = status,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = uint.MaxValue,
                 Status = WorkshopStatus.Open,
             });
@@ -1019,7 +1001,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
-        await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        await service.Update(update).ConfigureAwait(false);
 
         // Assert
         emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
@@ -1066,15 +1048,13 @@ public class ApplicationServiceTests
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
         workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId), It.IsAny<bool>()))
+                c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
             .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = uint.MaxValue,
                 Status = WorkshopStatus.Open,
             });
@@ -1091,7 +1071,7 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
 
         // Act
-        await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        await service.Update(update).ConfigureAwait(false);
 
         // Assert
         rendererMock.Verify(
@@ -1118,7 +1098,6 @@ public class ApplicationServiceTests
 
     private void SetupCreate(Application application)
     {
-        // var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
         var workshopMock = new WorkshopDto
         {
             Status = WorkshopStatus.Open,
