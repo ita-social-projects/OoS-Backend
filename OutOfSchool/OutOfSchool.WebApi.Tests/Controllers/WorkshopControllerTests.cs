@@ -306,7 +306,7 @@ public class WorkshopControllerTests
 
         var providerId = Guid.NewGuid();
 
-        var filter = new ExcludeIdFilter();
+        var filter = new WorkshopFilterTitle();
 
         workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
 
@@ -331,7 +331,7 @@ public class WorkshopControllerTests
 
         var providerId = Guid.NewGuid();
 
-        var filter = new ExcludeIdFilter();
+        var filter = new WorkshopFilterTitle();
 
         workshopServiceMoq.Setup(x => x.GetByProviderId(providerId, filter)).ReturnsAsync(searchResult);
 
@@ -351,9 +351,9 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopFilterTitle() {ExcludedId = Guid.Empty, From = 0, Size = int.MaxValue };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 5, Entities = workshopProviderViewCardList };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -370,9 +370,9 @@ public class WorkshopControllerTests
     public async Task GetByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult([Random(uint.MinValue, uint.MaxValue, 1)] long randomNumber)
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopFilterTitle() {ExcludedId = Guid.Empty, From = 0, Size = int.MaxValue };
         var emptySearchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 0, Entities = new List<WorkshopProviderViewCard>() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(emptySearchResult);
 
         // Act
@@ -401,9 +401,9 @@ public class WorkshopControllerTests
         // Arrange
         var expectedWorkshopCount = workshopBaseCards.Count - 1;
         var excludedId = workshopBaseCards.FirstOrDefault().Id;
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
+        var filter = new WorkshopFilterTitle() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 4, Entities = workshopProviderViewCardList.Skip(1).ToList() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -542,9 +542,9 @@ public class WorkshopControllerTests
     public async Task GetWorkshopProviderViewCardsByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopFilterTitle() {ExcludedId = Guid.Empty, From = 0, Size = int.MaxValue };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 5, Entities = workshopProviderViewCardList };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -561,9 +561,9 @@ public class WorkshopControllerTests
     public async Task GetWorkshopProviderViewCardsByProviderId_WhenThereIsNoWorkshops_ShouldReturnNoContentResult()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopFilterTitle() {ExcludedId = Guid.Empty, From = 0, Size = int.MaxValue };
         var emptySearchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = 0, Entities = new List<WorkshopProviderViewCard>() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(emptySearchResult);
 
         // Act
@@ -580,10 +580,10 @@ public class WorkshopControllerTests
     {
         // Arrange
         var expectedCount = 1;
-        var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
+        var filter = new WorkshopFilterTitle() {ExcludedId = Guid.Empty ,From = 0, Size = expectedCount };
         var expectedTotalAmount = 5;
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = workshopProviderViewCardList.Take(expectedCount).ToList() };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -605,9 +605,9 @@ public class WorkshopControllerTests
         var expectedCount = 2;
         var expectedTotalAmount = 5;
         var expectedResult = workshopProviderViewCardList.Skip(skipCount).Take(expectedCount).ToList();
-        var filter = new ExcludeIdFilter() { From = skipCount, Size = expectedCount };
+        var filter = new WorkshopFilterTitle() { From = skipCount, Size = expectedCount };
         var searchResult = new SearchResult<WorkshopProviderViewCard>() { TotalAmount = expectedTotalAmount, Entities = expectedResult };
-        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act

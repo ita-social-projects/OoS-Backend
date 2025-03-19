@@ -520,7 +520,7 @@ public class WorkshopServiceTests
             .Returns(emptyListWorkshopProviderViewCards);
 
         // Act
-        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
@@ -565,7 +565,7 @@ public class WorkshopServiceTests
         SetupGetByProviderById(workshops, chatrooms);
 
         // Act
-        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()).ConfigureAwait(false);
+        var result = await workshopService.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopFilterTitle>()).ConfigureAwait(false);
 
         // Assert
         workshopRepository.VerifyAll();
