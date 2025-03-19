@@ -299,6 +299,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -352,6 +353,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -412,6 +414,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -479,6 +482,7 @@ public class ProviderServiceTests
                 0,
                 0,
                 string.Empty,
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 true))
@@ -549,7 +553,12 @@ public class ProviderServiceTests
     {
         // Arrange
         var existingProvider = fakeProviders.RandomItem();
-        providersRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<Provider> { existingProvider });
+        providersRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(new List<Provider> { existingProvider });
 
         // Act
         var actualProviderDto = await providerService.GetByUserId(existingProvider.UserId).ConfigureAwait(false);
@@ -564,8 +573,18 @@ public class ProviderServiceTests
         // Arrange
         var existingProvider = fakeProviders.RandomItem();
         var existingProviderAdmin = fakeProviders.RandomItem();
-        providersRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<Provider> { existingProvider });
-        providerAdminRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Employee, bool>>>(), It.IsAny<string>())).ReturnsAsync(new List<Employee> { new Employee { Provider = existingProviderAdmin } });
+        providersRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(new List<Provider> { existingProvider });
+        providerAdminRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Employee, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Employee>, IQueryable<Employee>>>()))
+            .ReturnsAsync(new List<Employee> { new Employee { Provider = existingProviderAdmin } });
 
         // Act
         var actualProviderDto = await providerService.GetByUserId(existingProviderAdmin.UserId, true).ConfigureAwait(false);
@@ -601,6 +620,7 @@ public class ProviderServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.Is(true, EqualityComparer<bool>.Default)))
@@ -623,6 +643,7 @@ public class ProviderServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.Is(true, EqualityComparer<bool>.Default)))
@@ -657,6 +678,7 @@ public class ProviderServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.Is(true, EqualityComparer<bool>.Default)))
@@ -698,6 +720,7 @@ public class ProviderServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                 It.Is(true, EqualityComparer<bool>.Default)))
@@ -1498,6 +1521,7 @@ public class ProviderServiceTests
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
                 It.Is<string>(x => x == string.Empty),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.Is<bool>(x => !x)))

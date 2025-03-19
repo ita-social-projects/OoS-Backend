@@ -11,6 +11,7 @@ using OutOfSchool.Services.Repository.Api.Files;
 
 namespace OutOfSchool.Services.Repository.Files;
 
+[Obsolete("This class is obsolete. Use FileStorage classes for the specific storage instead.", false)]
 public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
     where TFile : FileModel, new()
 {
@@ -53,11 +54,11 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
 
     /// <inheritdoc />
     /// <remarks>
-    /// Note: The cacheControl and metadata parameters are not used in the database storage implementation
-    /// as they are primarily intended for cloud storage scenarios.
+    /// Note: The main_subfolder, cacheControl and metadata parameters are not used in the database storage 
+    /// implementation as they are primarily intended for cloud storage scenarios.
     /// </remarks>
-    public async Task<string> UploadAsync(TFile file, string cacheControl, IDictionary<string, string> metadata,
-        CancellationToken cancellationToken = default)
+    public async Task<string> UploadAsync(TFile file, string? main_subfolder = null, string cacheControl = "",
+        IDictionary<string, string> metadata = null, CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
 

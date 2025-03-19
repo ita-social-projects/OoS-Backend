@@ -27,6 +27,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
     private readonly string includingPropertiesForMappingDtoModel =
         $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = 
+        w => w.Include(w => w.Teachers)
+              .Include(w => w.DateTimeRanges)
+              .Include(w => w.InstitutionHierarchy)
+              .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG);
 
     private readonly IWorkshopRepository workshopRepository;
     private readonly IEntityRepository<long, Tag> tagRepository;
@@ -213,7 +218,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: includingPropertiesForMappingDtoModel,
+                    includeExpression: includeFunc,
                     orderBy: sortExpression)
                 .ToList();
 
@@ -300,7 +305,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
+                includeExpression: includeFunc,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
@@ -365,7 +370,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
-            
+
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
             if (!dto.TagIds.IsNullOrEmpty())
@@ -380,7 +385,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                         tags.Add(tagDto);
                     }
                 }
-            
+
                 currentWorkshop.Tags.Clear();
                 currentWorkshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
             }
@@ -495,7 +500,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
                 .ConfigureAwait(false);
 
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
-            
+
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
@@ -1270,7 +1275,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
         createdWorkshop.Status = WorkshopStatus.Open;
-        
+
         contactsService.PrepareNewContacts(createdWorkshop, dto);
 
         return createdWorkshop;

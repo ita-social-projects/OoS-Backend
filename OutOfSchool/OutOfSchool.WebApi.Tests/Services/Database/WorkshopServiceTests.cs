@@ -1173,6 +1173,7 @@ public class WorkshopServiceTests
             It.IsAny<int>(),
             It.IsAny<int>(),
             It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
             It.IsAny<Expression<Func<Workshop, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
             It.IsAny<bool>())).Returns(mockWorkshops);
@@ -1209,6 +1210,7 @@ public class WorkshopServiceTests
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     false))
@@ -1219,6 +1221,7 @@ public class WorkshopServiceTests
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<ChatRoomWorkshop>, IQueryable<ChatRoomWorkshop>>>(),
                     It.IsAny<Expression<Func<ChatRoomWorkshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<ChatRoomWorkshop, object>>, SortDirection>>(),
                     false))
@@ -1233,7 +1236,8 @@ public class WorkshopServiceTests
             .Setup(
                 w => w.GetByFilter(
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<string>()))
+                    It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(workshopBaseCardsList);
     }
 
@@ -1275,6 +1279,7 @@ public class WorkshopServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();

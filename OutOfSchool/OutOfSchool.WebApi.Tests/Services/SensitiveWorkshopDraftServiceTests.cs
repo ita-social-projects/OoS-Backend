@@ -2,7 +2,6 @@
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using System.Collections.Generic;
@@ -159,7 +158,7 @@ public class SensitiveWorkshopDraftServiceTests
     }
     #endregion
 
-    private SearchResult<WorkshopDraftViewCardDto> SetupFetchByFilterForAdmins(
+    private SearchResult<WorkshopDraftResponseDto> SetupFetchByFilterForAdmins(
         string userId = null,
         bool isRegionAdmin = false,
         bool isMinistryAdmin = false,
@@ -172,7 +171,7 @@ public class SensitiveWorkshopDraftServiceTests
     {
         var workshops = WorkshopGenerator.Generate(5).ToList();
         var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshops);
-        var workshopDraftDtos = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
+        var workshopDraftDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
         SetUpWorkshopsRepository(workshopDrafts, filter);
@@ -189,7 +188,7 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);
 
-        return new SearchResult<WorkshopDraftViewCardDto>()
+        return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftDtos.Count,
             Entities = workshopDraftDtos,
@@ -214,6 +213,7 @@ public class SensitiveWorkshopDraftServiceTests
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
                     It.IsAny<string>(),
+                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
                     It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null),
                     It.Is<bool>(x => x.Equals(true))))

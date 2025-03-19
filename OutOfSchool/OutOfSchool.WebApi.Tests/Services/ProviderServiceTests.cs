@@ -296,6 +296,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -349,6 +350,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -409,6 +411,7 @@ public class ProviderServiceTests
                 filter.From,
                 filter.Size,
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -440,6 +443,7 @@ public class ProviderServiceTests
                 0,
                 0,
                 string.Empty,
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                 true))
@@ -1338,7 +1342,11 @@ public class ProviderServiceTests
                                                    FakePositions.ToArray()[0],
                                                    FakeIndividuals.ToArray()[0].Id);
 
-        individualRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Individual, bool>>>(), string.Empty))
+        individualRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Individual, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<Individual>, IQueryable<Individual>>>()))
             .Returns(Task.FromResult(FakeIndividuals))
             .Verifiable(Times.Once)
             ;
@@ -1346,14 +1354,22 @@ public class ProviderServiceTests
             .Returns(Task.FromResult(createdIndividual))
             .Verifiable(Times.Once)
             ;
-        officialRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Official, bool>>>(), "Position"))
+        officialRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Official, bool>>>(),
+                "Position",
+                It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
             .Returns(Task.FromResult(FakeOfficials))
             .Verifiable(Times.Once)
             ;
 
         if (isNewPositionCreating)
         {
-            positionRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), string.Empty))
+            positionRepositoryMock
+                .Setup(r => r.GetByFilter(
+                    It.IsAny<Expression<Func<Position, bool>>>(),
+                    string.Empty,
+                    It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
                 .Returns(Task.FromResult(new Position[] { default } as IEnumerable<Position>))
                 .Verifiable(Times.Exactly(entitiesCount - 1))
                 ;
@@ -1364,7 +1380,11 @@ public class ProviderServiceTests
         }
         else
         {
-            positionRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Position, bool>>>(), string.Empty))
+            positionRepositoryMock
+                .Setup(r => r.GetByFilter(
+                    It.IsAny<Expression<Func<Position, bool>>>(), 
+                    string.Empty,
+                    It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
                 .Returns(Task.FromResult(FakePositions))
                 .Verifiable(Times.Exactly(entitiesCount - 1))
                 ;
@@ -1426,7 +1446,12 @@ public class ProviderServiceTests
     {
         var usersRepository = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-        usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+        usersRepository
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<User, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 
         return usersRepository;
     }

@@ -9,7 +9,7 @@ public class AverageRating : IKeyedEntity<long>, ISoftDeleted
 
     public bool IsDeleted { get; set; }
 
-    public float Rate { get; set; }
+    public decimal Rate { get; set; }
 
     public int RateQuantity { get; set; }
 

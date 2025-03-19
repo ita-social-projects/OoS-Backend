@@ -19,14 +19,15 @@ public interface IFilesStorage<TFile, TIdentifier>
     /// Asynchronously uploads a file into the storage.
     /// </summary>
     /// <param name="file">File.</param>
+    /// <param name="main_subfolder">Optional prefix to filter objects.</param>
     /// <param name="cacheControl">Value of Cache-Control header/metadata for objects. Uses provider default if empty.</param>
     /// <param name="metadata">Additional object metadata.</param>
     /// <param name="cancellationToken">CancellationToken.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains an identifier of the file if it's uploaded.
     /// </returns>
-    Task<TIdentifier> UploadAsync(TFile file, string cacheControl = "", IDictionary<string, string>? metadata = null,
-        CancellationToken cancellationToken = default);
+    Task<TIdentifier> UploadAsync(TFile file, string? main_subfolder = null, string cacheControl = "",
+        IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously deletes a file from the storage.

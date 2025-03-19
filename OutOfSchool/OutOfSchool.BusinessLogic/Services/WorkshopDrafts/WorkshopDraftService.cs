@@ -392,7 +392,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopDraftViewCardDto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
+    public async Task<SearchResult<WorkshopDraftResponseDto>> FetchByFilterForAdmins(WorkshopDraftFilterAdministration filter = null)
     {
         logger.LogDebug("Started retrieving Workshop Drafts by filter for admins.");
 
@@ -437,9 +437,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
 
-        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftViewCardDto>(draft)).ToList();
+        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftResponseDto>(draft)).ToList();
 
-        return new SearchResult<WorkshopDraftViewCardDto>()
+        return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftsCount,
             Entities = entities,
@@ -486,10 +486,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
         var providerDto = await providerService.GetById(workshopV2Dto.ProviderId);
-        var provider = mapper.Map<Provider>(providerDto);
 
-        workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = provider.LicenseStatus;
-        workshopDraft.WorkshopDraftContent.OwnershipType = provider.Ownership;
+        workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = providerDto.LicenseStatus;
+        workshopDraft.WorkshopDraftContent.OwnershipType = providerDto.Ownership;
         workshopDraft.WorkshopDraftContent.WorkshopStatus = WorkshopStatus.Open;
 
         var createdDraft = await workshopDraftRepository.Create(workshopDraft)

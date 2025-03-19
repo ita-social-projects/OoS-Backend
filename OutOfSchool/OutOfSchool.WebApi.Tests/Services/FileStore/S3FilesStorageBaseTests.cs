@@ -4,13 +4,16 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Minio;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.DataModel.Response;
+using Minio.Exceptions;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
 using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.ExternalFileStore.S3;
 
@@ -55,8 +58,39 @@ public class S3FilesStorageBaseTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.AreEqual(result.ContentType, contentType);
+        Assert.AreEqual(contentType, result.ContentType);
         Assert.NotNull(result.ContentStream);
+    }
+
+    [Test]
+    public async Task GetByIdAsync_ExceptionInS3_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        minioClientMock
+            .Setup(x => x.GetObjectAsync(
+                It.IsAny<GetObjectArgs>(),
+                CancellationToken.None))
+            .Throws<Exception>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.GetByIdAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        minioClientMock.Verify(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None), Times.Once);
+    }
+
+    [Test]
+    public async Task GetByIdAsync_MinioException_ThrowsFileStorageException()
+    {
+        // Arrange
+        var fileId = "test-file-id";
+        minioClientMock.Setup(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None))
+            .Throws<MinioException>();
+
+        // Act and Assert
+        await storage.Invoking(s => s.GetByIdAsync(fileId))
+            .Should().ThrowAsync<FileStorageException>();
+        minioClientMock.Verify(s => s.GetObjectAsync(It.IsAny<GetObjectArgs>(), CancellationToken.None), Times.Once);
     }
 
     [Test]
@@ -69,7 +103,7 @@ public class S3FilesStorageBaseTests
             ContentStream = new MemoryStream([1, 2, 3])
         };
         var cacheControl = "max-age=3600";
-        var metadata = new Dictionary<string, string> {{"key", "value"}};
+        var metadata = new Dictionary<string, string> { { "key", "value" } };
 
         minioClientMock
             .Setup(x => x.PutObjectAsync(
@@ -79,7 +113,7 @@ public class S3FilesStorageBaseTests
                 "new-file-id"));
 
         // Act
-        var result = await storage.UploadAsync(file, cacheControl, metadata);
+        var result = await storage.UploadAsync(file, null, cacheControl, metadata);
 
         // Assert
         Assert.NotNull(result);

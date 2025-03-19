@@ -301,6 +301,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Favorite>, IQueryable<Favorite>>>(),
                 It.IsAny<Expression<Func<Favorite, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(favorites.AsTestAsyncEnumerableQuery());
@@ -309,6 +310,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(applications.AsTestAsyncEnumerableQuery());
@@ -379,6 +381,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Favorite>, IQueryable<Favorite>>>(),
                 It.IsAny<Expression<Func<Favorite, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(favorites.AsTestAsyncEnumerableQuery());
@@ -387,6 +390,7 @@ public class WorkshopServicesCombinerTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(applications.AsTestAsyncEnumerableQuery());

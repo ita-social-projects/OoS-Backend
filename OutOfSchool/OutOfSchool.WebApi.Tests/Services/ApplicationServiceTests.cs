@@ -240,7 +240,11 @@ public class ApplicationServiceTests
             new Application(),
         };
 
-        applicationRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>())).ReturnsAsync(applications.AsEnumerable());
+        applicationRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(applications.AsEnumerable());
 
         // Act
         var result = await service.Create(application);
@@ -414,6 +418,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -424,6 +429,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -451,6 +457,7 @@ public class ApplicationServiceTests
             It.IsAny<int>(),
             It.IsAny<int>(),
             It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
             false)).Returns(mockQuery);
@@ -471,6 +478,7 @@ public class ApplicationServiceTests
             It.IsAny<int>(),
             It.IsAny<int>(),
             It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
             false)).Returns(mockQuery);
@@ -567,6 +575,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -577,7 +586,10 @@ public class ApplicationServiceTests
             .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
-        applicationRepositoryMock.Setup(a => a.GetByFilter(It.IsAny<Expression<Func<Application, bool>>>(), It.IsAny<string>()))
+        applicationRepositoryMock.Setup(a => a.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { changedEntity }));
 
         mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
@@ -600,7 +612,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
@@ -683,7 +698,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
@@ -760,7 +778,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>()
             {
                 new Workshop()
@@ -822,7 +843,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>()
             {
                 new Workshop()
@@ -884,7 +908,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>()
             {
                 new Workshop()
@@ -935,6 +962,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -965,7 +993,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(), 
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
@@ -999,6 +1030,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1029,7 +1061,10 @@ public class ApplicationServiceTests
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
@@ -1073,7 +1108,8 @@ public class ApplicationServiceTests
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
         workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).ReturnsAsync(workshopMock);
     }
@@ -1085,6 +1121,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1108,6 +1145,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1121,7 +1159,8 @@ public class ApplicationServiceTests
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {apps.First() }));
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
@@ -1139,6 +1178,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1156,6 +1196,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1174,6 +1215,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1183,6 +1225,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1201,6 +1244,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1210,6 +1254,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))
@@ -1224,7 +1269,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetById(applicationId)).ReturnsAsync(application);
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
         mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() {Id = application.Id});
     }
@@ -1237,6 +1283,7 @@ public class ApplicationServiceTests
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                 It.IsAny<bool>()))

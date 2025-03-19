@@ -68,7 +68,8 @@ public class PositionService : IPositionService
         var sortPredicate = SortExpressionBuild(filter);
         
         int count = await _entityRepositoryBase.Count(whereExpression: predicate).ConfigureAwait(false);
-       
+
+        // No nested entities in use – eager loading not required.
         var positions = await _entityRepositoryBase
             .Get(
                 skip: filter.From,
@@ -124,8 +125,10 @@ public class PositionService : IPositionService
 
     private async Task CheckIfExist(Guid positionId, Guid providerId)
     {
+        // No nested entities in use – eager loading not required.
         var position = await _entityRepositoryBase.GetByFilter(
-                x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
+                x => x.Id == positionId && 
+                x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
 
         if (position.Count() == 0 || position.Single().IsDeleted == true)
         {
@@ -138,9 +141,10 @@ public class PositionService : IPositionService
     {
         await CheckIfExist(positionId, providerId);
 
+        // No nested entities in use – eager loading not required.
         var position = await _entityRepositoryBase.GetByFilter(
-            x => x.Id == positionId && x.ProviderId == providerId && !x.IsDeleted)
-            .ConfigureAwait(false);
+            x => x.Id == positionId && 
+            x.ProviderId == providerId && !x.IsDeleted).ConfigureAwait(false);
 
         return position.SingleOrDefault();
     }

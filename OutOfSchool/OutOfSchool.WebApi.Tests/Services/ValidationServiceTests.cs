@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Moq;
@@ -47,7 +48,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = validUserId,
         };
-        providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
+        providerRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
             .ReturnsAsync(new List<Provider>() { providerWithValidUserId });
 
         // Act
@@ -67,7 +72,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = "anotherUserId",
         };
-        providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
+        providerRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
             .ReturnsAsync(new List<Provider>() { providerWithAnotherUserId });
 
         // Act
@@ -82,7 +91,11 @@ public class ValidationServiceTests
     {
         // Arrange
         var validUserId = "someUserId";
-        providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
+        providerRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
             .ReturnsAsync(new List<Provider>() { });
 
         // Act
@@ -111,13 +124,15 @@ public class ValidationServiceTests
         workshopRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop> { workshopWithProviderWithValidUserId });
 
         providerAdminRepositoryMock
             .Setup(e => e.GetByFilter(
                 It.IsAny<Expression<Func<Employee, bool>>>(),
-                It.IsAny<string>()))
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Employee>, IQueryable<Employee>>>()))
             .ReturnsAsync(new List<Employee> { new Employee() });
 
         // Act
@@ -143,7 +158,11 @@ public class ValidationServiceTests
                 UserId = "anotherUserId",
             },
         };
-        workshopRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Workshop, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithAnotherUserId });
 
         // Act
@@ -160,7 +179,11 @@ public class ValidationServiceTests
     {
         // Arrange
         var validUserId = "someUserId";
-        workshopRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Workshop, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         // Act
@@ -182,7 +205,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = validUserId,
         };
-        parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
+        parentRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(new List<Parent>() { parentWithValidUserId });
 
         // Act
@@ -202,7 +229,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = "anotherUserId",
         };
-        parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
+        parentRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(new List<Parent>() { parentWithAnotherUserId });
 
         // Act
@@ -217,7 +248,11 @@ public class ValidationServiceTests
     {
         // Arrange
         var validUserId = "someUserId";
-        parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
+        parentRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(new List<Parent>());
 
         // Act
@@ -241,7 +276,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = validUserId,
         };
-        parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
+        parentRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(new List<Parent>() { parentWithValidUserId });
 
         // Act
@@ -258,7 +297,11 @@ public class ValidationServiceTests
         var validUserId = "someUserId";
         var userRole = Role.Parent;
 
-        parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
+        parentRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
             .ReturnsAsync(new List<Parent>() { });
 
         // Act
@@ -280,7 +323,11 @@ public class ValidationServiceTests
             Id = Guid.NewGuid(),
             UserId = validUserId,
         };
-        providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
+        providerRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
             .ReturnsAsync(new List<Provider>() { providerWithValidUserId });
 
         // Act
@@ -297,7 +344,11 @@ public class ValidationServiceTests
         var validUserId = "someUserId";
         var userRole = Role.Provider;
 
-        providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
+        providerRepositoryMock
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
             .ReturnsAsync(new List<Provider>());
 
         // Act

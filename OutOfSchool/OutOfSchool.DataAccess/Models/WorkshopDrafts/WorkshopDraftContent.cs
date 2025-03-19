@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
 
@@ -9,7 +10,8 @@ namespace OutOfSchool.Services.Models.WorkshopDrafts;
 ///     Will be stored as nested objects in the JSON format of the workshop draft.
 ///     This entity is specific to the draft and can be hard-deleted if the draft is removed.
 /// </summary>
-public class WorkshopDraftContent
+public class WorkshopDraftContent :
+    IHasContacts
 {
     public int MinAge { get; set; }
 
@@ -97,13 +99,16 @@ public class WorkshopDraftContent
 
     public Guid? ParentWorkshopId { get; set; }
 
-    public string Phone { get; set; } 
+    public List<Contacts> Contacts { get; set; }
 
-    public string Email { get; set; } 
+    //TODO: Remove later
+    public string Phone { get; set; }
 
-    public string Website { get; set; } 
+    public string Email { get; set; }
 
-    public string Facebook { get; set; } 
+    public string Website { get; set; }
 
-    public string Instagram { get; set; } 
+    public string Facebook { get; set; }
+
+    public string Instagram { get; set; }
 }
