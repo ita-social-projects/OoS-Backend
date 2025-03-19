@@ -952,7 +952,6 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             return mapper.Map<ApplicationDto>(currentApplication);
         }
 
-        // TODO: Don't we need to wrap the application update in a transaction?
         try
         {
             if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
