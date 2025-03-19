@@ -406,7 +406,7 @@ public class ApplicationController : ControllerBase
         try
         {
             var result =
-                await applicationService.Update(applicationUpdateDto/*, workshop.ProviderId*/).ConfigureAwait(false);
+                await applicationService.Update(applicationUpdateDto).ConfigureAwait(false);
 
             return result.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
