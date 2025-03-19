@@ -97,7 +97,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
     {
         var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 

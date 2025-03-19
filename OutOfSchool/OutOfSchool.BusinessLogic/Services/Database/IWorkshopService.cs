@@ -111,7 +111,7 @@ public interface IWorkshopService
     /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by Workshop id.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="SearchResult{WorkshopProviderViewCard}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter);
+    Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, WorkshopFilterTitle filter);
 
     /// <summary>
     /// Get entities from the database that match filter's parameters.

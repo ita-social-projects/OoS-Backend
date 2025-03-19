@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Util;
 
@@ -58,5 +59,15 @@ public static class ModelValidationHelper
         {
             throw new ArgumentException(stringBuilder.ToString(), nameof(filter));
         }
+    }
+
+    public static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter)
+    {
+        if (filter == null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
+        ValidateExcludedIdFilter(filter);
     }
 }

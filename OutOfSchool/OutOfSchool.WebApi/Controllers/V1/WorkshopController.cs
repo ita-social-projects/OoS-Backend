@@ -157,7 +157,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
     {
         if (id == Guid.Empty)
         {
@@ -182,7 +182,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
     {
         if (id == Guid.Empty)
         {
