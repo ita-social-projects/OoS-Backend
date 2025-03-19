@@ -983,37 +983,45 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
             UpdateStatus(applicationDto, currentApplication);
 
-            var updatedApplication = await applicationRepository.Update(
+            async Task<Application> UpdateApplicationAndNotification()
+            {
+                var updatedApplication = await applicationRepository.Update(
                     currentApplication,
                     x => changesLogService.AddEntityChangesToDbContext(x, currentUserService.UserId))
                 .ConfigureAwait(false);
 
-            logger.LogInformation("Application with Id = {Id} updated successfully", updatedApplication.Id);
+                logger.LogInformation("Application with Id = {Id} updated successfully", updatedApplication.Id);
 
-            var additionalData = new Dictionary<string, string>()
-            {
-                { StatusTitle, updatedApplication.Status.ToString() },
-            };
+                var additionalData = new Dictionary<string, string>()
+                {
+                    { StatusTitle, updatedApplication.Status.ToString() },
+                };
 
-            var groupedData = updatedApplication.Status.ToString();
-            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication).ConfigureAwait(false);
+                var groupedData = updatedApplication.Status.ToString();
+                var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication).ConfigureAwait(false);
 
-            await notificationService.Create(
-            NotificationType.Application,
-            NotificationAction.Update,
-            updatedApplication.Id,
-            recipientsIds,
-            additionalData,
-            groupedData).ConfigureAwait(false);
+                await notificationService.Create(
+                NotificationType.Application,
+                NotificationAction.Update,
+                updatedApplication.Id,
+                recipientsIds,
+                additionalData,
+                groupedData).ConfigureAwait(false);
 
-            if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
-            {
-                await SendApplicationUpdateStatusEmail(updatedApplication);
+                if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
+                {
+                    await SendApplicationUpdateStatusEmail(updatedApplication);
+                }
+
+                return updatedApplication;
             }
 
-            await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
+            var application = await applicationRepository
+                .RunInTransaction(UpdateApplicationAndNotification).ConfigureAwait(false); ;
 
-            return mapper.Map<ApplicationDto>(updatedApplication);
+            await ControlWorkshopStatus(previewAppStatus, application.Status, currentApplication.WorkshopId);
+
+            return mapper.Map<ApplicationDto>(application);
         }
         catch (DbUpdateConcurrencyException ex)
         {
