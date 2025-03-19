@@ -306,8 +306,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
-                    whereExpression: filterPredicate)
+                includeExpression: includeFunc,
+                whereExpression: filterPredicate)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
