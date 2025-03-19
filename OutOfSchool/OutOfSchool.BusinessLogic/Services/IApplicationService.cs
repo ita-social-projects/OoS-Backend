@@ -76,7 +76,6 @@ public interface IApplicationService
     /// Update entity.
     /// </summary>
     /// <param name="applicationDto">Application entity to update.</param>
-    /// <param name="providerId">Id of the provider for workshop.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto);
 
