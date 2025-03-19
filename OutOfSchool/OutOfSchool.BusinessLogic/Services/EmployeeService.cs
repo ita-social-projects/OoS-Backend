@@ -410,7 +410,7 @@ public class EmployeeService : CommunicationService, IEmployeeService
             };
         }
 
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopFilterTitle() { ExcludedId = Guid.Empty, From = 0, Size = int.MaxValue };
         return await workshopService.GetByProviderId(employee.ProviderId, filter).ConfigureAwait(false);
     }
 

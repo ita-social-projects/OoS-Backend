@@ -268,7 +268,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     }
 
     /// <inheritdoc/>
-    public Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, WorkshopFilterTitle filter)
         => workshopService.GetByProviderId(id, filter);
 
     /// <inheritdoc/>

@@ -290,25 +290,30 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, WorkshopFilterTitle filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-        filter ??= new ExcludeIdFilter();
-        ValidateExcludedIdFilter(filter);
+        filter ??= new WorkshopFilterTitle();
+        ValidateWorkshopTitleFilter(filter);
 
         var workshopBaseCardsCount = await workshopRepository.Count(whereExpression: x =>
-            filter.ExcludedId == null
-                ? (x.ProviderId == id)
-                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+                (x.ProviderId == id) &&
+                (filter.ExcludedId == null || x.Id != filter.ExcludedId) &&
+                (string.IsNullOrEmpty(filter.SearchText) || x.Title.Contains(filter.SearchText)))
+                .ConfigureAwait(false);
 
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeExpression: includeFunc,
-                whereExpression: x => filter.ExcludedId == null
-                    ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+                includeProperties: includingPropertiesForMappingDtoModel,
+                    whereExpression: x =>
+                    (x.ProviderId == id) &&
+                    (filter.ExcludedId == null || x.Id != filter.ExcludedId) &&
+                    (string.IsNullOrEmpty(filter.SearchText) || x.Title.Contains(filter.SearchText)))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
 
         var chatrooms = roomRepository.Get(
             skip: 0,
@@ -883,8 +888,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return (await workshopRepository.GetById(workshopId).ConfigureAwait(false)).IsBlocked;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
-        ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter) =>
+        ModelValidationHelper.ValidateWorkshopTitleFilter(filter);
 
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
     {
