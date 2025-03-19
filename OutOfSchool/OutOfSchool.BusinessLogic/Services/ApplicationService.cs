@@ -1016,7 +1016,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             }
 
             var application = await applicationRepository
-                .RunInTransaction(UpdateApplicationAndNotification).ConfigureAwait(false); ;
+                .RunInTransaction(UpdateApplicationAndNotification).ConfigureAwait(false);
 
             await ControlWorkshopStatus(previewAppStatus, application.Status, currentApplication.WorkshopId);
 
