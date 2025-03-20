@@ -14,10 +14,6 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class CompetitiveEventService : ICompetitiveEventService
 {
-    private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
-   // private readonly string includeProperties = 
-     //   $"{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.CompetitiveEventDescriptionItems)},{nameof(CompetitiveEvent.InstitutionHierarchy)},{nameof(CompetitiveEvent.Coverage)},Contacts.Address.CATOTTG";
-
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly ILogger<CompetitiveEventService> logger;
@@ -182,7 +178,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         var competitiveEvents = await competitiveEventRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: includingPropertiesForCompetitiveEventViewCard,
+            includeProperties: String.Empty,
             whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);
