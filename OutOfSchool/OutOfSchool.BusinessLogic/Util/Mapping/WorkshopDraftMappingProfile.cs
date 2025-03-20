@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft.AddressDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -12,29 +11,11 @@ public class WorkshopDraftMappingProfile : Profile
     // TODO: After implementing the new model for Workshops, use the Workshop DTO model instead of the WorkshopDraft DTO.
     public WorkshopDraftMappingProfile()
     {
-        // Nested entities that do not map to a database table
-        CreateMap<WorkshopDescriptionItemDraftDto, WorkshopDescriptionItemDraft>()
-            .ReverseMap();
-
-        CreateMap<DateTimeRangeDraftDto, DateTimeRangeDraft>()            
-            .ReverseMap();
-
-        CreateMap<AddressDraftDto, AddressDraft>()
-            .ReverseMap();
-
-        CreateMap<TeacherDraftCreateDto, TeacherDraft>()
-            .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId,opt => opt.Ignore())
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.WorkshopDraft, opt => opt.Ignore())
-            .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())
-            .ForMember(dest => dest.Version, opt => opt.Ignore());
-
         CreateMap<TeacherDraft, TeacherDraftResponseDto>();
 
         CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>()
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())           
-            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())            
+            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
             .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDetails, opt => opt.Ignore());
 
@@ -44,7 +25,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.DraftStatus, opt => opt.MapFrom(src => src.DraftStatus))
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(src => src.RejectionMessage))
             .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src));
-        
+
         CreateMap<WorkshopV2Dto, WorkshopDraftResponseDto>()
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src))
