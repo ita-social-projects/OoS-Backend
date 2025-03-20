@@ -41,6 +41,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly IMinistryAdminService ministryAdminService;
     private readonly ICodeficatorService codeficatorService;
     private readonly ISearchStringService searchStringService;
+    private readonly IInstitutionHierarchyService institutionHierarchyService;
     private readonly int maxParallelUploads;
 
     /// <summary>
@@ -61,6 +62,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     /// <param name="ministryAdminService"> Service for ministry admin.</param>
     /// <param name="codeficatorService">Service for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
+    /// <param name="institutionHierarchyService">Service for InstitutionHierarchy.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
@@ -76,7 +78,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         IRegionAdminService regionAdminService,
         IMinistryAdminService ministryAdminService,
         ICodeficatorService codeficatorService,
-        ISearchStringService searchStringService)
+        ISearchStringService searchStringService,
+        IInstitutionHierarchyService institutionHierarchyService)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
@@ -93,6 +96,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
+        this.institutionHierarchyService = institutionHierarchyService ?? throw new ArgumentNullException(nameof(institutionHierarchyService));
     }
 
     // <inheritdoc/>
@@ -149,7 +153,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
 
-        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);        
+        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
+        createdDraftDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(createdDraftWithAssociatedTeachers);
 
         logger.LogDebug("WorkshopDraft created successfully.");
 
@@ -246,9 +251,12 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         var (updatedDraft, coverImageResult, imagesResult, teacherCreateUpdateResult) = await workshopDraftRepository
             .RunInTransaction(UpdateDraftWithDependencies).ConfigureAwait(false);
 
+        var workshopDraftResponse = mapper.Map<WorkshopDraftResponseDto>(updatedDraft);
+        workshopDraftResponse.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(updatedDraft);
+
         return new WorkshopDraftResultDto()
         {
-            WorkshopDraft = mapper.Map<WorkshopDraftResponseDto>(updatedDraft),
+            WorkshopDraft = workshopDraftResponse,
             UploadingCoverImgWorkshopResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
             TeachersCreateUpdateResult = teacherCreateUpdateResult
@@ -377,7 +385,22 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
-        var workshopDraftResponseDtos = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
+        var institutionHierarchies = await institutionHierarchyService.GetAll();
+
+        var workshopDraftResponseDtos = new List<WorkshopDraftViewCardDto>();
+        
+        foreach (var draft in workshopDrafts)
+        {
+            var responseDto = mapper.Map<WorkshopDraftViewCardDto>(draft);
+            responseDto.DirectionIds = institutionHierarchies
+                .FirstOrDefault(i => 
+                    i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
+                ?.Directions
+                .Select(d => d.Id)
+                .ToList();
+
+            workshopDraftResponseDtos.Add(responseDto);
+        }
 
         logger.LogDebug(
             "From Workshop Drafts table for provider {Id} were successfully received {Count} records", 
@@ -437,13 +460,49 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
 
-        var entities = workshopDrafts.Select(draft => mapper.Map<WorkshopDraftResponseDto>(draft)).ToList();
+        var institutionHierarchies = await institutionHierarchyService.GetAll();
+
+        var entities = new List<WorkshopDraftResponseDto>();        
+
+        foreach (var draft in workshopDrafts)
+        {
+            var responseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+            responseDto.WorkshopDetails.DirectionIds = institutionHierarchies
+                .FirstOrDefault(i =>
+                    i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
+                ?.Directions
+                .Select(d => d.Id)
+                .ToList();
+
+            entities.Add(responseDto);
+        }
 
         return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftsCount,
             Entities = entities,
         };
+    }
+       
+    /// <inheritdoc/>
+    public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
+    {       
+        var draft = await workshopDraftRepository.GetById(id);
+        
+        if (draft == null)
+        {
+            throw new NotFoundException($"WorkshopDraft with id {id} not found.");
+        }
+
+        if (!await IsUserProviderOrProviderEmployee(draft.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        var workshopDraftResponseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+        workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
+
+        return workshopDraftResponseDto;
     }
 
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
@@ -462,23 +521,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
 
         return workshopDraft;
-    }
-
-    /// <inheritdoc/>
-    public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
-    {       
-        var draft = await workshopDraftRepository.GetById(id);
-        
-        if (draft == null)
-        {
-            throw new NotFoundException($"WorkshopDraft with id {id} not found.");
-        }
-
-        if (!await IsUserProviderOrProviderEmployee(draft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
-        return mapper.Map<WorkshopDraftResponseDto>(draft);
     }
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
@@ -710,4 +752,17 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         return predicate;
     }
    
+    private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
+    {
+        var institutionHierarchyId = workshopDraft.WorkshopDraftContent.InstitutionHierarchyId;
+
+        if (institutionHierarchyId == null)
+        {
+            return null;
+        }
+
+        var institutionHierarchyDto = await institutionHierarchyService.GetById((Guid) workshopDraft.WorkshopDraftContent.InstitutionHierarchyId);
+
+        return institutionHierarchyDto.Directions.Select(d => d.Id).ToList();
+    }
 }

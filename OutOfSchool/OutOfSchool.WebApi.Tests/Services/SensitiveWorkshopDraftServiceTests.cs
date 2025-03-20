@@ -27,6 +27,8 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.Services.Enums;
 using System.Linq.Expressions;
 using FluentAssertions;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -45,6 +47,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
 
     private string userId;
 
@@ -68,6 +71,7 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock = new Mock<ISearchStringService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -76,8 +80,8 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
-        var employeeService = new Mock<IEmployeeService>();     
-
+        var employeeService = new Mock<IEmployeeService>();
+        
         userId = "someUserId";
 
         service = new WorkshopDraftService(
@@ -95,7 +99,8 @@ public class SensitiveWorkshopDraftServiceTests
                    regionAdminServiceMock.Object,
                    ministryAdminServiceMock.Object,
                    codeficatorServiceMock.Object,
-                   searchStringServiceMock.Object);
+                   searchStringServiceMock.Object,
+                   institutionHierarchyServiceMock.Object);
     }
 
     #region FetchByFilterForAdmins    
@@ -187,6 +192,9 @@ public class SensitiveWorkshopDraftServiceTests
 
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);
+
+        institutionHierarchyServiceMock.Setup(x => x.GetAll())
+            .ReturnsAsync(new List<InstitutionHierarchyDto>());
 
         return new SearchResult<WorkshopDraftResponseDto>()
         {
