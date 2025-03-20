@@ -111,8 +111,6 @@ public static class Startup
         // Enable extracting token from QueryString for Hub-connection authorization
         app.UseMiddleware<AuthorizationTokenMiddleware>();
 
-        app.UseResponseCaching();
-
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -244,7 +242,6 @@ public static class Startup
 
         services.AddRazorPages();
         services.AddHttpContextAccessor();
-        services.AddResponseCaching();
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
         services.AddScoped<ISensitiveMinistryAdminService, MinistryAdminService>();

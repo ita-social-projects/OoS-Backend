@@ -530,7 +530,7 @@ public class WorkshopController : ControllerBase
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
-    [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new[] { "*" })]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
