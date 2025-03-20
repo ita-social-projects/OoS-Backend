@@ -116,10 +116,6 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
             sb.Append(prefix.ToLower())
               .Append('/');
         }
-        else
-        {
-            sb.Append('/');
-        }
 
         sb.Append(firstDir.ToString("x2"))
           .Append('/')
