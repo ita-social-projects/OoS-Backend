@@ -214,6 +214,6 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.Coverage.Title));
 
-        CreateMap<PriceRange, PriceRangeES>();
+        CreateMap<PriceRangeES, PriceRange>();
     }
 }
