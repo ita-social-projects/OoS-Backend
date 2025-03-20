@@ -260,7 +260,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] ChildUpdateDto dto, Guid id)
     {
@@ -280,8 +280,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
-    [FeatureGate(nameof(Feature.AdminsChildernParentsManagement))]
+    [HttpDelete("{id}")]    
     public async Task<IActionResult> Delete(Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);
