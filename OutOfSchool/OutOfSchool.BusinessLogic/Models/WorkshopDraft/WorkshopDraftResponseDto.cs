@@ -2,7 +2,7 @@
 using OutOfSchool.Services.Enums.WorkshopStatus;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-public class WorkshopDraftResponseDto : WorkshopDraftBaseDto
+public class WorkshopDraftResponseDto
 {
     public Guid WorkshopDraftId { get; set; }
     public WorkshopDraftStatus DraftStatus { get; set; }      
