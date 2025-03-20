@@ -37,7 +37,7 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
     {
         filter ??= new CompetitiveEventFilterES();
 
-        var query = CreateQueryFromFilter(filter);
+        var query = CreateQueryFromFilter(filter, false);
 
         var request = new SearchRequest<CompetitiveEventES>
         {
@@ -45,13 +45,13 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
             Aggregations = new Dictionary<string, Aggregation>
             {
                 {
-                    "min_price", Aggregation.Min(new MinAggregation
+                    MinPrice, Aggregation.Min(new MinAggregation
                     {
                         Field = Infer.Field<CompetitiveEventES>(c => c.Price)
                     })
                 },
                 {
-                    "max_price", Aggregation.Max(new MaxAggregation
+                    MaxPrice, Aggregation.Max(new MaxAggregation
                     {
                         Field = Infer.Field<CompetitiveEventES>(c => c.Price)
                     })
@@ -60,8 +60,8 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         };
 
         var response = await ElasticClient.SearchAsync<CompetitiveEventES>(request);
-        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
-        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+        var minPrice = response.Aggregations.GetMin(MinPrice).Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax(MaxPrice).Value ?? 0;
 
         return new PriceRangeES()
         {
@@ -70,7 +70,7 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         };
     }
 
-    private Query CreateQueryFromFilter(CompetitiveEventFilterES filter)
+    private Query CreateQueryFromFilter(CompetitiveEventFilterES filter, bool includePrice = true)
     {
         var query = new BoolQuery()
         {
@@ -93,7 +93,10 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         AddOptionsForPeopleWithDisabilitiesQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
         AddCompetitiveSelectionQuery(query, filter);
-        AddPriceQuery(query, filter);
+        if (includePrice)
+        {
+            AddPriceQuery(query, filter);
+        }
         AddAgeQuery(query, filter);
         AddRegistrationEndTimeQuery(query, filter);
         AddScheduledStartTimeQuery(query, filter);

@@ -30,6 +30,9 @@ public abstract class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchPr
 
     protected ElasticsearchClient ElasticClient { get; private set; }
 
+    protected const string MinPrice = "min_price";
+    protected const string MaxPrice = "max_price";
+
     /// <inheritdoc/>
     public virtual async Task<Result> IndexEntityAsync(TEntity entity)
     {

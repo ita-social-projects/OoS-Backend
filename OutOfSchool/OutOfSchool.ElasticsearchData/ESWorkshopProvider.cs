@@ -44,7 +44,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
     {
         filter ??= new WorkshopFilterES();
 
-        var query = CreateQueryFromFilter(filter);
+        var query = CreateQueryFromFilter(filter, false);
 
         var request = new SearchRequest<WorkshopES>
         {
@@ -52,13 +52,13 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             Aggregations = new Dictionary<string, Aggregation>
             {
                 {
-                    "min_price", Aggregation.Min(new MinAggregation
+                    MinPrice, Aggregation.Min(new MinAggregation
                     {
                         Field = Infer.Field<WorkshopES>(w => w.Price)
                     })
                 },
                 {
-                    "max_price", Aggregation.Max(new MaxAggregation
+                    MaxPrice, Aggregation.Max(new MaxAggregation
                     {
                         Field = Infer.Field<WorkshopES>(w => w.Price)
                     })
@@ -67,8 +67,8 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         };
 
         var response = await ElasticClient.SearchAsync<WorkshopES>(request);
-        var minPrice = response.Aggregations.GetMin("min_price").Value ?? 0;
-        var maxPrice = response.Aggregations.GetMax("max_price").Value ?? 0;
+        var minPrice = response.Aggregations.GetMin(MinPrice).Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax(MaxPrice).Value ?? 0;
 
         return new PriceRangeES()
         {
@@ -77,7 +77,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         };
     }
 
-    private Query CreateQueryFromFilter(WorkshopFilterES filter)
+    private Query CreateQueryFromFilter(WorkshopFilterES filter, bool includePrice = true)
     {
         var query = new BoolQuery
         {
@@ -117,7 +117,10 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddSearchTextQuery(query, filter);
         AddCityQuery(query, filter);
         AddDirectionIdsQuery(query, filter);
-        AddPriceQuery(query, filter);
+        if (includePrice) 
+        { 
+            AddPriceQuery(query, filter); 
+        }
         AddAgeQuery(query, filter);
         AddDisabilityOptionsQuery(query, filter);
         AddStatusesQuery(query, filter);
