@@ -14,8 +14,6 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class CompetitiveEventService : ICompetitiveEventService
 {
-    private readonly string includingPropertiesForCompetitiveEventViewCard = String.Empty;
-
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
     private readonly ILogger<CompetitiveEventService> logger;
@@ -24,6 +22,15 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly ICurrentUserService currentUserService;
     private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
 
+    private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> includeFunc =
+    query => query
+        .Include(e => e.InstitutionHierarchy)
+        .Include(e => e.CompetitiveEventDescriptionItems)
+        .Include(e => e.Coverage)
+        .Include(e => e.Contacts)
+            .ThenInclude(c => c.Address)
+                .ThenInclude(a => a.CATOTTG)
+                .ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent);
     public CompetitiveEventService(
         ICompetitiveEventRepository competitiveEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
@@ -47,7 +54,9 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         logger.LogDebug("Getting CompetitiveEvent by Id started. Looking Id = {id}.", id);
 
-        var competitiveEvent = (await competitiveEventRepository.GetById(id).ConfigureAwait(false));
+        var competitiveEvent = (await competitiveEventRepository
+            .GetByIdWithDetails(id, String.Empty, includeFunc)
+            .ConfigureAwait(false));
 
         var logMessage = competitiveEvent is null
             ? "CompetitiveEvent with Id = {id} doesn't exist in the system."
@@ -69,7 +78,7 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
 
-        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty()) // test please
+        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty())
         {
             competitiveEvent.CompetitiveEventDescriptionItems =
             dto.CompetitiveEventDescriptionItems.Select(mapper.Map<CompetitiveEventDescriptionItem>).ToList();
@@ -90,7 +99,8 @@ public class CompetitiveEventService : ICompetitiveEventService
 
         logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 
-        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(dto.Id, "CompetitiveEventDescriptionItems").ConfigureAwait(false);
+        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
+                dto.Id, String.Empty, includeFunc).ConfigureAwait(false);
 
         if (competitiveEvent is null)
         {
@@ -168,7 +178,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         var competitiveEvents = await competitiveEventRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: includingPropertiesForCompetitiveEventViewCard,
+            includeProperties: String.Empty,
             whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);

@@ -17,6 +17,7 @@ using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
@@ -34,7 +35,6 @@ public class CompetitiveEventServiceTests
     private ICompetitiveEventRepository repo;
     private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
-    private IEntityRepository<Guid, Judge> judgeRepository;
 
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -138,7 +138,7 @@ public class CompetitiveEventServiceTests
         Assert.AreEqual(input.Title, result.Title);
         Assert.That(countBeforeCreating, Is.EqualTo(countAfterCreating - 1));
     }
-   
+
     [Test]
     public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
     {
@@ -151,7 +151,6 @@ public class CompetitiveEventServiceTests
     }
 
     [Test]
-    [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
@@ -195,6 +194,7 @@ public class CompetitiveEventServiceTests
         var result = await service.Update(input).ConfigureAwait(false);
 
         // Assert
+        Assert.IsNotNull(result, "Update method returned null.");
         Assert.That(input.Title, Is.EqualTo(result.Title), "CompetitiveEvent's title was not updated correctly.");
     }
 
@@ -347,43 +347,47 @@ public class CompetitiveEventServiceTests
 
     private void SeedDatabase()
     {
-        using var ctx = new TestOutOfSchoolDbContext(options);
-        {
-            ctx.Database.EnsureDeleted();
-            ctx.Database.EnsureCreated();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
 
-            firstId = Guid.NewGuid();
-            firstJudgeId = Guid.NewGuid();
-            firstProviderId = Guid.NewGuid();
-            List<CompetitiveEvent> competitiveEvents = CompetitiveEvents();
+        firstId = Guid.NewGuid();
+        firstProviderId = Guid.NewGuid();
 
-            ctx.CompetitiveEvents.AddRange(competitiveEvents);
+        List<CompetitiveEvent> competitiveEvents = CompetitiveEvents();
+        context.CompetitiveEvents.AddRange(competitiveEvents);
 
-            ctx.SaveChanges();
-        }
+        context.SaveChanges();
     }
 
     private List<CompetitiveEvent> CompetitiveEvents()
     {
         var competitiveEvents = new List<CompetitiveEvent>()
+        {
+            new CompetitiveEvent
             {
-                new CompetitiveEvent()
+                Id = firstId,
+                Title = "Test1",
+                ShortTitle = "Test1Short",
+                State = CompetitiveEventStates.Draft,
+                ScheduledStartTime = DateTime.UtcNow,
+                ScheduledEndTime = DateTime.UtcNow,
+                NumberOfSeats = 10,
+                OrganizerOfTheEventId = firstProviderId,
+                CompetitiveEventAccountingTypeId = 1,
+                CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>
                 {
-                    Id = firstId,
-                    Title = "Test1",
-                    ShortTitle = "Test1Short",
-                    State = CompetitiveEventStates.Draft,
-                    ScheduledStartTime = DateTime.UtcNow,
-                    ScheduledEndTime = DateTime.UtcNow,
-                    NumberOfSeats = 10,
-                    OrganizerOfTheEventId = firstProviderId, // Guid.NewGuid(),
-                    CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
-                    Judges = new List<Judge>
+                    new CompetitiveEventDescriptionItem
                     {
-                        new Judge { Id = firstJudgeId, FirstName = "Judge A" },
+                        Id = Guid.NewGuid(),
+                        Description = "Description 1",
+                        SectionName = "Section 1"
                     }
                 },
-                new CompetitiveEvent
+                InstitutionHierarchy = new InstitutionHierarchy { Id = new Guid(), Title = "Institution 1" },
+                CoverageId = 1,
+            },
+            new CompetitiveEvent
                 {
                     Id = Guid.NewGuid(),
                     Title = "Test2",
