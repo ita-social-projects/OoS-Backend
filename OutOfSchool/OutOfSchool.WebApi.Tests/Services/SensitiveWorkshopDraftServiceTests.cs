@@ -27,8 +27,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.Services.Enums;
 using System.Linq.Expressions;
 using FluentAssertions;
-using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
-using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -47,7 +46,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
-    private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
+    private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMock;
 
     private string userId;
 
@@ -71,7 +70,7 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock = new Mock<ISearchStringService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
-        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
+        institutionHierarchyRepositoryMock = new Mock<IInstitutionHierarchyRepository>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -100,7 +99,7 @@ public class SensitiveWorkshopDraftServiceTests
                    ministryAdminServiceMock.Object,
                    codeficatorServiceMock.Object,
                    searchStringServiceMock.Object,
-                   institutionHierarchyServiceMock.Object);
+                   institutionHierarchyRepositoryMock.Object);
     }
 
     #region FetchByFilterForAdmins    
@@ -193,8 +192,16 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);
 
-        institutionHierarchyServiceMock.Setup(x => x.GetAll())
-            .ReturnsAsync(new List<InstitutionHierarchyDto>());
+        institutionHierarchyRepositoryMock.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
 
         return new SearchResult<WorkshopDraftResponseDto>()
         {
