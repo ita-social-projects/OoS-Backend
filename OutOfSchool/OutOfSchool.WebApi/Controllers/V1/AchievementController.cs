@@ -96,7 +96,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.CreateAchievement))]
+    [FeatureGate(nameof(Feature.AchievementManagement))]
     public async Task<IActionResult> Create([FromBody] AchievementCreateDTO achievementDto)
     {
         if (achievementDto == null)
@@ -165,6 +165,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.AchievementManagement))]
     public async Task<ActionResult> Update([FromBody] AchievementCreateDTO achievementDto)
     {
         var providerId = await providerService.GetProviderIdForWorkshopById(achievementDto.WorkshopId).ConfigureAwait(false);
@@ -206,6 +207,7 @@ public class AchievementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.AchievementManagement))]
     public async Task<IActionResult> Delete(Guid id)
     {
 

@@ -13,7 +13,7 @@ public enum Feature
     TechAdminImport,
     TechAdminExport,
     DirectionManagement,
-    CreateAchievement,
+    AchievementManagement,
     AdminsChildernParentsManagement,
     MessagingFeature,
     PasswordLogin,
