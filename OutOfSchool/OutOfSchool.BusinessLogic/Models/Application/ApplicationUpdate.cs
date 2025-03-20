@@ -13,10 +13,4 @@ public class ApplicationUpdate
 
     [MaxLength(500)]
     public string RejectionMessage { get; set; }
-
-    [Required]
-    public Guid WorkshopId { get; set; }
-
-    [Required]
-    public Guid ParentId { get; set; }
 }

@@ -143,6 +143,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
+            // nested entity has already use eager loading
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
         }
@@ -150,6 +151,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            // nested entity has already use eager loading
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
 
@@ -172,6 +174,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         if (currentUserService.IsAreaAdmin())
         {
             var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            // nested entity has already use eager loading
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == areaAdmin.InstitutionId);
 
@@ -191,6 +194,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             }
         }
 
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
+
         var sortPredicate = SortExpressionBuild(filter);
 
         var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
@@ -198,7 +206,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
+            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
@@ -217,12 +225,18 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public async Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
     {
         logger.LogInformation("Getting Applications by Parent Id started. Looking Parent Id = {Id}", id);
+
         if (!currentUserService.IsAdmin())
         {
             await currentUserService.UserHasRights(new ParentRights(id));
         }
 
         filter ??= new ApplicationFilter();
+
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
 
         var predicate = PredicateBuild(filter, a => a.ParentId == id);
 
@@ -233,7 +247,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
+            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
@@ -252,6 +266,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     public async Task<int> GetCountByParentId(Guid id)
     {
         logger.LogInformation("Getting Applications count by Parent Id started. Looking Parent Id = {Id}", id);
+
         if (!currentUserService.IsInRole(Role.Provider) && !currentUserService.IsInRole(Role.Employee))
         {
             throw new UnauthorizedAccessException("User has no rights to perform operation");
@@ -284,7 +299,15 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             filter = a => a.ChildId == id;
         }
 
-        var applications = (await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent")).ToList();
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
+
+        var applications = (await applicationRepository.GetByFilter(
+            whereExpression: filter,
+            includeExpression: includeFunc))
+            .ToList();
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
@@ -305,6 +328,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         filter ??= new ApplicationFilter();
 
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
+
         var predicate = PredicateBuild(filter, a => a.WorkshopId == id);
 
         var sortPredicate = SortExpressionBuild(filter);
@@ -313,7 +341,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
+            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
@@ -350,22 +378,26 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
-        var applications = await applicationRepository.Get(
-            skip: filter.From,
-            take: filter.Size,
-            whereExpression: predicate,
-            orderBy: sortPredicate)
-            .Include(a => a.Workshop).ThenInclude(w => w.Contacts).ThenInclude(wa => wa.Address.CATOTTG)
-                .ThenInclude(wac => wac.Parent).ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop).ThenInclude(w => w.Contacts).ThenInclude(wa => wa.Address.CATOTTG).ThenInclude(wac => wac.Parent)
+                                     .ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Institution)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Directions)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Child)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Parent)
             .Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
             .Include(a => a.Child).ThenInclude(c => c.SocialGroups)
-            .Include(a => a.Parent).ThenInclude(p => p.User)
-            .ToListAsync().ConfigureAwait(false);
+            .Include(a => a.Parent).ThenInclude(p => p.User);
+
+        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
+        var applications = await applicationRepository.Get(
+            skip: filter.From,
+            take: filter.Size,
+            includeExpression: includeFunc,
+            whereExpression: predicate,
+            orderBy: sortPredicate)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Provider Id = {Id}",
@@ -413,7 +445,13 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
         var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
+
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
+
         var sortPredicate = SortExpressionBuild(filter);
 
         var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
@@ -421,8 +459,11 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: "Workshop,Child,Parent",
-            whereExpression: predicate, orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            includeExpression: includeFunc,
+            whereExpression: predicate,
+            orderBy: sortPredicate)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with employee Id = {UserId}",
@@ -445,8 +486,14 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
         Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted && !a.Parent.IsDeleted && !a.Workshop.IsDeleted;
 
-        var applications =
-            await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop)
+                  .Include(a => a.Child)
+                  .Include(a => a.Parent);
+
+        var applications = await applicationRepository.GetByFilter(
+                whereExpression: filter,
+                includeExpression: includeFunc).ConfigureAwait(false);
         var application = applications.FirstOrDefault();
 
         if (application is null)
@@ -465,12 +512,12 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         return mapper.Map<ApplicationDto>(application);
     }
 
-    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto, Guid providerId)
+    public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto)
     {
-        logger.LogInformation("Updating Application with Id = {Id} started", applicationDto?.Id);
+        logger.LogDebug("Updating Application with Id = {Id} started", applicationDto?.Id);
 
         ArgumentNullException.ThrowIfNull(applicationDto, nameof(applicationDto));
-        return ExecuteUpdateAsync(applicationDto, providerId);
+        return ExecuteUpdateAsync(applicationDto);
     }
 
     /// <inheritdoc/>
@@ -512,7 +559,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
     {
         var result = await applicationRepository.UpdateAllApprovedApplications().ConfigureAwait(false);
 
-        logger.LogInformation("Updated statuses to Studying of {count} applications.", result);
+        logger.LogDebug("Updated statuses to Studying of {count} applications.", result);
 
         return result;
     }
@@ -671,13 +718,22 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         throw new ArgumentException(@"Workshop in Application dto is null.", nameof(workshopId));
     }
 
-    private Application CheckApplicationExists(Guid id)
+    private async Task<Application> CheckApplicationExists(Guid id)
     {
-        var application = applicationRepository.GetById(id).Result;
+        // Create a delegate to include other entities (Workshop, Child, Parent, Parent.User, and Child) in Application entity
+        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+            a => a.Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
+                  .Include(a => a.Parent).ThenInclude(p => p.User)
+                  .Include(a => a.Child);
+
+        var application = await applicationRepository.GetByIdWithDetails(
+            id: id,
+            includeExpression: includeFunc)
+            .ConfigureAwait(false);
 
         if (application == null)
         {
-            logger.LogInformation("Application with Id = {Id} doesn't exist in the system", id);
+            logger.LogDebug("Application with Id = {Id} doesn't exist in the system", id);
         }
 
         return application;
@@ -771,13 +827,13 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             workshop.Status != WorkshopStatus.Closed)
         {
             _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
-                { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
+            { WorkshopId = workshopId, Status = WorkshopStatus.Closed });
         }
         else if (!isIncreaseTakenSeats && countTakenSeats == workshop.AvailableSeats - 1 &&
                  workshop.Status != WorkshopStatus.Open)
         {
             _ = await combinedWorkshopService.UpdateStatus(new WorkshopStatusDto
-                { WorkshopId = workshopId, Status = WorkshopStatus.Open });
+            { WorkshopId = workshopId, Status = WorkshopStatus.Open });
         }
     }
 
@@ -850,7 +906,7 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
             };
 
             string groupedData = newApplication.Status.ToString();
-            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Create, additionalData, newApplication.Id).ConfigureAwait(false);
+            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Create, additionalData, newApplication).ConfigureAwait(false);
 
             await notificationService.Create(
                 NotificationType.Application,
@@ -868,31 +924,35 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
         };
     }
 
-    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto, Guid providerId)
+    private async Task<Either<ErrorResponse, ApplicationDto>> ExecuteUpdateAsync(ApplicationUpdate applicationDto)
     {
-        await currentUserService.UserHasRights(
-            new ParentRights(applicationDto.ParentId),
-            new ProviderRights(providerId),
-            new EmployeeWorkshopRights(providerId, applicationDto.WorkshopId));
-        var currentApplication = this.CheckApplicationExists(applicationDto.Id);
+        var currentApplication = await this.CheckApplicationExists(applicationDto.Id);
 
         if (currentApplication is null)
         {
             return ErrorResponse.BadRequest(ApiErrorsTypes.Common.EntityIdDoesNotExist("Application", applicationDto.Id.ToString()).ToResponse());
         }
 
+        await currentUserService.UserHasRights(
+            new ParentRights(currentApplication.ParentId),
+            new ProviderRights(currentApplication.Workshop.ProviderId),
+            new EmployeeWorkshopRights(currentApplication.Workshop.ProviderId, currentApplication.WorkshopId));
+
         var previewAppStatus = currentApplication.Status;
+
+        if (currentApplication.Status == applicationDto.Status)
+        {
+            logger.LogDebug("Application with Id = {Id} doesn't need to update", currentApplication.Id);
+            return mapper.Map<ApplicationDto>(currentApplication);
+        }
 
         try
         {
-            if (currentApplication.Status == applicationDto.Status)
-            {
-                return mapper.Map<ApplicationDto>(currentApplication);
-            }
-
             if (Application.ValidApplicationStatuses.Contains(applicationDto.Status))
             {
-                var providerOwnership = await workshopRepository.GetByFilter(whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State, includeProperties: "Provider");
+                var providerOwnership = await workshopRepository.GetByFilter(
+                    whereExpression: w => w.Id == currentApplication.WorkshopId && w.Provider.Ownership != OwnershipType.State,
+                    includeExpression: w => w.Include(w => w.Provider));
 
                 if (providerOwnership.Any())
                 {
@@ -913,22 +973,24 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
             UpdateStatus(applicationDto, currentApplication);
 
-            var updatedApplication = await applicationRepository.Update(
+            async Task<Application> UpdateApplicationAndNotification()
+            {
+                var updatedApplication = await applicationRepository.Update(
                     currentApplication,
                     x => changesLogService.AddEntityChangesToDbContext(x, currentUserService.UserId))
                 .ConfigureAwait(false);
 
-            logger.LogInformation("Application with Id = {Id} updated successfully", updatedApplication.Id);
+                logger.LogDebug("Application with Id = {Id} updated successfully", updatedApplication.Id);
 
-            var additionalData = new Dictionary<string, string>()
-            {
-                { StatusTitle, updatedApplication.Status.ToString() },
-            };
+                var additionalData = new Dictionary<string, string>()
+                {
+                    { StatusTitle, updatedApplication.Status.ToString() },
+                };
 
-            var groupedData = updatedApplication.Status.ToString();
-            var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication.Id).ConfigureAwait(false);
+                var groupedData = updatedApplication.Status.ToString();
+                var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Update, additionalData, updatedApplication).ConfigureAwait(false);
 
-            await notificationService.Create(
+                await notificationService.Create(
                 NotificationType.Application,
                 NotificationAction.Update,
                 updatedApplication.Id,
@@ -936,14 +998,20 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
                 additionalData,
                 groupedData).ConfigureAwait(false);
 
-            if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
-            {
-                await SendApplicationUpdateStatusEmail(updatedApplication);
+                if (GetStatusesForParentsNotification().Contains(updatedApplication.Status))
+                {
+                    await SendApplicationUpdateStatusEmail(updatedApplication);
+                }
+
+                return updatedApplication;
             }
 
-            await ControlWorkshopStatus(previewAppStatus, updatedApplication.Status, currentApplication.WorkshopId);
+            var application = await applicationRepository
+                .RunInTransaction(UpdateApplicationAndNotification).ConfigureAwait(false);
 
-            return mapper.Map<ApplicationDto>(updatedApplication);
+            await ControlWorkshopStatus(previewAppStatus, application.Status, currentApplication.WorkshopId);
+
+            return mapper.Map<ApplicationDto>(application);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -954,19 +1022,15 @@ public class ApplicationService : IApplicationService, ISensitiveApplicationServ
 
     private ApplicationStatus[] GetStatusesForParentsNotification()
     {
-        return new ApplicationStatus[] {ApplicationStatus.Approved, ApplicationStatus.Rejected, ApplicationStatus.AcceptedForSelection };
+        return [ApplicationStatus.Approved, ApplicationStatus.Rejected, ApplicationStatus.AcceptedForSelection];
     }
 
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(
         NotificationAction action,
         Dictionary<string, string> additionalData,
-        Guid objectId)
+        Application application)
     {
         var recipientIds = new List<string>();
-
-        var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User")
-            .ConfigureAwait(false);
-        var application = applications.FirstOrDefault();
 
         if (application is null)
         {

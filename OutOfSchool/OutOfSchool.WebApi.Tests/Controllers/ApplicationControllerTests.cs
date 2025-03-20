@@ -631,8 +631,8 @@ public class ApplicationControllerTests
             RejectionMessage = applications.First().RejectionMessage,
         };
 
-        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>(), It.IsAny<Guid>())).ReturnsAsync(applications.First());
-        workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
+        applicationService.Setup(s => s.Update(It.IsAny<ApplicationUpdate>())).ReturnsAsync(applications.First());
+        applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new ApplicationDto());
 
         // Act
         var result = await controller.Update(shortApplication).ConfigureAwait(false);
@@ -669,13 +669,12 @@ public class ApplicationControllerTests
         {
             Id = applications.First().Id,
             Status = ApplicationStatus.Pending,
-            WorkshopId = Guid.NewGuid(),
         };
         httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
 
-        applicationService.Setup(s => s.Update(shortApplication, It.IsAny<Guid>()))
+        applicationService.Setup(s => s.Update(shortApplication))
             .ThrowsAsync(new UnauthorizedAccessException());
-        workshopService.Setup(s => s.GetById(shortApplication.WorkshopId, It.IsAny<bool>())).ReturnsAsync(new WorkshopDto());
+        applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(new ApplicationDto());
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.Update(shortApplication));
