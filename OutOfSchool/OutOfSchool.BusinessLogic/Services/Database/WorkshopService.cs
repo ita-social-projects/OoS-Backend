@@ -788,26 +788,27 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         filter ??= new WorkshopFilter();
 
-        var filterPredicate = PredicateBuild(filter);
+        var filterPredicate = PredicateBuild(filter, false);
 
-        var query = await workshopRepository.GetByFilter(
+        var query = workshopRepository.Get(
             whereExpression: filterPredicate,
-            includeProperties: "").ConfigureAwait(false);
+            includeProperties: "");
 
-        if (!query.Any())
+        var priceRange = await query.GroupBy(_ => 1)
+            .Select(g => new PriceRange
+            {
+                MinPrice = g.Min(x => x.Price),
+                MaxPrice = g.Max(x => x.Price),
+            }).FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if (priceRange == null)
         {
             logger.LogDebug("No matching records found for the specified filter.");
             return new PriceRange();
         }
 
-        var minPrice = query.Min(w => w.Price);
-        var maxPrice = query.Max(w => w.Price);
-
-        return new PriceRange
-        {
-            MinPrice = minPrice,
-            MaxPrice = maxPrice,
-        };
+        return priceRange;
     }
 
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
@@ -915,7 +916,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
         ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
-    private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
+    private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter, bool includePrice = true)
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
@@ -982,18 +983,21 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(tempPredicate);
         }
 
-        if (filter.IsFree && !filter.IsPaid)
+        if (includePrice)
         {
-            predicate = predicate.And(x => x.Price == filter.MinPrice);
-        }
-        else if (!filter.IsFree && filter.IsPaid)
-        {
-            predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
-        }
-        else
-        {
-            predicate = predicate.And(x =>
-                (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+            if (filter.IsFree && !filter.IsPaid)
+            {
+                predicate = predicate.And(x => x.Price == filter.MinPrice);
+            }
+            else if (!filter.IsFree && filter.IsPaid)
+            {
+                predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
+            }
+            else
+            {
+                predicate = predicate.And(x =>
+                    (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+            }
         }
 
         if (filter.MinAge != 0 || filter.MaxAge != 100)
