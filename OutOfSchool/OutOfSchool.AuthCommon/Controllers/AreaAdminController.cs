@@ -6,7 +6,7 @@ using OutOfSchool.Services.Enums;
 namespace OutOfSchool.AuthCommon.Controllers;
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class AreaAdminController : Controller
 {
     private readonly ILogger<AreaAdminController> logger;
