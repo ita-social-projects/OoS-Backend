@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
@@ -41,6 +42,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly ICodeficatorService codeficatorService;
     private readonly ISearchStringService searchStringService;
     private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
+    private readonly ICodeficatorRepository codeficatorRepository;
     private readonly int maxParallelUploads;
 
     private readonly Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>> includeDirectionsFunc =
@@ -65,6 +67,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     /// <param name="codeficatorService">Service for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
     /// <param name="institutionHierarchyRepository">Repository for InstitutionHierarchy.</param>
+    /// <param name="codeficatorRepository">Repository for CATOTTG.</param>
     public WorkshopDraftService(
         ILogger<WorkshopDraftService> logger,
         IWorkshopDraftRepository workshopDraftRepository,
@@ -81,7 +84,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         IMinistryAdminService ministryAdminService,
         ICodeficatorService codeficatorService,
         ISearchStringService searchStringService,
-        IInstitutionHierarchyRepository institutionHierarchyRepository)
+        IInstitutionHierarchyRepository institutionHierarchyRepository,
+        ICodeficatorRepository codeficatorRepository)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
@@ -99,6 +103,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
         this.institutionHierarchyRepository = institutionHierarchyRepository ?? throw new ArgumentNullException(nameof(institutionHierarchyRepository));
+        this.codeficatorRepository = codeficatorRepository ?? throw new ArgumentNullException(nameof(codeficatorRepository));
     }
 
     // <inheritdoc/>
@@ -464,37 +469,11 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             .ConfigureAwait(false);
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
-
-        var institutionHierarchies = await institutionHierarchyRepository.Get(
-                whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id),
-                includeExpression: includeDirectionsFunc)
-            .ToListAsync();
-
-        var entities = new List<WorkshopDraftResponseDto>();        
-
-        foreach (var draft in workshopDrafts)
-        {
-            var responseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
-
-            responseDto.WorkshopDetails.DirectionIds = institutionHierarchies
-                .FirstOrDefault(i =>
-                    i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
-                ?.Directions
-                .Select(d => d.Id)
-                .ToList();
-
-            foreach (var address in responseDto.WorkshopDetails.Contacts.Select(c => c.Address))
-            {
-                address.CodeficatorAddressDto = await codeficatorService.GetAllAddressPartsById(address.CATOTTGId);
-            }
-
-            entities.Add(responseDto);
-        }
-
+      
         return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftsCount,
-            Entities = entities,
+            Entities = await MapWorkshopDraftsCollectionWithDetails(workshopDrafts),
         };
     }
        
@@ -508,16 +487,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
 
-        var workshopDraftResponseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
-
-        workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
-
-        foreach (var address in workshopDraftResponseDto.WorkshopDetails.Contacts.Select(c => c.Address))
-        {
-            address.CodeficatorAddressDto = await codeficatorService.GetAllAddressPartsById(address.CATOTTGId);
-        }
-
-        return workshopDraftResponseDto;
+        return await MapWorkshopDraftWithDetails(draft);
     }
 
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
@@ -781,5 +751,85 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             includeExpression: includeDirectionsFunc);
 
         return institutionHierarchyDto.Directions.Select(d => d.Id).ToList();
+    }
+
+    private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
+    {
+        var workshopDraftResponseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+
+        workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
+
+        var catottgIds = workshopDraftResponseDto.WorkshopDetails.Contacts
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address.CATOTTGId)
+            .Distinct()
+            .ToList();
+
+        var catottgs = await codeficatorRepository
+            .Get(whereExpression: c => catottgIds.Contains(c.Id))
+            .ToListAsync();
+
+        workshopDraftResponseDto.WorkshopDetails.Contacts
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address)
+            .ToList()
+            .ForEach(address =>
+                address.CodeficatorAddressDto = mapper.Map<AllAddressPartsDto>(
+                    catottgs.FirstOrDefault(c => c.Id == address.CATOTTGId))
+            );
+
+        return workshopDraftResponseDto;
+    }
+
+    private async Task<List<WorkshopDraftResponseDto>> MapWorkshopDraftsCollectionWithDetails(List<WorkshopDraft> workshopDrafts)
+    {
+        if (!workshopDrafts.Any())
+            return new List<WorkshopDraftResponseDto>();
+
+        var institutionHierarchyIds = workshopDrafts
+            .Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId)
+            .Distinct()
+            .ToList();
+
+        var institutionHierarchies = await institutionHierarchyRepository.Get(
+                whereExpression: i => institutionHierarchyIds.Contains(i.Id),
+                includeExpression: includeDirectionsFunc)
+            .ToListAsync();
+
+        var catottgIds = workshopDrafts
+            .Where(wd => wd.WorkshopDraftContent.Contacts != null)
+            .SelectMany(wd => wd.WorkshopDraftContent.Contacts)
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address.CATOTTGId)
+            .Distinct()
+            .ToList();
+
+        var catottgs = await codeficatorRepository.Get(
+                whereExpression: c => catottgIds.Contains(c.Id))
+            .ToListAsync();
+
+        return workshopDrafts.Select(draft =>
+        {
+            var responseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+
+            var institutionHierarchy = institutionHierarchies
+                .FirstOrDefault(i => i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId);
+
+            responseDto.WorkshopDetails.DirectionIds = institutionHierarchy?.Directions
+                .Select(d => d.Id)
+                .ToList();
+
+            responseDto.WorkshopDetails.Contacts
+                .Where(c => c?.Address != null)
+                .Select(c => c.Address)
+                .ToList()
+                .ForEach(address =>
+                    address.CodeficatorAddressDto = mapper.Map<AllAddressPartsDto>(
+                        catottgs.FirstOrDefault(c => c.Id == address.CATOTTGId))
+                );
+
+            return responseDto;
+
+        }).ToList();
     }
 }

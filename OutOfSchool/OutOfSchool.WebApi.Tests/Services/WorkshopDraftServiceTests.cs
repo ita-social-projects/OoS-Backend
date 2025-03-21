@@ -32,7 +32,6 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using MockQueryable.Moq;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -81,9 +80,9 @@ public class WorkshopDraftServiceTests
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();
-        
+        var codeficatorRepository = new Mock<ICodeficatorRepository>();        
 
-    userId = "someUserId";
+        userId = "someUserId";
 
         service = new WorkshopDraftService(
                    logger.Object,
@@ -101,7 +100,8 @@ public class WorkshopDraftServiceTests
                    ministryAdminService.Object,
                    codeficatorService.Object,
                    searchStringService.Object,
-                   institutionHierarchyRepositoryMoq.Object);
+                   institutionHierarchyRepositoryMoq.Object,
+                   codeficatorRepository.Object);
     }
 
     #region Create
