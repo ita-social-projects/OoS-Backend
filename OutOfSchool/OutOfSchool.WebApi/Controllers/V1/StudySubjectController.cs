@@ -228,7 +228,7 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{studySubjectId}/workshops")]
+    [HttpPut("{studySubjectId}")]
     public async Task<IActionResult> UpdateWorkshopsForStudySubject(
         Guid studySubjectId, 
         Guid providerId, 
@@ -265,7 +265,7 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{studySubjectId}/workshops")]
+    [HttpDelete("{studySubjectId}")]
     public async Task<IActionResult> DetachAllWorkshops(Guid studySubjectId, Guid providerId)
     {
         var result = await _studySubjectService.DetachAllWorkshops(studySubjectId, providerId);
