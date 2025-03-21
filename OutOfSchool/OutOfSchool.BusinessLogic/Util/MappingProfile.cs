@@ -520,16 +520,18 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
 
         CreateMap<Parent, BaseUpdateUserDto>()
-           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId)) // UserId -> Id
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId)) 
            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber));
 
         CreateMap<BaseUpdateUserDto, Parent>()
-          .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)) // Id -> UserId
+          .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
           .ForMember(dest => dest.Gender, opt => opt.Ignore())
           .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
           .ForMember(dest => dest.Children, opt => opt.Ignore())
-          .ForMember(dest => dest.User, opt => opt.Ignore());
+          .ForMember(dest => dest.User, opt => opt.Ignore())
+          .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+          .ForMember(dest => dest.ChatRooms, opt => opt.Ignore());
 
         CreateSoftDeletedMap<BaseUserDto, User>()
             .ForMember(dest => dest.CreatingTime, m => m.Ignore())
@@ -577,6 +579,18 @@ public class MappingProfile : Profile
         CreateMap<RegionAdminDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, AdminBaseDto>()
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, RegionAdminBaseDto>()
+            .IncludeBase<BaseUpdateUserDto, AdminBaseDto>() 
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore()) 
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
         CreateMap<RegionAdminBaseDto, RegionAdminDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
