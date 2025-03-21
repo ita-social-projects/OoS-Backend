@@ -57,11 +57,15 @@ public class WorkshopControllerTests
     private List<WorkshopBaseCard> workshopBaseCards;
     private List<ShortEntityDto> workshopShortEntitiesList;
     private List<WorkshopProviderViewCard> workshopProviderViewCardList;
+    private Guid providerId;
+    private Guid studySubjectId;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
     {
         userId = "someUserId";
+        providerId = Guid.NewGuid();
+        studySubjectId = Guid.NewGuid();
         httpContextMoq = new Mock<HttpContext>();
         httpContextMoq.Setup(x => x.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
@@ -618,6 +622,81 @@ public class WorkshopControllerTests
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
         Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
     }
+    #endregion
+
+    #region GetWorkshopsWithAttachmentStatusByProviderId
+
+    [Test]
+    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsBadRequest_WhenStudySubjectIdIsEmpty()
+    {
+        // Act
+        var result = await controller.GetWorkshopsWithAttachmentStatusByProviderId(Guid.Empty, providerId);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Study subject id is empty.", badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsBadRequest_WhenProviderIdIsEmpty()
+    {
+        // Act
+        var result = await controller.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, Guid.Empty);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Provider id is empty.", badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsNoContent_WhenNoWorkshopsFound()
+    {
+        // Arrange
+        var emptyResult = Result<IEnumerable<WorkshopAttachmentStatusDto>>.Success(new List<WorkshopAttachmentStatusDto>());
+        workshopServiceMoq
+            .Setup(s => s.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId))
+            .ReturnsAsync(emptyResult);
+
+        // Act
+        var result = await controller.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+
+        // Assert
+        var noContentResult = result as NoContentResult;
+        Assert.NotNull(noContentResult);
+        Assert.AreEqual(204, noContentResult.StatusCode);
+    }
+
+    [Test]
+    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsOk_WhenWorkshopsFound()
+    {
+        // Arrange
+        var workshopStatusList = new List<WorkshopAttachmentStatusDto>
+        {
+            new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), Title = "Workshop 1", IsAttached = true },
+            new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), Title = "Workshop 2", IsAttached = false }
+        };
+
+        var successResult = Result<IEnumerable<WorkshopAttachmentStatusDto>>.Success(workshopStatusList);
+        workshopServiceMoq
+            .Setup(s => s.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId))
+            .ReturnsAsync(successResult);
+
+        // Act
+        var result = await controller.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult);
+        Assert.AreEqual(200, okResult.StatusCode);
+        var returnedWorkshops = okResult.Value as IEnumerable<WorkshopAttachmentStatusDto>;
+        Assert.NotNull(returnedWorkshops);
+        Assert.AreEqual(2, returnedWorkshops.Count());
+    }
+
     #endregion
 
     #region CreateWorkshop

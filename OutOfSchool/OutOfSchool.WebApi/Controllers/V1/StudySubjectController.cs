@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -11,11 +10,10 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// </summary>
 [ApiController]
 [AspApiVersion(1)]
-[Route("api/v{version:apiVersion}/providers/{providerId}/studysubjects")]
+[Route("api/v{version:apiVersion}/providers/{providerId}/studysubjects/[action]")]
 public class StudySubjectController : ControllerBase
 {
     private readonly IStudySubjectService _studySubjectService;
-    private readonly IWorkshopService _workshopService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StudySubjectController"/> class.
@@ -27,7 +25,6 @@ public class StudySubjectController : ControllerBase
         IWorkshopService workshopService)
     {
         _studySubjectService = studySubjectService;
-        _workshopService = workshopService;
     }
 
     /// <summary>
@@ -217,61 +214,14 @@ public class StudySubjectController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a list of workshops (ID and title) associated with a given provider.
-    /// </summary>
-    /// <param name="providerId">The unique identifier of the provider.</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation. 
-    /// The task result contains a list of <see cref="ShortEntityDto"/> objects, 
-    /// where each object includes the ID and title of a workshop.
-    /// </returns>
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ShortEntityDto>))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("workshops")]
-    public async Task<IActionResult> GetWorkshopListByProviderId(Guid providerId)
-    {
-        var workshops = await _workshopService.GetWorkshopListByProviderId(providerId);
-
-        if (workshops == null || !workshops.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(workshops);
-    }
-
-    /// <summary>
-    /// Retrieves a list of workshops along with their attachment status for a given provider and study subject.
-    /// </summary>
-    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
-    /// <param name="providerId">The unique identifier of the provider.</param>
-    /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains a list of <see cref="ShortEntityDto"/> 
-    /// representing the workshops associated with the provider.
-    /// </returns>
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopAttachmentStatusDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{studySubjectId}/workshops/status")]
-    public async Task<IActionResult> GetWorkshopsWithAttachmentStatusByProviderId(Guid studySubjectId, [FromRoute] Guid providerId)
-    {
-        var result = await _workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
-
-        return HandleServiceRespone(result);
-    }
-
-    /// <summary>
-    /// Updates attachment of the list of workshops associated with a given study subject.
+    /// Updates the list of workshops attached to a given study subject by toggling their attachment status.
     /// </summary>
     /// <param name="studySubjectId">The unique identifier of the study subject.</param>
     /// <param name="providerId">The unique identifier of the provider performing the operation.</param>
-    /// <param name="request">An object containing collections of workshop IDs to attach and detach.</param>
+    /// <param name="workshops">A collection of workshops with their attachment status. 
+    /// If <c>IsAttached</c> is <c>true</c>, the workshop will be detached; otherwise, it will be attached.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains an <see cref="IActionResult"/> indicating 
+    /// A task representing the asynchronous operation. The task result contains an <see cref="IActionResult"/> indicating 
     /// the success or failure of the operation, along with the updated study subject data if successful.
     /// </returns>
     [Authorize]
@@ -281,22 +231,21 @@ public class StudySubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{studySubjectId}/workshops")]
+    [HttpPut("{studySubjectId}")]
     public async Task<IActionResult> UpdateWorkshopsForStudySubject(
         Guid studySubjectId, 
         Guid providerId, 
-        [FromBody] UpdateWorkshopAttachmentDto request)
+        [FromBody] IEnumerable<WorkshopAttachmentStatusDto> workshops)
     {
-        if (request == null)
+        if (workshops == null)
         {
             return BadRequest("Request body cannot be null.");
         }
 
         var result = await _studySubjectService.UpdateWorkshopsForStudySubject(
             studySubjectId,
-            request.WorkshopIdsToAttach,
-            request.WorkshopIdsToDetach,
-            providerId
+            providerId,
+            workshops
         );
 
         return HandleServiceRespone(result);
@@ -313,16 +262,20 @@ public class StudySubjectController : ControllerBase
     /// </returns>
     [Authorize]
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudySubjectDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{studySubjectId}/workshops")]
+    [HttpDelete("{studySubjectId}")]
     public async Task<IActionResult> DetachAllWorkshops(Guid studySubjectId, Guid providerId)
     {
         var result = await _studySubjectService.DetachAllWorkshops(studySubjectId, providerId);
-        return HandleServiceRespone(result);
+
+        return result.Succeeded
+        ? NoContent() 
+        : HandleServiceRespone(result);
     }
 
     private IActionResult HandleServiceRespone<T>(Result<T> response)

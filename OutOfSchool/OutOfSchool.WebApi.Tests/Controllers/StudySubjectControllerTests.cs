@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
@@ -18,6 +19,7 @@ public class StudySubjectControllerTests
 {
     private StudySubjectController controller;
     private Guid providerId;
+    private Guid studySubjectId;
     private Mock<IStudySubjectService> studySubjectService;
     private Mock<IWorkshopService> workshopServiceMock;
 
@@ -27,6 +29,7 @@ public class StudySubjectControllerTests
         studySubjectService = new Mock<IStudySubjectService>();
         workshopServiceMock = new Mock<IWorkshopService>();
         providerId = Guid.NewGuid();
+        studySubjectId = Guid.NewGuid();
 
         controller = new StudySubjectController(studySubjectService.Object, workshopServiceMock.Object);
     }
@@ -534,6 +537,118 @@ public class StudySubjectControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));
+    }
+
+    #endregion
+
+    #region UpdateWorkshopsForStudySubject
+
+    [Test]
+    public async Task UpdateWorkshopsForStudySubject_ReturnsOk_WhenUpdateSuccessful()
+    {
+        // Arrange
+        var workshops = new List<WorkshopAttachmentStatusDto>
+    {
+        new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), IsAttached = true, Title = "Workshop 1" },
+        new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), IsAttached = false, Title = "Workshop 2" }
+    };
+
+        var expectedResult = Result<StudySubjectDto>.Success(new StudySubjectDto { Id = studySubjectId });
+
+        studySubjectService
+            .Setup(s => s.UpdateWorkshopsForStudySubject(studySubjectId, providerId, workshops))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await controller.UpdateWorkshopsForStudySubject(studySubjectId, providerId, workshops);
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult);
+        Assert.AreEqual(200, okResult.StatusCode);
+        Assert.IsInstanceOf<StudySubjectDto>(okResult.Value);
+        Assert.AreEqual(studySubjectId, ((StudySubjectDto)okResult.Value).Id);
+    }
+
+
+    [Test]
+    public async Task UpdateWorkshopsForStudySubject_ReturnsBadRequest_WhenRequestIsNull()
+    {
+        // Act
+        var result = await controller.UpdateWorkshopsForStudySubject(studySubjectId, providerId, null);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Request body cannot be null.", badRequestResult.Value);
+    }
+
+    #endregion
+
+    #region DetachAllWorkshops
+
+    [Test]
+    public async Task DetachAllWorkshops_ReturnsNoContent_WhenDetachmentSuccessful()
+    {
+        // Arrange
+        var expectedResult = Result<StudySubjectDto>.Success(null);
+
+        studySubjectService
+            .Setup(s => s.DetachAllWorkshops(studySubjectId, providerId))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await controller.DetachAllWorkshops(studySubjectId, providerId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+        
+    [Test]
+    public async Task DetachAllWorkshops_ReturnsNotFound_WhenStudySubjectDoesNotExist()
+    {
+        // Arrange
+        var notFoundResult = Result<StudySubjectDto>.Failed(new OperationError
+        {
+            Code = "404",
+            Description = "StudySubject not found"
+        });
+
+        studySubjectService
+            .Setup(s => s.DetachAllWorkshops(studySubjectId, providerId))
+            .ReturnsAsync(notFoundResult);
+
+        // Act
+        var result = await controller.DetachAllWorkshops(studySubjectId, providerId);
+
+        // Assert
+        var objectResult = result as ObjectResult;
+        Assert.NotNull(objectResult);
+        Assert.AreEqual(404, objectResult.StatusCode);
+    }
+
+    [Test]
+    public async Task DetachAllWorkshops_ReturnsBadRequest_WhenInvalidProviderId()
+    {
+        // Arrange
+        studySubjectService
+            .Setup(s => s.DetachAllWorkshops(studySubjectId, providerId))
+            .ReturnsAsync(Result<StudySubjectDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Invalid provider ID."
+            }));
+
+        // Act
+        var result = await controller.DetachAllWorkshops(studySubjectId, providerId);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Invalid provider ID.", badRequestResult.Value);
     }
 
     #endregion

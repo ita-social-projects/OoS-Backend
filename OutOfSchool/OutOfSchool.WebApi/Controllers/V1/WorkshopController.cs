@@ -98,6 +98,73 @@ public class WorkshopController : ControllerBase
         return Ok(workshops);
     }
 
+    /// <summary>
+    /// Retrieves a list of workshops along with their attachment status for a given provider and study subject.
+    /// </summary>
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a list of <see cref="ShortEntityDto"/> 
+    /// representing the workshops associated with the provider.
+    /// </returns>
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopAttachmentStatusDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{studySubjectId}/{providerId}")]
+    public async Task<IActionResult> GetWorkshopsWithAttachmentStatusByProviderId(Guid studySubjectId, Guid providerId)
+    {
+        if (studySubjectId == Guid.Empty)
+        {
+            return BadRequest("Study subject id is empty.");
+        }
+
+        if (providerId == Guid.Empty)
+        {
+            return BadRequest("Provider id is empty.");
+        }
+
+        var result = await combinedWorkshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+
+        if (result.Value is null || !result.Value.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Get all workshops (Id, Title) from the database by employee's id sorted by Title.
+    /// </summary>
+    /// <param name="employeeId">Id of the employee.</param>
+    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{employeeId}")]
+    public async Task<IActionResult> GetWorkshopListByEmployeeId(string employeeId)
+    {
+        if (employeeId == string.Empty)
+        {
+            return BadRequest("Emplyee id is empty.");
+        }
+
+        var workshops = await combinedWorkshopService.GetWorkshopListByEmployeeId(employeeId);
+
+        if (!workshops.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(workshops);
+    }
+
     // TODO: Check what these two methods do
     /// <summary>
     /// Get workshop cards by Provider's Id.
