@@ -270,6 +270,14 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
     /// <inheritdoc/>
+    public Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
+         Guid studySubjectId,
+         Guid providerId)
+    {
+        return workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+    }
+
+    /// <inheritdoc/>
     public async Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus)
     {
         var shortWorkshops = await workshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);

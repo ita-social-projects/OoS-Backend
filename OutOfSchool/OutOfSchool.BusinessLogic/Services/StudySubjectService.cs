@@ -3,6 +3,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.Common.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Linq.Expressions;
@@ -271,9 +272,8 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<Result<StudySubjectDto>> UpdateWorkshopsForStudySubject(
         Guid studySubjectId,
-        IEnumerable<Guid> workshopIdsToAttach,
-        IEnumerable<Guid> workshopIdsToDetach,
-        Guid providerId)
+        Guid providerId,
+        IEnumerable<WorkshopAttachmentStatusDto> workshopsWithStatus)
     {
         await providerService.HasProviderRights(providerId).ConfigureAwait(false);
 
@@ -287,29 +287,42 @@ public class StudySubjectService : IStudySubjectService
             return NotFoundResult<StudySubjectDto>(studySubjectId);
         }
 
-        // Retrieves only the workshops that belong to the specified provider 
-        // and are included in either the attachment or detachment list.
+        var workshopIds = workshopsWithStatus.Select(w => w.Id).ToList();
+
+        // Get the provider's workshops that match the passed IDs
         var allWorkshops = await workshopRepository
-            .GetByFilter(w => w.ProviderId == providerId &&
-                        (workshopIdsToAttach.Contains(w.Id) || workshopIdsToDetach.Contains(w.Id)))
+            .GetByFilter(w => workshopIds.Contains(w.Id) && w.ProviderId == providerId)
             .ConfigureAwait(false);
 
-        var workshopsToAttach = allWorkshops.Where(w => workshopIdsToAttach.Contains(w.Id)).ToList();
-        var workshopsToDetach = allWorkshops.Where(w => workshopIdsToDetach.Contains(w.Id)).ToList();
-
-        // Check if all workshops to attach were found
-        var existingWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToHashSet();
-
-        foreach (var workshop in workshopsToAttach)
+        if (!allWorkshops.Any())
         {
-            if (!existingWorkshopIds.Contains(workshop.Id))
-            {
-                studySubject.Workshops.Add(workshop);
-            }
+            logger.LogWarning("No workshops found for provider {ProviderId} in study subject {StudySubjectId}",
+                              providerId, studySubjectId);
+            return NotFoundResult<StudySubjectDto>(providerId);
         }
 
-        // Remove workshops that are not in the list of workshops to attach
-        studySubject.Workshops.RemoveAll(workshopsToDetach.Contains);
+        // Check if all workshops to attach were found
+        var existingWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToList();
+
+        foreach (var workshopDto in workshopsWithStatus)
+        {
+            var workshop = allWorkshops.FirstOrDefault(w => w.Id == workshopDto.Id);
+            if (workshop == null) continue; // Skip if workshop was not found
+
+            if (workshopDto.IsAttached)
+            {
+                // if workshop was attached - detach it
+                studySubject.Workshops.RemoveAll(ws => ws.Id == workshop.Id);
+            }
+            else
+            {
+                // if workshop was detached - attach it
+                if (!existingWorkshopIds.Contains(workshop.Id))
+                {
+                    studySubject.Workshops.Add(workshop);
+                }
+            }
+        }
 
         try
         {
@@ -346,7 +359,7 @@ public class StudySubjectService : IStudySubjectService
         if (!studySubject.Workshops.Any())
         {
             logger.LogInformation("No workshops to detach for StudySubject with Id = {StudySubjectId}", studySubjectId);
-            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+            return Result<StudySubjectDto>.Success(null);
         }
 
         // Load workshops that belong to the given provider
@@ -356,21 +369,25 @@ public class StudySubjectService : IStudySubjectService
 
         if (!providerWorkshops.Any())
         {
+            logger.LogInformation("No workshops owned by provider {ProviderId} found for StudySubject " +
+                                  "{StudySubjectId}", providerId, studySubjectId);
             return NotFoundResult<StudySubjectDto>(providerId);
         }
 
         // Detach only provider's workshops from the study subject
-        studySubject.Workshops.RemoveAll(ws => providerWorkshops.Contains(ws));
+        studySubject.Workshops.RemoveAll(ws => providerWorkshops.Any(pw => pw.Id == ws.Id));
 
         try
         {
             await studySubjectRepository.Update(studySubject).ConfigureAwait(false);
-            logger.LogDebug("Detached all provider-owned workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
-            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+            logger.LogDebug("Detached all provider-owned workshops from StudySubject with " +
+                            "Id = {StudySubjectId}", studySubjectId);
+            return Result<StudySubjectDto>.Success(null);
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError(ex, "Failed to detach provider-owned workshops from StudySubject with Id = {StudySubjectId}", studySubjectId);
+            logger.LogError(ex, "Failed to detach provider-owned workshops from StudySubject with " +
+                                "Id = {StudySubjectId}", studySubjectId);
             return Result<StudySubjectDto>.Failed(new OperationError
             {
                 Code = "400",

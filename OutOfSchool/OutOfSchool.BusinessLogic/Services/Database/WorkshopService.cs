@@ -365,7 +365,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         }
 
         // Get the IDs of the already attached workshops
-        var attachedWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToHashSet();
+        var attachedWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToList();
 
         // Map the workshops to the DTOs and set the IsAttached property
         var result = allWorkshops
