@@ -246,9 +246,11 @@ public class ChildService : IChildService
 
         logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
 
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent);
+
         var child = (await childRepository.GetByFilter(
                         whereExpression: c => c.Id == id,
-                        includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent))
+                        includeExpression: includeFunc)
                     .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new UnauthorizedAccessException(
                         $"User:{userId} is trying to get an unexisting child with id: {id}.");
@@ -401,10 +403,12 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent).Include(c => c.SocialGroups);
+
         var child = (await childRepository
                         .GetByFilter(
                             whereExpression: c => c.Id == childId,
-                            includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent).Include(c => c.SocialGroups))
+                            includeExpression: includeFunc)
                         .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new InvalidOperationException(
                         $"User: {userId} is trying to update not existing Child (Id = {childId}).");
@@ -445,9 +449,11 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent);
+
         var child = await childRepository.GetByFilterNoTracking(
                                             whereExpression: c => c.Id == id,
-                                            includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent))
+                                            includeExpression: includeFunc)
                                          .SingleOrDefaultAsync()
                                          .ConfigureAwait(false)
                     ?? throw new UnauthorizedAccessException(
