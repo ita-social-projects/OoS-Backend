@@ -31,6 +31,7 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -45,6 +46,7 @@ public class WorkshopDraftServiceTests
     private Mock<ICurrentUserService> currentUserServiceMoq;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMoq;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Moq;
+    private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
 
     private string userId;
 
@@ -64,6 +66,7 @@ public class WorkshopDraftServiceTests
         providerServiceMoq = new Mock<IProviderService>();
         tagRepositoryMoq = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
+        institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -77,8 +80,9 @@ public class WorkshopDraftServiceTests
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();
+        var codeficatorRepository = new Mock<ICodeficatorRepository>();        
 
-    userId = "someUserId";
+        userId = "someUserId";
 
         service = new WorkshopDraftService(
                    logger.Object,
@@ -95,7 +99,9 @@ public class WorkshopDraftServiceTests
                    regionAdminService.Object,
                    ministryAdminService.Object,
                    codeficatorService.Object,
-                   searchStringService.Object);
+                   searchStringService.Object,
+                   institutionHierarchyRepositoryMoq.Object,
+                   codeficatorRepository.Object);
     }
 
     #region Create
@@ -384,6 +390,16 @@ public class WorkshopDraftServiceTests
 
         var emptyList = new List<WorkshopDraft>();
 
+        institutionHierarchyRepositoryMoq.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -426,6 +442,16 @@ public class WorkshopDraftServiceTests
             UserId = userId
         };
 
+        institutionHierarchyRepositoryMoq.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))

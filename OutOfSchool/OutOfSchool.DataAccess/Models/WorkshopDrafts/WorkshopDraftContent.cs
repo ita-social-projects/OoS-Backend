@@ -41,8 +41,6 @@ public class WorkshopDraftContent :
 
     public string ProviderTitleEn { get; set; }
 
-    public List<long> DirectionIds { get; set; } = new();
-
     public bool IsPaid { get; set; }
 
     public bool IsSpecial { get; set; }

@@ -27,6 +27,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.Services.Enums;
 using System.Linq.Expressions;
 using FluentAssertions;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -45,6 +46,8 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMock;
+    private Mock<ICodeficatorRepository> codeficatorRepository;
 
     private string userId;
 
@@ -68,6 +71,8 @@ public class SensitiveWorkshopDraftServiceTests
         searchStringServiceMock = new Mock<ISearchStringService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        institutionHierarchyRepositoryMock = new Mock<IInstitutionHierarchyRepository>();
+        codeficatorRepository = new Mock<ICodeficatorRepository>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -76,8 +81,8 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
-        var employeeService = new Mock<IEmployeeService>();     
-
+        var employeeService = new Mock<IEmployeeService>();
+        
         userId = "someUserId";
 
         service = new WorkshopDraftService(
@@ -95,7 +100,9 @@ public class SensitiveWorkshopDraftServiceTests
                    regionAdminServiceMock.Object,
                    ministryAdminServiceMock.Object,
                    codeficatorServiceMock.Object,
-                   searchStringServiceMock.Object);
+                   searchStringServiceMock.Object,
+                   institutionHierarchyRepositoryMock.Object,
+                   codeficatorRepository.Object);
     }
 
     #region FetchByFilterForAdmins    
@@ -169,7 +176,7 @@ public class SensitiveWorkshopDraftServiceTests
         MinistryAdminDto adminMinistry = null,
         string[] searchWords = null)
     {
-        var workshops = WorkshopGenerator.Generate(5).ToList();
+        var workshops = WorkshopV2DtoGenerator.Generate(5).ToList();
         var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshops);
         var workshopDraftDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
 
@@ -187,6 +194,28 @@ public class SensitiveWorkshopDraftServiceTests
 
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);
+
+        institutionHierarchyRepositoryMock.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
+
+        codeficatorRepository.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<CATOTTG>, IQueryable<CATOTTG>>>(),
+                It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>(),
+                It.IsAny<bool>()))
+            .Returns(new List<CATOTTG>().AsTestAsyncEnumerableQuery());
 
         return new SearchResult<WorkshopDraftResponseDto>()
         {
