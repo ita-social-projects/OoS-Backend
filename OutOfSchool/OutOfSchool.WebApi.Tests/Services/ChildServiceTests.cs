@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -358,8 +359,8 @@ public class ChildServiceTests
         // Arrange
         childRepositoryMock
             .Setup(m => m.Get(
-                It.IsAny<int>(), 
-                It.IsAny<int>(), 
+                It.IsAny<int>(),
+                It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
@@ -440,11 +441,69 @@ public class ChildServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await childService.GetByUserId(parent.UserId,true, offsetFilter);
+        var result = await childService.GetByUserId(parent.UserId, true, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(children.Count, result.TotalAmount);
         Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetByIdAndUserId_GetChild()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = userId.ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable());
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetByIdAndUserId(child.Id, userId.ToString());
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ChildDto>(result);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetByIdAndUserId_ThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable());
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.GetByIdAndUserId(child.Id, userId.ToString()))
+            .Should()
+            .ThrowAsync<UnauthorizedAccessException>();
     }
 }
