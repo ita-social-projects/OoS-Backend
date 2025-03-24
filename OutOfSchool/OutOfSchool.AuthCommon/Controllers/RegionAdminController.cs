@@ -54,7 +54,7 @@ public class RegionAdminController : Controller
 
     [HttpPut("{regionAdminId}")]
     [HasPermission(Permissions.RegionAdminEdit)]
-    public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseDto updateRegionAdminDto)
+    public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseUpdateDto updateRegionAdminDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",

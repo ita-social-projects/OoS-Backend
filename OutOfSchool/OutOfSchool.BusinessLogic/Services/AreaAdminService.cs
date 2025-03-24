@@ -273,7 +273,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 authorizationServerConfig.Authority,
                 CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
-            Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
+            Data = mapper.Map<AreaAdminBaseUpdateDto>(updateAreaAdminDto),
         };
 
         Logger.LogDebug(

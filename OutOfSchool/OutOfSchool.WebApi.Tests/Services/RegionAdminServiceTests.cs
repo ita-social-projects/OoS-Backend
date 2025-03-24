@@ -226,7 +226,7 @@ public class RegionAdminServiceTests
         // Act
         regionAdminService
             .Invoking(x => x
-                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
@@ -238,7 +238,7 @@ public class RegionAdminServiceTests
         regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdmin);
 
         // Act
-        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUpdateUserDto(), It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));

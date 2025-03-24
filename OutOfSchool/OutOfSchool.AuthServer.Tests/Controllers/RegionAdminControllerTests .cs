@@ -172,14 +172,24 @@ public class RegionAdminControllerTests
     public async Task Update_WithValidModel_ReturnsSuccessResponseDto()
     {
         // Arrange
+        var updateDto = new RegionAdminBaseUpdateDto
+        {
+            UserId = "fakeAdminId",
+            Email = "updated@email.com",
+            PhoneNumber = "+380999999999"
+        };
 
         // Act
-        var result = await regionAdminController.Update("fakeAdminId", new RegionAdminBaseDto());
+        var result = await regionAdminController.Update(updateDto.UserId, updateDto);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.IsSuccess, Is.True);
-        Assert.That(((RegionAdminBaseDto)result.Result).FirstName, Is.EqualTo("fakeFirstName"));
+
+        var updatedResult = result.Result as RegionAdminBaseDto;
+        Assert.That(updatedResult, Is.Not.Null);
+        Assert.That(updatedResult.Email, Is.EqualTo("fake@email.com"));
+        Assert.That(updatedResult.PhoneNumber, Is.EqualTo("11-222-33-44"));
     }
 
     [Test]
@@ -191,11 +201,11 @@ public class RegionAdminControllerTests
         var userId = string.Empty;
         RegionAdmin regionAdmin = new RegionAdmin { UserId = userId, InstitutionId = oldInstitutionId, CATOTTGId = oldCAOTTGId };
         await SeedRegionAdmin(regionAdmin);
-        var regionAdminToUpdate = new RegionAdminBaseDto 
+        var regionAdminToUpdate = new RegionAdminBaseUpdateDto
         { 
             UserId = userId,
-            FirstName = string.Empty,
-            LastName = string.Empty,
+            Email = "test@gmail.com",
+            PhoneNumber = "+380989846555",
             InstitutionId = Guid.NewGuid(),
             CATOTTGId = long.MaxValue 
         };
