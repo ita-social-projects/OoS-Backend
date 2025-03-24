@@ -290,7 +290,7 @@ public class ChildServiceTests
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                nameof(Child.Parent),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
@@ -315,7 +315,7 @@ public class ChildServiceTests
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                nameof(Child.Parent),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 

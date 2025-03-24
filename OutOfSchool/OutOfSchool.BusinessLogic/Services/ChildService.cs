@@ -65,6 +65,7 @@ public class ChildService : IChildService
         logger.LogDebug(
             $"Started creation of a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}.");
 
+        // No nested entities in use – eager loading not required.
         var parent =
             (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
             ?? throw new UnauthorizedAccessException(
@@ -109,6 +110,7 @@ public class ChildService : IChildService
     /// <inheritdoc/>
     public async Task<ChildrenCreationResultDto> CreateChildrenForUser(List<ChildCreateDto> childrenCreateDtos, string userId)
     {
+        // No nested entities in use – eager loading not required.
         var parent = (await parentRepository
             .GetByFilter(p => p.UserId == userId)
             .ConfigureAwait(false))
@@ -191,14 +193,14 @@ public class ChildService : IChildService
             { x => x.Id, SortDirection.Ascending },
         };
 
-        var includedFunc = (IQueryable<Child> p) => p.Include(p => p.SocialGroups)
-                                                     .Include(p => p.Parent).ThenInclude(p => p.User);
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
 
         var children = await childRepository
             .Get(
                  skip: filter.From,
                  take: filter.Size,
-                 includeExpression: includedFunc,
+                 includeExpression: includeFunc,
                  whereExpression: filterPredicate,
                  orderBy: sortExpression,
                  asNoTracking: true)
@@ -230,6 +232,7 @@ public class ChildService : IChildService
             func = func.And(child => child.IsParent == isParent);
         }
 
+        // No nested entities in use – eager loading not required.
         var children = await childRepository.GetByFilter(func).ConfigureAwait(false);
         var result = mapper.Map<List<ShortEntityDto>>(children).OrderBy(entity => entity.Title).ToList();
 
@@ -243,8 +246,10 @@ public class ChildService : IChildService
 
         logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
 
-        var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}")
-                        .ConfigureAwait(false)).SingleOrDefault()
+        var child = (await childRepository.GetByFilter(
+                        whereExpression: c => c.Id == id,
+                        includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent))
+                    .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new UnauthorizedAccessException(
                         $"User:{userId} is trying to get an unexisting child with id: {id}.");
 
@@ -278,7 +283,7 @@ public class ChildService : IChildService
             .Get(
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
-                 includeProperties: "SocialGroups", 
+                 includeExpression: (IQueryable<Child> c) => c.Include(c => c.SocialGroups),
                  whereExpression: x => x.ParentId == parentId,
                  orderBy: sortExpression)
             .ToListAsync()
@@ -319,11 +324,12 @@ public class ChildService : IChildService
             { x => x.FirstName, SortDirection.Ascending },
         };
 
+        // No nested entities in use – eager loading not required.
         var children = await childRepository
             .Get(
-                 skip: offsetFilter.From, 
+                 skip: offsetFilter.From,
                  take: offsetFilter.Size,
-                 whereExpression: predicate, 
+                 whereExpression: predicate,
                  orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -349,6 +355,7 @@ public class ChildService : IChildService
         logger.LogDebug(
             $"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
+        // No nested entities in use – eager loading not required.
         var applications = await applicationRepository
             .GetByFilter(p => p.WorkshopId == workshopId && (p.Status == ApplicationStatus.Approved || p.Status == ApplicationStatus.StudyingForYears))
             .ConfigureAwait(false);
@@ -361,11 +368,12 @@ public class ChildService : IChildService
             { x => x.FirstName, SortDirection.Ascending },
         };
 
+        // No nested entities in use – eager loading not required.
         var children = await childRepository
             .Get(
-                 skip: offsetFilter.From, 
-                 take: offsetFilter.Size, 
-                 whereExpression: x => childrenGuids.Contains(x.Id), 
+                 skip: offsetFilter.From,
+                 take: offsetFilter.Size,
+                 whereExpression: x => childrenGuids.Contains(x.Id),
                  orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
@@ -392,7 +400,9 @@ public class ChildService : IChildService
         logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
         var child = (await childRepository
-                        .GetByFilter(c => c.Id == childId, $"{nameof(Child.Parent)},{nameof(Child.SocialGroups)}")
+                        .GetByFilter(
+                            whereExpression: c => c.Id == childId,
+                            includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent).Include(c => c.SocialGroups))
                         .ConfigureAwait(false)).SingleOrDefault()
                     ?? throw new InvalidOperationException(
                         $"User: {userId} is trying to update not existing Child (Id = {childId}).");
@@ -433,9 +443,11 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
-        var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}")
-                        .SingleOrDefaultAsync()
-                        .ConfigureAwait(false)
+        var child = await childRepository.GetByFilterNoTracking(
+                                            whereExpression: c => c.Id == id,
+                                            includeExpression: (IQueryable<Child> c) => c.Include(c => c.Parent))
+                                         .SingleOrDefaultAsync()
+                                         .ConfigureAwait(false)
                     ?? throw new UnauthorizedAccessException(
                         $"User: {userId} is trying to delete not existing Child (Id = {id}).");
 
@@ -538,6 +550,7 @@ public class ChildService : IChildService
         {
             if (!new HashSet<long>(child.SocialGroups.Select(x => x.Id)).SetEquals(socialGroupIds))
             {
+                // No nested entities in use – eager loading not required.
                 var socialGroups = (await socialGroupRepository
                     .GetByFilter(x => socialGroupIds.Contains(x.Id))).ToList();
                 if (socialGroupIds.Count != socialGroups.Count)

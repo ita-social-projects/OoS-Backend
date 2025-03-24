@@ -9,6 +9,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for for SocialGroup entity.
 /// </summary>
+// No nested entities in use – eager loading not required.
 public class SocialGroupService : ISocialGroupService
 {
     private readonly IEntityRepositorySoftDeleted<long, SocialGroup> repository;
