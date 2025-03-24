@@ -55,7 +55,7 @@ public class MinistryAdminController : Controller
 
     [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
-    public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseDto updateMinistryAdminDto)
+    public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseUpdateDto updateMinistryAdminDto)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 

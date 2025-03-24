@@ -195,11 +195,11 @@ public class MinistryAdminControllerTests
         var userId = string.Empty;
         InstitutionAdmin ministryAdmin = new InstitutionAdmin { UserId = userId, InstitutionId = oldInstitutionId };
         await SeedMinistryAdmin(ministryAdmin);
-        var ministryAdminToUpdate = new MinistryAdminBaseDto
+        var ministryAdminToUpdate = new MinistryAdminBaseUpdateDto
         {
             UserId = userId,
-            FirstName = string.Empty,
-            LastName = string.Empty,
+            Email  = "newmail@gmail.com",
+            PhoneNumber = "+380989846333",
             InstitutionId = Guid.NewGuid()
         };
 
@@ -209,6 +209,7 @@ public class MinistryAdminControllerTests
         // Assert
         var updatedRegionAdmin = ministryAdminRepository.GetAll().Result.First();
         Assert.AreEqual(oldInstitutionId, updatedRegionAdmin.InstitutionId);
+        
     }
 
     private async Task SeedMinistryAdmin(InstitutionAdmin ministryAdmin)

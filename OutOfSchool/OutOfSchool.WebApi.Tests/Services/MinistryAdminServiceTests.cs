@@ -182,7 +182,7 @@ public class MinistryAdminServiceTests
         // Act
         ministryAdminService
             .Invoking(x => x
-                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
@@ -194,7 +194,7 @@ public class MinistryAdminServiceTests
         institutionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as InstitutionAdmin);
 
         // Act
-        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUpdateUserDto(), It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
