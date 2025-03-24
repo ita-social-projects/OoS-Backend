@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Elastic.Clients.Elasticsearch;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -540,6 +541,33 @@ public class ChildServiceTests
 
         // Assert
         Assert.IsNotNull(result);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task UpdateChildCheckingItsUserIdProperty_ChildIsNotExisting_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var childUpdateDto = new ChildUpdateDto() { DateOfBirth = DateTime.Now - TimeSpan.FromDays(1000) };
+        var userId = Guid.NewGuid().ToString();
+        var childId = Guid.NewGuid();
+        var childList = new List<Child>().BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.UpdateChildCheckingItsUserIdProperty(childUpdateDto, childId, userId.ToString()))
+            .Should()
+            .ThrowAsync<InvalidOperationException>();
         Mock.VerifyAll();
     }
 }
