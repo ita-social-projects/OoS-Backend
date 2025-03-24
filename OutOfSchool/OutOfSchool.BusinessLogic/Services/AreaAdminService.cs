@@ -240,7 +240,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(
         string userId,
-        BaseUserDto updateAreaAdminDto,
+        BaseUpdateUserDto updateAreaAdminDto,
         string token)
     {
         _ = updateAreaAdminDto ?? throw new ArgumentNullException(nameof(updateAreaAdminDto));

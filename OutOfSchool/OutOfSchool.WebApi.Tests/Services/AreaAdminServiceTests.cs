@@ -233,7 +233,7 @@ public class AreaAdminServiceTests
         // Act
         areaAdminService
             .Invoking(x => x
-                .UpdateAreaAdminAsync(It.IsAny<string>(), It.IsAny<AreaAdminDto>(), It.IsAny<string>()))
+                .UpdateAreaAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }

@@ -617,7 +617,21 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RegionId, opt => opt.Ignore())
             .ForMember(dest => dest.RegionName, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseUpdateDto>()
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
         CreateMap<BaseUserDto, AreaAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())

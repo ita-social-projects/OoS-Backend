@@ -54,7 +54,7 @@ public class AreaAdminController : Controller
 
     [HttpPut("{areaAdminId}")]
     [HasPermission(Permissions.AreaAdminEdit)]
-    public async Task<ResponseDto> Update(string areaAdminId, AreaAdminBaseDto updateAreaAdminDto)
+    public async Task<ResponseDto> Update(string areaAdminId, AreaAdminBaseUpdateDto updateAreaAdminDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",

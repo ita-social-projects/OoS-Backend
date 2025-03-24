@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -204,7 +204,7 @@ public class AreaAdminControllerTests
     public async Task Update_WithInvalidModel_ReturnsRequestObjectResult()
     {
         // Arrange
-        var updateAreaAdminDto = new AreaAdminDto();
+        var updateAreaAdminDto = new BaseUpdateUserDto();
         areaAdminController.ModelState.AddModelError("fakeKey", "Model is invalid");
 
         // Act
@@ -219,13 +219,12 @@ public class AreaAdminControllerTests
     public async Task Update_WithValidModel_ReturnsOkResult()
     {
         // Arrange
-        var updateAreaAdminDto = new AreaAdminDto();
-
-        var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
+        var updateAreaAdminDto = new BaseUpdateUserDto();
+        var token = "fake_token";
 
         areaAdminServiceMock
-            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, token))
-            .ReturnsAsync(updateAreaAdminDto);
+            .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
+            .ReturnsAsync(new AreaAdminDto());
 
         areaAdminController.ModelState.Clear();
 
@@ -233,15 +232,17 @@ public class AreaAdminControllerTests
         var result = await areaAdminController.Update(updateAreaAdminDto);
 
         // Assert
-        Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<OkResult>());
+
+        var objectResult = result as OkResult;
+        Assert.That(objectResult!.StatusCode, Is.EqualTo(200));
     }
 
     [Test]
     public async Task Update_WithErrorResponse_ReturnsStatusCodeResult()
     {
         // Arrange
-        var updateAreaAdminDto = new AreaAdminDto();
+        var updateAreaAdminDto = new BaseUpdateUserDto();
         var errorResponse = new ErrorResponse();
 
         var token = await fakeHttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
@@ -264,7 +265,7 @@ public class AreaAdminControllerTests
     public async Task Update_WhenServiceThrowDbUpdateConcurrencyException_ReturnsBadRequest()
     {
         // Arrange
-        var updateAreaAdminDto = new AreaAdminDto();
+        var updateAreaAdminDto = new BaseUpdateUserDto();
 
         areaAdminServiceMock
             .Setup(x => x.UpdateAreaAdminAsync(It.IsAny<string>(), updateAreaAdminDto, It.IsAny<string>()))
@@ -282,7 +283,7 @@ public class AreaAdminControllerTests
     public async Task Update_WhenUserIsNotAdmin_ReturnsForbidenResponse()
     {
         // Arrange
-        var updateAreaAdminDto = new AreaAdminDto { Id = string.Empty };
+        var updateAreaAdminDto = new BaseUpdateUserDto { Id = string.Empty };
 
         // Act
         var result = await areaAdminController.Update(updateAreaAdminDto);
