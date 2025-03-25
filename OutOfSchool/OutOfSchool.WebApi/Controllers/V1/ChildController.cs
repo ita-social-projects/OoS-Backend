@@ -151,8 +151,8 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
-    public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
+    [HttpGet("/api/v{version:apiVersion}/workshops/{workshopId}/children/approved")]
+    public async Task<IActionResult> GetApprovedByWorkshopId([FromRoute] Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
         var isWorkshopExists = await combinedWorkshopService.Exists(workshopId).ConfigureAwait(false);
 

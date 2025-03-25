@@ -332,7 +332,6 @@ public class ChildService : IChildService
             { x => x.FirstName, SortDirection.Ascending },
         };
 
-        // No nested entities in use – eager loading not required.
         var children = await childRepository
             .Get(
                  skip: offsetFilter.From,
@@ -372,17 +371,20 @@ public class ChildService : IChildService
 
         var totalAmount = childrenGuids.Count;
 
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
+
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
             { x => x.FirstName, SortDirection.Ascending },
         };
 
-        // No nested entities in use – eager loading not required.
         var children = await childRepository
             .Get(
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
                  whereExpression: x => childrenGuids.Contains(x.Id),
+                 includeExpression: includeFunc,
                  orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
