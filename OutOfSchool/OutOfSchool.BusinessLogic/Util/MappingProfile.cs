@@ -9,6 +9,7 @@ using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Notifications;
@@ -159,10 +160,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
 
-        CreateMap<WorkshopV2CreateRequestDto, Workshop>()
-            .IncludeBase<WorkshopCreateRequestDto, Workshop>()
-            .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+       
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
@@ -189,9 +187,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Instagram,
                 opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url));
 
-        CreateMap<Workshop, WorkshopV2Dto>()
-            .IncludeBase<Workshop, WorkshopDto>()
-            .Apply(IgnoreAllImages);
+  
 
         CreateMap<WorkshopCreateUpdateDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>()
@@ -808,10 +804,10 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .Apply(IgnoreAllImages)
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+            //.Apply(IgnoreAllImages)
+            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            //.ForMember(dest => dest.ImageIds, opt => opt.Ignore());
 
         CreateSoftDeletedMap<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
@@ -924,7 +920,30 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Individual.MiddleName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Individual.LastName))
             .ForMember(dest => dest.Rnokpp, opt => opt.MapFrom(src => src.Individual.Rnokpp));
+
+#region V2 mapping
+
+        CreateMap<WorkshopV2CreateRequestDto, Workshop>()
+           .IncludeBase<WorkshopCreateRequestDto, Workshop>()
+           .ForMember(dest => dest.Images, opt => opt.Ignore())
+           .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
+        CreateMap<CompetitiveEventV2CreateRequestDto, CompetitiveEvent>()
+          .IncludeBase<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
+          .ForMember(dest => dest.Images, opt => opt.Ignore())
+          .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
+        CreateMap<Workshop, WorkshopV2Dto>()
+          .IncludeBase<Workshop, WorkshopDto>()
+          .Apply(IgnoreAllImages);
+
+        CreateMap<CompetitiveEvent, CompetitiveEventV2Dto>()
+         .IncludeBase<CompetitiveEvent, CompetitiveEventDto>()
+         .Apply(IgnoreAllImages);
+
+#endregion
     }
+
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
         where TSource : class
