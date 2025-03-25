@@ -19,10 +19,7 @@ public class StudySubjectController : ControllerBase
     /// Initializes a new instance of the <see cref="StudySubjectController"/> class.
     /// </summary>
     /// <param name="studySubjectService">Service for StudySubject model.</param>
-    /// <param name="workshopService">WorkshopService</param>
-    public StudySubjectController(
-        IStudySubjectService studySubjectService, 
-        IWorkshopService workshopService)
+    public StudySubjectController(IStudySubjectService studySubjectService)
     {
         _studySubjectService = studySubjectService;
     }

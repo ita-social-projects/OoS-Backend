@@ -109,6 +109,7 @@ public class WorkshopController : ControllerBase
     /// </returns>
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopAttachmentStatusDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

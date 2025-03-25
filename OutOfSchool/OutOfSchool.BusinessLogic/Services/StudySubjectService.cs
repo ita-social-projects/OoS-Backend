@@ -59,6 +59,9 @@ public class StudySubjectService : IStudySubjectService
         await CheckIfLanguageIdIsCorrect(dto);
 
         var studySubject = mapper.Map<StudySubject>(dto);
+
+        studySubject.ProviderId = providerId;
+
         await UpdateEntityLanguages(dto, studySubject);
 
         var newStudySubject = await studySubjectRepository.Create(studySubject).ConfigureAwait(false);
