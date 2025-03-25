@@ -322,6 +322,9 @@ public class ChildService : IChildService
             predicate = predicate.And(x => !x.IsParent);
         }
 
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
+
         var totalAmount = await childRepository.Count(predicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
@@ -335,6 +338,7 @@ public class ChildService : IChildService
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
                  whereExpression: predicate,
+                 includeExpression: includeFunc,
                  orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
