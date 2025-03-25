@@ -276,7 +276,8 @@ public class ChildService : IChildService
 
         var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups);
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
 
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
