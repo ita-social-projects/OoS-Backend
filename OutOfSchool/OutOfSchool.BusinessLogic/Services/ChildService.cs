@@ -104,7 +104,17 @@ public class ChildService : IChildService
         logger.LogDebug(
             $"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
-        return mapper.Map<ChildDto>(newChild);
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
+
+        var newChildWithDetails = (await childRepository.GetByFilter(
+                                    whereExpression: c => c.Id == newChild.Id,
+                                    includeExpression: includeFunc)
+                                .ConfigureAwait(false)).SingleOrDefault()
+                                ?? throw new UnauthorizedAccessException(
+                                    $"User:{userId} is trying to get an unexisting child with id: {newChild.Id}.");
+
+        return mapper.Map<ChildDto>(newChildWithDetails);
     }
 
     /// <inheritdoc/>
