@@ -36,6 +36,7 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Api.Files;
@@ -393,6 +394,7 @@ public static class Startup
         services.AddScoped<IImageValidator<Workshop>, ImageValidator<Workshop>>();
         services.AddScoped<IImageValidator<Teacher>, ImageValidator<Teacher>>();
         services.AddScoped<IImageValidator<Provider>, ImageValidator<Provider>>();
+        services.AddScoped<IImageValidator<CompetitiveEvent>, ImageValidator<CompetitiveEvent>>();
 
         //Image validator drafts
         services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
