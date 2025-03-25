@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -11,9 +12,11 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325135815_AddCompetitiveEventImagesAndCoverImageId")]
+    partial class AddCompetitiveEventImagesAndCoverImageId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,6 +55,21 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("ChildSocialGroup");
                 });
 
+            modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
+                {
+                    b.Property<long>("DirectionsId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("InstitutionHierarchiesId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("DirectionsId", "InstitutionHierarchiesId");
+
+                    b.HasIndex("InstitutionHierarchiesId");
+
+                    b.ToTable("DirectionInstitutionHierarchy");
+                });
+
             modelBuilder.Entity("EmployeeWorkshop", b =>
                 {
                     b.Property<string>("EmployeesUserId")
@@ -65,21 +83,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ManagedWorkshopsId");
 
                     b.ToTable("EmployeeWorkshop");
-                });
-
-            modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
-                {
-                    b.Property<Guid>("InstitutionHierarchiesId")
-                        .HasColumnType("UUID(16)");
-
-                    b.Property<long>("SubDirectionsId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("InstitutionHierarchiesId", "SubDirectionsId");
-
-                    b.HasIndex("SubDirectionsId");
-
-                    b.ToTable("InstitutionHierarchySubDirection");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -2138,11 +2141,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(36)
                         .HasColumnType("char");
 
-                    b.Property<int>("PositionType")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(10);
-
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("UUID(16)");
 
@@ -2177,13 +2175,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
 
-                    b.Property<DateOnly>("ActiveFrom")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly>("ActiveTo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("date")
-                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+                    b.Property<long?>("ActualAddressId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("BlockPhoneNumber")
                         .IsRequired()
@@ -2198,36 +2191,36 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("UUID(16)");
 
                     b.Property<string>("CoverImageId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Director")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime?>("DirectorDateOfBirth")
+                        .IsRequired()
+                        .HasColumnType("Date");
+
+                    b.Property<string>("EdrpouIpn")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("varchar(12)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                    b.Property<string>("Facebook")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(36)
-                        .HasColumnType("char");
-
-                    b.Property<DateTime?>("DeleteDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(36)
-                        .HasColumnType("char");
-
-                    b.Property<string>("Document")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Edrpou")
+                    b.Property<string>("Founder")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<Guid?>("ExternalId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("File")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<string>("FullTitle")
                         .IsRequired()
@@ -2240,11 +2233,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .IsUnicode(true)
                         .HasColumnType("varchar(60)");
 
-                    b.Property<string>("GeneralWorkSchedule")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<string>("InstitutionCode")
+                    b.Property<string>("Instagram")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
@@ -2265,40 +2254,25 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<bool>("IsLocatedInMountainousArea")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsStructuralUnit")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsSystemProtected")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<long>("LegalAddressId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("License")
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
-
-                    b.Property<DateTime?>("LicenseExpirationDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("LicenseIssuanceDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("LicenseLimits")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
 
                     b.Property<int>("LicenseStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(36)
-                        .HasColumnType("char");
-
                     b.Property<int>("Ownership")
                         .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
 
                     b.Property<string>("ShortTitle")
                         .IsRequired()
@@ -2323,30 +2297,38 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("TypeId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime(6)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime?>("UpdatedAt"));
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("UpdatedAt"));
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<bool>("UsesOutsourcingServices")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<string>("Website")
+                        .HasMaxLength(256)
+                        .IsUnicode(true)
+                        .HasColumnType("varchar(256)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ActualAddressId")
+                        .IsUnique();
+
                     b.HasIndex("CompetitiveEventId");
 
-                    b.HasIndex("Edrpou");
+                    b.HasIndex("EdrpouIpn");
 
                     b.HasIndex("InstitutionId");
 
                     b.HasIndex("InstitutionStatusId");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("LegalAddressId")
+                        .IsUnique();
 
                     b.HasIndex("TypeId");
 
@@ -2837,43 +2819,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("LanguageId");
 
                     b.ToTable("StudySubjects");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<long>("DirectionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DirectionId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.ToTable("SubDirections");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
@@ -3823,6 +3768,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(36)
                         .HasColumnType("char");
 
+                    b.Property<string>("DisabilityOptionsDesc")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<string>("Document")
                         .HasColumnType("longtext");
 
@@ -3857,6 +3806,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsSelfFinanced")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSpecial")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsSystemProtected")
@@ -3907,6 +3859,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(60)
                         .HasColumnType("varchar(60)");
 
+                    b.Property<bool>("ShortStay")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -3925,6 +3880,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("WithDisabilityOptions")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("WorkshopType")
                         .HasColumnType("int");
@@ -4131,6 +4089,21 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Direction", null)
+                        .WithMany()
+                        .HasForeignKey("DirectionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", null)
+                        .WithMany()
+                        .HasForeignKey("InstitutionHierarchiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EmployeeWorkshop", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Employee", null)
@@ -4142,21 +4115,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
                         .WithMany()
                         .HasForeignKey("ManagedWorkshopsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", null)
-                        .WithMany()
-                        .HasForeignKey("InstitutionHierarchiesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.SubDirection", null)
-                        .WithMany()
-                        .HasForeignKey("SubDirectionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -4829,6 +4787,11 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
+                    b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "ActualAddressId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
                         .WithMany("ParticipantsOfTheEvent")
                         .HasForeignKey("CompetitiveEventId");
@@ -4840,6 +4803,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.InstitutionStatus", "InstitutionStatus")
                         .WithMany("Providers")
                         .HasForeignKey("InstitutionStatusId");
+
+                    b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "LegalAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.ProviderType", "Type")
                         .WithMany("Providers")
@@ -4853,184 +4822,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
-                        {
-                            b1.Property<long>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint");
-
-                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<long>("Id"));
-
-                            b1.Property<bool>("IsDefault")
-                                .HasColumnType("tinyint(1)");
-
-                            b1.Property<Guid>("OwnerId")
-                                .HasColumnType("UUID(16)");
-
-                            b1.Property<string>("Title")
-                                .IsRequired()
-                                .HasMaxLength(60)
-                                .HasColumnType("varchar(60)");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("OwnerId");
-
-                            b1.ToTable("Providers_Contacts");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OwnerId");
-
-                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
-                                {
-                                    b2.Property<long>("ContactsId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("BuildingNumber")
-                                        .IsRequired()
-                                        .HasMaxLength(15)
-                                        .HasColumnType("varchar(15)");
-
-                                    b2.Property<long>("CATOTTGId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<ulong>("GeoHash")
-                                        .HasColumnType("bigint unsigned");
-
-                                    b2.Property<double>("Latitude")
-                                        .HasColumnType("double");
-
-                                    b2.Property<double>("Longitude")
-                                        .HasColumnType("double");
-
-                                    b2.Property<string>("Street")
-                                        .IsRequired()
-                                        .HasMaxLength(60)
-                                        .HasColumnType("varchar(60)");
-
-                                    b2.HasKey("ContactsId");
-
-                                    b2.HasIndex("CATOTTGId");
-
-                                    b2.ToTable("Providers_Contacts");
-
-                                    b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
-                                        .WithMany()
-                                        .HasForeignKey("CATOTTGId")
-                                        .OnDelete(DeleteBehavior.Cascade)
-                                        .IsRequired();
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("ContactsId");
-
-                                    b2.Navigation("CATOTTG");
-                                });
-
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
-                                {
-                                    b2.Property<long>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("bigint");
-
-                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
-
-                                    b2.Property<string>("Address")
-                                        .HasMaxLength(256)
-                                        .HasColumnType("varchar(256)");
-
-                                    b2.Property<long>("ContactsId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("Type")
-                                        .HasMaxLength(60)
-                                        .HasColumnType("varchar(60)");
-
-                                    b2.HasKey("Id");
-
-                                    b2.HasIndex("Address");
-
-                                    b2.HasIndex("ContactsId");
-
-                                    b2.ToTable("Providers_Contacts_Emails");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("ContactsId");
-                                });
-
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
-                                {
-                                    b2.Property<long>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("bigint");
-
-                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
-
-                                    b2.Property<long>("ContactsId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<string>("Number")
-                                        .IsRequired()
-                                        .HasMaxLength(16)
-                                        .HasColumnType("varchar(16)");
-
-                                    b2.Property<string>("Type")
-                                        .HasMaxLength(60)
-                                        .HasColumnType("varchar(60)");
-
-                                    b2.HasKey("Id");
-
-                                    b2.HasIndex("ContactsId");
-
-                                    b2.HasIndex("Number");
-
-                                    b2.ToTable("Providers_Contacts_Phones");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("ContactsId");
-                                });
-
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
-                                {
-                                    b2.Property<long>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("bigint");
-
-                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
-
-                                    b2.Property<long>("ContactsId")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<int>("Type")
-                                        .HasColumnType("int");
-
-                                    b2.Property<string>("Url")
-                                        .HasMaxLength(256)
-                                        .HasColumnType("varchar(256)");
-
-                                    b2.HasKey("Id");
-
-                                    b2.HasIndex("ContactsId");
-
-                                    b2.ToTable("Providers_Contacts_SocialNetworks");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("ContactsId");
-                                });
-
-                            b1.Navigation("Address");
-
-                            b1.Navigation("Emails");
-
-                            b1.Navigation("Phones");
-
-                            b1.Navigation("SocialNetworks");
-                        });
-
-                    b.Navigation("Contacts");
+                    b.Navigation("ActualAddress");
 
                     b.Navigation("Institution");
 
                     b.Navigation("InstitutionStatus");
+
+                    b.Navigation("LegalAddress");
 
                     b.Navigation("Type");
 
@@ -5095,17 +4893,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Language");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Direction", "Direction")
-                        .WithMany("SubDirections")
-                        .HasForeignKey("DirectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Direction");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
@@ -5428,11 +5215,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Judges");
 
                     b.Navigation("ParticipantsOfTheEvent");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
-                {
-                    b.Navigation("SubDirections");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Individual", b =>
