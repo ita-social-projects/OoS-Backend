@@ -31,4 +31,18 @@ public class WorkshopServiceStrategy : IWorkshopStrategy
 
         return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
     }
+
+    public async Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter)
+    {
+        filter ??= new WorkshopFilter();
+
+        var databaseResult = await workshopService.GetPriceRange(filter).ConfigureAwait(false);
+
+        if (databaseResult.MinPrice == 0 && databaseResult.MaxPrice == 0)
+        {
+            logger.LogDebug("Result was {MinPrice} - {MaxPrice}", databaseResult.MinPrice, databaseResult.MaxPrice);
+        }
+
+        return databaseResult;
+    }
 }

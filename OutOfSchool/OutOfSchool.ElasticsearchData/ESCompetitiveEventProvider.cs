@@ -1,7 +1,9 @@
 ﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.ElasticsearchData.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,7 +33,44 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         };
     }
 
-    private Query CreateQueryFromFilter(CompetitiveEventFilterES filter)
+    public override async Task<PriceRangeES> GetPriceRangeAsync(CompetitiveEventFilterES filter = null)
+    {
+        filter ??= new CompetitiveEventFilterES();
+
+        var query = CreateQueryFromFilter(filter, false);
+
+        var request = new SearchRequest<CompetitiveEventES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    MinPrice, Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                },
+                {
+                    MaxPrice, Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<CompetitiveEventES>(c => c.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<CompetitiveEventES>(request);
+        var minPrice = response.Aggregations.GetMin(MinPrice).Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax(MaxPrice).Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
+    }
+
+    private Query CreateQueryFromFilter(CompetitiveEventFilterES filter, bool includePrice = true)
     {
         var query = new BoolQuery()
         {
@@ -54,7 +93,10 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         AddOptionsForPeopleWithDisabilitiesQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
         AddCompetitiveSelectionQuery(query, filter);
-        AddPriceQuery(query, filter);
+        if (includePrice)
+        {
+            AddPriceQuery(query, filter);
+        }
         AddAgeQuery(query, filter);
         AddRegistrationEndTimeQuery(query, filter);
         AddScheduledStartTimeQuery(query, filter);

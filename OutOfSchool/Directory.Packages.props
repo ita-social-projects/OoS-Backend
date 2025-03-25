@@ -128,8 +128,7 @@
     <PackageVersion Include="Elastic.Apm.EntityFrameworkCore" Version="$(ElasticApmVersion)" />
     <PackageVersion Include="Elastic.Apm.Elasticsearch" Version="$(ElasticApmVersion)" />
     <PackageVersion Include="Elastic.Apm.StackExchange.Redis" Version="$(ElasticApmVersion)" />
-    
     <!-- Ecryption Library -->
-    <PackageVersion Include="IIT.EUSignCP" Version="1.3.1.2"/>
+    <PackageVersion Include="IIT.EUSignCP" Version="1.3.1.2" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
@@ -39,7 +40,44 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         };
     }
 
-    private Query CreateQueryFromFilter(WorkshopFilterES filter)
+    public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
+    {
+        filter ??= new WorkshopFilterES();
+
+        var query = CreateQueryFromFilter(filter, false);
+
+        var request = new SearchRequest<WorkshopES>
+        {
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
+            {
+                {
+                    MinPrice, Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                },
+                {
+                    MaxPrice, Aggregation.Max(new MaxAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                }
+            }
+        };
+
+        var response = await ElasticClient.SearchAsync<WorkshopES>(request);
+        var minPrice = response.Aggregations.GetMin(MinPrice).Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax(MaxPrice).Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
+    }
+
+    private Query CreateQueryFromFilter(WorkshopFilterES filter, bool includePrice = true)
     {
         var query = new BoolQuery
         {
@@ -79,7 +117,10 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddSearchTextQuery(query, filter);
         AddCityQuery(query, filter);
         AddDirectionIdsQuery(query, filter);
-        AddPriceQuery(query, filter);
+        if (includePrice) 
+        { 
+            AddPriceQuery(query, filter); 
+        }
         AddAgeQuery(query, filter);
         AddDisabilityOptionsQuery(query, filter);
         AddStatusesQuery(query, filter);
@@ -97,6 +138,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddIsSpecialQuery(query, filter);
         AddIsInclusiveQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
+        AddPayRateTypeQuery(query, filter);
 
         return query;
     }
@@ -545,6 +587,17 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.AreThereBenefits))
             {
                 Value = filter.AreThereBenefits,
+            });
+        }
+    }
+
+    private void AddPayRateTypeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.PayRate != PayRateType.None)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.PayRate))
+            {
+                Value = filter.PayRate.ToString(),
             });
         }
     }

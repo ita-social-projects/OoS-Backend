@@ -1121,6 +1121,36 @@ public class WorkshopControllerTests
     }
     #endregion
 
+    #region GetPriceRange
+
+    [Test]
+    public async Task GetPriceRange_WhenPriceRangeReturned_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var priceRange = new PriceRange
+        {
+            MinPrice = 100,
+            MaxPrice = 200,
+        };
+
+        var filter = new WorkshopFilter();
+
+        workshopServiceMoq.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await controller.GetPriceRange(filter);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    #endregion
+
     private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
     {
         return new WorkshopStatusDto()

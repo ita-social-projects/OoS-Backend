@@ -160,4 +160,12 @@ public interface IWorkshopService
     /// <param name="workshopId">WorkshopId for which we need to get status.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<bool> IsBlocked(Guid workshopId);
+
+    /// <summary>
+    /// Gets the price range of the entities.
+    /// </summary>
+    /// <param name="filter">Workshop's filter.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains the price range of the entities.</returns>
+    Task<PriceRange> GetPriceRange(WorkshopFilter filter = null);
 }

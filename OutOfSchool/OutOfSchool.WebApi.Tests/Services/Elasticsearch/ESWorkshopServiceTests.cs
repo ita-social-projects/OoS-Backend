@@ -424,4 +424,51 @@ public class ESWorkshopServiceTests
     }
 
     #endregion
+
+    #region GetPriceRangeAsync
+
+    [Test]
+    public async Task GetPriceRange_WhenSuccess_ReturnsPriceRange()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        var priceRange = new PriceRangeES()
+        {
+            MinPrice = 100,
+            MaxPrice = 200
+        };
+
+        esProviderMock.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        esProviderMock.Verify(x => x.GetPriceRangeAsync(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<PriceRangeES>(result);
+        Assert.That(result, Is.EqualTo(priceRange));
+    }
+
+    [Test]
+    public async Task GetPriceRange_WhenExceptionCatched_ReturnsDefaultPriceRange()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        var priceRange = new PriceRangeES();
+
+        esProviderMock.Setup(x => x.GetPriceRangeAsync(filter)).ThrowsAsync(new Exception());
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        esProviderMock.Verify(x => x.GetPriceRangeAsync(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<PriceRangeES>(result);
+        Assert.That(result.MaxPrice, Is.EqualTo(priceRange.MaxPrice));
+        Assert.That(result.MinPrice, Is.EqualTo(priceRange.MinPrice));
+    }
+
+    #endregion
 }

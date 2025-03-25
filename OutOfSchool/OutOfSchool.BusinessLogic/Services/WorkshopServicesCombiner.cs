@@ -301,6 +301,17 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         return availableSeats.GetMaxValueIfNullOrZero() >= workshop.TakenSeats;
     }
 
+    /// <inheritdoc/>
+    public async Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter)
+    {
+        if (!IsFilterValid(filter))
+        {
+            return new PriceRange();
+        }
+
+        return await workshopStrategy.GetPriceRangeAsync(filter);
+    }
+
     private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Guid objectId)
     {
         var recipientIds = new List<string>();

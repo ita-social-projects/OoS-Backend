@@ -32,4 +32,16 @@ public class WorkshopESStrategy : IWorkshopStrategy
 
         return mapper.Map<SearchResult<WorkshopCard>>(result);
     }
+
+    public async Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter)
+    {
+        var result = await elasticsearchService.GetPriceRangeAsync(mapper.Map<WorkshopFilterES>(filter)).ConfigureAwait(false);
+
+        if (result.MinPrice == 0 && result.MaxPrice == 0)
+        {
+            logger.LogDebug("Result was {MinPrice} - {MaxPrice}", result.MinPrice, result.MaxPrice);
+        }
+
+        return mapper.Map<PriceRange>(result);
+    }
 }

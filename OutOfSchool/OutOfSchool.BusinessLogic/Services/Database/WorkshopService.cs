@@ -782,6 +782,36 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         };
     }
 
+    /// <inheritdoc/>
+    public async Task<PriceRange> GetPriceRange(WorkshopFilter filter = null)
+    {
+        logger.LogDebug("Getting Price Range for workshops by filter started.");
+
+        filter ??= new WorkshopFilter();
+
+        var filterPredicate = PredicateBuild(filter, false);
+
+        var query = workshopRepository.Get(
+            whereExpression: filterPredicate,
+            includeProperties: "");
+
+        var priceRange = await query.GroupBy(_ => 1)
+            .Select(g => new PriceRange
+            {
+                MinPrice = g.Min(x => x.Price),
+                MaxPrice = g.Max(x => x.Price),
+            }).FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+
+        if (priceRange == null)
+        {
+            logger.LogDebug("No matching records found for the specified filter.");
+            return new PriceRange();
+        }
+
+        return priceRange;
+    }
+
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
         if (currentUserService.IsMinistryAdmin())
@@ -887,7 +917,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter) =>
         ModelValidationHelper.ValidateWorkshopTitleFilter(filter);
 
-    private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
+    private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter, bool includePrice = true)
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
@@ -954,18 +984,21 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(tempPredicate);
         }
 
-        if (filter.IsFree && !filter.IsPaid)
+        if (includePrice)
         {
-            predicate = predicate.And(x => x.Price == filter.MinPrice);
-        }
-        else if (!filter.IsFree && filter.IsPaid)
-        {
-            predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
-        }
-        else
-        {
-            predicate = predicate.And(x =>
-                (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+            if (filter.IsFree && !filter.IsPaid)
+            {
+                predicate = predicate.And(x => x.Price == filter.MinPrice);
+            }
+            else if (!filter.IsFree && filter.IsPaid)
+            {
+                predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
+            }
+            else
+            {
+                predicate = predicate.And(x =>
+                    (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+            }
         }
 
         if (filter.MinAge != 0 || filter.MaxAge != 100)
@@ -1059,6 +1092,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         if (filter.Coverage.Any())
         {
             predicate = predicate.And(x => filter.Coverage.Contains(x.Coverage));
+        }
+
+        if (filter.PayRate != PayRateType.None)
+        {
+            predicate = predicate.And(x => x.PayRate == filter.PayRate);
         }
 
         return predicate;

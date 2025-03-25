@@ -149,4 +149,12 @@ public interface IWorkshopServicesCombiner
     /// <param name="providerStatus">ProviderStatus of Provider to be changed.</param>
     /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
     Task<IEnumerable<ShortEntityDto>> UpdateProviderStatus(Guid providerId, ProviderStatus providerStatus);
+
+    /// <summary>
+    /// Gets the price range of the entities.
+    /// </summary>
+    /// <param name="filter">Workshop's filter.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains the price range of the entities.</returns>
+    Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter);
 }
