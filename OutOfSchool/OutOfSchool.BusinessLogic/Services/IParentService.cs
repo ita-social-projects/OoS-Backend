@@ -30,7 +30,7 @@ public interface IParentService
     /// </summary>
     /// <param name="info">Parent Personal Info with new properties.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<BaseUpdateUserDto> Update(BaseUpdateUserDto info);
+    Task<ShortUserDto> Update(BaseUpdateUserDto info);
 
     /// <summary>
     /// To delete the object from DB.

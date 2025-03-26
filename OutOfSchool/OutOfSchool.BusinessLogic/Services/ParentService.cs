@@ -158,7 +158,7 @@ public class ParentService : IParentService
     }
 
     /// <inheritdoc/>
-    public async Task<BaseUpdateUserDto> Update(BaseUpdateUserDto dto)
+    public async Task<ShortUserDto> Update(BaseUpdateUserDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
         logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
@@ -181,7 +181,7 @@ public class ParentService : IParentService
 
             await repositoryParent.SaveChangesAsync();
 
-            return mapper.Map<BaseUpdateUserDto>(parent);
+            return mapper.Map<ShortUserDto>(parent);
         }
         catch (DbUpdateException ex)
         {

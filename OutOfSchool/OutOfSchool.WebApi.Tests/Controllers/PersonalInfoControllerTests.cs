@@ -104,7 +104,13 @@ public class PersonalInfoControllerTests
             PhoneNumber = "1160327456",
             Email = "aleksandretst@gmail.com"
         };
-        parentService.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
+        var expectedResult = new ShortUserDto
+        {
+            Id = changedParent.Id,
+            PhoneNumber = changedParent.PhoneNumber,
+            Email = changedParent.Email
+        };
+        parentService.Setup(x => x.Update(changedParent)).ReturnsAsync(expectedResult);
         currentUserService.Setup(c => c.UserId).Returns("38776161-734b-4aec-96eb-4a1f87a2e5f3");
         currentUserService.Setup(c => c.IsInRole(Role.Parent)).Returns(true);
 

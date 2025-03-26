@@ -65,7 +65,7 @@ public class UserService : IUserService
         return mapper.Map<ShortUserDto>(user);
     }
 
-    public async Task<BaseUpdateUserDto> Update(BaseUpdateUserDto dto)
+    public async Task<ShortUserDto> Update(BaseUpdateUserDto dto)
     {
         logger.LogInformation($"Updating User with Id = {dto?.Id} started.");
 
@@ -79,7 +79,7 @@ public class UserService : IUserService
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
-            return mapper.Map<BaseUpdateUserDto>(updatedUser);
+            return mapper.Map<ShortUserDto>(updatedUser);
         }
         catch (DbUpdateConcurrencyException)
         {

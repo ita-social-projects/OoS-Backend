@@ -494,8 +494,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
             .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
             .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
-            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore())
-            .ReverseMap();
+            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
 
 
         // TODO: Check this mapping
@@ -518,11 +517,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => src.User.EmailConfirmed))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
-
-        CreateMap<Parent, BaseUpdateUserDto>()
-           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId)) 
-           .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-           .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber));
 
         CreateMap<BaseUpdateUserDto, Parent>()
           .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
