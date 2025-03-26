@@ -132,9 +132,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddEducationalShiftQuery(query, filter);
         AddSpecialNeedsTypeQuery(query, filter);
         AddCoverageQuery(query, filter);
-        AddShortStayQuery(query, filter);
         AddIsSelfFinancedQuery(query, filter);
-        AddIsSpecialQuery(query, filter);
         AddIsInclusiveQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
         AddPayRateTypeQuery(query, filter);
@@ -522,17 +520,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             });
         }
     }
-
-    private void AddShortStayQuery(BoolQuery query, WorkshopFilterES filter)
-    {
-        if (filter.ShortStay)
-        {
-            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.ShortStay))
-            {
-                Value = filter.ShortStay,
-            });
-        }
-    }
    
     private void AddIsSelfFinancedQuery(BoolQuery query, WorkshopFilterES filter)
     {
@@ -541,17 +528,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsSelfFinanced))
             {
                 Value = filter.IsSelfFinanced,
-            });
-        }
-    }
-
-    private void AddIsSpecialQuery(BoolQuery query, WorkshopFilterES filter)
-    {
-        if (filter.IsSpecial)
-        {
-            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsSpecial))
-            {
-                Value = filter.IsSpecial,
             });
         }
     }

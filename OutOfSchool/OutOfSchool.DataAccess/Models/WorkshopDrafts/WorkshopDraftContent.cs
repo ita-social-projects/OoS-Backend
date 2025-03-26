@@ -18,8 +18,6 @@ public class WorkshopDraftContent :
 
     public int MaxAge { get; set; }
 
-    public bool ShortStay { get; set; }
-
     public uint LanguageOfEducationId { get; set; }
 
     public List<DateTimeRangeDraft> DateTimeRanges { get; set; } = new ();
@@ -43,8 +41,6 @@ public class WorkshopDraftContent :
     public string ProviderTitleEn { get; set; }
 
     public bool IsPaid { get; set; }
-
-    public bool IsSpecial { get; set; }
 
     public bool IsInclusive { get; set; }
 

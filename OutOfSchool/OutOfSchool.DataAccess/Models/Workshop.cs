@@ -53,9 +53,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Educational shift is required")]
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
     
-    [Required(ErrorMessage = "Short stay is required")]
-    public bool ShortStay { get; set; } = false;
-    
     [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
     public bool IsSelfFinanced { get; set; } = false;
     
@@ -94,10 +91,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     [Required(ErrorMessage = "Type of pay rate is required")]
     public PayRateType PayRate { get; set; }
-
-    [Required(ErrorMessage = "Property IsSpecial is required")]
-    public bool IsSpecial { get; set; } = false;
-
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required(ErrorMessage = "Property IsInclusive is required")]

@@ -78,15 +78,11 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public EducationalShift EducationalShift { get; set; }
 
-    public bool ShortStay { get; set; }
-
     public bool IsSelfFinanced { get; set; }
 
     public bool IsPaid { get; set; }
 
     public string CompetitiveSelectionDescription { get; set; }
-
-    public bool IsSpecial { get; set; }
 
     public SpecialNeedsType SpecialNeedsType { get; set; }
 
