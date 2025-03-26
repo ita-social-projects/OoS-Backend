@@ -16,7 +16,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for CompetitiveEvent entity.
 /// </summary>
-public class CompetitiveEventService : ICompetitiveEventService
+public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEventServiceV2
 {
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -44,7 +44,8 @@ public class CompetitiveEventService : ICompetitiveEventService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService)
+        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService,
+        IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
@@ -53,6 +54,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService;
         this.contactsService = contactsService;
+        this.competitiveImagesService = competitiveImagesService;
     }
 
     /// <inheritdoc/>
@@ -300,11 +302,11 @@ public class CompetitiveEventService : ICompetitiveEventService
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
 
-        if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
-        {
-            var errorMessage = $"The parent competitive event (ID = {dto.ParentId}) does not exist.";
-            throw new InvalidOperationException(errorMessage);
-        }
+        //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
+        //{
+        //    var errorMessage = $"The parent competitive event (ID = {dto.ParentId}) does not exist.";
+        //    throw new InvalidOperationException(errorMessage);
+        //}
 
         var createdEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
             ? mapper.Map<CompetitiveEvent>(v2Dto)
