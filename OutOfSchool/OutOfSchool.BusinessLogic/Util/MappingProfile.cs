@@ -378,13 +378,15 @@ public class MappingProfile : Profile
             .ForMember(c => c.Id, m => m.Ignore())
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
-            .ForMember(c => c.SocialGroups, m => m.Ignore());
+            .ForMember(c => c.SocialGroups, m => m.Ignore())
+            .ForMember(c => c.ParentId, m => m.Ignore());
 
         CreateSoftDeletedMap<ChildUpdateDto, Child>()
             .ForMember(c => c.Id, m => m.Ignore())
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
-            .ForMember(c => c.SocialGroups, m => m.Ignore());
+            .ForMember(c => c.SocialGroups, m => m.Ignore())
+            .ForMember(c => c.ParentId, m => m.Ignore());
 
         // TODO: Check this mapping
         CreateMap<Parent, ParentDTO>().ReverseMap();

@@ -63,20 +63,13 @@ public class ChildService : IChildService
         ValidateUserId(userId);
 
         logger.LogDebug(
-            $"Started creation of a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}.");
+            $"Started creation of a new child with {nameof(userId)}:{userId}.");
 
         // No nested entities in use – eager loading not required.
         var parent =
             (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
             ?? throw new UnauthorizedAccessException(
                 $"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
-
-        if (childCreateDto.ParentId != parent.Id)
-        {
-            logger.LogWarning(
-                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childCreateDto.ParentId}.");
-            childCreateDto.ParentId = parent.Id;
-        }
 
         if (childCreateDto.IsParent)
         {
@@ -87,6 +80,7 @@ public class ChildService : IChildService
         {
             var child = mapper.Map<Child>(childCreateDto);
             child.Id = default;
+            child.ParentId = parent.Id;
             child.SocialGroups = new List<SocialGroup>();
 
             var newChild = await childRepository.Create(child).ConfigureAwait(false);
@@ -150,7 +144,7 @@ public class ChildService : IChildService
                         .Add(CreateChildResult(
                             childCreateDto,
                             false,
-                            $"Refused to create a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: " +
+                            $"Refused to create a new child with {nameof(Child.ParentId)}:{parent.Id}, {nameof(userId)}:{userId}: " +
                             $"the limit ({parentConfig.Value.ChildrenMaxNumber}) of the children for parents was reached."));
                 }
             }
@@ -161,13 +155,13 @@ public class ChildService : IChildService
             {
                 children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false, ex.Message));
                 logger.LogDebug(
-                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{parent.Id}, {nameof(userId)}:{userId}: {ex.Message}.");
             }
             catch (Exception ex)
             {
                 children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false));
                 logger.LogDebug(
-                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{childCreateDto.ParentId}, {nameof(userId)}:{userId}: {ex.Message}.");
+                    $"There is an error while creating a new child with {nameof(Child.ParentId)}:{parent.Id}, {nameof(userId)}:{userId}: {ex.Message}.");
             }
         }
 
@@ -440,13 +434,6 @@ public class ChildService : IChildService
         if (child.IsParent || childUpdateDto.IsParent)
         {
             throw new ArgumentException($"Forbidden to update child which related to the parent.");
-        }
-
-        if (childUpdateDto.ParentId != child.ParentId)
-        {
-            logger.LogWarning(
-                $"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childUpdateDto.ParentId}.");
-            childUpdateDto.ParentId = child.ParentId;
         }
 
         mapper.Map(childUpdateDto, child);
