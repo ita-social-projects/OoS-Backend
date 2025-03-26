@@ -155,13 +155,13 @@ public class ChildService : IChildService
             {
                 children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false, ex.Message));
                 logger.LogDebug(
-                    "There is an error while creating a new child with {ParentId}:{Id}, {UserId}:{Id}: {ExceptionMessage}.", nameof(Child.ParentId), parent.Id, nameof(userId), userId, ex.Message);
+                    "There is an error while creating a new child with {ParentId}:{parentId}, {UserId}:{userId}: {ExceptionMessage}.", nameof(Child.ParentId), parent.Id, nameof(userId), userId, ex.Message);
             }
             catch (Exception ex)
             {
                 children.ChildrenCreationResults.Add(CreateChildResult(childCreateDto, false));
                 logger.LogDebug(
-                    "There is an error while creating a new child with {ParentId}:{Id}, {UserId}:{Id}: {ExceptionMessage}.", nameof(Child.ParentId), parent.Id, nameof(userId), userId, ex.Message);
+                    "There is an error while creating a new child with {ParentId}:{parentId}, {UserId}:{userId}: {ExceptionMessage}.", nameof(Child.ParentId), parent.Id, nameof(userId), userId, ex.Message);
             }
         }
 
