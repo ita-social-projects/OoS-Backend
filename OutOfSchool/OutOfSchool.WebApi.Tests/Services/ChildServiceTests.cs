@@ -569,4 +569,128 @@ public class ChildServiceTests
             .ThrowAsync<InvalidOperationException>();
         Mock.VerifyAll();
     }
+
+    [Test]
+    public async Task CreateChildForUser_ParentIsNotExisting_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto();
+        var parentList = new List<Parent>().BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.CreateChildForUser(childCreateDto, userId))
+            .Should()
+            .ThrowAsync<UnauthorizedAccessException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task CreateChildForUser_ChildRelatedToParent_ThrowArgumentException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto()
+        {
+            IsParent = true,
+        };
+        var parent = new Parent()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId
+        };
+        var parentList = new List<Parent>() { parent }.BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.CreateChildForUser(childCreateDto, userId))
+            .Should()
+            .ThrowAsync<ArgumentException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task CreateChildForUser_ProperChild_ThrowArgumentException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto()
+        {
+            IsParent = false,
+            SocialGroupIds = new List<long>()
+        };        
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+
+        var parent = new Parent()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId
+        };
+        var parentList = new List<Parent>() { parent }.BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Child>>>()))
+            .Returns((Func<Task<Child>> f) => f.Invoke())
+            .Verifiable(Times.Once);
+
+        mapperMock.Setup(mapper => mapper.Map<Child>(/*It.IsAny<ChildCreateDto>()*/childCreateDto))
+            .Returns(child)
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.Create(child))
+            .ReturnsAsync(child)
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.SaveChangesAsync(true, default))
+            .Verifiable(Times.Once);
+
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.CreateChildForUser(childCreateDto, userId);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ChildDto>(result);
+        Mock.VerifyAll();
+    }
 }
