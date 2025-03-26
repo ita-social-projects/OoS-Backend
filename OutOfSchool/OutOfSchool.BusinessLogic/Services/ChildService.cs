@@ -421,8 +421,8 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent).Include(c => c.SocialGroups);
-
+        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
+                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
         var child = (await childRepository
                         .GetByFilter(
                             whereExpression: c => c.Id == childId,
