@@ -228,7 +228,7 @@ public class CompetitiveEventController : ControllerBase
                 return NoContent();
             }
 
-            await competitiveEventService.Delete(id).ConfigureAwait(false);
+            await competitiveEventService.DeleteV2(id).ConfigureAwait(false);
             return NoContent();
         }
         catch (InvalidOperationException ex)
