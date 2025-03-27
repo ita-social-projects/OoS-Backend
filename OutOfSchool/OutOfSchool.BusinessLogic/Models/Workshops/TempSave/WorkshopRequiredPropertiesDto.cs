@@ -30,10 +30,8 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Required(ErrorMessage = "Type of age composition is required")]
     [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
-
-    [Required(ErrorMessage = "Workshop type is required")]
     [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
-    public WorkshopType WorkshopType { get; set; }
+    public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
 
     public Guid? ParentWorkshopId { get; set; }
 }

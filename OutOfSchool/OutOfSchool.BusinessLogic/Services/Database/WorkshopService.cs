@@ -2,6 +2,7 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -12,6 +13,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
@@ -53,6 +55,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
+    private readonly WorkshopFlag featureFlags;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -94,7 +98,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IOptions<WorkshopFlag> featureFlagsOptions)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -115,6 +120,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
+        this.featureFlags = featureFlagsOptions.Value;
     }
 
     /// <inheritdoc/>
@@ -1263,6 +1269,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
+        if(!featureFlags.EnableWorkshopGroupTypeField)
+        {
+            dto.WorkshopType = WorkshopType.Workshop;
+        }
+
         if (dto.ParentWorkshopId.HasValue && !await Exists((Guid)dto.ParentWorkshopId).ConfigureAwait(false))
         {
             var errorMessage = $"The main workshop (with id = {dto.ParentWorkshopId}) for the workshop being created was not found.";

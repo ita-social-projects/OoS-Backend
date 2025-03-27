@@ -4,10 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
