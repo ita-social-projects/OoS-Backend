@@ -160,6 +160,10 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
 
         int count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
+        Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>> includeFunc =
+            ia => ia.Include(ia => ia.Institution)
+                    .Include(ia => ia.User);
+
         var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
         {
             { x => x.User.IsBlocked, SortDirection.Ascending },
@@ -171,7 +175,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User",
+                includeExpression: includeFunc,
                 whereExpression: filterPredicate,
                 orderBy: sortExpression,
                 asNoTracking: true)

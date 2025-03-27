@@ -78,8 +78,8 @@ public class MinistryAdminServiceTests
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(new HttpClient()
             {
-                  Timeout = new TimeSpan(2),
-                  BaseAddress = It.IsAny<Uri>(),
+                Timeout = new TimeSpan(2),
+                BaseAddress = It.IsAny<Uri>(),
             });
 
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
@@ -209,7 +209,7 @@ public class MinistryAdminServiceTests
             .ApiErrors
             .First();
         apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(
-            It.IsAny<Expression<Func<User, bool>>>(), 
+            It.IsAny<Expression<Func<User, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
@@ -284,7 +284,7 @@ public class MinistryAdminServiceTests
             r.Get(
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
-                It.Is<string>(x => x == includeProperties),
+                "",
                 It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>(),
