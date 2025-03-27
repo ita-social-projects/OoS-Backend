@@ -27,7 +27,6 @@
     ]
   },
   "ElasticApm": {
-    "Enabled": true,
-    "CloudProvider": "gcp"
+    "Enabled": true
   }
 }
