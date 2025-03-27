@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -290,7 +291,7 @@ public class ChildServiceTests
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                nameof(Child.Parent),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
@@ -315,7 +316,7 @@ public class ChildServiceTests
         childRepositoryMock
             .Setup(m => m.GetByFilterNoTracking(
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                nameof(Child.Parent),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .Returns(childList);
 
@@ -358,9 +359,9 @@ public class ChildServiceTests
         // Arrange
         childRepositoryMock
             .Setup(m => m.Get(
-                It.IsAny<int>(), 
-                It.IsAny<int>(), 
-                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
@@ -392,7 +393,7 @@ public class ChildServiceTests
             .Setup(m => m.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
+                "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
@@ -440,11 +441,256 @@ public class ChildServiceTests
             .Verifiable(Times.Once);
 
         // Act
-        var result = await childService.GetByUserId(parent.UserId,true, offsetFilter);
+        var result = await childService.GetByUserId(parent.UserId, true, offsetFilter);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(children.Count, result.TotalAmount);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetByIdAndUserId_GetChild()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = userId.ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetByIdAndUserId(child.Id, userId.ToString());
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ChildDto>(result);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetByIdAndUserId_ThrowUnauthorizedAccessException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.GetByIdAndUserId(child.Id, userId.ToString()))
+            .Should()
+            .ThrowAsync<UnauthorizedAccessException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task GetChildrenListByParentId_GetChildren()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "TestFirstName",
+            LastName = "TestLastName",
+            MiddleName = "TestMiddleName",
+            Parent = new Parent() { UserId = userId.ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<List<ShortEntityDto>>(childList))
+            .Returns(new List<ShortEntityDto>() { })
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.GetChildrenListByParentId(child.ParentId, false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task UpdateChildCheckingItsUserIdProperty_ChildIsNotExisting_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var childUpdateDto = new ChildUpdateDto() { DateOfBirth = DateTime.Now - TimeSpan.FromDays(1000) };
+        var userId = Guid.NewGuid().ToString();
+        var childId = Guid.NewGuid();
+        var childList = new List<Child>().BuildMock();
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.UpdateChildCheckingItsUserIdProperty(childUpdateDto, childId, userId.ToString()))
+            .Should()
+            .ThrowAsync<InvalidOperationException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task CreateChildForUser_ParentIsNotExisting_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto();
+        var parentList = new List<Parent>().BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.CreateChildForUser(childCreateDto, userId))
+            .Should()
+            .ThrowAsync<UnauthorizedAccessException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task CreateChildForUser_ChildRelatedToParent_ThrowArgumentException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto()
+        {
+            IsParent = true,
+        };
+        var parent = new Parent()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId
+        };
+        var parentList = new List<Parent>() { parent }.BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        await childService
+            .Invoking(x => x.CreateChildForUser(childCreateDto, userId))
+            .Should()
+            .ThrowAsync<ArgumentException>();
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task CreateChildForUser_ProperChild_ThrowArgumentException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var childCreateDto = new ChildCreateDto()
+        {
+            IsParent = false,
+            SocialGroupIds = new List<long>()
+        };        
+        var child = new Child()
+        {
+            Id = Guid.NewGuid(),
+            Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+        };
+        var childList = new List<Child> { child }.BuildMock();
+
+        var parent = new Parent()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId
+        };
+        var parentList = new List<Parent>() { parent }.BuildMock();
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                null))
+            .ReturnsAsync(parentList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Child>>>()))
+            .Returns((Func<Task<Child>> f) => f.Invoke())
+            .Verifiable(Times.Once);
+
+        mapperMock.Setup(mapper => mapper.Map<Child>(/*It.IsAny<ChildCreateDto>()*/childCreateDto))
+            .Returns(child)
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.Create(child))
+            .ReturnsAsync(child)
+            .Verifiable(Times.Once);
+
+        childRepositoryMock.Setup(r => r.SaveChangesAsync(true, default))
+            .Verifiable(Times.Once);
+
+        childRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Child, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
+            .ReturnsAsync(childList.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
+            .Returns(new ChildDto())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await childService.CreateChildForUser(childCreateDto, userId);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ChildDto>(result);
         Mock.VerifyAll();
     }
 }
