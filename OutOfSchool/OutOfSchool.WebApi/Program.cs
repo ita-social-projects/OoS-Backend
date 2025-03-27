@@ -8,12 +8,12 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .ReadFrom.Configuration(ctx.Configuration)
     .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
         .WithDefaultDestructurers()
-        .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() })));
+        .WithDestructurers([new DbUpdateExceptionDestructurer()])));
 
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
 // Add services to the container.
-await builder.AddApplicationServices();
+builder.AddApplicationServices();
 
 var app = builder.Build();
 

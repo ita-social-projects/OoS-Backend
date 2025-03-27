@@ -25,7 +25,7 @@ namespace OutOfSchool.AuthorizationServer;
 
 public static class Startup
 {
-    public static async Task AddApplicationServices(this WebApplicationBuilder builder)
+    public static void AddApplicationServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
         var config = builder.Configuration;
@@ -45,7 +45,7 @@ public static class Startup
         }
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        await services.AddDefaultQuartz(
+        services.AddDefaultQuartz(
             config,
             quartzConfig.ConnectionStringKey,
             t => t.AddEmailSender(quartzConfig));
@@ -162,10 +162,10 @@ public static class Startup
                     .SetEndSessionEndpointUris("connect/logout")
                     .SetTokenEndpointUris("connect/token")
                     .SetUserInfoEndpointUris("connect/userinfo")
-                    .SetEndUserVerificationEndpointUris("connect/verify");
+                    .SetEndUserVerificationEndpointUris("connect/verify")
+                    .SetRevocationEndpointUris("connect/revoke");
 
                 options.AllowAuthorizationCodeFlow()
-                    .AllowHybridFlow()
                     .AllowClientCredentialsFlow()
                     .AllowRefreshTokenFlow();
 
@@ -173,7 +173,9 @@ public static class Startup
                     OpenIddictConstants.Scopes.Email,
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Roles,
-                    "outofschoolapi");
+                    Constants.OpenIddictScopes.OutOfSchoolApi,
+                    Constants.OpenIddictScopes.ExternalExportRead
+                    );
 
                 var aspNetCoreBuilder = options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()
