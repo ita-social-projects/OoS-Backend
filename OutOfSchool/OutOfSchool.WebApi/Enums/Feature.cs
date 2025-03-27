@@ -12,4 +12,14 @@ public enum Feature
     ShowForProduction,
     TechAdminImport,
     TechAdminExport,
+    DirectionManagement,
+    AchievementManagement,
+    AdminsChildernParentsManagement,
+    MessagingFeature,
+    PasswordLogin,
+    PasswordRegistration,
+    EmailConfirmation,
+    EmailManagement,
+    PasswordManagement,
+    OnlyUkrainianLanguage
 }

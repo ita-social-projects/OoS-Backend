@@ -462,7 +462,7 @@ public class AuthController : Controller
             return View("Register", model);
         }
     }
-
+    
     [Obsolete("Registration API is no longer supported. Exists only for testing purposes.")]
     private bool GetProviderRegistrationFromUri(string returnUrl)
     {

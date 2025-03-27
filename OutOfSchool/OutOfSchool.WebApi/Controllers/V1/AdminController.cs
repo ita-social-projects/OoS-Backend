@@ -114,6 +114,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.DirectionManagement))]
     public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
     {
         if (!IsTechAdmin())
@@ -146,7 +147,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.ShowForProduction))]
+    [FeatureGate(nameof(Feature.DirectionManagement))]
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
         if (!IsTechAdmin())
@@ -291,7 +292,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
          await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);    
