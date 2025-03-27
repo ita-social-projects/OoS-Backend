@@ -146,7 +146,7 @@ public class CompetitiveEventController : ControllerBase
             new { id = creationResult.CompetitiveEventV2.Id, },
             new CompetitiveEventResponseDto
             {
-                Workshop = creationResult.CompetitiveEventV2,
+                CompetitveEventV2 = creationResult.CompetitiveEventV2,
                 UploadingCoverImageResult = creationResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
                 UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
             });
@@ -244,7 +244,7 @@ public class CompetitiveEventController : ControllerBase
     {
         return new CompetitiveEventResponseDto
         {
-            Workshop = updatingResult.CompetitiveEventV2,
+            CompetitveEventV2 = updatingResult.CompetitiveEventV2,
             UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
             UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
         };
