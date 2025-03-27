@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
@@ -100,7 +101,7 @@ public static class Startup
 
         app.UseMiddleware<ExceptionMiddlewareExtension>();
 
-        app.UseSwaggerWithVersioning(provider, proxyOptions);
+        app.UseSwaggerWithVersioning(provider, proxyOptions, app.Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>());
 
         if (!app.Environment.IsDevelopment())
         {
@@ -148,7 +149,7 @@ public static class Startup
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
-    public static async Task AddApplicationServices(this WebApplicationBuilder builder)
+    public static void AddApplicationServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
@@ -326,7 +327,7 @@ public static class Startup
         // ElasticPinger must precede ElasticIndexEnsureCreatedHostedService
         services.AddSingleton<ElasticPinger>();
         services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
-        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
+        services.AddHostedService(provider => provider.GetService<ElasticPinger>());
 
         if (elasticConfig.EnsureIndex)
         {
@@ -648,7 +649,7 @@ public static class Startup
             .Get<EmailOptions>();
 
         services.AddEmailSender(builder.Environment.IsDevelopment(), mailConfig.SendGridKey);
-        services.AddEmailSenderService(builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+        services.AddEmailSenderService(b => b.Bind(configuration.GetSection(EmailOptions.SectionName)));
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
@@ -658,8 +659,7 @@ public static class Startup
             options.AddPolicy("ExternalClientPolicy", policy =>
             {
                 policy.RequireAuthenticatedUser();
-                policy.RequireClaim("scope", Constants.OpenIddictScopes.ExternalExportRead);
-                policy.RequireClaim("aud", Constants.OpenIddictResources.ExternalApi); 
+                policy.RequireClaim(OpenIddictConstants.Claims.Scope, Constants.OpenIddictScopes.ExternalExportRead);
             });
         });
     }

@@ -293,7 +293,6 @@ public static class Constants
 
     public static class OpenIddictResources
     {
-        public const string ExternalApi = "external_api";
         public const string OutOfSchoolApi = "outofschool_api";
     }
 }

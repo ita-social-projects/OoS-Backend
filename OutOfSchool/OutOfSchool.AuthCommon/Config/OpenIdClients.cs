@@ -2,7 +2,7 @@ namespace OutOfSchool.AuthCommon.Config;
 
 public class OpenIdClient
 {
-    public string ClientId { get; set; }
+    public string? ClientId { get; set; }
 
     public string[] RedirectUris { get; set; }
 
@@ -14,5 +14,5 @@ public class OpenIdClient
 
     public bool IsIntrospection { get; set; }
 
-    public string ClientSecret { get; set; }
+    public string? ClientSecret { get; set; }
 }

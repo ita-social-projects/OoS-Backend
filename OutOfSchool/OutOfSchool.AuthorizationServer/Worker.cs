@@ -27,16 +27,17 @@ public class Worker : IHostedService
         {
             var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
             var options = provider.GetRequiredService<IOptions<AuthorizationServerConfig>>().Value;
-            foreach (var client in options.OpenIdClients)
+            foreach (var (name, client) in options.OpenIdClients)
             {
-                if (await manager.FindByClientIdAsync(client.ClientId) is null)
+                var clientId = client.ClientId ?? name;
+                if (await manager.FindByClientIdAsync(clientId) is null)
                 {
                     OpenIddictApplicationDescriptor descriptor;
                     if (client.IsIntrospection)
                     {
                         descriptor = new()
                         {
-                            ClientId = client.ClientId,
+                            ClientId = clientId,
                             ClientSecret = options.IntrospectionSecret,
                             Permissions =
                             {
@@ -50,7 +51,7 @@ public class Worker : IHostedService
                         {
                             descriptor = new()
                             {
-                                ClientId = client.ClientId,
+                                ClientId = clientId,
                                 DisplayName = client.DisplayName,
                                 ClientSecret = client.ClientSecret,
                                 Permissions =
@@ -66,7 +67,7 @@ public class Worker : IHostedService
                         {
                             descriptor = new OpenIddictApplicationDescriptor
                             {
-                                ClientId = client.ClientId,
+                                ClientId = clientId,
                                 ConsentType = ConsentTypes.Implicit,
                                 DisplayName = client.DisplayName,
                                 Permissions =
@@ -143,7 +144,6 @@ public class Worker : IHostedService
                     Name = Constants.OpenIddictScopes.ExternalExportRead,
                     Resources =
                     {
-                        Constants.OpenIddictResources.ExternalApi,
                         Constants.OpenIddictResources.OutOfSchoolApi,
                     },
                 });
