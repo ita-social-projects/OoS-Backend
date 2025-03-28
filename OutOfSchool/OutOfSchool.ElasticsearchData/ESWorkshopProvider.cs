@@ -122,7 +122,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             AddPriceQuery(query, filter); 
         }
         AddAgeQuery(query, filter);
-        AddDisabilityOptionsQuery(query, filter);
         AddStatusesQuery(query, filter);
         AddFormOfLearningQuery(query, filter);
         AddWorkdaysQuery(query, filter);
@@ -236,7 +235,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                     Infer.Field<WorkshopES>(w => w.Keywords),
                     Infer.Field<WorkshopES>(w => w.Description),
                     Infer.Field<WorkshopES>(w => w.CompetitiveSelectionDescription),
-                    Infer.Field<WorkshopES>(w => w.DisabilityOptionsDesc),
                     Infer.Field<WorkshopES>(w => w.EnrollmentProcedureDescription),
                     Infer.Field<WorkshopES>(w => w.PreferentialTermsOfParticipation),
                     Infer.Field<WorkshopES>(w => w.Tags),
@@ -328,17 +326,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 {
                     Lte = filter.MaxAge,
                 });
-        }
-    }
-
-    private void AddDisabilityOptionsQuery(BoolQuery query, WorkshopFilterES filter)
-    {
-        if (filter.WithDisabilityOptions)
-        {
-            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.WithDisabilityOptions))
-            {
-                Value = filter.WithDisabilityOptions,
-            });
         }
     }
 

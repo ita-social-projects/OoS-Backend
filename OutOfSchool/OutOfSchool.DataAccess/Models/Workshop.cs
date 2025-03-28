@@ -94,11 +94,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Type of pay rate is required")]
     public PayRateType PayRate { get; set; }
 
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
-
     [Required(ErrorMessage = "Property IsSpecial is required")]
     public bool IsSpecial { get; set; } = false;
 

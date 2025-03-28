@@ -31,8 +31,6 @@ public class WorkshopFilterES
 
     public string City { get; set; } = string.Empty;
 
-    public bool WithDisabilityOptions { get; set; } = false;
-
     public string Workdays { get; set; } = string.Empty;
 
     public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);

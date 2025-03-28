@@ -5,7 +5,6 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +40,6 @@ public class AdminControllerTests
     private Mock<ISensitiveMinistryAdminService> sensitiveMinistryAdminService;
     private Mock<ISensitiveDirectionService> sensitiveDirectionService;
     private Mock<ISensitiveProviderService> sensitiveProviderService;
-    private Mock<ISensitiveApplicationService> sensitiveApplicationService;
     private Mock<ILogger<AdminController>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ISensitiveWorkshopsService> sensitiveWorkshopServices;
@@ -70,7 +68,6 @@ public class AdminControllerTests
         sensitiveMinistryAdminService = new Mock<ISensitiveMinistryAdminService>();
         sensitiveDirectionService = new Mock<ISensitiveDirectionService>();
         sensitiveProviderService = new Mock<ISensitiveProviderService>();
-        sensitiveApplicationService = new Mock<ISensitiveApplicationService>();
         sensitiveWorkshopDraftService = new Mock<ISensitiveWorkshopDraftService>();
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -86,7 +83,6 @@ public class AdminControllerTests
         controller = new AdminController(
             logger.Object,
             sensitiveMinistryAdminService.Object,
-            sensitiveApplicationService.Object,
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
             sensitiveWorkshopServices.Object,
@@ -175,46 +171,6 @@ public class AdminControllerTests
         sensitiveMinistryAdminService.Verify(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()), Times.Once);
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.InstanceOf<NoContentResult>());
-    }
-
-    [Test]
-    public async Task GetApplications_WhenCalledByAdmin_ShouldReturnOkResultObject()
-    {
-        // Arrange
-        controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
-        {
-            Entities = applications,
-            TotalAmount = applications.Count,
-        });
-
-        // Act
-        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
-    }
-
-    [Test]
-    public async Task GetApplications_ShouldReturnOkResult()
-    {
-        // Arrange
-        controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-        sensitiveApplicationService.Setup(s => s.GetAll(It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>
-        {
-            Entities = applications,
-            TotalAmount = applications.Count,
-        });
-
-        // Act
-        var result = await controller.GetApplications(new ApplicationFilter()).ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        result.Should().NotBeNull();
-        result.StatusCode.Should().Be(StatusCodes.Status200OK);
     }
 
     [Test]
@@ -563,44 +519,6 @@ public class AdminControllerTests
 
         // Assert
         result.AssertResponseOkResultAndValidateValue(responseDto.Result);
-    }
-
-    [Test]
-    public async Task ExportProviders_WhenNoProvidersInDb_ReturnsNoContentResult()
-    {
-        // Arrange
-        controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-
-        sensitiveProviderService
-            .Setup(s => s.GetCsvExportData())
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await controller.ExportProviders().ConfigureAwait(false);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.IsInstanceOf<NoContentResult>(result);
-    }
-
-    [Test]
-    public async Task ExportProviders_WhenSomeProvidersInDb_ReturnsFileContentResult()
-    {
-        // Arrange
-        controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
-
-        sensitiveProviderService
-            .Setup(s => s.GetCsvExportData())
-            .ReturnsAsync([1, 2, 3, 4, 5]);
-
-        // Act
-        var result = await controller.ExportProviders().ConfigureAwait(false);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.IsInstanceOf<FileContentResult>(result);
     }
 
     [Test]

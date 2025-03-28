@@ -1,9 +1,6 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
-using System.Text;
 using AutoMapper;
-using CsvHelper;
-using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -333,40 +330,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         return mapper.Map<ProviderDto>(provider);
     }
-
-    /// <inheritdoc/>
-    public async Task<byte[]> GetCsvExportData()
-    {
-        var providers = await providerRepository
-            .Get(asNoTracking: true)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        if (providers.Length == 0)
-        {
-            return [];
-        }
-
-        var providerDtos = mapper.Map<Provider[], ProviderCsvDto[]>(providers);
-
-        var csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            Delimiter = ";",
-            Encoding = Encoding.UTF8,
-        };
-
-        using var stream = new MemoryStream();
-        using var streamWriter = new StreamWriter(stream);
-        using var csvWriter = new CsvWriter(streamWriter, csvConfiguration);
-
-        await csvWriter.WriteRecordsAsync(providerDtos).ConfigureAwait(false);
-        await csvWriter.FlushAsync().ConfigureAwait(false);
-
-        var csvData = stream.GetBuffer();
-
-        return csvData;
-    }
-
     /// <inheritdoc/>
     public async Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId)
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);

@@ -470,6 +470,33 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
+        CreateMap<BaseUpdateUserDto, User>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.LastLogin, opt => opt.Ignore())
+            .ForMember(dest => dest.Role, opt => opt.Ignore())
+            .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDerived, opt => opt.Ignore())
+            .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
+            .ForMember(dest => dest.Individual, opt => opt.Ignore())
+            .ForMember(dest => dest.UserName, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedEmail, opt => opt.Ignore())
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
+
+
         // TODO: Check this mapping
         CreateSoftDeletedMap<ShortUserDto, User>()
             .IncludeBase<BaseUserDto, User>()
@@ -490,6 +517,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => src.User.EmailConfirmed))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+
+        CreateMap<BaseUpdateUserDto, Parent>()
+          .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+          .ForMember(dest => dest.Gender, opt => opt.Ignore())
+          .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
+          .ForMember(dest => dest.Children, opt => opt.Ignore())
+          .ForMember(dest => dest.User, opt => opt.Ignore())
+          .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+          .ForMember(dest => dest.ChatRooms, opt => opt.Ignore());
 
         CreateSoftDeletedMap<BaseUserDto, User>()
             .ForMember(dest => dest.CreatingTime, m => m.Ignore())
@@ -537,6 +573,18 @@ public class MappingProfile : Profile
         CreateMap<RegionAdminDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, AdminBaseDto>()
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, RegionAdminBaseDto>()
+            .IncludeBase<BaseUpdateUserDto, AdminBaseDto>() 
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore()) 
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
         CreateMap<RegionAdminBaseDto, RegionAdminDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
@@ -653,7 +701,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
-            .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore())

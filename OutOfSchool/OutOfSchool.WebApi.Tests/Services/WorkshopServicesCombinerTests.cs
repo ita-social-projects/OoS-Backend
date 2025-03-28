@@ -191,7 +191,6 @@ public class WorkshopServicesCombinerTests
         Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderId, actual.ProviderId);
         Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderTitle, actual.ProviderTitle);
         Assert.AreEqual(newWorkshopCreateUpdateDto.AvailableSeats, actual.AvailableSeats);
-        Assert.AreEqual(newWorkshopCreateUpdateDto.WithDisabilityOptions, actual.WithDisabilityOptions);
         Assert.AreEqual(newWorkshopCreateUpdateDto.TagIds, actual.Tags.Select(x => x.Id).ToList());
     }
 

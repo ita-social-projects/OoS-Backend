@@ -35,8 +35,6 @@ public class WorkshopFilter : OffsetFilter
 
     public string City { get; set; } = string.Empty;
 
-    public bool WithDisabilityOptions { get; set; } = false;
-
     public List<DaysBitMask> Workdays { get; set; } = new List<DaysBitMask>();
 
     [Range(typeof(TimeSpan), "00:00:00", "23:59:59")]
