@@ -3748,10 +3748,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(36)
                         .HasColumnType("char");
 
-                    b.Property<string>("DisabilityOptionsDesc")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
                     b.Property<string>("Document")
                         .HasColumnType("longtext");
 

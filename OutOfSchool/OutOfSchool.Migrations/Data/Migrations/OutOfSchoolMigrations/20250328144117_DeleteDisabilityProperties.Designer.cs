@@ -12,8 +12,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20250318152841_RemoveWithDisabilityOptionsWorkshop")]
-    partial class RemoveWithDisabilityOptionsWorkshop
+    [Migration("20250328144117_DeleteDisabilityProperties")]
+    partial class DeleteDisabilityProperties
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3750,10 +3750,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("DeletedBy")
                         .HasMaxLength(36)
                         .HasColumnType("char");
-
-                    b.Property<string>("DisabilityOptionsDesc")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Document")
                         .HasColumnType("longtext");
