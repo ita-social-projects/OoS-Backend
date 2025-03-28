@@ -29,11 +29,6 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [MaxLength(500)]
     public string EnrollmentProcedureDescription { get; set; }
 
-    public bool AreThereBenefits { get; set; } = default;
-
-    [MaxLength(500)]
-    public string PreferentialTermsOfParticipation { get; set; }
-
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
 

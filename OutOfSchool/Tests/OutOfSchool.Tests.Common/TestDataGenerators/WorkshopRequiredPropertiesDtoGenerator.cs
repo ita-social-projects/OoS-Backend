@@ -18,6 +18,8 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.AgeComposition, f => f.Random.Enum<AgeComposition>())
         .RuleFor(w => w.WorkshopType, f => f.Random.Enum<WorkshopType>())
         .RuleFor(w => w.ParentWorkshopId, f => null)
+        .RuleFor(w => w.IsPaid, f => true)
+        .RuleFor(w => w.Price, f => f.Random.Decimal())
         .CustomInstantiator(f =>
         {
             var dto = new WorkshopRequiredPropertiesDto();

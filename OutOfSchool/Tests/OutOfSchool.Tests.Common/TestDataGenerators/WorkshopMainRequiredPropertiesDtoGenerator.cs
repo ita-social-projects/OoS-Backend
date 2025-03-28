@@ -18,8 +18,6 @@ public static class WorkshopMainRequiredPropertiesDtoGenerator
         .RuleFor(w => w.ShortTitle, f => f.Name.LastName())
         .RuleFor(w => w.MinAge, f => f.Random.Int(5, 9))
         .RuleFor(w => w.MaxAge, f => f.Random.Int(10, 13))
-        .RuleFor(w => w.IsPaid, f => true)
-        .RuleFor(w => w.Price, f => f.Random.Decimal())
         .RuleFor(w => w.AvailableSeats, f => f.Random.UInt(0, 15))
         .RuleFor(w => w.CompetitiveSelection, f => true)
         .RuleFor(w => w.CompetitiveSelectionDescription, f => f.Lorem.Paragraph())

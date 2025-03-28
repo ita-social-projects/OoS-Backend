@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
@@ -36,4 +37,16 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public WorkshopType WorkshopType { get; set; }
 
     public Guid? ParentWorkshopId { get; set; }
+
+    [Required(ErrorMessage = "Property IsPaid is required")]
+    public bool IsPaid { get; set; } = false;
+
+    [Column(TypeName = "decimal(18,2)")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    public decimal? Price { get; set; } = default;
+
+    public bool AreThereBenefits { get; set; } = default;
+
+    [MaxLength(500)]
+    public string PreferentialTermsOfParticipation { get; set; }
 }
