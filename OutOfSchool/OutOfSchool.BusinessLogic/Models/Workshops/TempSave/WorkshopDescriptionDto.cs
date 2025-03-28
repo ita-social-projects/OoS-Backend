@@ -12,9 +12,6 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
-
     public Guid? InstitutionId { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }

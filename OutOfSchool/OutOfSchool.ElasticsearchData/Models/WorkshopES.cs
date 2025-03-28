@@ -86,8 +86,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public string CompetitiveSelectionDescription { get; set; }
 
-    public string DisabilityOptionsDesc { get; set; }
-
     public bool IsSpecial { get; set; }
 
     public SpecialNeedsType SpecialNeedsType { get; set; }

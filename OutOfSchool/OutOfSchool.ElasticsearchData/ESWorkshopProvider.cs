@@ -235,7 +235,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                     Infer.Field<WorkshopES>(w => w.Keywords),
                     Infer.Field<WorkshopES>(w => w.Description),
                     Infer.Field<WorkshopES>(w => w.CompetitiveSelectionDescription),
-                    Infer.Field<WorkshopES>(w => w.DisabilityOptionsDesc),
                     Infer.Field<WorkshopES>(w => w.EnrollmentProcedureDescription),
                     Infer.Field<WorkshopES>(w => w.PreferentialTermsOfParticipation),
                     Infer.Field<WorkshopES>(w => w.Tags),

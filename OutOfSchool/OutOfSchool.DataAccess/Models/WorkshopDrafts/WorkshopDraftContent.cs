@@ -51,8 +51,6 @@ public class WorkshopDraftContent :
 
     public AddressDraft Address { get; set; }
 
-    public string  DisabilityOptionsDesc { get; set; }
-
     public OwnershipType OwnershipType { get; set; }
 
     public uint AvailableSeats { get; set; }

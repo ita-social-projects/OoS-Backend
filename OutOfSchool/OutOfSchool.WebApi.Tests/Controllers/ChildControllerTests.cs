@@ -307,7 +307,6 @@ public class ChildControllerTests
             Price = 1000,
             ProviderId = Guid.NewGuid(),
             ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
             Website = "website1",
             Instagram = "insta1",
             Facebook = "facebook1",

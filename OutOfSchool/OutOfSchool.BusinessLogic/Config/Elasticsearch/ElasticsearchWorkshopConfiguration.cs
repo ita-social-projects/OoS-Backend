@@ -48,7 +48,6 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
                     .Boolean(n => n.IsSelfFinanced)
                     .Boolean(n => n.IsPaid)
                     .Text(n => n.CompetitiveSelectionDescription)
-                    .Text(n => n.DisabilityOptionsDesc)
                     .Boolean(n => n.IsSpecial)
                     .Keyword(n => n.SpecialNeedsType)
                     .Boolean(n => n.IsInclusive)
