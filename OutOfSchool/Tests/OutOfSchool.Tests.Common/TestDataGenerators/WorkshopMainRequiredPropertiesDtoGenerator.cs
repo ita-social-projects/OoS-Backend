@@ -23,8 +23,7 @@ public static class WorkshopMainRequiredPropertiesDtoGenerator
         .RuleFor(w => w.CompetitiveSelectionDescription, f => f.Lorem.Paragraph())
         .RuleFor(w => w.ProviderId, f => f.Random.Guid())
         .RuleFor(w => w.DateTimeRanges, f => DateTimeRangeDtoGenerator.Generate(4))
-        .RuleFor(w => w.FormOfLearning, f => f.PickRandom<FormOfLearning>())
-        .RuleFor(w => w.PayRate, f => f.PickRandom<PayRateType>());
+        .RuleFor(w => w.FormOfLearning, f => f.PickRandom<FormOfLearning>());
 
     public static WorkshopMainRequiredPropertiesDto Generate() => Faker.Generate();
 

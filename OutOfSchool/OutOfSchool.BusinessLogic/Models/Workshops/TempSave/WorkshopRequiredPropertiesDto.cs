@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
@@ -44,6 +45,9 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Column(TypeName = "decimal(18,2)")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     public decimal? Price { get; set; } = default;
+
+    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
+    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
     public bool AreThereBenefits { get; set; } = default;
 

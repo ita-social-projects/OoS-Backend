@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -20,6 +21,7 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.ParentWorkshopId, f => null)
         .RuleFor(w => w.IsPaid, f => true)
         .RuleFor(w => w.Price, f => f.Random.Decimal())
+        .RuleFor(w => w.PayRate, f => f.PickRandom<PayRateType>())
         .CustomInstantiator(f =>
         {
             var dto = new WorkshopRequiredPropertiesDto();

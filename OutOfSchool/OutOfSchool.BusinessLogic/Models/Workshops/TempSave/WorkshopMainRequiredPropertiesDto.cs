@@ -44,9 +44,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; } = FormOfLearning.Offline;
 
-    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
-
     [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
