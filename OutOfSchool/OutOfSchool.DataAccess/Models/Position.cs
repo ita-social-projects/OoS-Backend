@@ -51,7 +51,7 @@ public class Position : BusinessEntity
     public string ClassifierType { get; set; } = string.Empty;
     
     [Required]
-    public PositionType PositionType { get; set; }
+    public PositionType PositionType { get; set; } = PositionType.Employee;
 
     public virtual ICollection<Official> Officials { get; set; }
 }

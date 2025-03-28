@@ -93,14 +93,14 @@ public interface IProviderService
     /// Check if entity is exists by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<bool> Exists(Guid id);
 
     /// <summary>
     /// Upload employees for provider.
     /// </summary>
     /// <param name="id">Id of provider that requests upload.</param>
-    /// <param name="uploadEployees">List of employees to upload.</param>
+    /// <param name="data">List of employees to upload.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data);
 }

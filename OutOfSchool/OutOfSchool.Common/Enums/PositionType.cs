@@ -5,7 +5,7 @@ namespace OutOfSchool.Common.Enums;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PositionType
 {
-    Director = 10,
+    Employee = 10,
     DeputyDirector = 20,
-    Employee = 30
+    Director = 30,
 }

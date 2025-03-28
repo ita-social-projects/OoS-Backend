@@ -518,6 +518,13 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         // Check list of Employees for uploading.
         CheckListOfEmployeesForUploading(data);
 
+        foreach (var employee in data)
+        {
+            employee.PositionType = employee.AssignedRole.Contains(Constants.UploadEmployees.DeputyDirector)
+                ? PositionType.DeputyDirector
+                : PositionType.Employee;
+        }
+
         var uploadResponse = new UploadEmployeeResponse();
 
         async Task UploadEmployeesIntoDb()
@@ -995,11 +1002,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
-        logger.LogDebug("Upload employees for provider was started.");
+        logger.LogDebug("Upload employees for provider was started");
 
         if (data.Length == 0)
         {
-            var errorMessage = "The number of entries to upload should be greater than 0.";
+            var errorMessage = "The number of entries to upload should be greater than 0";
             logger.LogError(errorMessage);
             throw new ArgumentOutOfRangeException(errorMessage);
         }
@@ -1007,16 +1014,16 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         if (data.Length > Constants.MaxNumberOfEmployeesToUpload)
         {
             var errorMessage = $"The number of entries should not exceed {Constants.MaxNumberOfEmployeesToUpload}.";
-            logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}.", Constants.MaxNumberOfEmployeesToUpload);
+            logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}", Constants.MaxNumberOfEmployeesToUpload);
             throw new ArgumentOutOfRangeException(errorMessage);
         }
 
         var uploadEmployeesRnokpps = data.Select(e => e.Rnokpp).ToList();
 
-        // Check if the Rnokpp property values ​​are unique?
+        // Check if the Rnokpp property values are unique?
         if (uploadEmployeesRnokpps.Distinct().Count() != data.Length)
         {
-            var errorMessage = "The Rnokpp property values are not unique.";
+            var errorMessage = "The Rnokpp property values are not unique";
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
         }
@@ -1038,9 +1045,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         // Loop to add individuals to DB and populate the Dictionary for uploading employees
         foreach (var employee in data)
         {
-            if (existingIndividuals.ContainsKey(employee.Rnokpp))
+            if (existingIndividuals.TryGetValue(employee.Rnokpp, out var individual))
             {
-                uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
+                uploadDictionary.Add(individual.Id, employee);
             }
             else // Add an Individual to DB if it has not already existed in DB
             {
@@ -1057,12 +1064,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                          Guid providerId,
                                                          UploadEmployeeResponse uploadResponse)
     {
-        // Get a dictionary (Lookup) with keys - IndividualId and values ​​- Official.Position.FullName for a certain Provider.
+        // Get a dictionary (Lookup) with keys - IndividualId and values - Official.Position.FullName for a certain Provider.
         var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
                                                                                  o.Position.ProviderId == providerId
                                                                                  && uploadDictionary.Keys.Contains(o.IndividualId)
                                                                                  && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
-                                                                                 , includeProperties: "Position")
+                                                                                 , includeExpression: q => q.Include(o => o.Position))
                                                                                  .ConfigureAwait(false))
                                                                                  .ToLookup(o => o.IndividualId, o => o?.Position?.FullName);
 

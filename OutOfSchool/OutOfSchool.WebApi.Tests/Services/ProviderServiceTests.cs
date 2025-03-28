@@ -1293,7 +1293,7 @@ public class ProviderServiceTests
         officialRepositoryMock
             .Setup(r => r.GetByFilter(
                 It.IsAny<Expression<Func<Official, bool>>>(),
-                "Position",
+                string.Empty,
                 It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
             .Returns(Task.FromResult(FakeOfficials))
             .Verifiable(Times.Once)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bogus;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
@@ -15,7 +16,8 @@ public static class PositionGenerator
         .RuleFor(x => x.UpdatedAt, _ => DateTime.Now)
         .RuleFor(x => x.ActiveFrom, (f, w) => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now.AddDays(-30)), DateOnly.FromDateTime(DateTime.Now)))
         .RuleFor(x => x.ActiveTo, f => f.Date.BetweenDateOnly(DateOnly.FromDateTime(DateTime.Now), DateOnly.FromDateTime(DateTime.Now.AddDays(300))))
-        .RuleFor(x => x.FullName, f => f.Music.Genre());
+        .RuleFor(x => x.FullName, f => f.Music.Genre())
+        .RuleFor(x => x.PositionType, f => f.PickRandom<PositionType>());
 
     /// <summary>
     /// Creates new instance of the <see cref="Position"/> class with random data.
