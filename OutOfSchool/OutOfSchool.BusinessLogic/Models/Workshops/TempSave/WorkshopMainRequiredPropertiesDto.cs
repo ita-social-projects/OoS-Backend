@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -44,16 +43,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; } = FormOfLearning.Offline;
-
-    [Required(ErrorMessage = "Property IsPaid is required")]
-    public bool IsPaid { get; set; } = false;
-
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public decimal? Price { get; set; } = default;
-
-    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
     [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
