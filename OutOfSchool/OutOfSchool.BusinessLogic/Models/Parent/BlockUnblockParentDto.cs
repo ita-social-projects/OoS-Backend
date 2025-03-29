@@ -12,6 +12,6 @@ public class BlockUnblockParentDto
     public bool IsBlocked { get; set; }
 
     [MaxLength(500)]
-    [RequiredIf("IsBlocked", true, ErrorMessage = "Reason is required")]
+    [RequiredIf(nameof(IsBlocked), true, ErrorMessage = "Reason is required")]
     public string Reason { get; set; }
 }

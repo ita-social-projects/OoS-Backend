@@ -66,7 +66,7 @@ public class ParentService : IParentService
             logger.LogError("Unable to create new parent. UserId is null or empty.");
             throw new InvalidOperationException($"Unable to create new parent. UserId is null or empty.");
         }
-
+        // TODO: Should we replace GetById() with GetByFilter() to include the Individual entity in User?
         var user = await usersRepository.GetById(userId).ConfigureAwait(false);
 
         if (user is null)
@@ -89,7 +89,7 @@ public class ParentService : IParentService
         user.PhoneNumber = parentCreateDto.PhoneNumber;
 
         newParent.User = user;
-
+        // TODO: Should we do this operation Create in one transaction?
         var parent = await repositoryParent.Create(newParent).ConfigureAwait(false);
 
         await repositoryParent.SaveChangesAsync();
@@ -131,9 +131,7 @@ public class ParentService : IParentService
 
         Expression<Func<Parent, bool>> filter = p => p.UserId == id;
 
-        var parents = await repositoryParent.GetByFilter(filter);
-
-        var parent = parents.FirstOrDefault();
+        var parent = (await repositoryParent.GetByFilter(filter)).FirstOrDefault();
 
         await currentUserService.UserHasRights(new ParentRights(parent?.Id ?? Guid.Empty));
 
@@ -151,8 +149,9 @@ public class ParentService : IParentService
         }
 
         var info = (await repositoryParent.GetByFilter(
-            x => x.UserId == userId,
-            $"{nameof(Parent.User)}")).FirstOrDefault();
+                        whereExpression: x => x.UserId == userId,
+                        includeExpression: p => p.Include(p => p.User)))
+                        .FirstOrDefault();
 
         return mapper.Map<ShortUserDto>(info);
     }
@@ -165,8 +164,10 @@ public class ParentService : IParentService
 
         try
         {
-            var parent = (await repositoryParent.GetByFilter(x => x.UserId == dto.Id))
-                .FirstOrDefault();
+            var parent = (await repositoryParent.GetByFilter(
+                            whereExpression: x => x.UserId == dto.Id,
+                            includeExpression: p => p.Include(p => p.User)))
+                            .FirstOrDefault();
 
             if (parent is null)
             {
@@ -195,7 +196,10 @@ public class ParentService : IParentService
     {
         ArgumentNullException.ThrowIfNull(parentBlockUnblock);
         logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
-        var parent = await repositoryParent.GetByIdWithDetails(parentBlockUnblock.ParentId, "User").ConfigureAwait(false);
+        var parent = await repositoryParent.GetByIdWithDetails(
+            id: parentBlockUnblock.ParentId,
+            includeExpression: p => p.Include(p => p.User))
+            .ConfigureAwait(false);
         if (parent is null || parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
         {
             logger.LogInformation($"Changing Block status of Parent aborted. " +
@@ -204,6 +208,7 @@ public class ParentService : IParentService
         }
 
         parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
+        // TODO: Should we do these two operations in one transaction?
         await repositoryParent.SaveChangesAsync();
         await parentBlockedByAdminLogService.SaveChangesLogAsync(
             parent.Id,

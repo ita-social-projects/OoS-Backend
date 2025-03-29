@@ -6,6 +6,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
+// No nested entities in use – eager loading not required.
 public class AchievementTypeService : IAchievementTypeService
 {
     private readonly IEntityRepositorySoftDeleted<long, AchievementType> achievementTypeRepository;
