@@ -8,6 +8,7 @@ using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using Profile = AutoMapper.Profile;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.Common.Enums.Workshop;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
 
@@ -75,7 +76,12 @@ public class ElasticProfile : Profile
 
         CreateMap<WorkshopFilter, WorkshopFilterES>()
             .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)))
-            .ForMember(dest => dest.ElasticRadius, opt => opt.MapFrom(src => $"{src.RadiusKm * 1000}m"));
+            .ForMember(dest => dest.ElasticRadius, opt => opt.MapFrom(src => $"{src.RadiusKm * 1000}m"))
+            .ForMember(dest => dest.IsSelfFinanced, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.IsInclusive, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.SpecialNeedsType, opt => opt.MapFrom(_ => new List<SpecialNeedsType>()))
+            .ForMember(dest => dest.EducationalShift, opt => opt.MapFrom(_ => new List<EducationalShift>()))
+            .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => new List<AgeComposition>()));
 
         CreateMap<WorkshopES, WorkshopCard>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(s => s.Id))
