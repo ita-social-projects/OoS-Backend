@@ -2,7 +2,6 @@ using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -38,7 +37,8 @@ public class ElasticProfile : Profile
                     opt.MapFrom(src =>
                         src.Tags.Select(t => t.Name)))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).Address))
-            .CommonFieldsMapping();
+            .CommonFieldsMapping()
+            .ApplyDefaultsForHiddenFields();
 
         CreateMap<AddressDto, AddressES>()
             .ForMember(

@@ -54,7 +54,7 @@ public class MappingProfile : Profile
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .Apply(this.IgnoreContactsFromDto)
-            .Apply(this.ApplyDefaultsForHiddenFields)
+            .ApplyDefaultsForHiddenFields()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -106,7 +106,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
-            .Apply(this.ApplyDefaultsForHiddenFields)
+            .ApplyDefaultsForHiddenFields()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -936,15 +936,4 @@ public class MappingProfile : Profile
         where TDestination : BusinessEntity, IHasContacts
         => mappings
             .ForMember(dest => dest.Contacts, opt => opt.Ignore());
-
-    private IMappingExpression<TSource, Workshop> ApplyDefaultsForHiddenFields<TSource>(
-    IMappingExpression<TSource, Workshop> map)
-    {
-        return map
-            .ForMember(dest => dest.IsSelfFinanced, opt => opt.MapFrom(_ => false))
-            .ForMember(dest => dest.IsInclusive, opt => opt.MapFrom(_ => false))
-            .ForMember(dest => dest.SpecialNeedsType, opt => opt.MapFrom(_ => SpecialNeedsType.None))
-            .ForMember(dest => dest.EducationalShift, opt => opt.MapFrom(_ => EducationalShift.First))
-            .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => AgeComposition.SameAge));
-    }
 }

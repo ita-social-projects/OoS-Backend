@@ -3,7 +3,6 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 using OutOfSchool.BusinessLogic.Models.Workshops;
-using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Util.Mapping;
@@ -72,11 +71,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.OwnershipType, opt => opt.MapFrom(src => src.ProviderOwnership))
             .ForMember(dest => dest.WorkshopStatus, opt => opt.MapFrom(src => src.Status))
             .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.MapFrom(src => src.IncludedStudyGroups.Select(g => g.Id)))
-            .ForMember(dest => dest.IsSelfFinanced, opt => opt.MapFrom(_ => false))
-            .ForMember(dest => dest.IsInclusive, opt => opt.MapFrom(_ => false))
-            .ForMember(dest => dest.SpecialNeedsType, opt => opt.MapFrom(_ => SpecialNeedsType.None))
-            .ForMember(dest => dest.EducationalShift, opt => opt.MapFrom(_ => EducationalShift.First))
-            .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => AgeComposition.SameAge));
+            .ApplyDefaultsForHiddenFields();
 
         CreateMap<WorkshopV2Dto, WorkshopDraft>()
             .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))

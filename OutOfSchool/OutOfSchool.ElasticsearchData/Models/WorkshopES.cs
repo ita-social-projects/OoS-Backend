@@ -6,7 +6,7 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
- public class WorkshopES : IHasRating
+ public class WorkshopES : IHasRating, IHasHiddenFields
 {
     public const string KeywordSuffix = "keyword";
     public const string SortSuffix = "sort";
