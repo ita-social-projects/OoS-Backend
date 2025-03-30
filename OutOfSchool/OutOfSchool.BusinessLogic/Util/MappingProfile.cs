@@ -804,10 +804,10 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
-            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
-            //.Apply(IgnoreAllImages)
-            //.ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            //.ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+            .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+
 
         CreateSoftDeletedMap<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
@@ -830,7 +830,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
-            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore());
+            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverageId))
+            .ForMember(dest => dest.Images, opt => opt.Ignore()); ;
 
         CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 
