@@ -60,8 +60,6 @@ public class CompetitiveEventController : ControllerBase
         return Ok(competitiveEvent);
     }
 
-    //    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
-
     /// <summary>
     /// Get CompetitiveEvents cards by Provider's Id.
     /// </summary>
@@ -90,7 +88,7 @@ public class CompetitiveEventController : ControllerBase
     /// <response code="204">No entity with any of given Ids was found.</response>
     /// <response code="500">If any server error occures. For example: Id was incorrect format.</response>
     [AllowAnonymous]
-    [HttpGet("{id}")]
+    [HttpGet("multipleIds")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEvent>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -98,6 +96,10 @@ public class CompetitiveEventController : ControllerBase
     {
         var competitiveEvents = await competitiveEventService.GetByIds(ids).ConfigureAwait(false);
 
+        if (competitiveEvents.Any())
+        {
+            return NotFound();
+        }
         return this.Ok(competitiveEvents);
     }
 
@@ -146,7 +148,7 @@ public class CompetitiveEventController : ControllerBase
             new { id = creationResult.CompetitiveEventV2.Id, },
             new CompetitiveEventResponseDto
             {
-                CompetitveEventV2 = creationResult.CompetitiveEventV2,
+                CompetitiveEventV2 = creationResult.CompetitiveEventV2,
                 UploadingCoverImageResult = creationResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
                 UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
             });
@@ -244,7 +246,7 @@ public class CompetitiveEventController : ControllerBase
     {
         return new CompetitiveEventResponseDto
         {
-            CompetitveEventV2 = updatingResult.CompetitiveEventV2,
+            CompetitiveEventV2 = updatingResult.CompetitiveEventV2,
             UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
             UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
         };
