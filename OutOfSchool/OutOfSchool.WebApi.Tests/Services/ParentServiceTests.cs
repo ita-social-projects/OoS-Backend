@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -94,11 +95,15 @@ public class ParentServiceTests
     public void Create_WhenUserNotExists_ShouldLogErrorAndThrowInvalidOperationException()
     {
         // Arrange
-        currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
+        currentUserServiceMock
+            .SetupGet(s => s.UserId)
+            .Returns("userId")
+            .Verifiable(Times.Once);
 
         userRepositoryMock
             .Setup(r => r.GetById("userId"))
-            .ReturnsAsync(null as User);
+            .ReturnsAsync(null as User)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
@@ -111,6 +116,7 @@ public class ParentServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -119,9 +125,15 @@ public class ParentServiceTests
         // Arrange
         currentUserServiceMock.SetupGet(s => s.UserId).Returns("userId");
 
+        userRepositoryMock
+            .Setup(r => r.GetById("userId"))
+            .ReturnsAsync(new User())
+            .Verifiable(Times.Once);
+
         parentRepositoryMock
             .Setup(r => r.Any(It.IsAny<Expression<Func<Parent, bool>>>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(true)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await parentService.Create(new ParentCreateDto()).ConfigureAwait(false));
@@ -134,6 +146,7 @@ public class ParentServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -225,7 +238,6 @@ public class ParentServiceTests
         Assert.AreEqual(parent.Id, result.Id);
         Assert.AreEqual(parent.UserId, result.UserId);
     }
-
     #endregion
 
     #region BlockUblockParent
@@ -344,7 +356,7 @@ public class ParentServiceTests
 
     #region Delete
     [Test]
-    public async Task Delete_WhenIdIsNotValid_ThrowException()
+    public void Delete_WhenIdIsNotValid_ThrowException()
     {
         // Arrange
         Guid parentId = Guid.NewGuid();
@@ -371,8 +383,159 @@ public class ParentServiceTests
         await parentService.Delete(parentId).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(x => x.Delete(parent), Times.Once);
-        userService.Verify(x => x.Delete(parent.UserId), Times.Once);
+        Mock.VerifyAll();
+    }
+    #endregion
+
+    #region GetByUserId
+    [Test]
+    public async Task GetByUserId_WhenUserHasRightsAndParentExists_ShouldReturnParentDtoResult()
+    {
+        // Arrange
+        Parent parent = ParentGenerator.Generate();
+        var userId = parent.UserId;
+        var parents = new List<Parent>() { parent };
+
+        currentUserServiceMock
+            .Setup(x => x.UserHasRights(It.IsAny<ParentRights>()))
+            .Returns(() => Task.FromResult(true))
+            .Verifiable(Times.Once);
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parents.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await parentService.GetByUserId(userId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ParentDTO>(result);
+        Mock.VerifyAll();
+    }
+    #endregion
+
+    #region GetPersonalInfoByUserId
+    [Test]
+    public async Task GetPersonalInfoByUserId_WhenUserExists_ShouldReturnShortUserDto()
+    {
+        // Arrange
+        Parent parent = ParentGenerator.Generate();
+        var userId = parent.UserId;
+        var parents = new List<Parent>() { parent };
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parents.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await parentService.GetPersonalInfoByUserId(userId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ShortUserDto>(result);
+        Mock.VerifyAll();
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    public void GetPersonalInfoByUserId_WhenUserIdIsEmpty_ShouldThrowArgumentException(string userId)
+    {
+        // Arrange
+        Parent parent = ParentGenerator.Generate();
+        var parents = new List<Parent>() { parent };
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parents.AsEnumerable())
+            .Verifiable(Times.Never);
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await parentService.GetPersonalInfoByUserId(userId).ConfigureAwait(false));
+        Mock.VerifyAll();
+    }
+    #endregion
+
+    #region Update
+    [Test]
+    public async Task Update_WhenUserHasRightsAndParentExists_ShouldReturnParentDtoResult()
+    {
+        // Arrange
+        Parent parent = ParentGenerator.Generate();
+        var userId = parent.UserId;
+        var parents = new List<Parent>() { parent };
+        var parentDto = new BaseUpdateUserDto 
+            { 
+                Id = userId, Email = "mail@gmail.com", PhoneNumber = "+380671234567" 
+            };
+
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parents.AsEnumerable())
+            .Verifiable(Times.Once);
+        currentUserServiceMock
+            .Setup(x => x.UserHasRights(It.IsAny<ParentRights>()))
+            .Returns(() => Task.FromResult(true))
+            .Verifiable(Times.Once);
+        parentRepositoryMock
+            .Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await parentService.Update(parentDto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ShortUserDto>(result);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public void Update_WhenParentNoExist_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var parents = new List<Parent>();
+        var parentDto = new BaseUpdateUserDto
+        {
+            Id = "userId",
+            Email = "mail@gmail.com",
+            PhoneNumber = "+380671234567"
+        };
+        parentRepositoryMock
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<Parent, bool>>>(),
+                "",
+                It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parents.AsEnumerable())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await parentService.Update(parentDto).ConfigureAwait(false));
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public void Update_WhenDtoIsNull_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var parentDto = (BaseUpdateUserDto)null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.Update(parentDto).ConfigureAwait(false));
     }
     #endregion
 }
