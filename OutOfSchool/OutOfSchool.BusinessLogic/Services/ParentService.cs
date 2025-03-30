@@ -148,9 +148,11 @@ public class ParentService : IParentService
             throw new ArgumentException(@"User Id must be non empty value", nameof(userId));
         }
 
+        var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
         var info = (await repositoryParent.GetByFilter(
                         whereExpression: x => x.UserId == userId,
-                        includeExpression: p => p.Include(p => p.User)))
+                        includeExpression: includeFunc))
                         .FirstOrDefault();
 
         return mapper.Map<ShortUserDto>(info);
@@ -164,9 +166,11 @@ public class ParentService : IParentService
 
         try
         {
+            var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
             var parent = (await repositoryParent.GetByFilter(
                             whereExpression: x => x.UserId == dto.Id,
-                            includeExpression: p => p.Include(p => p.User)))
+                            includeExpression: includeFunc))
                             .FirstOrDefault();
 
             if (parent is null)
@@ -196,10 +200,14 @@ public class ParentService : IParentService
     {
         ArgumentNullException.ThrowIfNull(parentBlockUnblock);
         logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
+
+        var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
         var parent = await repositoryParent.GetByIdWithDetails(
             id: parentBlockUnblock.ParentId,
-            includeExpression: p => p.Include(p => p.User))
+            includeExpression: includeFunc)
             .ConfigureAwait(false);
+
         if (parent is null || parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
         {
             logger.LogInformation($"Changing Block status of Parent aborted. " +
