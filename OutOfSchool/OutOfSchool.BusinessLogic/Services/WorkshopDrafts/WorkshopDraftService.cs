@@ -185,12 +185,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Updating WorkshopDraft started. WorkshopDraft Id = {Id}.", workshopDraftUpdateDto.Id);
 
-        if (workshopDraftUpdateDto.WorkshopV2Dto.Teachers == null || 
-            !workshopDraftUpdateDto.WorkshopV2Dto.Teachers.Any())
-        {
-            throw new ArgumentException("The workshop must have at least one associated teacher.");
-        }
-
         async Task<(WorkshopDraft updatedDraft, ImageChangingResult coverImageResult,
             MultipleImageChangingResult imagesResult, List<TeacherCreateUpdateResultDto> teachersResult)> UpdateDraftWithDependencies()
         {
@@ -235,18 +229,21 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
             var teacherCreateUpdateResult = new List<TeacherCreateUpdateResultDto>();
 
-            foreach (var (teacher, teacherDTO) in workshopDraft.Teachers.Zip(workshopDraftUpdateDto.WorkshopV2Dto.Teachers))
+            if (workshopDraftUpdateDto.WorkshopV2Dto.Teachers != null)
             {
-                var teacherImageResult = await teacherDraftImagesService.ChangeCoverImageAsync(
-                    teacher,
-                    teacherDTO.CoverImageId,
-                    teacherDTO.CoverImage);
-
-                teacherCreateUpdateResult.Add(new TeacherCreateUpdateResultDto()
+                foreach (var (teacher, teacherDTO) in workshopDraft.Teachers.Zip(workshopDraftUpdateDto.WorkshopV2Dto.Teachers))
                 {
-                    Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
-                    UploadingCoverImageResult = teacherImageResult?.UploadingResult?.OperationResult
-                });                
+                    var teacherImageResult = await teacherDraftImagesService.ChangeCoverImageAsync(
+                        teacher,
+                        teacherDTO.CoverImageId,
+                        teacherDTO.CoverImage);
+
+                    teacherCreateUpdateResult.Add(new TeacherCreateUpdateResultDto()
+                    {
+                        Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
+                        UploadingCoverImageResult = teacherImageResult?.UploadingResult?.OperationResult
+                    });
+                }
             }
 
             await workshopDraftRepository.Update(workshopDraft);
