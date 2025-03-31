@@ -232,7 +232,7 @@ public class ParentService : IParentService
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to update block status or save log for parent {ParentId}", parent.Id);
-                throw;
+                throw new InvalidOperationException($"Failed to update block status or save log for parent {parent.Id}");
             }
         }
 
