@@ -229,10 +229,10 @@ public class ParentService : IParentService
                     parentBlockUnblock.Reason,
                     parentBlockUnblock.IsBlocked).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                logger.LogError("Failed to update block status or save log for parent {ParentId}", parent.Id);
-                throw new InvalidOperationException($"Failed to update block status or save log for parent {parent.Id}");
+                logger.LogError(ex, "Failed to update block status or save log for parent {ParentId}", parent.Id);
+                throw;
             }
         }
 
