@@ -366,8 +366,6 @@ public class ParentServiceTests
     public void BlockUnblockParent_WhenSaveChangesAsyncIsFailed_ThrowInvalidOperationException()
     {
         // Arrange
-        var expected = Result<bool>.Success(true);
-
         BlockUnblockParentDto parentBlockUnblockValid = new()
         {
             ParentId = Guid.NewGuid(),
@@ -416,8 +414,6 @@ public class ParentServiceTests
     public void BlockUnblockParent_WhenSaveChangesLogAsyncIsFailed_ThrowInvalidOperationException()
     {
         // Arrange
-        var expected = Result<bool>.Success(true);
-
         BlockUnblockParentDto parentBlockUnblockValid = new()
         {
             ParentId = Guid.NewGuid(),
@@ -577,7 +573,7 @@ public class ParentServiceTests
 
     #region Update
     [Test]
-    public async Task Update_WhenUserHasRightsAndParentExists_ShouldReturnParentDtoResult()
+    public async Task Update_WhenUserHasRightsAndParentExists_ShouldReturnShortUserDto()
     {
         // Arrange
         Parent parent = ParentGenerator.Generate();
