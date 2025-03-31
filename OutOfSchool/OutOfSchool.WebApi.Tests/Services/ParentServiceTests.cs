@@ -159,23 +159,24 @@ public class ParentServiceTests
 
         userRepositoryMock
             .Setup(r => r.GetById(user.Id))
-            .ReturnsAsync(user);
+            .ReturnsAsync(user)
+            .Verifiable(Times.Once);
 
         parentRepositoryMock
             .Setup(r => r.Create(It.IsAny<Parent>()))
-            .ReturnsAsync(new Parent());
+            .ReturnsAsync(new Parent())
+            .Verifiable(Times.Once);
 
-        parentRepositoryMock
-            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Parent>>>()))
+            .Returns((Func<Task<Parent>> f) => f.Invoke())
+            .Verifiable(Times.Once);
 
         // Act
         await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
-
         Assert.True(user.IsRegistered);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -189,23 +190,24 @@ public class ParentServiceTests
 
         userRepositoryMock
             .Setup(r => r.GetById(user.Id))
-            .ReturnsAsync(user);
+            .ReturnsAsync(user)
+            .Verifiable(Times.Once);
 
         parentRepositoryMock
             .Setup(r => r.Create(It.IsAny<Parent>()))
-            .ReturnsAsync(new Parent());
+            .ReturnsAsync(new Parent())
+            .Verifiable(Times.Once);
 
-        parentRepositoryMock
-            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Parent>>>()))
+            .Returns((Func<Task<Parent>> f) => f.Invoke())
+            .Verifiable(Times.Once);
 
         // Act
         await parentService.Create(new ParentCreateDto() { PhoneNumber = expectedPhoneNumber }).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
-
         Assert.AreEqual(expectedPhoneNumber, user.PhoneNumber);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -219,24 +221,25 @@ public class ParentServiceTests
 
         userRepositoryMock
             .Setup(r => r.GetById(user.Id))
-            .ReturnsAsync(user);
+            .ReturnsAsync(user)
+            .Verifiable(Times.Once);
 
         parentRepositoryMock
             .Setup(r => r.Create(It.IsAny<Parent>()))
-            .ReturnsAsync(parent);
+            .ReturnsAsync(parent)
+            .Verifiable(Times.Once);
 
-        parentRepositoryMock
-            .Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Parent>>>()))
+            .Returns((Func<Task<Parent>> f) => f.Invoke())
+            .Verifiable(Times.Once);
 
         // Act
         var result = await parentService.Create(new ParentCreateDto()).ConfigureAwait(false);
 
         // Assert
-        parentRepositoryMock.Verify(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
-
         Assert.AreEqual(parent.Id, result.Id);
         Assert.AreEqual(parent.UserId, result.UserId);
+        Mock.VerifyAll();
     }
     #endregion
 

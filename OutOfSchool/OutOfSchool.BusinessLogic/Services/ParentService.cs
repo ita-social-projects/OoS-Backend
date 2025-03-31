@@ -66,7 +66,7 @@ public class ParentService : IParentService
             logger.LogError("Unable to create new parent. UserId is null or empty.");
             throw new InvalidOperationException($"Unable to create new parent. UserId is null or empty.");
         }
-        // TODO: Should we replace GetById() with GetByFilter() to include the Individual entity in User?
+
         var user = await usersRepository.GetById(userId).ConfigureAwait(false);
 
         if (user is null)
@@ -89,10 +89,11 @@ public class ParentService : IParentService
         user.PhoneNumber = parentCreateDto.PhoneNumber;
 
         newParent.User = user;
-        // TODO: Should we do this operation Create in one transaction?
-        var parent = await repositoryParent.Create(newParent).ConfigureAwait(false);
 
-        await repositoryParent.SaveChangesAsync();
+        Func<Task<Parent>> operation = async () =>
+            await repositoryParent.Create(newParent).ConfigureAwait(false);
+
+        var parent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
 
         logger.LogInformation("Successfully created Parent with Id = {Id} for UserId = {UserId}", parent.Id, userId);
 
@@ -216,14 +217,21 @@ public class ParentService : IParentService
         }
 
         parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
-        // TODO: Should we do these two operations in one transaction?
-        await repositoryParent.SaveChangesAsync();
-        await parentBlockedByAdminLogService.SaveChangesLogAsync(
-            parent.Id,
-            currentUserService.UserId,
-            parentBlockUnblock.Reason,
-            parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+
+        async Task operation()
+        {
+            await repositoryParent.SaveChangesAsync();
+            await parentBlockedByAdminLogService.SaveChangesLogAsync(
+                parent.Id,
+                currentUserService.UserId,
+                parentBlockUnblock.Reason,
+                parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+        }
+
+        await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
+
         logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockUnblock.ParentId);
+
         return Result<bool>.Success(true);
     }
 }
