@@ -269,17 +269,23 @@ public class ParentServiceTests
         var resultOfSavingToDb = 1;
         parentRepositoryMock
             .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
-            .ReturnsAsync(parent);
+            .ReturnsAsync(parent)
+            .Verifiable(Times.Once);
         parentRepositoryMock
             .Setup(x => x.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(resultOfSavingToDb);
+            .ReturnsAsync(resultOfSavingToDb)
+            .Verifiable(Times.Once);
         parentBlockedByAdminLogServiceMock
             .Setup(x => x.SaveChangesLogAsync(
                 It.IsAny<Guid>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<bool>()))
-            .ReturnsAsync(resultOfSavingToDb);
+            .ReturnsAsync(resultOfSavingToDb)
+            .Verifiable(Times.Once);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke())
+            .Verifiable(Times.Once);
 
         // Act
         var result = await parentService.BlockUnblockParent(parentBlockUnblockValid);
