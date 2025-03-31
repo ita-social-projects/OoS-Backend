@@ -70,7 +70,8 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<WorkshopV2Dto, WorkshopDraftContent>()
             .ForMember(dest => dest.OwnershipType, opt => opt.MapFrom(src => src.ProviderOwnership))
             .ForMember(dest => dest.WorkshopStatus, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.MapFrom(src => src.IncludedStudyGroups.Select(g => g.Id)));          
+            .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.MapFrom(src => src.IncludedStudyGroups.Select(g => g.Id)))
+            .ApplyDefaultsForHiddenFields();
 
         CreateMap<WorkshopV2Dto, WorkshopDraft>()
             .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))

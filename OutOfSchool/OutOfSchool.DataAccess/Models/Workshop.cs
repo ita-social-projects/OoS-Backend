@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
@@ -15,7 +16,7 @@ namespace OutOfSchool.Services.Models;
 // TODO:
 // - Add educational disciplines (many ED to 1 workshop)
 // - Add language
-public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts
+public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts, IHasHiddenFields
 {
     #region Required fields
 

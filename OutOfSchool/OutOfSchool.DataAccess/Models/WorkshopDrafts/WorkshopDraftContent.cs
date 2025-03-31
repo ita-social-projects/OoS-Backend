@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.Services.Models.WorkshopDrafts;
@@ -11,7 +12,7 @@ namespace OutOfSchool.Services.Models.WorkshopDrafts;
 ///     This entity is specific to the draft and can be hard-deleted if the draft is removed.
 /// </summary>
 public class WorkshopDraftContent :
-    IHasContacts
+    IHasContacts, IHasHiddenFields
 {
     public int MinAge { get; set; }
 

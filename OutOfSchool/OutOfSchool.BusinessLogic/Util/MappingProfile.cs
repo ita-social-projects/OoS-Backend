@@ -23,6 +23,7 @@ using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -53,6 +54,7 @@ public class MappingProfile : Profile
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .Apply(this.IgnoreContactsFromDto)
+            .ApplyDefaultsForHiddenFields()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -104,6 +106,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
+            .ApplyDefaultsForHiddenFields()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -755,7 +758,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.StatusReason, opt => opt.MapFrom(src => string.Empty));
 
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
-            .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
+            .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSelfFinanced, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.IsInclusive, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.SpecialNeedsType, opt => opt.MapFrom(_ => new List<SpecialNeedsType>()))
+            .ForMember(dest => dest.EducationalShift, opt => opt.MapFrom(_ => new List<EducationalShift>()))
+            .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => new List<AgeComposition>()));
 
         CreateMap<CompetitiveEvent, CompetitiveEventDto>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
