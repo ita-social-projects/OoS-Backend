@@ -128,7 +128,7 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task<ParentDTO> GetByUserId(string id)
     {
-        logger.LogInformation("Getting Parent by UserId started. Looking UserId is {Id}", id);
+        logger.LogDebug("Getting Parent by UserId started. Looking UserId is {Id}", id);
 
         Expression<Func<Parent, bool>> filter = p => p.UserId == id;
 
@@ -136,7 +136,7 @@ public class ParentService : IParentService
 
         await currentUserService.UserHasRights(new ParentRights(parent?.Id ?? Guid.Empty));
 
-        logger.LogInformation("Successfully got a Parent with UserId = {Id}", id);
+        logger.LogDebug("Successfully got a Parent with UserId = {Id}", id);
 
         return mapper.Map<ParentDTO>(parent);
     }
@@ -154,7 +154,7 @@ public class ParentService : IParentService
         var info = (await repositoryParent.GetByFilter(
                         whereExpression: x => x.UserId == userId,
                         includeExpression: includeFunc))
-                        .FirstOrDefault();
+                        .SingleOrDefault();
 
         return mapper.Map<ShortUserDto>(info);
     }
