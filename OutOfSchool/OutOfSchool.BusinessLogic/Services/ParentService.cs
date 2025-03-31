@@ -220,12 +220,20 @@ public class ParentService : IParentService
 
         async Task operation()
         {
-            await repositoryParent.SaveChangesAsync();
-            await parentBlockedByAdminLogService.SaveChangesLogAsync(
-                parent.Id,
-                currentUserService.UserId,
-                parentBlockUnblock.Reason,
-                parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+            try
+            {
+                await repositoryParent.SaveChangesAsync();
+                await parentBlockedByAdminLogService.SaveChangesLogAsync(
+                    parent.Id,
+                    currentUserService.UserId,
+                    parentBlockUnblock.Reason,
+                    parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to update block status or save log for parent {ParentId}", parent.Id);
+                throw;
+            }
         }
 
         await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
