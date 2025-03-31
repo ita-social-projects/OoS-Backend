@@ -361,6 +361,106 @@ public class ParentServiceTests
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(async () => await parentService.BlockUnblockParent(parentBlockUnblockValid));
     }
+
+    [Test]
+    public void BlockUnblockParent_WhenSaveChangesAsyncIsFailed_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var expected = Result<bool>.Success(true);
+
+        BlockUnblockParentDto parentBlockUnblockValid = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason to block the parent",
+        };
+
+        User parentUser = UserGenerator.Generate();
+        parentUser.IsBlocked = false;
+        Parent parent = new()
+        {
+            Id = parentBlockUnblockValid.ParentId,
+            UserId = parentUser.Id,
+            User = parentUser,
+            IsDeleted = false,
+        };
+        var resultOfSavingToDb = 1;
+        parentRepositoryMock
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parent)
+            .Verifiable(Times.Once);
+        parentRepositoryMock
+            .Setup(x => x.SaveChangesAsync(true, default))
+            .ThrowsAsync(new Exception())
+            .Verifiable(Times.Once);
+        parentBlockedByAdminLogServiceMock
+            .Setup(x => x.SaveChangesLogAsync(
+                parent.Id,
+                currentUserServiceMock.Object.UserId,
+                parentBlockUnblockValid.Reason,
+                parentBlockUnblockValid.IsBlocked))
+            .ReturnsAsync(resultOfSavingToDb)
+            .Verifiable(Times.Never);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async ()
+            => await parentService.BlockUnblockParent(parentBlockUnblockValid)
+            .ConfigureAwait(false));
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public void BlockUnblockParent_WhenSaveChangesLogAsyncIsFailed_ThrowInvalidOperationException()
+    {
+        // Arrange
+        var expected = Result<bool>.Success(true);
+
+        BlockUnblockParentDto parentBlockUnblockValid = new()
+        {
+            ParentId = Guid.NewGuid(),
+            IsBlocked = true,
+            Reason = "Reason to block the parent",
+        };
+
+        User parentUser = UserGenerator.Generate();
+        parentUser.IsBlocked = false;
+        Parent parent = new()
+        {
+            Id = parentBlockUnblockValid.ParentId,
+            UserId = parentUser.Id,
+            User = parentUser,
+            IsDeleted = false,
+        };
+        var resultOfSavingToDb = 1;
+        parentRepositoryMock
+            .Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Parent>, IQueryable<Parent>>>()))
+            .ReturnsAsync(parent)
+            .Verifiable(Times.Once);
+        parentRepositoryMock
+            .Setup(x => x.SaveChangesAsync(true, default))
+            .ReturnsAsync(resultOfSavingToDb)
+            .Verifiable(Times.Once);
+        parentBlockedByAdminLogServiceMock
+            .Setup(x => x.SaveChangesLogAsync(
+                parent.Id,
+                currentUserServiceMock.Object.UserId,
+                parentBlockUnblockValid.Reason,
+                parentBlockUnblockValid.IsBlocked))
+            .ThrowsAsync(new Exception())
+            .Verifiable(Times.Once);
+        parentRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task>>()))
+            .Returns((Func<Task> f) => f.Invoke())
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async ()
+            => await parentService.BlockUnblockParent(parentBlockUnblockValid)
+            .ConfigureAwait(false));
+        Mock.VerifyAll();
+    }
     #endregion
 
     #region Delete
@@ -483,10 +583,12 @@ public class ParentServiceTests
         Parent parent = ParentGenerator.Generate();
         var userId = parent.UserId;
         var parents = new List<Parent>() { parent };
-        var parentDto = new BaseUpdateUserDto 
-            { 
-                Id = userId, Email = "mail@gmail.com", PhoneNumber = "+380671234567" 
-            };
+        var parentDto = new BaseUpdateUserDto
+        {
+            Id = userId,
+            Email = "mail@gmail.com",
+            PhoneNumber = "+380671234567"
+        };
 
         parentRepositoryMock
             .Setup(m => m.GetByFilter(
