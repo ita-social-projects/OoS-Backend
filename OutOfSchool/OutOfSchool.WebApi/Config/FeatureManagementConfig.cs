@@ -22,7 +22,7 @@ public class FeatureManagementConfig
 
     public bool AchievementManagement { get; set; }
 
-    public bool AdminsChildernParentsManagement { get; set; }
+    public bool AdminsChildrenParentsManagement { get; set; }
 
     public bool MessagingFeature { get; set; }
 

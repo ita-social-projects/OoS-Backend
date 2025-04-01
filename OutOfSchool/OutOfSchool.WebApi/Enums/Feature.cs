@@ -14,7 +14,7 @@ public enum Feature
     TechAdminExport,
     DirectionManagement,
     AchievementManagement,
-    AdminsChildernParentsManagement,
+    AdminsChildrenParentsManagement,
     MessagingFeature,
     PasswordLogin,
     PasswordRegistration,

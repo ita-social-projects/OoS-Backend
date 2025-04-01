@@ -53,7 +53,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
-    [FeatureGate(nameof(Feature.AdminsChildernParentsManagement))]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<IActionResult> GetAllForAdmin([FromQuery] ChildSearchFilter filter)
     {
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
@@ -73,7 +73,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("/api/v{version:apiVersion}/parents/{id}/children")]
-    [FeatureGate(nameof(Feature.AdminsChildernParentsManagement))]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid id, [FromQuery] bool? isParent = null)
     {
         var children = await service.GetChildrenListByParentId(id, isParent).ConfigureAwait(false);
