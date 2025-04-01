@@ -934,7 +934,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -987,7 +987,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -1050,7 +1050,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -1115,7 +1115,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -1162,7 +1162,7 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
-        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
 
         currentUserServiceMock.Setup(x => x.IsAdmin())

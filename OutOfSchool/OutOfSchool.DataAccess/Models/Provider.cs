@@ -37,7 +37,7 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
 
     [Required]
     [RegularExpression(
-        @"^(\d{8})$",
+        @"^\d{8}$",
         ErrorMessage = "EDRPOU code must contain 8 digits")]
     [MaxLength(8)]
     public string Edrpou { get; set; }

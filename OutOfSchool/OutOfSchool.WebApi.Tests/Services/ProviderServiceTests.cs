@@ -1030,7 +1030,7 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
-        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
 
         currentUserServiceMock.Setup(x => x.IsAdmin())

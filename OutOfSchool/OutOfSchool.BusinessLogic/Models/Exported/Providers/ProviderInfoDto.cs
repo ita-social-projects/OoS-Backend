@@ -33,7 +33,7 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
 
     [Required]
     [RegularExpression(
-        @"^(\d{8}\d{10})$",
+        @"^\d{8}$",
         ErrorMessage = "EDRPOU code must contain 8 digits")]
     public string Edrpou { get; set; }
     

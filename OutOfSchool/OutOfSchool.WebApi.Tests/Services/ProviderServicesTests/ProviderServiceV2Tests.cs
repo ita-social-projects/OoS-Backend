@@ -160,7 +160,7 @@ public class ProviderServiceV2Tests
 
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
-        providersRepositoryMock.Setup(r => r.GetById(expected.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(mapper.Map<Provider>(expected));
         notificationService
             .Setup(s => s.Create(
@@ -236,7 +236,8 @@ public class ProviderServiceV2Tests
         var recipientsIds = new List<string>() { fakeUser.Id };
 
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
-        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddManyImagesAsync(expectedEntity, expectedEntityDto.ImageFiles)).ReturnsAsync(new MultipleImageUploadingResult());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -265,7 +266,8 @@ public class ProviderServiceV2Tests
         var recipientsIds = new List<string>() { fakeUser.Id };
 
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
-        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddCoverImageAsync(expectedEntity, expectedEntityDto.CoverImage)).ReturnsAsync(new Result<string>());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
