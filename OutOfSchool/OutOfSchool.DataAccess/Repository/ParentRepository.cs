@@ -29,11 +29,11 @@ public class ParentRepository : EntityRepositorySoftDeleted<Guid, Parent>, IPare
         await db.Parents.AddAsync(entity);
         await db.SaveChangesAsync();
 
-        var user = await db.Users.FirstOrDefaultAsync(x => x.Id == entity.UserId).ConfigureAwait(false);
+        var user = entity.User;
         user.IsRegistered = true;
         db.Entry(user).State = EntityState.Modified;
         await db.SaveChangesAsync();
-
+        // TODO: we should use user.Individual.[FirstName/MiddleName/LastName] instead of user.[FirstName/MiddleName/LastName] after removing these properties from User entity.
         var child = new Child()
         {
             Id = Guid.Empty,
