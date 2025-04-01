@@ -105,12 +105,6 @@ public class ProviderController : ControllerBase
         }
 
         providerModel.Id = default;
-        providerModel.LegalAddress.Id = default;
-
-        if (providerModel.ActualAddress != null)
-        {
-            providerModel.ActualAddress.Id = default;
-        }
 
         // TODO: find out if we need this field in the model
         providerModel.UserId = currentUserService.UserId;

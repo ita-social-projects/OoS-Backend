@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 
@@ -25,7 +24,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => db.Providers.Any(x => !x.IsDeleted && (x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email));
+    public bool SameExists(Provider entity) => db.Providers.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
 
     /// <summary>
     /// Checks if the user is trying to create second account.
@@ -61,17 +60,6 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     public new async Task Delete(Provider entity)
     {
         db.Entry(entity).State = EntityState.Deleted;
-        if (entity.LegalAddress != null)
-        {
-            db.Entry(entity.LegalAddress).State = EntityState.Deleted;
-        }
-
-        if (entity.ActualAddressId.HasValue
-            && entity.ActualAddressId.Value != entity.LegalAddressId
-            && entity.ActualAddress != null)
-        {
-            db.Entry(entity.ActualAddress).State = EntityState.Deleted;
-        }
 
         await db.SaveChangesAsync();
     }
@@ -79,17 +67,26 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     public async Task<Provider> GetWithNavigations(Guid id)
     {
         return await db.Providers
-         .Include(x => x.LegalAddress) // TODO: Doesn't work softDelete using Include, only using loop below in Delete() method
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
+         .Include(ws => ws.Contacts).ThenInclude(c => c.Emails)
+         .Include(ws => ws.Contacts).ThenInclude(c => c.Phones)
+         .Include(ws => ws.Contacts).ThenInclude(c => c.SocialNetworks)
+         .Include(ws => ws.Contacts)
+         .ThenInclude(c => c.Address)
+         .ThenInclude(a => a.CATOTTG)
+         .ThenInclude(c => c.Parent)
+         .ThenInclude(c => c.Parent)
+         .ThenInclude(c => c.Parent)
+         .ThenInclude(c => c.Parent)
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 
     public async Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous)
     {
         var existingEdrpouIpn = await db.Providers
-            .Where(x => edrpous.Values.Contains(x.EdrpouIpn))
-            .Select(x => x.EdrpouIpn)
+            .Where(x => edrpous.Values.Contains(x.Edrpou))
+            .Select(x => x.Edrpou)
             .ToListAsync();
 
         return edrpous.Where(x => existingEdrpouIpn.Contains(x.Value)).Select(x => x.Key).ToList();

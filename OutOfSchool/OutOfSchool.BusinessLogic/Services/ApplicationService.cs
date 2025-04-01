@@ -164,7 +164,7 @@ public class ApplicationService : IApplicationService
 
                 foreach (var item in subSettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -187,7 +187,7 @@ public class ApplicationService : IApplicationService
 
                 foreach (var item in subSettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Workshop.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);

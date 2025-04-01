@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 
@@ -120,7 +121,62 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.CurrentValues.ToObject())));
 
-        return properties.Concat(references);
+        var ownedEntities = entityEntry.Navigations
+            .Where(n => trackedProperties.Contains(n.Metadata.Name)
+                        && n.Metadata.TargetEntityType.IsOwned() 
+                        && n.EntityEntry.State == EntityState.Modified)
+            .Select(n => (
+                PropertyName: n.Metadata.Name,
+                OldValue: valueProjector(n.EntityEntry.Metadata.ClrType, n.EntityEntry.OriginalValues.ToObject()),
+                NewValue: valueProjector(n.EntityEntry.Metadata.ClrType, n.EntityEntry.CurrentValues.ToObject())
+            ));
+
+        // For owned collections (Contacts only)
+        var ownedCollectionChanges = entityEntry.Collections
+            .Where(c => c.Metadata.Name == "Contacts"
+                        && c.Metadata.TargetEntityType.IsOwned())
+            .SelectMany(c =>
+            {
+                // Cast the current collection value to IEnumerable<object>
+                if (c.CurrentValue is not IEnumerable<object> collection)
+                    return [];
+
+                return collection.SelectMany(item =>
+                {
+                    var changes = new List<(string PropertyName, string OldValue, string NewValue)>();
+                    var ownedEntry = entityEntry.Context.Entry(item);
+
+                    if (c.Metadata.Name == "Contacts")
+                    {
+                        var defaultContact = collection.FirstOrDefault(contact =>
+                            ((dynamic) contact).IsDefault == true);
+
+                        if (defaultContact != null)
+                        {
+                            var contactEntry = entityEntry.Context.Entry(defaultContact);
+                            var addressEntry = contactEntry.Reference("Address").TargetEntry;
+                            if (addressEntry?.Properties
+                                    .Any(p => p.IsModified) == true)
+                            {
+                                var originalAddress = addressEntry.OriginalValues.ToObject();
+                                var currentAddress = addressEntry.CurrentValues.ToObject();
+                                
+                                changes.Add((
+                                    PropertyName: "Contacts.Address",
+                                    OldValue: valueProjector(typeof(ContactsAddress), originalAddress),
+                                    NewValue: valueProjector(typeof(ContactsAddress), currentAddress)
+                                ));
+                            }
+                        }
+                    }
+
+                    return changes;
+                });
+            });
+
+        return properties.Concat(references)
+            .Concat(ownedEntities)
+            .Concat(ownedCollectionChanges);
     }
 
     private (Guid? entityIdGuid, long? entityIdLong) GetEntityId(EntityEntry entityEntry)

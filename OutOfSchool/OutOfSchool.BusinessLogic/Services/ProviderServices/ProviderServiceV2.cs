@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
@@ -43,7 +44,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService,
-        ISearchStringService searchStringService)
+        ISearchStringService searchStringService,
+        IContactsService<Provider, IHasContactsDto<Provider>> contactsService)
         : base(
               providerRepository,
               usersRepository,
@@ -72,7 +74,8 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               userService,
               authorizationServerConfig,
               communicationService,
-              searchStringService)
+              searchStringService,
+              contactsService)
     {
     }
 

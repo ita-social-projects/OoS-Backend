@@ -5,6 +5,7 @@ using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -17,14 +18,7 @@ public static class ProvidersGenerator
         .RuleFor(x => x.Id, _ => Guid.NewGuid())
         .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
-        .RuleFor(x => x.Website, f => f.Internet.Url())
-        .RuleFor(x => x.Facebook, f => f.Internet.Url())
-        .RuleFor(x => x.Instagram, f => f.Internet.Url())
-        .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
-        .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnString)
-        .RuleFor(x => x.Email, _ => TestDataHelper.GetRandomEmail())
-        .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
-        .RuleFor(x => x.Founder, f => f.Person.FullName)
+        .RuleFor(x => x.Edrpou, _ => TestDataHelper.EdrpouString)
         .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
         .RuleFor(x => x.TypeId, _ => 1)
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
@@ -46,16 +40,20 @@ public static class ProvidersGenerator
     /// <param name="count">count of instances to generate.</param>
     public static List<Provider> Generate(int count) => faker.Generate(count).WithAddress();
 
-    public static Provider WithAddress(this Provider provider)
+    public static Provider WithAddress(this Provider provider, ContactsAddress address = null)
     {
-        var address = AddressGenerator.Generate();
-        provider = TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.LegalAddress = address; provider.LegalAddressId = address.Id; }, address);
-        address = AddressGenerator.Generate();
-        return TestDataHelper.ApplyOnItem(provider, (provider, address) => { provider.ActualAddress = address; provider.ActualAddressId = address.Id; }, address);
+        address ??= ContactsAddressGenerator.Generate();
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = address,
+        };
+        return TestDataHelper.ApplyOnItem(provider, (provider, contacts) => { provider.Contacts = [contacts]; }, contacts);
     }
 
-    public static List<Provider> WithAddress(this List<Provider> workshops)
-        => workshops.Select(x => WithAddress(x)).ToList();
+    public static List<Provider> WithAddress(this List<Provider> providers, ContactsAddress address = null)
+        => providers.Select(x => WithAddress(x, address)).ToList();
 
     public static Provider WithWorkshops(this Provider provider)
     {

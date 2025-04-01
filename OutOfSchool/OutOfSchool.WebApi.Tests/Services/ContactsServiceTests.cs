@@ -25,18 +25,14 @@ public class ContactsServiceTests
     }
 
     [Test]
-    public void PrepareNewContacts_WhenDtoContactsIsNullOrEmpty_ShouldNotThrowOrAssign()
+    public void PrepareNewContacts_WhenDtoContactsIsNullOrEmpty_ShouldThrow()
     {
         // Arrange
         var entity = new TestEntity();
         var dto = new TestDto {Contacts = []};
 
-        // Act
-        contactsService.PrepareNewContacts(entity, dto);
-
-        // Assert
-        Assert.AreEqual(0, entity.Contacts.Count,
-            "Expected no contacts to be assigned if DTO contacts are empty.");
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => contactsService.PrepareNewContacts(entity, dto));
     }
 
     [Test]
@@ -184,7 +180,7 @@ public class ContactsServiceTests
     }
 
     [Test]
-    public void PrepareUpdatedContacts_WhenDtoIsEmpty_ShouldDoNothing()
+    public void PrepareUpdatedContacts_WhenDtoIsEmpty_ShouldThrow()
     {
         // Arrange
         var entity = new TestEntity
@@ -193,12 +189,8 @@ public class ContactsServiceTests
         };
         var dto = new TestDto {Contacts = new List<ContactsDto>()};
 
-        // Act
-        contactsService.PrepareUpdatedContacts(entity, dto);
-
-        // Assert
-        Assert.AreEqual(1, entity.Contacts.Count);
-        Assert.AreEqual("Existing", entity.Contacts[0].Title);
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => contactsService.PrepareUpdatedContacts(entity, dto));
     }
 
     [Test]

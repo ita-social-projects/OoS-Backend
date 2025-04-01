@@ -95,12 +95,6 @@ public class ProviderController : ControllerBase
     public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
         providerModel.Id = Guid.Empty;
-        providerModel.LegalAddress.Id = default;
-
-        if (providerModel.ActualAddress != null)
-        {
-            providerModel.ActualAddress.Id = default;
-        }
 
         // TODO: find out if we need this field in the model
         providerModel.UserId = currentUserService.UserId;
