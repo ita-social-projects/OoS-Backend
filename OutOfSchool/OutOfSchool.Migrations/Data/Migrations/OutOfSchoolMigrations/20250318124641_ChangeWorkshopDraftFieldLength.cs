@@ -1,16 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿#nullable disable
 
-#nullable disable
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+/// <inheritdoc />
+public partial class ChangeWorkshopDraftFieldLength : Migration
 {
     /// <inheritdoc />
-    public partial class ChangeWorkshopDraftFieldLength : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "RejectionMessage",
                 table: "WorkshopDrafts",
                 type: "varchar(500)",
@@ -20,10 +20,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldType: "varchar(200)",
                 oldMaxLength: 200,
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "CoverImageId",
                 table: "WorkshopDrafts",
                 type: "char(255)",
@@ -31,10 +31,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "char(36)",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "CoverImageId",
                 table: "TeacherDraft",
                 type: "char(255)",
@@ -42,24 +42,24 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "char(36)",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<decimal>(
-                name: "Rate",
-                table: "AverageRatings",
-                type: "decimal(2,1)",
-                precision: 2,
-                scale: 1,
-                nullable: false,
-                oldClrType: typeof(float),
-                oldType: "float");
-        }
+        migrationBuilder.AlterColumn<decimal>(
+            name: "Rate",
+            table: "AverageRatings",
+            type: "decimal(2,1)",
+            precision: 2,
+            scale: 1,
+            nullable: false,
+            oldClrType: typeof(float),
+            oldType: "float");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterColumn<string>(
                 name: "RejectionMessage",
                 table: "WorkshopDrafts",
                 type: "varchar(200)",
@@ -69,10 +69,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldType: "varchar(500)",
                 oldMaxLength: 500,
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "CoverImageId",
                 table: "WorkshopDrafts",
                 type: "char(36)",
@@ -80,10 +80,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "char(255)",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "CoverImageId",
                 table: "TeacherDraft",
                 type: "char(36)",
@@ -91,18 +91,17 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "char(255)",
                 oldNullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<float>(
-                name: "Rate",
-                table: "AverageRatings",
-                type: "float",
-                nullable: false,
-                oldClrType: typeof(decimal),
-                oldType: "decimal(2,1)",
-                oldPrecision: 2,
-                oldScale: 1);
-        }
+        migrationBuilder.AlterColumn<float>(
+            name: "Rate",
+            table: "AverageRatings",
+            type: "float",
+            nullable: false,
+            oldClrType: typeof(decimal),
+            oldType: "decimal(2,1)",
+            oldPrecision: 2,
+            oldScale: 1);
     }
 }
