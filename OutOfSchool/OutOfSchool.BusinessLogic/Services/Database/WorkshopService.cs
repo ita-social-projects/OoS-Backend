@@ -934,7 +934,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
                 foreach (var item in settlementsFilter.SettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);

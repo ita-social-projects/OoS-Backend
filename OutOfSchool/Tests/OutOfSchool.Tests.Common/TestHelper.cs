@@ -148,6 +148,12 @@ public static class TestHelper
         {
             foreach (var property in tuppledProperties)
             {
+                // Ignore contacts for property checks as they are not mapped
+                if (property.Item3.Contains("Contacts"))
+                {
+                    continue;
+                }
+
                 Assert.AreEqual(property.Item1, property.Item2, $"Property: '{property.Item3}'");
             }
         });

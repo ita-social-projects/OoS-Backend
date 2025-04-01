@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.Providers;
@@ -32,43 +31,15 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
     [MaxLength(Constants.MaxProviderShortTitleLength)]
     public string ShortTitleEn { get; set; } = string.Empty;
 
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid Email Address")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.MaxUnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "EDRPOU/INP code is required")]
-    [RegularExpression(
-        @"^(\d{8}|\d{10})$",
-        ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
-    public string EdrpouIpn { get; set; }
-
-    [MaxLength(50)]
-    [Required(ErrorMessage = "The name of the director is required")]
-    public string Director { get; set; } = string.Empty;
-
-    [DataType(DataType.PhoneNumber)]
-    [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [Required(ErrorMessage = "The phone number is required")]
-    public string PhoneNumber { get; set; } = string.Empty;
-
     [Required]
-    [MaxLength(Constants.MaxProviderFounderLength)]
-    public string Founder { get; set; } = string.Empty;
+    [RegularExpression(
+        @"^(\d{8}\d{10})$",
+        ErrorMessage = "EDRPOU code must contain 8 digits")]
+    public string Edrpou { get; set; }
+    
+    [DataType(DataType.Text)]
+    [MaxLength(500)]
+    public string GeneralWorkSchedule { get; set; }
 
     public string Type { get; set; }
 
@@ -87,10 +58,6 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
 
     public int NumberOfRatings { get; set; }
 
-    public AddressInfoDto LegalAddress { get; set; }
-
-    public AddressInfoDto ActualAddress { get; set; }
-
     public string Institution { get; set; }
 
     [Required]
@@ -98,4 +65,6 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
     public InstitutionType InstitutionType { get; set; }
 
     public IEnumerable<ProviderSectionItemInfoDto> ProviderSectionItems { get; set; }
+    
+    public List<ContactsInfoDto> Contacts { get; set; }
 }

@@ -16,7 +16,6 @@ using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -213,7 +212,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
-        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
+        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.Contacts.Single(c => c.IsDefault).Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
@@ -281,7 +280,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
-        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
+        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.Contacts.Single(c => c.IsDefault).Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
@@ -355,7 +354,7 @@ public class ChangesLogServiceTests
         Assert.AreEqual(entitiesCount, result.Entities.Count);
         Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
         Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
-        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.CATOTTG.Name));
+        Assert.True(result.Entities.Any(x => x.ProviderCity == provider.Contacts.Single(c => c.IsDefault).Address.CATOTTG.Name));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }

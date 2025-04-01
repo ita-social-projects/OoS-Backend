@@ -1,37 +1,37 @@
-﻿using AutoMapper;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config.Images;
-using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using System;
-using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using System.Linq.Expressions;
-using System.Linq;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Common.Extensions;
-using FluentAssertions;
-using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
-using System.Collections.Generic;
-using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -57,6 +57,7 @@ public class WorkshopDraftServiceTests
 
         var config = new MapperConfiguration(cfg =>
             cfg.UseProfile<CommonProfile>()
+                .UseProfile<ContactsProfile>()
                .UseProfile<MappingProfile>()
                .UseProfile<WorkshopDraftMappingProfile>());
 

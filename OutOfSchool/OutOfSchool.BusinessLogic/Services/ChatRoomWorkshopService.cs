@@ -559,7 +559,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 .Or(x => x.Parent.User.Email.StartsWith(filter.SearchText))
                 .Or(x => x.Workshop.Title.ToLower().Contains(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.PhoneNumber.StartsWith(filter.SearchText))
-                .Or(x => x.Workshop.Provider.PhoneNumber.StartsWith(filter.SearchText));
+                .Or(x => x.Workshop.Provider.Contacts.Any(c => c.Phones.Any(p =>
+                    p.Number.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase))));
 
             predicate = predicate.And(tempPredicate);
         }

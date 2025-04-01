@@ -289,18 +289,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Positions, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore()); 
 
-        CreateMap<Provider, ProviderCsvDto>()
-            .ForMember(dest => dest.Ownership, opt => opt.MapFrom((dest, src) => dest.Ownership switch
-            {
-                OwnershipType.State => "Державна",
-                OwnershipType.Common => "Комунальна",
-                OwnershipType.Private => "Приватна",
-                _ => string.Empty,
-            }))
-            .ForMember(dest => dest.License, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.License) ? "не вказано" : src.License))
-            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src.LegalAddress.CATOTTG)))
-            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => $"{src.LegalAddress.Street}, {src.LegalAddress.BuildingNumber}"));
-
         CreateSoftDeletedMap<ProviderCreateDto, Provider>()
             .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
@@ -899,8 +887,7 @@ public class MappingProfile : Profile
     private IMappingExpression<Provider, T> AddCommonProvider2ProviderBaseDto<T>(IMappingExpression<Provider, T> mappings)
         where T : ProviderBaseDto
         => mappings
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+            .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
             .Apply(IgnoreAllImages)
             .Apply(MapImageIds)
@@ -909,6 +896,24 @@ public class MappingProfile : Profile
     private IMappingExpression<T, Provider> IgnoreCommonProviderBaseDto2Provider<T>(IMappingExpression<T, Provider> mappings)
         where T : ProviderBaseDto
         => mappings
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.Edrpou, opt => opt.Ignore())
+            .ForMember(dest => dest.ExternalId, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseLimits, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseIssuanceDate, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseExpirationDate, opt => opt.Ignore())
+            .ForMember(dest => dest.Contacts, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())

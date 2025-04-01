@@ -16,7 +16,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class ExternalExportService : IExternalExportService
 {
     private const string ProviderIncludes =
-        "ProviderSectionItems,Images,Institution,ActualAddress,ActualAddress.CATOTTG.Parent.Parent.Parent.Parent,LegalAddress,LegalAddress.CATOTTG.Parent.Parent.Parent.Parent,Type";
+        "ProviderSectionItems,Images,Institution,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Type";
 
     private const string WorkshopIncludes =
         "WorkshopDescriptionItems,Tags,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";

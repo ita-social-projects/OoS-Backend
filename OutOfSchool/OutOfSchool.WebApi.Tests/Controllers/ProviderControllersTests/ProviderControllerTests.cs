@@ -44,7 +44,7 @@ public class ProviderControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         userId = Guid.NewGuid().ToString();
 
         providerService = new Mock<IProviderService>();

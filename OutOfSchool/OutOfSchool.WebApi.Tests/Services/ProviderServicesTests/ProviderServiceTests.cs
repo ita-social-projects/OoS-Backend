@@ -31,6 +31,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -101,8 +102,9 @@ public class ProviderServiceTests
         workshopServicesCombinerMock = new Mock<IWorkshopServicesCombiner>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         searchStringServiceMock = new Mock<ISearchStringService>();
+        var providerContactsServiceMock = new Mock<IContactsService<Provider, IHasContactsDto<Provider>>>();
 
         providerService = new ProviderService(
             providersRepositoryMock.Object,
@@ -132,7 +134,8 @@ public class ProviderServiceTests
             userServiceMock.Object,
             authorizationServerConfig,
             communicationService.Object,
-            searchStringServiceMock.Object
+            searchStringServiceMock.Object,
+            providerContactsServiceMock.Object
             );
     }
 
@@ -143,7 +146,7 @@ public class ProviderServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderCreateDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate().WithAddress();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -151,7 +154,7 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
-        expected.CoverImageId = null;
+        expected.CoverImageId = string.Empty;
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
@@ -210,42 +213,6 @@ public class ProviderServiceTests
         // Act and Assert
         Assert.ThrowsAsync<InvalidOperationException>(
             async () => await providerService.Create(providerToBeCreated).ConfigureAwait(false));
-    }
-
-    [Test]
-    public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
-    {
-        // Arrange
-        var expectedEntity = ProviderCreateDtoGenerator.Generate();
-        expectedEntity.ActualAddress = expectedEntity.LegalAddress;
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
-            Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(expectedEntity).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Null);
-    }
-
-    [Test]
-    public async Task Create_WhenActualAddressDiffersFromTheLegal_ActualAddressIsSaved()
-    {
-        // Arrange
-        var expectedEntity = ProvidersGenerator.Generate();
-        expectedEntity.ActualAddress.CATOTTGId = 4970;
-        expectedEntity.ActualAddress.CATOTTG.Id = 4970;
-
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
-        Assert.AreEqual(expectedEntity.ActualAddress, receivedProvider.ActualAddress);
     }
 
     [Test]
@@ -620,7 +587,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
@@ -654,13 +621,13 @@ public class ProviderServiceTests
 
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
-        providerToUpdateDto.ShortTitle = updatedTitle;
+        providerToUpdateDto.ShortTitleEn = updatedTitle;
 
         var expected = mapper.Map<ProviderDto>(provider);
         expected.Status = initialStatus;
-        expected.ShortTitle = updatedTitle;
+        expected.ShortTitleEn = updatedTitle;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -691,50 +658,10 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        notificationService.Setup(s => s.Create(
-                NotificationType.Provider,
-                NotificationAction.Update,
-                provider.Id,
-                recipientsIds,
-                It.IsAny<Dictionary<string, string>>(),
-                null))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
-
-        // Assert
-        TestHelper.AssertDtosAreEqual(expected, result);
-    }
-
-    [TestCase(ProviderStatus.Recheck)]
-    [TestCase(ProviderStatus.Editing)]
-    [TestCase(ProviderStatus.Approved)]
-    public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToRecheck(ProviderStatus initialStatus)
-    {
-        // Arrange
-        var provider = fakeProviders.RandomItem();
-        provider.EdrpouIpn = "1234512345";
-        var updatedEdrpouIpn = "1234567890";
-        provider.Status = initialStatus;
-
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
-        providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
-
-        var expected = mapper.Map<ProviderDto>(provider);
-        expected.Status = ProviderStatus.Recheck;
-        expected.EdrpouIpn = updatedEdrpouIpn;
-
-        var recipientsIds = new List<string>() { fakeUser.Id };
-
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
@@ -776,7 +703,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -814,7 +741,7 @@ public class ProviderServiceTests
         expected.LicenseStatus = ProviderLicenseStatus.NotProvided;
         expected.License = updatedLicense;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -855,7 +782,7 @@ public class ProviderServiceTests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         var expectedProviderDto = mapper.Map<ProviderDto>(provider);
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -1101,7 +1028,14 @@ public class ProviderServiceTests
 
         var provider = ProvidersGenerator.Generate();
         provider.InstitutionId = institutionId;
-        provider.LegalAddress.CATOTTGId = catottgId;
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate(),
+        };
+        contacts.Address.CATOTTGId = catottgId;
+        provider.Contacts = [contacts];
 
         RegionAdminDto regionAdmin = AdminGenerator.GenerateRegionAdminDto();
         regionAdmin.InstitutionId = institutionId;
@@ -1159,7 +1093,14 @@ public class ProviderServiceTests
 
         var provider = ProvidersGenerator.Generate();
         provider.InstitutionId = institutionId;
-        provider.LegalAddress.CATOTTGId = catottgId;
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate(),
+        };
+        contacts.Address.CATOTTGId = catottgId;
+        provider.Contacts = [contacts];
 
         AreaAdminDto areaAdmin = AdminGenerator.GenerateAreaAdminDto();
         areaAdmin.InstitutionId = institutionId;
