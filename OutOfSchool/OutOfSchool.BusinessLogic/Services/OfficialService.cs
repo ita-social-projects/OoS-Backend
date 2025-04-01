@@ -41,18 +41,21 @@ public class OfficialService : IOfficialService
         logger.LogDebug("Getting Officials by filter started.");
 
         filter ??= new SearchStringFilter();
-        var predicate = BuildPredicate(filter);              
+        var predicate = BuildPredicate(filter);
         predicate = predicate.And(p => p.Position.ProviderId == providerId);
-        
+
+        var includeFunc = (IQueryable<Official> o) => o.Include(o => o.Position)
+                                                       .Include(o => o.Individual);
+
         int count = await officialRepository.Count(predicate).ConfigureAwait(false);
 
         var officials = await officialRepository
             .Get(
              skip: filter.From,
              take: filter.Size,
-             includeProperties: "Position,Individual",
-             whereExpression: predicate
-            ).AsNoTracking()
+             includeExpression: includeFunc,
+             whereExpression: predicate)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
