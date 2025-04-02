@@ -4,7 +4,7 @@
     <!-- TODO: Re-use base version again when we switch to Net 9 -->
     <DIAbstractions>8.0.2</DIAbstractions>
     <EFCoreVersion>8.0.13</EFCoreVersion>
-    <OpenIdDictVersion>6.1.0</OpenIdDictVersion>
+    <OpenIdDictVersion>6.1.1</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
     <QuartzVersion>3.13.1</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
@@ -61,7 +61,7 @@
     <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Quartz" Version="$(OpenIdDictVersion)" />
-    <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="6.1.1" />
+    <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="$(OpenIdDictVersion)" />
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql.Json.Microsoft" Version="8.0.0" />
     <!--Serilog-->
