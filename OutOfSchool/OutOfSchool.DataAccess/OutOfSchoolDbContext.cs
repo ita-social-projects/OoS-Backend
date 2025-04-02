@@ -145,6 +145,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
     
 
+    public DbSet<SubDirection> SubDirections { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -198,6 +200,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new RegionAdminConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new StudySubjectConfiguration());
+        builder.ApplyConfiguration(new SubDirectionConfiguration());
         builder.ApplyConfiguration(new TagConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new UserConfiguration());

@@ -29,9 +29,8 @@ public class ExternalExportService : IExternalExportService
     private readonly IApplicationRepository applicationRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
-    private readonly ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository;
-    private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
     private readonly ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository;
+    private readonly IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository;
     private readonly IMapper mapper;
     private readonly ILogger<ExternalExportService> logger;
 
@@ -41,9 +40,8 @@ public class ExternalExportService : IExternalExportService
         IApplicationRepository applicationRepository,
         IAverageRatingService averageRatingService,
         IEntityRepositorySoftDeleted<long, Direction> directionRepository,
-        ISensitiveEntityRepositorySoftDeleted<Institution> institutionRepository,
-        IInstitutionHierarchyRepository institutionHierarchyRepository,
         ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository,
+        IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository,
         IMapper mapper,
         ILogger<ExternalExportService> logger)
     {
@@ -54,12 +52,9 @@ public class ExternalExportService : IExternalExportService
         this.averageRatingService =
             averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.directionRepository = directionRepository ?? throw new ArgumentNullException(nameof(directionRepository));
-        this.institutionRepository =
-            institutionRepository ?? throw new ArgumentNullException(nameof(institutionRepository));
-        this.institutionHierarchyRepository = institutionHierarchyRepository ??
-                                              throw new ArgumentNullException(nameof(institutionHierarchyRepository));
         this.competitiveEventRepository = competitiveEventRepository ??
                                           throw new ArgumentNullException(nameof(competitiveEventRepository));
+        this.subDirectionRepository = subDirectionRepository ?? throw new ArgumentNullException(nameof(subDirectionRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -239,50 +234,23 @@ public class ExternalExportService : IExternalExportService
             logger.LogDebug("Getting SubDirections started");
 
             offsetFilter ??= new OffsetFilter();
-            
-            Expression<Func<Institution, bool>> institutionFilterExpression = updatedAfter == default
-                ? institution => !institution.IsDeleted
-                : institution => institution.UpdatedAt > updatedAfter;
-            
-            Expression<Func<InstitutionHierarchy, bool>> institutionHierarchyFilterExpression = updatedAfter == default
-                ? ih => !ih.IsDeleted
-                : ih => ih.UpdatedAt > updatedAfter;
 
-            // Is deleted expression is added automatically by repo
-            var institutions = institutionRepository
-                .Get(whereExpression: institutionFilterExpression);
+            Expression<Func<SubDirection, bool>> filterExpression = updatedAfter == default
+                ? subDirection => !subDirection.IsDeleted
+                : subDirection => subDirection.UpdatedAt > updatedAfter;
 
-            // We need to return only the lowest level for each institution
-            // Is deleted expression is added automatically by repo
-            var institutionSubDirections = institutionHierarchyRepository
-                .Get(whereExpression: institutionHierarchyFilterExpression)
-                .Join(
-                    institutions,
-                    ih => new {IId = ih.InstitutionId, Level = ih.HierarchyLevel},
-                    i => new {IId = i.Id, Level = i.NumberOfHierarchyLevels},
-                    (ih, i) => ih);
-
-            // Is deleted expression is added automatically by repo
-            var count = await institutionSubDirections.CountAsync().ConfigureAwait(false);
-
-            if (offsetFilter.From > 0)
-            {
-                institutionSubDirections = institutionSubDirections.Skip(offsetFilter.From);
-            }
-
-            if (offsetFilter.Size > 0)
-            {
-                institutionSubDirections = institutionSubDirections.Take(offsetFilter.Size);
-            }
-
-            var subDirections = await institutionSubDirections
-                .IncludeProperties("Directions")
-                .OrderBy(ih => ih.Id)
+            var subDirections = await subDirectionRepository
+                .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: filterExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
+            logger.LogDebug("All {Count} records were successfully received from the SubDirection table",
+                subDirections.Count);
+
+            var count = await subDirectionRepository.Count(filterExpression).ConfigureAwait(false);
+
             var subDirectionDtos = subDirections
-                .Select(MapToInfoDto<InstitutionHierarchy, SubDirectionsInfoBaseDto, SubDirectionsInfoDto>)
+                .Select(MapToInfoDto<SubDirection, SubDirectionsInfoBaseDto, SubDirectionsInfoDto>)
                 .ToList();
 
             var result = new SearchResult<SubDirectionsInfoBaseDto>()

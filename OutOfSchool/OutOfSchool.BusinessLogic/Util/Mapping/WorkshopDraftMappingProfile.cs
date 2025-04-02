@@ -38,7 +38,7 @@ public class WorkshopDraftMappingProfile : Profile
            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
            .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id)))
            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
            .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore());
 

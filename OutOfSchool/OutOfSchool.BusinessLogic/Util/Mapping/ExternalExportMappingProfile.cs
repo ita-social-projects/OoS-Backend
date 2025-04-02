@@ -49,7 +49,7 @@ public class ExternalExportMappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.Direction.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.SubDirectionId,
                 opt => opt.MapFrom(
                     src => src.InstitutionHierarchy.Id))
@@ -87,11 +87,10 @@ public class ExternalExportMappingProfile : Profile
         CreateMap<Direction, DirectionInfoDto>()
             .IncludeBase<Direction, DirectionInfoBaseDto>();
 
-        CreateMap<InstitutionHierarchy, SubDirectionsInfoBaseDto>();
+        CreateMap<SubDirection, SubDirectionsInfoBaseDto>();
 
-        CreateMap<InstitutionHierarchy, SubDirectionsInfoDto>()
-            .IncludeBase<InstitutionHierarchy, SubDirectionsInfoBaseDto>()
-            .ForMember(dest => dest.DirectionIds, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+        CreateMap<SubDirection, SubDirectionsInfoDto>()
+            .IncludeBase<SubDirection, SubDirectionsInfoBaseDto>();
 
         CreateMap<Teacher, TeacherInfoDto>()
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
@@ -104,7 +103,7 @@ public class ExternalExportMappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.CompetitiveSelectionDescription, opt => opt.MapFrom(src => src.AdditionalDescription))
             .ForMember(dest => dest.AccountingType, opt => opt.MapFrom(src => src.CompetitiveEventAccountingType))
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())

@@ -57,7 +57,7 @@ public class InstitutionHierarchyRepositoryTests
         createdEntity.Title += "+";
 
         // Act
-        var result = await repository.Update(createdEntity, createdEntity.Directions.Select(x => x.Id).ToList()).ConfigureAwait(false);
+        var result = await repository.Update(createdEntity, createdEntity.SubDirections.Select(x => x.DirectionId).ToList()).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(result);
