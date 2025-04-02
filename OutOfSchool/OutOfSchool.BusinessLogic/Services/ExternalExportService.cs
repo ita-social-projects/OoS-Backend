@@ -15,15 +15,6 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class ExternalExportService : IExternalExportService
 {
-    private const string ProviderIncludes =
-        "ProviderSectionItems,Images,Institution,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Type";
-
-    private const string WorkshopIncludes =
-        "WorkshopDescriptionItems,Tags,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
-
-    private const string CompetitiveEventsIncludes =
-        "CompetitiveEventDescriptionItems,Parent,CompetitiveEventAccountingType,InstitutionHierarchy,Coverage,Contacts.Address.CATOTTG";
-
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IApplicationRepository applicationRepository;
@@ -75,8 +66,12 @@ public class ExternalExportService : IExternalExportService
             var providers = await providerRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: ProviderIncludes,
                     whereExpression: filterExpression)
+                .Include(p => p.ProviderSectionItems)
+                .Include(p => p.Images)
+                .Include(p => p.Institution)
+                .Include(p => p.Type)
+                .IncludeContactsWithCodeficatorHierarchy()
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -117,8 +112,19 @@ public class ExternalExportService : IExternalExportService
             var workshops = await workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: WorkshopIncludes,
                     whereExpression: filterExpression)
+                .Include(w => w.WorkshopDescriptionItems)
+                .Include(w => w.Tags)
+                .Include(w => w.Images)
+                .Include(w => w.DateTimeRanges)
+                .Include(w => w.Teachers)
+                .Include(w => w.InstitutionHierarchy)
+                .ThenInclude(i => i.Institution)
+                .Include(w => w.InstitutionHierarchy)
+                .ThenInclude(i => i.SubDirections)
+                .ThenInclude(s => s.Direction)
+                .Include(w => w.DefaultTeacher)
+                .IncludeContactsWithCodeficatorHierarchy()
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -159,8 +165,15 @@ public class ExternalExportService : IExternalExportService
             var events = await competitiveEventRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: CompetitiveEventsIncludes,
                     whereExpression: filterExpression)
+                .Include(c => c.CompetitiveEventDescriptionItems)
+                .Include(c => c.Parent)
+                .Include(c => c.CompetitiveEventAccountingType)
+                .Include(c => c.Coverage)
+                .Include(w => w.InstitutionHierarchy)
+                .ThenInclude(i => i.SubDirections)
+                .ThenInclude(s => s.Direction)
+                .IncludeContactsWithCodeficatorHierarchy()
                 .ToListAsync()
                 .ConfigureAwait(false);
 
