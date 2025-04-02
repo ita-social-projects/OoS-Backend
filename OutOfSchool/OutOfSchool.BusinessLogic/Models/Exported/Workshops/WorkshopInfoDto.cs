@@ -72,7 +72,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public List<long> DirectionIds { get; set; }
     
-    public Guid SubDirectionId { get; set; }
+    public List<long> SubDirectionIds { get; set; }
 
     public IEnumerable<string> Keywords { get; set; } = default;
 

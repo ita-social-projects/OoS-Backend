@@ -19,11 +19,7 @@ public class ExternalExportMappingProfile : Profile
         CreateMap<PhoneNumber, PhoneNumberInfoDto>();
         CreateMap<Email, EmailInfoDto>();
         CreateMap<SocialNetwork, SocialNetworkInfoDto>();
-        
-        // TODO: Remove when we remvoe address
-        CreateMap<Address, AddressInfoDto>()
-            .ForMember(dest => dest.CodeficatorAddress, opt => opt.MapFrom(src => src.CATOTTG));
-        
+
         CreateMap<CATOTTG, CodeficatorAddressInfoDto>()
             .ForMember(dest => dest.Settlement,
                 opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src)))
@@ -49,10 +45,10 @@ public class ExternalExportMappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.Direction.IsDeleted).Select(d => d.DirectionId)))
-            .ForMember(dest => dest.SubDirectionId,
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId)))
+            .ForMember(dest => dest.SubDirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Id))
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id)))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges,
@@ -100,10 +96,15 @@ public class ExternalExportMappingProfile : Profile
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemInfoDto>();
         CreateMap<CompetitiveEvent, CompetitiveEventInfoDto>()
             .ForMember(dest => dest.ParentEventId, opt => opt.MapFrom(src => src.ParentId))
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId)))
+            .ForMember(dest => dest.SubDirectionIds,
+                opt => opt.MapFrom(
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id)))
+            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.CompetitiveSelectionDescription, opt => opt.MapFrom(src => src.AdditionalDescription))
             .ForMember(dest => dest.AccountingType, opt => opt.MapFrom(src => src.CompetitiveEventAccountingType))
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
