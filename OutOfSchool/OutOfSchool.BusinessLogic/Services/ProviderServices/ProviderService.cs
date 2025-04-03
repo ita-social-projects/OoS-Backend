@@ -229,10 +229,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: string.Empty,
                 whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: false)
+                orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -263,17 +261,18 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             return null;
         }
 
+        Func<IQueryable<Provider>, IQueryable<Provider>> includeFunc =
+            p => p.Include(p => p.ProviderSectionItems)
+                  .Include(p => p.Type)
+                  .Include(p => p.Institution)
+                  .Include(p => p.Images)
+                  .IncludeContactsWithCodeficatorHierarchy();
+
         Expression<Func<Provider, bool>> providerFilter = p => p.Id == id;
-        var provider = await providerRepository.Get(
-            whereExpression: providerFilter,
-            asNoTracking: true)
-            .Include(p => p.Contacts)
-            .ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
-                .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent).ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
-            .Include(p => p.ProviderSectionItems)
-            .Include(p => p.Type)
-            .Include(p => p.Institution)
-            .Include(p => p.Images)
+        var provider = await providerRepository
+            .Get(whereExpression: providerFilter)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .FirstAsync()
             .ConfigureAwait(false);
 
@@ -618,7 +617,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
 
         var providerDomainModel = mapper.Map<Provider>(providerDto);
-        
+
         contactsService.PrepareNewContacts(providerDomainModel, providerDto);
 
         // BUG: concurrency issue:

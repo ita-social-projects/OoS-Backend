@@ -263,11 +263,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -317,11 +314,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -378,11 +372,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -410,11 +401,8 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Get(
                 0,
                 0,
-                string.Empty,
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                true))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
         .Returns(providersMock);
 
         providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>())).ReturnsAsync(true);

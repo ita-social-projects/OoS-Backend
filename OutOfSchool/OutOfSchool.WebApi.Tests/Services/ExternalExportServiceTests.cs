@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -68,7 +67,7 @@ public class ExternalExportServiceTests
         var fakeProviders = ProvidersGenerator.Generate(0);
 
         mockProviderRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(), It.IsAny<Expression<Func<Provider, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Provider, bool>>>(), null))
             .Returns(fakeProviders.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -90,7 +89,7 @@ public class ExternalExportServiceTests
         var fakeProviders = ProvidersGenerator.Generate(5);
 
         mockProviderRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(), It.IsAny<Expression<Func<Provider, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Provider, bool>>>(), null))
             .Returns(fakeProviders.AsTestAsyncEnumerableQuery());
 
         mockProviderRepository.Setup(x => x.Count(It.IsAny<Expression<Func<Provider, bool>>>())).ReturnsAsync(5);
@@ -111,7 +110,7 @@ public class ExternalExportServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockProviderRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(), It.IsAny<Expression<Func<Provider, bool>>>(), null, false))
+        mockProviderRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Provider, bool>>>(), null))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert
@@ -130,7 +129,7 @@ public class ExternalExportServiceTests
             .ReturnsAsync([]);
 
         mockWorkshopRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(), It.IsAny<Expression<Func<Workshop, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Workshop, bool>>>(), null))
             .Returns(fakeWorkshops.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -155,7 +154,7 @@ public class ExternalExportServiceTests
             .ReturnsAsync([]);
 
         mockWorkshopRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(), It.IsAny<Expression<Func<Workshop, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Workshop, bool>>>(), null))
             .Returns(fakeWorkshops.AsTestAsyncEnumerableQuery());
 
         mockWorkshopRepository.Setup(x => x.Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(3);
@@ -176,7 +175,7 @@ public class ExternalExportServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockWorkshopRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(), It.IsAny<Expression<Func<Workshop, bool>>>(), null, false))
+        mockWorkshopRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Workshop, bool>>>(), null))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert
@@ -192,7 +191,7 @@ public class ExternalExportServiceTests
         List<CompetitiveEvent> fakeEvents = [];
 
         mockCompetitiveEventRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>(), It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null))
             .Returns(fakeEvents.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -214,7 +213,7 @@ public class ExternalExportServiceTests
         var fakeEvents = CompetitiveEvents();
 
         mockCompetitiveEventRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>(), It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null))
             .Returns(fakeEvents.AsTestAsyncEnumerableQuery());
 
         mockCompetitiveEventRepository.Setup(x => x.Count(It.IsAny<Expression<Func<CompetitiveEvent, bool>>>())).ReturnsAsync(3);
@@ -235,7 +234,7 @@ public class ExternalExportServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockCompetitiveEventRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>(), It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null, false))
+        mockCompetitiveEventRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<CompetitiveEvent, bool>>>(), null))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert
@@ -251,7 +250,7 @@ public class ExternalExportServiceTests
         var fakeDirections = new List<Direction>();
 
         mockDirectionRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Direction>, IQueryable<Direction>>>(), It.IsAny<Expression<Func<Direction, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Direction, bool>>>(), null))
             .Returns(fakeDirections.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -289,7 +288,7 @@ public class ExternalExportServiceTests
         ];
 
         mockDirectionRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Direction>, IQueryable<Direction>>>(), It.IsAny<Expression<Func<Direction, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Direction, bool>>>(), null))
             .Returns(fakeDirections.AsTestAsyncEnumerableQuery());
 
         mockDirectionRepository.Setup(x => x.Count(It.IsAny<Expression<Func<Direction, bool>>>())).ReturnsAsync(fakeDirections.Count);
@@ -310,7 +309,7 @@ public class ExternalExportServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<Direction>, IQueryable<Direction>>>(), It.IsAny<Expression<Func<Direction, bool>>>(), null, false))
+        mockDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Direction, bool>>>(), null))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert
@@ -374,7 +373,7 @@ public class ExternalExportServiceTests
         var fakeSubDirections = new List<SubDirection>();
 
         mockSubDirectionRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<SubDirection, bool>>>(), null))
             .Returns(fakeSubDirections.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -402,7 +401,7 @@ public class ExternalExportServiceTests
         };
 
         mockSubDirectionRepository
-            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<SubDirection, bool>>>(), null))
             .Returns(fakeSubDirections.AsTestAsyncEnumerableQuery());
 
         mockSubDirectionRepository.Setup(x => x.Count(It.IsAny<Expression<Func<SubDirection, bool>>>())).ReturnsAsync(fakeSubDirections.Count);
@@ -423,7 +422,7 @@ public class ExternalExportServiceTests
         // Arrange
         var updatedAfter = DateTime.UtcNow;
         var offsetFilter = new OffsetFilter { Size = 10 };
-        mockSubDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+        mockSubDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<SubDirection, bool>>>(), null))
             .Throws(new Exception("Simulated exception"));
 
         // Act & Assert

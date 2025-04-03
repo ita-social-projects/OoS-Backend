@@ -1170,11 +1170,9 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
             It.IsAny<Expression<Func<Workshop, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-            It.IsAny<bool>())).Returns(mockWorkshops);
+            It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
+            .Returns(mockWorkshops);
         workshopRepository.Setup(
             w => w
                 .Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count());
@@ -1207,22 +1205,16 @@ public class WorkshopServiceTests
                 w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                    false))
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopBaseCardsList.AsTestAsyncEnumerableQuery);
 
         roomRepository
             .Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<ChatRoomWorkshop>, IQueryable<ChatRoomWorkshop>>>(),
                     It.IsAny<Expression<Func<ChatRoomWorkshop, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<ChatRoomWorkshop, object>>, SortDirection>>(),
-                    false))
+                    It.IsAny<Dictionary<Expression<Func<ChatRoomWorkshop, object>>, SortDirection>>()))
             .Returns(chatRoomsList.AsTestAsyncEnumerableQuery);
 
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(workshopGuids)).ReturnsAsync(WithAvarageRatings(workshopGuids));
@@ -1276,11 +1268,9 @@ public class WorkshopServiceTests
             .Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
+            .Returns(queryableWorkshops).Verifiable();
         averageRatingServiceMock.Setup(r => r
                 .GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(ratings).Verifiable();
@@ -1310,14 +1300,13 @@ public class WorkshopServiceTests
     {
         var queryableWorkshops = workshops.AsQueryable().BuildMock();
 
-        workshopRepository.Setup(w => w.Get(
+        workshopRepository.Setup(w => w
+        .Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
             It.IsAny<Expression<Func<Workshop, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-            It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
+            It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
+        .Returns(queryableWorkshops).Verifiable();
     }
 
     #endregion

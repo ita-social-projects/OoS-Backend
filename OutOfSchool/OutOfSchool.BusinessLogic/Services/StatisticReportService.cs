@@ -78,7 +78,6 @@ public class StatisticReportService : IStatisticReportService
         var statisticReports = await statisticReportRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: string.Empty,
             whereExpression: predicate, orderBy: sortExpression).ToListAsync().ConfigureAwait(false);
 
         if (!statisticReports.Any())

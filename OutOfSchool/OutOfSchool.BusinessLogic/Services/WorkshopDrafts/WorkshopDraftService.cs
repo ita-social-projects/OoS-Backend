@@ -45,6 +45,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly ICodeficatorRepository codeficatorRepository;
     private readonly int maxParallelUploads;
 
+    /// <summary>
+    /// Create a delegate to include other entities in InstitutionHierarchy entity
+    /// </summary>
     private readonly Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>> includeDirectionsFunc =
         i => i.Include(i => i.SubDirections);
 
@@ -390,8 +393,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
-                whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id),
-                includeExpression: includeDirectionsFunc)
+                whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id))
+            .IncludeProperties(includeDirectionsFunc)
             .ToListAsync();
 
         var workshopDraftResponseDtos = new List<WorkshopDraftViewCardDto>();
@@ -456,8 +459,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                whereExpression: predicate,
-                asNoTracking: true)
+                whereExpression: predicate)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -789,8 +792,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             .ToList();
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
-                whereExpression: i => institutionHierarchyIds.Contains(i.Id),
-                includeExpression: includeDirectionsFunc)
+                whereExpression: i => institutionHierarchyIds.Contains(i.Id))
+            .IncludeProperties(includeDirectionsFunc)
             .ToListAsync();
 
         var catottgIds = workshopDrafts

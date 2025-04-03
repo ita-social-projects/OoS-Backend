@@ -302,7 +302,8 @@ public class ChangesLogService : IChangesLogService
 
         var count = await employeeChangesLogRepository.Count(where).ConfigureAwait(false);
         var query = employeeChangesLogRepository
-            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true)
+            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
+            .AsNoTracking()
             .Select(x => new EmployeeChangesLogDto()
             {
                 EmployeeId = x.EmployeeUserId,
@@ -337,7 +338,8 @@ public class ChangesLogService : IChangesLogService
         var sortExpression = GetParentBlockedByAdminChangesOrderParams();
         var count = await parentBlockedByAdminLogRepository.Count(where).ConfigureAwait(false);
         var query = parentBlockedByAdminLogRepository
-            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true)
+            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
+            .AsNoTracking()
             .Select(x => new ParentBlockedByAdminChangesLogDto()
             {
                 ParentId = x.ParentId,
@@ -364,7 +366,12 @@ public class ChangesLogService : IChangesLogService
         var where = GetQueryFilter(filter);
         var sortExpression = GetOrderParams();
 
-        var query = changesLogRepository.Get(skip: filter.From, take: filter.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true);
+        var query = changesLogRepository.Get(
+                skip: filter.From, 
+                take: filter.Size, 
+                whereExpression: where, 
+                orderBy: sortExpression)
+            .AsNoTracking();
 
         return query;
     }

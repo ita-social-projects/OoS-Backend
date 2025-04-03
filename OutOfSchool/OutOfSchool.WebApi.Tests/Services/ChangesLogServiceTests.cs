@@ -188,20 +188,14 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
         providerRepository.Setup(repo => repo.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>()))
             .Returns(providersMock);
 
         // Act
@@ -256,20 +250,14 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
         providerRepository.Setup(repo => repo.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>()))
             .Returns(providersMock);
 
         // Act
@@ -330,20 +318,14 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
         providerRepository.Setup(repo => repo.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>()))
             .Returns(providersMock);
 
         // Act
@@ -388,20 +370,14 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
         applicationRepository.Setup(repo => repo.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock);
 
         // Act
@@ -459,20 +435,14 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<ChangesLog>, IQueryable<ChangesLog>>>(),
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
         applicationRepository.Setup(repo => repo.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock);
 
         // Act
@@ -521,11 +491,8 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                 It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>()))
             .Returns(changesMock);
 
         // Act
@@ -581,11 +548,8 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>()))
             .Returns(providerAdminChangesLogs);
 
         // Act
@@ -646,11 +610,8 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Get(
                 request.From,
                 request.Size,
-                string.Empty,
-                It.IsAny<Func<IQueryable<EmployeeChangesLog>, IQueryable<EmployeeChangesLog>>>(),
                 It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<EmployeeChangesLog, object>>, SortDirection>>()))
             .Returns(providerAdminChangesLogs);
 
         // Act
@@ -714,11 +675,8 @@ public class ChangesLogServiceTests
         parentBlockedByAdminLogRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>()))
             .Returns(fakeData.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -797,11 +755,8 @@ public class ChangesLogServiceTests
         parentBlockedByAdminLogRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>()))
             .Returns(fakeData.AsTestAsyncEnumerableQuery());
 
         // Act
@@ -862,11 +817,8 @@ public class ChangesLogServiceTests
         parentBlockedByAdminLogRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<ParentBlockedByAdminLog>, IQueryable<ParentBlockedByAdminLog>>>(),
                 It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<ParentBlockedByAdminLog, dynamic>>, SortDirection>>()))
             .Returns(fakeData.AsTestAsyncEnumerableQuery());
 
         // Act

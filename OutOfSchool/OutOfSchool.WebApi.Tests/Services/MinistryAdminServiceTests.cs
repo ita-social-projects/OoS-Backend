@@ -152,11 +152,8 @@ public class MinistryAdminServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, dynamic>>, SortDirection>>()))
             .Returns(institutionAdminsMock);
 
         // Act
@@ -284,12 +281,8 @@ public class MinistryAdminServiceTests
             r.Get(
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
-                "",
-                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>(),
-                It.Is<bool>(x => x)
-            ))
+                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>()))
             .Returns(filteredMinistryAdmins.AsQueryable()
             .BuildMock());
 

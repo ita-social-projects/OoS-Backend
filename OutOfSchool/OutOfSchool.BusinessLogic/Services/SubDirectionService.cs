@@ -60,7 +60,6 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "",
                 orderBy: sortExpression,
                 whereExpression: predicate
             ).AsNoTracking()

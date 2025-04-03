@@ -78,9 +78,9 @@ public class StatisticService : IStatisticService
         {
             workshops = workshops
                 .Where(w =>
-                    w.Contacts.Any(c => c.IsDefault && 
-                        (c.Address.CATOTTGId == catottgId || 
-                        (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                    w.Contacts.Any(c => c.IsDefault &&
+                        (c.Address.CATOTTGId == catottgId ||
+                        (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name &&
                          c.Address.CATOTTG.ParentId == catottgId))));
         }
 
@@ -167,16 +167,16 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository
-            .Get(
-                includeProperties: $"{nameof(InstitutionHierarchy)}",
-                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted);
+            .Get(whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted)
+            .Include(w => w.InstitutionHierarchy)
+            .AsQueryable();
 
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Contacts.Any(c => c.IsDefault && 
-                    (c.Address.CATOTTGId == catottgId || 
-                    (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                .Where(w => w.Contacts.Any(c => c.IsDefault &&
+                    (c.Address.CATOTTGId == catottgId ||
+                    (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name &&
                      c.Address.CATOTTG.ParentId == catottgId))));
         }
 

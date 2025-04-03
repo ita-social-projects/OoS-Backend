@@ -36,7 +36,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
     {
         IQueryable<TEntity> query = dbSet.Where(x => !x.IsDeleted);
-        query = query.IncludeProperties(includeProperties, includeExpression);
+        query = query.IncludeProperties(includeExpression, includeProperties);
         return await query.ToListAsync().ConfigureAwait(false);
     }
 
@@ -68,7 +68,7 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
         TKey id,
         string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-        => dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
+        => dbSet.Where(x => !x.IsDeleted && x.Id.Equals(id)).IncludeProperties(includeExpression, includeProperties)
                 .FirstOrDefaultAsync();
 
     /// <inheritdoc/>
@@ -85,13 +85,10 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     public override IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
         Expression<Func<TEntity, bool>> whereExpression = null,
-        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
-        bool asNoTracking = false)
+        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null)
     {
-        return base.Get(skip, take, includeProperties, includeExpression, this.GetWhereExpression(whereExpression), orderBy, asNoTracking);
+        return base.Get(skip, take, this.GetWhereExpression(whereExpression), orderBy);
     }
 
     private Expression<Func<TEntity, bool>> GetWhereExpression(Expression<Func<TEntity, bool>> whereExpression)

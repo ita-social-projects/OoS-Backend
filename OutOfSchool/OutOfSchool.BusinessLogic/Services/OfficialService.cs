@@ -44,17 +44,15 @@ public class OfficialService : IOfficialService
         var predicate = BuildPredicate(filter);
         predicate = predicate.And(p => p.Position.ProviderId == providerId);
 
-        var includeFunc = (IQueryable<Official> o) => o.Include(o => o.Position)
-                                                       .Include(o => o.Individual);
-
         int count = await officialRepository.Count(predicate).ConfigureAwait(false);
 
         var officials = await officialRepository
             .Get(
              skip: filter.From,
              take: filter.Size,
-             includeExpression: includeFunc,
              whereExpression: predicate)
+            .Include(o => o.Position)
+            .Include(o => o.Individual)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);

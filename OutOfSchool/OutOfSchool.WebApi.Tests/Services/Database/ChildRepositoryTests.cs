@@ -53,7 +53,7 @@ public class ChildRepositoryTests
         IQueryable<Child> includeFunc(IQueryable<Child> p) =>
             p.Include(p => p.SocialGroups)
              .Include(p => p.Parent).ThenInclude(p => p.User);
-        var child = context.Children.IncludeProperties("SocialGroups, Parent, Parent.User", includeFunc).First();
+        var child = context.Children.IncludeProperties(includeFunc, "SocialGroups, Parent, Parent.User").First();
         var expectedChildrenCount = initialChildrenCount - 1;
 
         // Act

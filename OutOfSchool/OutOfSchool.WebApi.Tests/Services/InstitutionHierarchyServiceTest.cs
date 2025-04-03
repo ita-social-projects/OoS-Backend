@@ -166,11 +166,9 @@ public class InstitutionHierarchyServiceTests
         repo.Setup(r => r.Get(
                 0,
                 0,
-                string.Empty,
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, dynamic>>, SortDirection>>(),
-                true)).Returns(expectedEntityQueryable);
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, dynamic>>, SortDirection>>()))
+            .Returns(expectedEntityQueryable);
 
         mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(It.IsAny<InstitutionHierarchy>())).Returns(expectedDto);
 

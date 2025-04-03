@@ -15,6 +15,46 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class ExternalExportService : IExternalExportService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in Provider entity
+    /// </summary>
+    private readonly Func<IQueryable<Provider>, IQueryable<Provider>> providerIncludeFunc =
+            p => p.Include(p => p.ProviderSectionItems)
+                  .Include(p => p.Images)
+                  .Include(p => p.Institution)
+                  .Include(p => p.Type)
+                  .IncludeContactsWithCodeficatorHierarchy();
+
+    /// <summary>
+    /// Create a delegate to include other entities in Workshop entity
+    /// </summary>
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> workshopIncludeFunc =
+            W => W.Include(w => w.WorkshopDescriptionItems)
+                  .Include(w => w.Tags)                
+                  .Include(w => w.Images)
+                  .Include(w => w.DateTimeRanges)
+                  .Include(w => w.Teachers)
+                  .Include(w => w.InstitutionHierarchy)
+                  .ThenInclude(ih => ih.Institution)
+                  .Include(w => w.InstitutionHierarchy)
+                  .ThenInclude(i => i.SubDirections)
+                  .ThenInclude(sb => sb.Direction)
+                  .Include(w => w.DefaultTeacher)
+                  .IncludeContactsWithCodeficatorHierarchy();
+
+    /// <summary>
+    /// Create a delegate to include other entities in CompetitiveEvent entity
+    /// </summary>
+    private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> competitiveEventIncludeFunc =
+            ce => ce.Include(ce => ce.CompetitiveEventDescriptionItems)
+                    .Include(ce => ce.Parent)
+                    .Include(ce => ce.CompetitiveEventAccountingType)
+                    .Include(ce => ce.Coverage)
+                    .Include(ce => ce.InstitutionHierarchy)
+                    .ThenInclude(i => i.SubDirections)
+                    .ThenInclude(s => s.Direction)
+                    .IncludeContactsWithCodeficatorHierarchy();
+
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly IApplicationRepository applicationRepository;
@@ -67,11 +107,7 @@ public class ExternalExportService : IExternalExportService
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     whereExpression: filterExpression)
-                .Include(p => p.ProviderSectionItems)
-                .Include(p => p.Images)
-                .Include(p => p.Institution)
-                .Include(p => p.Type)
-                .IncludeContactsWithCodeficatorHierarchy()
+                .IncludeProperties(providerIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -113,18 +149,7 @@ public class ExternalExportService : IExternalExportService
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     whereExpression: filterExpression)
-                .Include(w => w.WorkshopDescriptionItems)
-                .Include(w => w.Tags)
-                .Include(w => w.Images)
-                .Include(w => w.DateTimeRanges)
-                .Include(w => w.Teachers)
-                .Include(w => w.InstitutionHierarchy)
-                .ThenInclude(i => i.Institution)
-                .Include(w => w.InstitutionHierarchy)
-                .ThenInclude(i => i.SubDirections)
-                .ThenInclude(s => s.Direction)
-                .Include(w => w.DefaultTeacher)
-                .IncludeContactsWithCodeficatorHierarchy()
+                .IncludeProperties(workshopIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -166,14 +191,7 @@ public class ExternalExportService : IExternalExportService
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     whereExpression: filterExpression)
-                .Include(c => c.CompetitiveEventDescriptionItems)
-                .Include(c => c.Parent)
-                .Include(c => c.CompetitiveEventAccountingType)
-                .Include(c => c.Coverage)
-                .Include(w => w.InstitutionHierarchy)
-                .ThenInclude(i => i.SubDirections)
-                .ThenInclude(s => s.Direction)
-                .IncludeContactsWithCodeficatorHierarchy()
+                .IncludeProperties(competitiveEventIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -205,7 +223,7 @@ public class ExternalExportService : IExternalExportService
             logger.LogDebug("Getting Directions started");
 
             offsetFilter ??= new OffsetFilter();
-            
+
             Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
                 ? direction => !direction.IsDeleted
                 : direction => direction.UpdatedAt > updatedAfter;

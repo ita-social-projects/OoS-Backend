@@ -41,7 +41,7 @@ public class StudySubjectService : IStudySubjectService
     public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
         await providerService.HasProviderRights(providerId).ConfigureAwait(false);
-        
+
         logger.LogDebug("StudySubject creating was started");
 
         if (dto is null)
@@ -115,9 +115,9 @@ public class StudySubjectService : IStudySubjectService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Language",
-                whereExpression: predicate
-            ).AsNoTracking()
+                whereExpression: predicate)
+            .Include(ss => ss.Language)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 

@@ -395,11 +395,8 @@ public class WorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
@@ -410,11 +407,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(emptyList.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
@@ -447,11 +441,8 @@ public class WorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
@@ -462,11 +453,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
