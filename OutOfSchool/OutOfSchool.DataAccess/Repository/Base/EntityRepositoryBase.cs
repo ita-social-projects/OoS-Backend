@@ -146,8 +146,8 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetByIdWithDetails(
-        TKey id, 
-        string includeProperties = "", 
+        TKey id,
+        string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
                 .FirstOrDefaultAsync();
@@ -252,5 +252,47 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public int SaveChanges(bool acceptAllChangesOnSuccess = true)
     {
         return dbContext.SaveChanges();
+    }
+
+    public IQueryable<TEntity> NewGet(
+        int skip = 0,
+        int take = 0,
+        Expression<Func<TEntity, bool>> whereExpression = null,
+        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null)
+    {
+        IQueryable<TEntity> query = dbSet;
+
+        if (whereExpression != null)
+        {
+            query = query.Where(whereExpression);
+        }
+
+        if ((orderBy != null) && orderBy.Any())
+        {
+            var orderedData = orderBy.Values.First() == SortDirection.Ascending
+                ? query.OrderBy(orderBy.Keys.First())
+                : query.OrderByDescending(orderBy.Keys.First());
+
+            foreach (var expression in orderBy.Skip(1))
+            {
+                orderedData = expression.Value == SortDirection.Ascending
+                    ? orderedData.ThenBy(expression.Key)
+                    : orderedData.ThenByDescending(expression.Key);
+            }
+
+            query = orderedData;
+        }
+
+        if (skip > 0)
+        {
+            query = query.Skip(skip);
+        }
+
+        if (take > 0)
+        {
+            query = query.Take(take);
+        }
+
+        return query;
     }
 }
