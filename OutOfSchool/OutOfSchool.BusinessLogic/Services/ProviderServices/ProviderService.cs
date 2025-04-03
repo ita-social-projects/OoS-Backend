@@ -262,13 +262,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
 
         Func<IQueryable<Provider>, IQueryable<Provider>> includeFunc =
-            p => p.Include(p => p.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
-                                           .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent)
-                                           .ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
-            .Include(p => p.ProviderSectionItems)
-            .Include(p => p.Type)
-            .Include(p => p.Institution)
-            .Include(p => p.Images);
+            p => p.Include(p => p.ProviderSectionItems)
+                  .Include(p => p.Type)
+                  .Include(p => p.Institution)
+                  .Include(p => p.Images)
+                  .IncludeContactsWithCodeficatorHierarchy();
 
         Expression<Func<Provider, bool>> providerFilter = p => p.Id == id;
         var provider = await providerRepository

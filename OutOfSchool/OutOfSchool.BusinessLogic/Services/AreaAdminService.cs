@@ -16,6 +16,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class AreaAdminService : CommunicationService, IAreaAdminService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in AreaAdmin entity
+    /// </summary>
     private readonly Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>> includeFunc =
                     aa => aa.Include(aa => aa.Institution)
                             .Include(aa => aa.User)

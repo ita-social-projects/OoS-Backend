@@ -22,15 +22,16 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly ICurrentUserService currentUserService;
     private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
 
+    /// <summary>
+    /// Create a delegate to include other entities in CompetitiveEvent entity
+    /// </summary>
     private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> includeFunc =
     query => query
         .Include(e => e.InstitutionHierarchy)
         .Include(e => e.CompetitiveEventDescriptionItems)
         .Include(e => e.Coverage)
-        .Include(e => e.Contacts)
-            .ThenInclude(c => c.Address)
-                .ThenInclude(a => a.CATOTTG)
-                .ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent).ThenInclude(c => c.Parent);
+        .IncludeContactsWithCodeficatorHierarchy();
+
     public CompetitiveEventService(
         ICompetitiveEventRepository competitiveEventRepository,
         IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,

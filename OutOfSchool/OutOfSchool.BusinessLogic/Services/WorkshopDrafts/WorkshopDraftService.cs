@@ -45,6 +45,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly ICodeficatorRepository codeficatorRepository;
     private readonly int maxParallelUploads;
 
+    /// <summary>
+    /// Create a delegate to include other entities in InstitutionHierarchy entity
+    /// </summary>
     private readonly Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>> includeDirectionsFunc =
         i => i.Include(i => i.SubDirections);
 
