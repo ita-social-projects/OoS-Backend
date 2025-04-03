@@ -23,6 +23,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class ApplicationService : IApplicationService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in Application entity
+    /// </summary>
     private readonly Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
         a => a.Include(a => a.Workshop)
               .Include(a => a.Child)

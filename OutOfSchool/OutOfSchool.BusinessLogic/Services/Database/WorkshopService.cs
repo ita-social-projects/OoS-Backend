@@ -25,6 +25,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in Workshop entity
+    /// </summary>
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc =
         w => w.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
@@ -956,9 +959,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var tempPredicate = PredicateBuilder.False<Workshop>();
 
             // Fix Rider ambiguous method with either char or string args
-            // ReSharper disable once UseCollectionExpression
-            // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }

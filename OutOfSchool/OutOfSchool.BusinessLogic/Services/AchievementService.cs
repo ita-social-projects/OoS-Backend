@@ -8,6 +8,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class AchievementService : IAchievementService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in Achievement entity
+    /// </summary>
     private readonly Func<IQueryable<Achievement>, IQueryable<Achievement>> includeFunc =
         a => a.Include(a => a.Children)
               .Include(a => a.Teachers)

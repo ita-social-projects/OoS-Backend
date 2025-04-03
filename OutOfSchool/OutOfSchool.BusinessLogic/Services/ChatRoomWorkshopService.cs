@@ -95,7 +95,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var chatRooms = await roomRepository.Get(whereExpression: x => x.Id == id)
-                    .IncludeProperties(crw => crw.Include(crw => crw.ChatMessages))
+                    .Include(crw => crw.ChatMessages)
                     .ToListAsync()
                     .ConfigureAwait(false);
             var chatRoom = chatRooms.Single();
@@ -125,7 +125,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         {
             var chatRooms = await roomRepository.GetByFilter(
                     whereExpression: x => x.Id == id,
-                    includeProperties: $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}")
+                    includeExpression: crw => crw.Include(crw => crw.Parent).Include(crw => crw.Workshop))
                 .ConfigureAwait(false);
 
             var chatRoom = chatRooms.SingleOrDefault();

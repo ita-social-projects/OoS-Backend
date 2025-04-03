@@ -162,7 +162,7 @@ public class PositionServiceTests
 
     #region GetById
     [Test]
-    public async Task GetById_WithInvalidPosition_ReturnsMessage()
+    public void GetById_WithInvalidPosition_ReturnsMessage()
     {
         // Arrange 
         var data = Positions().AsQueryable().BuildMock();
@@ -170,7 +170,7 @@ public class PositionServiceTests
 
         _mockRepository.Setup(r => r.GetByFilter(
             It.IsAny<Expression<Func<Position, bool>>>(),
-            It.IsAny<string>(),
+            string.Empty,
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
         .ReturnsAsync(new List<Position>());
 
@@ -190,7 +190,7 @@ public class PositionServiceTests
 
         _mockRepository.Setup(r => r.GetByFilter(
             It.IsAny<Expression<Func<Position, bool>>>(),
-            It.IsAny<string>(),
+            string.Empty,
             It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
         .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
         {

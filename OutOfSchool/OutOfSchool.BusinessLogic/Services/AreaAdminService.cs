@@ -16,6 +16,13 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class AreaAdminService : CommunicationService, IAreaAdminService
 {
+    private readonly Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>> includeFunc =
+                    aa => aa.Include(aa => aa.Institution)
+                            .Include(aa => aa.User)
+                            .Include(aa => aa.CATOTTG)
+                            .ThenInclude(c => c.Parent)
+                            .ThenInclude(p => p.Parent);
+
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IAreaAdminRepository areaAdminRepository;
     private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
@@ -205,11 +212,6 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             { x => x.User.LastLogin == DateTimeOffset.MinValue, SortDirection.Descending },
             { x => x.User.LastName, SortDirection.Ascending },
         };
-
-        Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>> includeFunc =
-            aa => aa.Include(aa => aa.Institution)
-                    .Include(aa => aa.User)
-                    .Include(aa => aa.CATOTTG).ThenInclude(c => c.Parent).ThenInclude(p => p.Parent);
 
         var otgAdmins = await areaAdminRepository
             .Get(

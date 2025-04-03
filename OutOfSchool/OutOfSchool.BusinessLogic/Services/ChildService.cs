@@ -15,6 +15,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class ChildService : IChildService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in Child entity
+    /// </summary>
     private readonly Func<IQueryable<Child>, IQueryable<Child>> includeFunc =
         c => c.Include(c => c.SocialGroups)
               .Include(c => c.Parent).ThenInclude(p => p.User);

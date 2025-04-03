@@ -15,7 +15,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class ExternalExportService : IExternalExportService
 {
-    // Create a delegate to include other entities in Provider entity
+    /// <summary>
+    /// Create a delegate to include other entities in Provider entity
+    /// </summary>
     private readonly Func<IQueryable<Provider>, IQueryable<Provider>> providerIncludeFunc =
             p => p.Include(p => p.ProviderSectionItems)
                   .Include(p => p.Images)
@@ -23,7 +25,9 @@ public class ExternalExportService : IExternalExportService
                   .Include(p => p.Type)
                   .IncludeContactsWithCodeficatorHierarchy();
 
-    // Create a delegate to include other entities in Workshop entity
+    /// <summary>
+    /// Create a delegate to include other entities in Workshop entity
+    /// </summary>
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> workshopIncludeFunc =
             W => W.Include(w => w.WorkshopDescriptionItems)
                   .Include(w => w.Tags)                
@@ -38,7 +42,9 @@ public class ExternalExportService : IExternalExportService
                   .Include(w => w.DefaultTeacher)
                   .IncludeContactsWithCodeficatorHierarchy();
 
-    // Create a delegate to include other entities in CompetitiveEvent entity
+    /// <summary>
+    /// Create a delegate to include other entities in CompetitiveEvent entity
+    /// </summary>
     private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> competitiveEventIncludeFunc =
             ce => ce.Include(ce => ce.CompetitiveEventDescriptionItems)
                     .Include(ce => ce.Parent)
