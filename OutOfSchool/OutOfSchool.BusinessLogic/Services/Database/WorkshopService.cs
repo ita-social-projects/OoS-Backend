@@ -376,19 +376,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             if (!dto.TagIds.IsNullOrEmpty())
             {
-                var tags = new List<TagDto>();
-                foreach (var tagId in dto.TagIds)
-                {
-                    var tag = await tagService.GetById(tagId);
-                    if (tag != null)
-                    {
-                        var tagDto = mapper.Map<TagDto>(tag);
-                        tags.Add(tagDto);
-                    }
-                }
+                var tagEntities = await tagRepository
+                    .GetByFilter(t => dto.TagIds.Contains(t.Id));
 
                 currentWorkshop.Tags.Clear();
-                currentWorkshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
+                currentWorkshop.Tags.AddRange(tagEntities);
             }
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
