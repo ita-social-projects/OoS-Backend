@@ -184,7 +184,8 @@ public class AdminControllerTests
             Id = 1,
             Title = "ChangedTitle",
         };
-        sensitiveDirectionService.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
+        var returnedResult = Result<DirectionDto>.Success(changedDirection);
+        sensitiveDirectionService.Setup(x => x.Update(changedDirection)).ReturnsAsync(returnedResult);
 
         // Act
         var result = await controller.UpdateDirections(changedDirection).ConfigureAwait(false) as OkObjectResult;
@@ -221,7 +222,8 @@ public class AdminControllerTests
             Id = 1,
             Title = "ChangedTitle",
         };
-        sensitiveDirectionService.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
+        var returnedResult = Result<DirectionDto>.Success(changedDirection);
+        sensitiveDirectionService.Setup(x => x.Update(changedDirection)).ReturnsAsync(returnedResult);
 
         // Act
         var result = await controller.UpdateDirections(changedDirection).ConfigureAwait(false);

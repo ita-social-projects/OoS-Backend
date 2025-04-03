@@ -85,9 +85,9 @@ public class StatisticService : IStatisticService
         }
 
         var directionsWithWorkshops = workshops
-            .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .SelectMany(w => w.InstitutionHierarchy.SubDirections)
             .Where(d => !d.IsDeleted)
-            .GroupBy(d => d.Id)
+            .GroupBy(d => d.DirectionId)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -95,9 +95,9 @@ public class StatisticService : IStatisticService
             });
 
         var directionsWithApplications = applications
-            .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .SelectMany(a => a.Workshop.InstitutionHierarchy.SubDirections)
             .Where(d => !d.IsDeleted)
-            .GroupBy(d => d.Id)
+            .GroupBy(d => d.DirectionId)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -193,7 +193,7 @@ public class StatisticService : IStatisticService
             .Include(w => w.Applications).ThenInclude(a => a.Parent)
             .Include(w => w.Provider)
             .Include(w => w.Contacts).ThenInclude(c => c.Address.CATOTTG)
-            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Directions)
+            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.SubDirections).ThenInclude(s => s.Direction)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Institution)
             .Take(limit)
             .AsNoTracking();

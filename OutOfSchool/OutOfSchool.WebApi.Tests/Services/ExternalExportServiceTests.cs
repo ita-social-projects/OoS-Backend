@@ -13,7 +13,6 @@ using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
-using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -29,9 +28,8 @@ public class ExternalExportServiceTests
     private Mock<IApplicationRepository> mockApplicationRepository;
     private Mock<IAverageRatingService> mockAverageRatingService;
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> mockDirectionRepository;
-    private Mock<ISensitiveEntityRepositorySoftDeleted<Institution>> mockInstitutionRepository;
-    private Mock<IInstitutionHierarchyRepository> mockInstitutionHierarchyRepository;
     private Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>> mockCompetitiveEventRepository;
+    private Mock<IEntityRepositorySoftDeleted<long, SubDirection>> mockSubDirectionRepository;
     private IMapper mockMapper;
     private Mock<ILogger<ExternalExportService>> mockLogger;
 
@@ -43,9 +41,8 @@ public class ExternalExportServiceTests
         mockApplicationRepository = new Mock<IApplicationRepository>();
         mockAverageRatingService = new Mock<IAverageRatingService>();
         mockDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
-        mockInstitutionRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<Institution>>();
-        mockInstitutionHierarchyRepository = new Mock<IInstitutionHierarchyRepository>();
         mockCompetitiveEventRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>>();
+        mockSubDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, SubDirection>>();
         mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ExternalExportMappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportService>>();
 
@@ -55,9 +52,8 @@ public class ExternalExportServiceTests
             mockApplicationRepository.Object,
             mockAverageRatingService.Object,
             mockDirectionRepository.Object,
-            mockInstitutionRepository.Object,
-            mockInstitutionHierarchyRepository.Object,
             mockCompetitiveEventRepository.Object,
+            mockSubDirectionRepository.Object,
             mockMapper,
             mockLogger.Object);
     }
@@ -320,28 +316,12 @@ public class ExternalExportServiceTests
         Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(updatedAfter, new OffsetFilter()));
     }
 
-    /// <summary>
-    /// This is the only sub direction logic, that can be tested on mocks
-    /// </summary>
-    [Test]
-    public void GetSubDirections_ExceptionInGetSubDirections_ReturnsEmptySearchResult()
-    {
-        // Arrange
-        var updatedAfter = DateTime.UtcNow;
-        var offsetFilter = new OffsetFilter { Size = 10 };
-        mockInstitutionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<Expression<Func<Institution, bool>>>(), null))
-            .Throws(new Exception("Simulated exception"));
-
-        // Act & Assert
-        Assert.CatchAsync<Exception>(() => externalExportService.GetSubDirections(updatedAfter, new OffsetFilter()));
-    }
-
     [Test]
     public void Constructor_NullProviderRepository_ThrowsArgumentNullException()
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -349,7 +329,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -357,7 +337,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -365,7 +345,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, null, Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<ILogger<ExternalExportService>>()));
     }
 
     [Test]
@@ -373,7 +353,7 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<IMapper>(), null));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), null));
     }
 
     [Test]
@@ -381,7 +361,72 @@ public class ExternalExportServiceTests
     {
         // Arrange, Act, Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), null, null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
+    }
+    
+    [Test]
+    public async Task GetSubDirections_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        var fakeSubDirections = new List<SubDirection>();
+
+        mockSubDirectionRepository
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+            .Returns(fakeSubDirections.AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await externalExportService.GetSubDirections(updatedAfter, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.AreEqual(0, result.Entities.Count);
+    }
+
+    [Test]
+    public async Task GetSubDirections_ReturnsSearchResultData()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+
+        var fakeSubDirections = new List<SubDirection>
+        {
+            new() { Id = 1, Title = "SubDirection 1" },
+            new() { Id = 2, Title = "SubDirection 2" },
+            new() { Id = 3, Title = "SubDirection 3" },
+            new() { Id = 4, Title = "SubDirection 4" }
+        };
+
+        mockSubDirectionRepository
+            .Setup(x => x.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+            .Returns(fakeSubDirections.AsTestAsyncEnumerableQuery());
+
+        mockSubDirectionRepository.Setup(x => x.Count(It.IsAny<Expression<Func<SubDirection, bool>>>())).ReturnsAsync(fakeSubDirections.Count);
+
+        // Act
+        var result = await externalExportService.GetSubDirections(default, offsetFilter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(fakeSubDirections.Count, result.TotalAmount);
+        Assert.AreEqual(fakeSubDirections.Count, result.Entities.Count);
+        mockSubDirectionRepository.Verify(x => x.Count(It.IsAny<Expression<Func<SubDirection, bool>>>()), Times.Once);
+    }
+
+    [Test]
+    public void GetSubDirections_ExceptionInGetSubDirections_ReturnsEmptySearchResult()
+    {
+        // Arrange
+        var updatedAfter = DateTime.UtcNow;
+        var offsetFilter = new OffsetFilter { Size = 10 };
+        mockSubDirectionRepository.Setup(repo => repo.Get(offsetFilter.From, offsetFilter.Size, It.IsAny<string>(), It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>(), It.IsAny<Expression<Func<SubDirection, bool>>>(), null, false))
+            .Throws(new Exception("Simulated exception"));
+
+        // Act & Assert
+        Assert.CatchAsync<Exception>(() => externalExportService.GetSubDirections(updatedAfter, new OffsetFilter()));
     }
 
     private List<CompetitiveEvent> CompetitiveEvents()

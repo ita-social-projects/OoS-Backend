@@ -43,7 +43,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
@@ -343,7 +343,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.DirectionId)))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus))
@@ -405,7 +405,7 @@ public class MappingProfile : Profile
         CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>();
         CreateSoftDeletedMap<InstitutionHierarchyDto, InstitutionHierarchy>()
             .ForMember(c => c.Parent, m => m.Ignore())
-            .ForMember(c => c.Directions, m => m.Ignore())
+            .ForMember(c => c.SubDirections, m => m.Ignore())
             .ForMember(c => c.Institution, m => m.Ignore())
             .ForMember(c => c.UpdatedAt, m => m.Ignore());
 
@@ -436,11 +436,19 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
 
         CreateSoftDeletedMap<DirectionDto, Direction>()
-            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore())
+            .ForMember(dest => dest.SubDirections, opt => opt.Ignore())
             .ForMember(c => c.UpdatedAt, m => m.Ignore());
 
         CreateMap<Direction, DirectionDto>()
             .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
+
+        CreateSoftDeletedMap<SubDirectionDto, SubDirection>()
+            .ForMember(dest => dest.DirectionId, opt => opt.Ignore())
+            .ForMember(dest => dest.Direction, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
+
+        CreateMap<SubDirection, SubDirectionDto>();
 
         // TODO: Check this mapping
         CreateMap<CreateEmployeeDto, CreateProviderAdminRequest>()
@@ -757,7 +765,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())

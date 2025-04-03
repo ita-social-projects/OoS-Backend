@@ -66,7 +66,7 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.AdminsChildernParentsManagement))]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<ActionResult> Delete(Guid id)
     {
         await serviceParent.Delete(id).ConfigureAwait(false);
@@ -103,7 +103,7 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.AdminsChildernParentsManagement))]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<ActionResult> BlockUnblockParent([FromBody] BlockUnblockParentDto parentBlockUnblock)
     {
         var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);

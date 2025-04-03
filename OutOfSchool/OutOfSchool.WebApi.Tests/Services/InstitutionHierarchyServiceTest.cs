@@ -65,7 +65,7 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = new List<Direction>(),
+            SubDirections = new List<SubDirection>(),
         };
 
         var input = new InstitutionHierarchyDto()
@@ -73,7 +73,7 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = new List<DirectionDto>(),
+            SubDirections = new List<SubDirectionDto>(),
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchy>(It.IsAny<InstitutionHierarchyDto>())).Returns(expected);
@@ -101,7 +101,7 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = new List<DirectionDto>(),
+            SubDirections = new List<SubDirectionDto>(),
         };
 
         // Act
@@ -229,8 +229,8 @@ public class InstitutionHierarchyServiceTests
         Guid institutionId = Guid.NewGuid();
         Guid hierarchyId = Guid.NewGuid();
         List<long> directionsIds = new List<long> { 1 };
-        List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
-        List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
+        List<SubDirection> subDirections = new List<SubDirection> { new SubDirection() { Id = 1, Title = "Direction" } };
+        List<SubDirectionDto> subDirectionsDtos = new List<SubDirectionDto> { new SubDirectionDto() { Id = 1, Title = "Direction" } };
 
         var changedDto = new InstitutionHierarchyDto()
         {
@@ -238,7 +238,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = directionsDtos,
+            SubDirections = subDirectionsDtos,
         };
 
         var changedEntity = new InstitutionHierarchy()
@@ -247,7 +247,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = directions,
+            SubDirections = subDirections,
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
@@ -271,8 +271,8 @@ public class InstitutionHierarchyServiceTests
         Guid institutionId = Guid.NewGuid();
         Guid hierarchyId = Guid.NewGuid();
         List<long> directionsIds = new List<long> { 1 };
-        List<Direction> directions = new List<Direction> { new Direction() { Id = 1, Title = "Direction" } };
-        List<DirectionDto> directionsDtos = new List<DirectionDto> { new DirectionDto() { Id = 1, Title = "Direction" } };
+        List<SubDirection> subDirections = new List<SubDirection> { new SubDirection() { Id = 1, Title = "Direction" } };
+        List<SubDirectionDto> subDirectionsDtos = new List<SubDirectionDto> { new SubDirectionDto() { Id = 1, Title = "Direction" } };
 
         var changedEntity = new InstitutionHierarchy()
         {
@@ -280,7 +280,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = directions,
+            SubDirections = subDirections,
         };
 
         var changedDto = new InstitutionHierarchyDto()
@@ -289,7 +289,7 @@ public class InstitutionHierarchyServiceTests
             Title = "ChangedTitle1",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            Directions = directionsDtos,
+            SubDirections = subDirectionsDtos,
         };
 
         mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);

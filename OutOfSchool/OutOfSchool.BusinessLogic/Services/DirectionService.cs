@@ -55,25 +55,29 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
     }
 
     /// <inheritdoc/>
-    public async Task<DirectionDto> Create(DirectionDto dto)
+    public async Task<Result<DirectionDto>> Create(DirectionDto dto)
     {
-        logger.LogInformation("Direction creating was started.");
+        logger.LogDebug("Direction creating was started.");
 
         var direction = mapper.Map<Direction>(dto);
 
-        DirectionValidation(dto);
+        var validationErrors = await DirectionValidation(dto).ConfigureAwait(false);
+        if (validationErrors.Any())
+        {
+            return Result<DirectionDto>.Failed(validationErrors.ToArray());
+        }
 
         var newDirection = await repository.Create(direction).ConfigureAwait(false);
 
-        logger.LogInformation($"Direction with Id = {newDirection?.Id} created successfully.");
+        logger.LogDebug("Direction with Id = {id} created successfully.", newDirection?.Id);
 
-        return mapper.Map<DirectionDto>(newDirection);
+        return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(newDirection));
     }
 
     /// <inheritdoc/>
     public async Task<Result<DirectionDto>> Delete(long id)
     {
-        logger.LogInformation($"Deleting Direction with Id = {id} started.");
+        logger.LogDebug("Deleting Direction with Id = {id} started.", id);
 
         var direction = await repository.GetById(id).ConfigureAwait(false);
 
@@ -81,13 +85,13 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         {
             return Result<DirectionDto>.Failed(new OperationError
             {
-                Code = "400",
-                Description = $"Direction with Id = {id} is not exists.",
+                Code = "404",
+                Description = $"Direction with Id = {id} does not exist.",
             });
         }
 
         var workShops = await repositoryWorkshop
-            .GetByFilter(w => w.InstitutionHierarchy.Directions.Any(d => d.Id == id))
+            .GetByFilter(w => w.InstitutionHierarchy.SubDirections.Any(d => d.DirectionId == id))
             .ConfigureAwait(false);
 
         if (workShops.Any())
@@ -103,34 +107,37 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         {
             await repository.Delete(direction).ConfigureAwait(false);
 
-            logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
+            logger.LogDebug("Direction with Id = {id} succesfully deleted.", id);
 
             return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Deleting failed. Direction with Id = {id} doesn't exist in the system.");
-            throw;
+            logger.LogError(ex, "Deleting failed. Direction with Id = {id} doesn't exist in the system.", id);
+            return Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Deleting Direction with Id = {id} failed"
+            });
         }
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<DirectionDto>> GetAll()
     {
-        logger.LogInformation("Getting all Directions started.");
+        logger.LogDebug("Getting all Directions started.");
 
         var directions = await repository.GetAll().ConfigureAwait(false);
 
-        logger.LogInformation(!directions.Any()
-            ? "Direction table is empty."
-            : $"All {directions.Count()} records were successfully received from the Direction table.");
+        logger.LogDebug("{Count} records were successfully received from the Direction table.", directions.Count());
 
         return directions.OrderBy(x => x.Title).Select(entity => mapper.Map<DirectionDto>(entity)).ToList();
     }
 
+    /// <inheritdoc/>
     public async Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter, bool isAdmins)
     {
-        logger.LogInformation("Getting Directions by filter started.");
+        logger.LogDebug("Getting Directions by filter started.");
 
         var (predicate, workshopCountFilter) = await BuildPredicate(filter, isAdmins).ConfigureAwait(false);
 
@@ -142,13 +149,13 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         };
 
         var directions = await repository
-            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression)
+            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression, includeProperties: "SubDirections")
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop
             .Get(whereExpression: workshopCountFilter
-                .And(w => w.InstitutionHierarchy.Directions.Any(d => directions.Contains(d))))
-            .SelectMany(w => w.InstitutionHierarchy.Directions)
+                .And(w => w.InstitutionHierarchy.SubDirections.Any(d => directions.Contains(d.Direction))))
+            .SelectMany(w => w.InstitutionHierarchy.SubDirections.Select(d => d.Direction))
             .GroupBy(d => d.Id)
             .Select(g => new
             {
@@ -164,7 +171,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
                                    select mapper.Map<DirectionDto>(d).WithCount(res?.WorkshopsCount ?? 0))
             .ToList();
 
-        logger.LogInformation($"All {directionsWorkshops.Count()} records were successfully received from the Direction table.");
+        logger.LogDebug("{Count} records were successfully received from the Direction table.", directionsWorkshops.Count);
 
         var result = new SearchResult<DirectionDto>()
         {
@@ -178,51 +185,72 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
     /// <inheritdoc/>
     public async Task<DirectionDto> GetById(long id)
     {
-        logger.LogInformation($"Getting Direction by Id started. Looking Id = {id}.");
+        logger.LogDebug("Getting Direction by Id started. Looking Id = {id}.", id);
 
         var direction = await repository.GetById((int)id).ConfigureAwait(false);
 
         if (direction == null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(id),
-                localizer["The id cannot be greater than number of table entities."]);
+            logger.LogError("Direction with Id = {id} doesn't exist in the system.", id);
+            return null;
         }
 
-        logger.LogInformation($"Successfully got a Direction with Id = {id}.");
+        logger.LogDebug("Successfully got a Direction with Id = {id}.", id);
 
         return mapper.Map<DirectionDto>(direction);
     }
 
     /// <inheritdoc/>
-    public async Task<DirectionDto> Update(DirectionDto dto)
+    public async Task<Result<DirectionDto>> Update(DirectionDto dto)
     {
-        logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
+        logger.LogDebug("Updating Direction with Id = {id} started.", dto?.Id);
 
-        ArgumentNullException.ThrowIfNull(dto);
+        if (dto == null)
+        {
+            logger.LogError("Updating failed. Dto is null");
+            return Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = $"Dto is null.",
+            });
+        }
 
         var direction = await repository.GetById(dto.Id).ConfigureAwait(false);
 
         if (direction is null)
         {
-            logger.LogError($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
-            throw new DbUpdateConcurrencyException($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
+            logger.LogError("Updating failed. Direction with Id = {id} doesn't exist in the system.", dto.Id);
+            return Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"Direction with Id = {dto.Id} does not exist.",
+            });
         }
 
         mapper.Map(dto, direction);
         direction = await repository.Update(direction).ConfigureAwait(false);
 
-        logger.LogInformation($"Direction with Id = {direction?.Id} updated succesfully.");
+        logger.LogDebug("Direction with Id = {id} updated succesfully.", direction?.Id);
 
-        return mapper.Map<DirectionDto>(direction);
+        return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
     }
 
-    private void DirectionValidation(DirectionDto dto)
+    private async Task<List<OperationError>> DirectionValidation(DirectionDto dto)
     {
-        if (repository.Get(whereExpression: x => x.Title == dto.Title).Any())
+        var errors = new List<OperationError>();
+
+        if (await repository.Get(whereExpression: x => x.Title == dto.Title).AnyAsync())
         {
-            throw new ArgumentException(localizer["There is already a Direction with such a data."]);
+            logger.LogWarning(localizer["There is already a Direction with such a data."]);
+
+            errors.Add(new OperationError()
+            {
+                Code = "400",
+                Description = localizer["There is already a Direction with such a data."]
+            });
         }
+
+        return errors;
     }
 
     private async Task<(Expression<Func<Direction, bool>>, Expression<Func<Workshop, bool>>)> BuildPredicate(DirectionFilter filter, bool isAdmins)
@@ -232,7 +260,8 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
             predicate = predicate
-                .And(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase));
+                .And(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase) ||
+                direction.SubDirections.Any(s => s.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
@@ -243,7 +272,8 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
             {
                 var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
                 predicate = predicate
-                    .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId));
+                    .And<Direction>(d => d.SubDirections.
+                    Any(s => s.InstitutionHierarchies.Any(h => h.InstitutionId == ministryAdmin.InstitutionId)));
                 workshopCountFilter = workshopCountFilter
                     .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
             }
@@ -251,14 +281,13 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
             {
                 var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
                 predicate = predicate
-                    .And<Direction>(d => d.InstitutionHierarchies.Any(h => h.InstitutionId == regionAdmin.InstitutionId));
+                    .And<Direction>(d => d.SubDirections
+                    .Any(s => s.InstitutionHierarchies.Any(h => h.InstitutionId == regionAdmin.InstitutionId)));
                 workshopCountFilter = workshopCountFilter
                     .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
             }
         }
-
-        if (!isAdmins)
-        {
+        else {
             workshopCountFilter = workshopCountFilter
                 .And<Workshop>(w => w.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == filter.CatottgId));
         }

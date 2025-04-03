@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -84,27 +85,22 @@ public class DirectionSensitiveServiceTests
         var result = await service.Update(changedEntity).ConfigureAwait(false);
 
         // Assert
-        Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
+        Assert.That(changedEntity.Title, Is.EqualTo(result.Value.Title));
     }
 
     [Test]
     [Order(7)]
-    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+    public async Task Update_WhenEntityIsInvalid_ReturnsFailedResult()
     {
         // Arrange
-        var changedEntity = new DirectionDto()
-        {
-            Title = "NewTitle1",
-        };
-        var expected = new Direction()
-        {
-            Title = "NewTitle1",
-        };
-        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
+        DirectionDto dto = null;
 
-        // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Update(changedEntity).ConfigureAwait(false));
+        // Act
+        var result = await service.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
     }
 
     private void SeedDatabase()
@@ -132,15 +128,23 @@ public class DirectionSensitiveServiceTests
                 {
                     Title = "Test2",
                     Description = "Test2",
-                    InstitutionHierarchies = new List<InstitutionHierarchy>()
+                    SubDirections = new List<SubDirection>()
                     {
-                        new InstitutionHierarchy()
+                        new SubDirection()
                         {
-                            Id = institutionHierarchyId,
-                            Title = "Title",
-                            HierarchyLevel = 1,
-                            InstitutionId = institutionId,
-                        },
+                            Title = "Test2",
+                            Description = "Test2",
+                            InstitutionHierarchies = new List<InstitutionHierarchy>()
+                            {
+                                new InstitutionHierarchy()
+                                {
+                                    Id = institutionHierarchyId,
+                                    Title = "Title",
+                                    HierarchyLevel = 1,
+                                    InstitutionId = institutionId,
+                                },
+                            },
+                        }
                     },
                 },
                 new Direction

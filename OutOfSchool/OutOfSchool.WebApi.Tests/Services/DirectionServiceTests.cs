@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
@@ -93,26 +94,30 @@ public class DirectionServiceTests
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(expected.Title, result.Title);
-        Assert.AreEqual(expected.Description, result.Description);
+        Assert.AreEqual(expected.Title, result.Value.Title);
+        Assert.AreEqual(expected.Description, result.Value.Description);
     }
 
     [Test]
     [Order(2)]
-    public async Task Create_NotUniqueEntity_ReturnsArgumentException()
+    public async Task Create_NotUniqueEntity_ReturnsFailedResult()
     {
         // TODO: Make independent test
         // Arrange
-        var expected = (await repo.GetAll()).FirstOrDefault();
+        var expectedEntity = (await repo.GetAll()).FirstOrDefault();
         var input = new DirectionDto()
         {
-            Title = expected.Title,
-            Description = expected.Description,
+            Title = expectedEntity.Title,
+            Description = expectedEntity.Description,
         };
 
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.Create(input).ConfigureAwait(false));
+        // Act
+        var result = await service.Create(input).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.IsInstanceOf<Result<DirectionDto>>(result);
     }
 
     [Test]
@@ -155,11 +160,13 @@ public class DirectionServiceTests
     [Test]
     [Order(5)]
     [TestCase(10)]
-    public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+    public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
     {
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await service.GetById(id).ConfigureAwait(false));
+        // Act
+        var result = await service.GetById(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNull(result);
     }
 
     [Test]
@@ -188,7 +195,7 @@ public class DirectionServiceTests
 
         // Assert
         Assert.False(result.Succeeded);
-        Assert.AreEqual(result.OperationResult.Errors.ElementAt(0).Description, $"Direction with Id = {id} is not exists.");
+        Assert.AreEqual(result.OperationResult.Errors.ElementAt(0).Description, $"Direction with Id = {id} does not exist.");
     }
 
     [Test]
@@ -213,9 +220,9 @@ public class DirectionServiceTests
         var institutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
 
         var expected = await repo.GetByFilter(
-            d => d.InstitutionHierarchies.Any(
+            d => d.SubDirections.SelectMany(s => s.InstitutionHierarchies).Any(
                 i => i.InstitutionId == institutionId),
-            includeProperties: "InstitutionHierarchies");
+            includeProperties: "SubDirections");
 
         var expectedDto = new DirectionDto()
         {
@@ -250,9 +257,9 @@ public class DirectionServiceTests
         var institutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
 
         var expected = await repo.GetByFilter(
-            d => d.InstitutionHierarchies.Any(
+            d => d.SubDirections.SelectMany(s => s.InstitutionHierarchies).Any(
                 i => i.InstitutionId == institutionId),
-            includeProperties: "InstitutionHierarchies");
+            includeProperties: "SubDirections");
 
         var expectedDto = new DirectionDto()
         {
@@ -303,16 +310,24 @@ public class DirectionServiceTests
                 {
                     Title = "Test2",
                     Description = "Test2",
-                    InstitutionHierarchies = new List<InstitutionHierarchy>()
+                    SubDirections = new List<SubDirection>()
                     {
-                        new InstitutionHierarchy()
+                        new SubDirection()
                         {
-                            Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                            Title = "Title",
-                            HierarchyLevel = 1,
-                            InstitutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                        },
-                    },
+                            Title = "Test2",
+                            Description = "Test2",
+                            InstitutionHierarchies = new List<InstitutionHierarchy>()
+                            {
+                                new InstitutionHierarchy()
+                                {
+                                    Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                                    Title = "Title",
+                                    HierarchyLevel = 1,
+                                    InstitutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
+                                },
+                            },
+                        }
+                    }
                 },
                 new Direction
                 {

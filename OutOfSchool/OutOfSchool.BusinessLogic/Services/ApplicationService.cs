@@ -370,10 +370,9 @@ public class ApplicationService : IApplicationService
         var sortPredicate = SortExpressionBuild(filter);
 
         Func<IQueryable<Application>, IQueryable<Application>> localIncludeFunc =
-            a => a.Include(a => a.Workshop).ThenInclude(w => w.Contacts).ThenInclude(wa => wa.Address.CATOTTG).ThenInclude(wac => wac.Parent)
-                                     .ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
+            a => a.IncludeNavigationPropertyContactsWithCodeficatorHierarchy(a => a.Workshop)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Institution)
-            .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Directions)
+            .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.SubDirections).ThenInclude(wis => wis.Direction)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Child)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Parent)
             .Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
