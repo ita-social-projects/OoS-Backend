@@ -149,7 +149,8 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
         };
 
         var directions = await repository
-            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression, includeProperties: "SubDirections")
+            .Get(skip: filter.From, take: filter.Size, whereExpression: predicate, orderBy: sortExpression)
+            .Include(d => d.SubDirections)
             .ToListAsync();
 
         var workshopCount = await repositoryWorkshop

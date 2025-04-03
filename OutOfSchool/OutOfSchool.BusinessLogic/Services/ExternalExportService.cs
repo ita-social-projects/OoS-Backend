@@ -34,7 +34,7 @@ public class ExternalExportService : IExternalExportService
                   .ThenInclude(ih => ih.Institution)
                   .Include(w => w.InstitutionHierarchy)
                   .ThenInclude(i => i.SubDirections)
-                  .ThenInclude(ih => ih.Directions)
+                  .ThenInclude(sb => sb.Direction)
                   .Include(w => w.DefaultTeacher)
                   .IncludeContactsWithCodeficatorHierarchy();
 
