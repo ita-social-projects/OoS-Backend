@@ -15,14 +15,45 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class ExternalExportService : IExternalExportService
 {
-    private const string ProviderIncludes =
-        "ProviderSectionItems,Images,Institution,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Type";
+    // Create a delegate to include other entities in Provider entity
+    private readonly Func<IQueryable<Provider>, IQueryable<Provider>> providerIncludeFunc =
+            p => p.Include(p => p.ProviderSectionItems)
+                  .Include(p => p.Images)
+                  .Include(p => p.Institution)
+                  .Include(p => p.Contacts).ThenInclude(c => c.Address)
+                                           .ThenInclude(a => a.CATOTTG)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                  .Include(p => p.Type);
 
-    private const string WorkshopIncludes =
-        "WorkshopDescriptionItems,Tags,Contacts.Address.CATOTTG.Parent.Parent.Parent.Parent,Images,DateTimeRanges,Teachers,InstitutionHierarchy,InstitutionHierarchy.Institution,InstitutionHierarchy.Directions,DefaultTeacher";
+    // Create a delegate to include other entities in Workshop entity
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> workshopIncludeFunc =
+            W => W.Include(w => w.WorkshopDescriptionItems)
+                  .Include(w => w.Tags)
+                  .Include(w => w.Contacts).ThenInclude(c => c.Address)
+                                           .ThenInclude(a => a.CATOTTG)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                                           .ThenInclude(ctg => ctg.Parent)
+                  .Include(w => w.Images)
+                  .Include(w => w.DateTimeRanges)
+                  .Include(w => w.Teachers)
+                  .Include(w => w.InstitutionHierarchy).ThenInclude(ih => ih.Institution)
+                  .Include(w => w.InstitutionHierarchy).ThenInclude(ih => ih.Directions)
+                  .Include(w => w.DefaultTeacher);
 
-    private const string CompetitiveEventsIncludes =
-        "CompetitiveEventDescriptionItems,Parent,CompetitiveEventAccountingType,InstitutionHierarchy,Coverage,Contacts.Address.CATOTTG";
+    // Create a delegate to include other entities in CompetitiveEvent entity
+    private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> competitiveEventIncludeFunc =
+            ce => ce.Include(ce => ce.CompetitiveEventDescriptionItems)
+                    .Include(ce => ce.Parent)
+                    .Include(ce => ce.CompetitiveEventAccountingType)
+                    .Include(ce => ce.InstitutionHierarchy)
+                    .Include(ce => ce.Coverage)
+                    .Include(ce => ce.Contacts).ThenInclude(c => c.Address)
+                                               .ThenInclude(a => a.CATOTTG);
 
     private readonly IProviderRepository providerRepository;
     private readonly IWorkshopRepository workshopRepository;
@@ -80,8 +111,8 @@ public class ExternalExportService : IExternalExportService
             var providers = await providerRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: ProviderIncludes,
                     whereExpression: filterExpression)
+                .IncludeProperties(providerIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -122,8 +153,8 @@ public class ExternalExportService : IExternalExportService
             var workshops = await workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: WorkshopIncludes,
                     whereExpression: filterExpression)
+                .IncludeProperties(workshopIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -164,8 +195,8 @@ public class ExternalExportService : IExternalExportService
             var events = await competitiveEventRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeProperties: CompetitiveEventsIncludes,
                     whereExpression: filterExpression)
+                .IncludeProperties(competitiveEventIncludeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -197,7 +228,7 @@ public class ExternalExportService : IExternalExportService
             logger.LogDebug("Getting Directions started");
 
             offsetFilter ??= new OffsetFilter();
-            
+
             Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
                 ? direction => !direction.IsDeleted
                 : direction => direction.UpdatedAt > updatedAfter;
@@ -239,11 +270,11 @@ public class ExternalExportService : IExternalExportService
             logger.LogDebug("Getting SubDirections started");
 
             offsetFilter ??= new OffsetFilter();
-            
+
             Expression<Func<Institution, bool>> institutionFilterExpression = updatedAfter == default
                 ? institution => !institution.IsDeleted
                 : institution => institution.UpdatedAt > updatedAfter;
-            
+
             Expression<Func<InstitutionHierarchy, bool>> institutionHierarchyFilterExpression = updatedAfter == default
                 ? ih => !ih.IsDeleted
                 : ih => ih.UpdatedAt > updatedAfter;
@@ -258,8 +289,8 @@ public class ExternalExportService : IExternalExportService
                 .Get(whereExpression: institutionHierarchyFilterExpression)
                 .Join(
                     institutions,
-                    ih => new {IId = ih.InstitutionId, Level = ih.HierarchyLevel},
-                    i => new {IId = i.Id, Level = i.NumberOfHierarchyLevels},
+                    ih => new { IId = ih.InstitutionId, Level = ih.HierarchyLevel },
+                    i => new { IId = i.Id, Level = i.NumberOfHierarchyLevels },
                     (ih, i) => ih);
 
             // Is deleted expression is added automatically by repo
@@ -276,7 +307,7 @@ public class ExternalExportService : IExternalExportService
             }
 
             var subDirections = await institutionSubDirections
-                .IncludeProperties("Directions")
+                .IncludeProperties(ih => ih.Include(ih=> ih.Directions))
                 .OrderBy(ih => ih.Id)
                 .ToListAsync()
                 .ConfigureAwait(false);

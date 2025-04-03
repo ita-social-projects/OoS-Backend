@@ -282,11 +282,8 @@ public class SensitiveWorkshopsServiceTests
                 w => w.Get(
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
-                    It.Is<string>(x => x.Equals(includingPropertiesForMappingDtoModel)),
-                    It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.Is<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(x => x == null),
-                    It.Is<bool>(x => x.Equals(true))))
+                    It.Is<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(x => x == null)))
             .Returns(workshopsReturned.AsTestAsyncEnumerableQuery());
     }
 

@@ -25,10 +25,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
-    private readonly string includingPropertiesForMappingDtoModel =
-        $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
-
-    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = 
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc =
         w => w.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
@@ -219,8 +216,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeExpression: includeFunc,
                     orderBy: sortExpression)
+                .IncludeProperties(includeFunc)
                 .ToList();
 
         logger.LogInformation(!workshops.Any()
@@ -306,15 +303,13 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeExpression: includeFunc,
                 whereExpression: filterPredicate)
+                .IncludeProperties(includeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-        var chatrooms = roomRepository.Get(
-            skip: 0,
-            take: 0,
-            includeProperties: "ChatMessages");
+        var chatrooms = roomRepository.Get(skip: 0, take: 0)
+            .Include(crw => crw.ChatMessages);
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
@@ -644,10 +639,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: filterPredicate,
                 orderBy: orderBy)
-            .ToList();
+                .IncludeProperties(includeFunc)
+                .ToList();
 
         logger.LogInformation(!workshops.Any()
             ? "There was no matching entity found."
@@ -759,11 +754,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
-                whereExpression: predicate,
-                asNoTracking: true)
-            .ToListAsync()
-            .ConfigureAwait(false);
+                whereExpression: predicate)
+                .IncludeProperties(includeFunc)
+                .AsNoTracking()
+                .ToListAsync()
+                .ConfigureAwait(false);
 
         var workshopsCount = await workshopRepository
             .Count(predicate)
@@ -791,9 +786,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var filterPredicate = PredicateBuild(filter, false);
 
-        var query = workshopRepository.Get(
-            whereExpression: filterPredicate,
-            includeProperties: "");
+        var query = workshopRepository.Get(whereExpression: filterPredicate);
 
         var priceRange = await query.GroupBy(_ => 1)
             .Select(g => new PriceRange
@@ -965,7 +958,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             // Fix Rider ambiguous method with either char or string args
             // ReSharper disable once UseCollectionExpression
             // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }

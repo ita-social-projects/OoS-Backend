@@ -96,11 +96,8 @@ public class ChildServiceTests
         childRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                false))
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(new List<Child>().AsTestAsyncEnumerableQuery());
         mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
             .Returns(new List<ChildDto>());
@@ -140,11 +137,8 @@ public class ChildServiceTests
         childRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                false))
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(new List<Child>().AsTestAsyncEnumerableQuery());
         mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
             .Returns(new List<ChildDto>());
@@ -361,11 +355,8 @@ public class ChildServiceTests
             .Setup(m => m.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                "",
-                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(children.BuildMock())
             .Verifiable(Times.Once);
         childRepositoryMock
@@ -393,11 +384,8 @@ public class ChildServiceTests
             .Setup(m => m.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                "",
-                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(children.BuildMock())
             .Verifiable(Times.Once);
         childRepositoryMock
@@ -425,11 +413,8 @@ public class ChildServiceTests
             .Setup(m => m.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>(),
                 It.IsAny<Expression<Func<Child, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(children.BuildMock())
             .Verifiable(Times.Once);
         childRepositoryMock

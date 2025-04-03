@@ -85,9 +85,10 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     {
         logger.LogInformation("Getting all InstitutionHierarchies started.");
 
-        var institutionHierarchies = await repository.Get(asNoTracking: true)
+        var institutionHierarchies = await repository.Get()
             .Include(x => x.Directions)
             .Include(x => x.Institution)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 

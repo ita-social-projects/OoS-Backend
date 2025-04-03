@@ -299,20 +299,16 @@ public class WorkshopServicesCombinerTests
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Favorite>, IQueryable<Favorite>>>(),
                 It.IsAny<Expression<Func<Favorite, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(favorites.AsTestAsyncEnumerableQuery());
+                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>()))
+            .Returns(favorites.AsTestAsyncEnumerableQuery());
 
         applicationRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(applications.AsTestAsyncEnumerableQuery());
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applications.AsTestAsyncEnumerableQuery());
 
         // Act
         await service.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
@@ -379,20 +375,16 @@ public class WorkshopServicesCombinerTests
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Favorite>, IQueryable<Favorite>>>(),
                 It.IsAny<Expression<Func<Favorite, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(favorites.AsTestAsyncEnumerableQuery());
+                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>()))
+            .Returns(favorites.AsTestAsyncEnumerableQuery());
 
         applicationRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(applications.AsTestAsyncEnumerableQuery());
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applications.AsTestAsyncEnumerableQuery());
 
         // Act
         await service.Delete(workshop.Id).ConfigureAwait(false);

@@ -8,6 +8,11 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class AchievementService : IAchievementService
 {
+    private readonly Func<IQueryable<Achievement>, IQueryable<Achievement>> includeFunc =
+        a => a.Include(a => a.Children)
+              .Include(a => a.Teachers)
+              .Include(a => a.AchievementType);
+
     private readonly IAchievementRepository achievementRepository;
     private readonly ILogger<AchievementService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
@@ -37,14 +42,11 @@ public class AchievementService : IAchievementService
     {
         logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
-        var includedFunc = (IQueryable<Achievement> p) => p.Include(p => p.Children)
-                                                           .Include(p => p.Teachers)
-                                                           .Include(p => p.AchievementType);
         var achievements = await achievementRepository
             .GetByFilter(
                 x => x.Id == id && 
                 !x.AchievementType.IsDeleted,
-                includeExpression: includedFunc)
+                includeExpression: includeFunc)
             .ConfigureAwait(false);
 
         var achievement = achievements.SingleOrDefault();
@@ -80,16 +82,12 @@ public class AchievementService : IAchievementService
 
         int count = await achievementRepository.Count(predicate).ConfigureAwait(false);
 
-        var includedFunc = (IQueryable<Achievement> p) => p.Include(p => p.Children)
-                                                           .Include(p => p.Teachers)
-                                                           .Include(p => p.AchievementType);
-
         var achievements = await achievementRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeExpression: includedFunc,
-                whereExpression: predicate)            
+                whereExpression: predicate)
+            .IncludeProperties(includeFunc)
             .ToListAsync()
             .ConfigureAwait(false);
 

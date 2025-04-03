@@ -199,14 +199,19 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             { x => x.User.LastName, SortDirection.Ascending },
         };
 
+        Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>> includeFunc =
+            ra => ra.Include(ra => ra.Institution)
+                    .Include(ra => ra.User)
+                    .Include(ra => ra.CATOTTG);
+
         var regionAdmins = await regionAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User,CATOTTG",
                 whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: true)
+                orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 

@@ -23,6 +23,11 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class ApplicationService : IApplicationService
 {
+    private readonly Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+        a => a.Include(a => a.Workshop)
+              .Include(a => a.Child)
+              .Include(a => a.Parent);
+
     public const string UaMaleEnding = "ий";
     public const string UaFemaleEnding = "а";
     public const string UaUnspecifiedGenderEnding = "ий/a";
@@ -143,7 +148,7 @@ public class ApplicationService : IApplicationService
         if (currentUserService.IsMinistryAdmin())
         {
             var ministryAdmin = await ministryAdminService.GetByIdAsync(currentUserService.UserId);
-            // nested entity has already use eager loading
+
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == ministryAdmin.InstitutionId);
         }
@@ -151,7 +156,7 @@ public class ApplicationService : IApplicationService
         if (currentUserService.IsRegionAdmin())
         {
             var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
-            // nested entity has already use eager loading
+
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
 
@@ -174,7 +179,7 @@ public class ApplicationService : IApplicationService
         if (currentUserService.IsAreaAdmin())
         {
             var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
-            // nested entity has already use eager loading
+
             predicate = predicate
                 .And(p => p.Workshop.InstitutionHierarchy.InstitutionId == areaAdmin.InstitutionId);
 
@@ -194,11 +199,6 @@ public class ApplicationService : IApplicationService
             }
         }
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
-
         var sortPredicate = SortExpressionBuild(filter);
 
         var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
@@ -206,9 +206,11 @@ public class ApplicationService : IApplicationService
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeExpression: includeFunc,
             whereExpression: predicate,
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            orderBy: sortPredicate)
+            .IncludeProperties(includeFunc)
+            .ToListAsync().
+            ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db", applications.Count);
 
@@ -233,11 +235,6 @@ public class ApplicationService : IApplicationService
 
         filter ??= new ApplicationFilter();
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
-
         var predicate = PredicateBuild(filter, a => a.ParentId == id);
 
         var sortPredicate = SortExpressionBuild(filter);
@@ -247,9 +244,11 @@ public class ApplicationService : IApplicationService
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeExpression: includeFunc,
             whereExpression: predicate,
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            orderBy: sortPredicate)
+            .IncludeProperties(includeFunc)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
@@ -299,11 +298,6 @@ public class ApplicationService : IApplicationService
             filter = a => a.ChildId == id;
         }
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
-
         var applications = (await applicationRepository.GetByFilter(
             whereExpression: filter,
             includeExpression: includeFunc))
@@ -328,11 +322,6 @@ public class ApplicationService : IApplicationService
 
         filter ??= new ApplicationFilter();
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
-
         var predicate = PredicateBuild(filter, a => a.WorkshopId == id);
 
         var sortPredicate = SortExpressionBuild(filter);
@@ -341,9 +330,11 @@ public class ApplicationService : IApplicationService
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeExpression: includeFunc,
             whereExpression: predicate,
-            orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+            orderBy: sortPredicate)
+            .IncludeProperties(includeFunc)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
         logger.LogInformation(
             "There are {Count} applications in the Db with Workshop Id = {Id}",
@@ -378,7 +369,7 @@ public class ApplicationService : IApplicationService
 
         var sortPredicate = SortExpressionBuild(filter);
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+        Func<IQueryable<Application>, IQueryable<Application>> localIncludeFunc =
             a => a.Include(a => a.Workshop).ThenInclude(w => w.Contacts).ThenInclude(wa => wa.Address.CATOTTG).ThenInclude(wac => wac.Parent)
                                      .ThenInclude(wacp => wacp.Parent).ThenInclude(wacpp => wacpp.Parent).ThenInclude(wacppp => wacppp.Parent)
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.Institution)
@@ -393,9 +384,9 @@ public class ApplicationService : IApplicationService
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate)
+            .IncludeProperties(localIncludeFunc)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -445,11 +436,6 @@ public class ApplicationService : IApplicationService
             w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
         var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
 
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
-
         var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
 
         var sortPredicate = SortExpressionBuild(filter);
@@ -459,9 +445,9 @@ public class ApplicationService : IApplicationService
         var applications = await applicationRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeExpression: includeFunc,
             whereExpression: predicate,
             orderBy: sortPredicate)
+            .IncludeProperties(includeFunc)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -485,11 +471,6 @@ public class ApplicationService : IApplicationService
         logger.LogInformation("Getting Application by Id started. Looking Id = {Id}", id);
 
         Expression<Func<Application, bool>> filter = a => a.Id == id && !a.Child.IsDeleted && !a.Parent.IsDeleted && !a.Workshop.IsDeleted;
-
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
-            a => a.Include(a => a.Workshop)
-                  .Include(a => a.Child)
-                  .Include(a => a.Parent);
 
         var applications = await applicationRepository.GetByFilter(
                 whereExpression: filter,
@@ -721,14 +702,14 @@ public class ApplicationService : IApplicationService
     private async Task<Application> CheckApplicationExists(Guid id)
     {
         // Create a delegate to include other entities (Workshop, Child, Parent, Parent.User, and Child) in Application entity
-        Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
+        Func<IQueryable<Application>, IQueryable<Application>> localIncludeFunc =
             a => a.Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
                   .Include(a => a.Parent).ThenInclude(p => p.User)
                   .Include(a => a.Child);
 
         var application = await applicationRepository.GetByIdWithDetails(
             id: id,
-            includeExpression: includeFunc)
+            includeExpression: localIncludeFunc)
             .ConfigureAwait(false);
 
         if (application == null)

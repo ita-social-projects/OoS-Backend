@@ -16,7 +16,6 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -174,11 +173,8 @@ public class StatisticServiceTest
             .Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
 
@@ -198,11 +194,8 @@ public class StatisticServiceTest
             .Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
     }
@@ -216,33 +209,24 @@ public class StatisticServiceTest
         workshopRepository.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
 
         applicationRepository.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
 
         directionRepository.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Direction>, IQueryable<Direction>>>(),
                 It.IsAny<Expression<Func<Direction, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Direction, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Direction, object>>, SortDirection>>()))
             .Returns(directionsMock)
             .Verifiable();
     }

@@ -178,7 +178,6 @@ public class CompetitiveEventService : ICompetitiveEventService
         var competitiveEvents = await competitiveEventRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            includeProperties: String.Empty,
             whereExpression: predicate)
             .ToListAsync()
             .ConfigureAwait(false);

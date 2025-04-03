@@ -137,32 +137,11 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
     /// </summary>
     /// <param name="skip">How many records we want tp skip.</param>
     /// <param name="take">How many records we want to take.</param>
-    /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>
-    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
     /// <param name="whereExpression">Filter.</param>
     /// <param name="orderBy">Filter that defines by wich properties we want to order by with ascending or descending ordering.</param>
-    /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
     /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
     /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
     IQueryable<TEntity> Get(
-        int skip = 0,
-        int take = 0,
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
-        bool asNoTracking = false);
-
-    /// <summary>
-    /// Get ordered, filtered list of elements.
-    /// </summary>
-    /// <param name="skip">How many records we want tp skip.</param>
-    /// <param name="take">How many records we want to take.</param>
-    /// <param name="whereExpression">Filter.</param>
-    /// <param name="orderBy">Filter that defines by wich properties we want to order by with ascending or descending ordering.</param>
-    /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
-    /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-    IQueryable<TEntity> NewGet(
         int skip = 0,
         int take = 0,
         Expression<Func<TEntity, bool>> whereExpression = null,

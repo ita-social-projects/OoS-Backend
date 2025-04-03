@@ -118,7 +118,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => await dbSet
-        .IncludeProperties(includeProperties, includeExpression)
+        .IncludeProperties(includeExpression, includeProperties)
         .ToListAsync();
 
     public virtual async Task<IEnumerable<TEntity>> GetByFilter(
@@ -127,7 +127,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => await this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties, includeExpression)
+        .IncludeProperties(includeExpression, includeProperties)
         .ToListAsync()
         .ConfigureAwait(false);
 
@@ -138,7 +138,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties, includeExpression)
+        .IncludeProperties(includeExpression, includeProperties)
         .AsNoTracking();
 
     /// <inheritdoc/>
@@ -149,7 +149,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         TKey id,
         string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeExpression, includeProperties)
                 .FirstOrDefaultAsync();
 
     /// <inheritdoc/>
@@ -198,65 +198,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
-        bool asNoTracking = false)
-    {
-        IQueryable<TEntity> query = dbSet;
-
-        query = query.IncludeProperties(includeProperties, includeExpression);
-
-        if (whereExpression != null)
-        {
-            query = query.Where(whereExpression);
-        }
-
-        if ((orderBy != null) && orderBy.Any())
-        {
-            var orderedData = orderBy.Values.First() == SortDirection.Ascending
-                ? query.OrderBy(orderBy.Keys.First())
-                : query.OrderByDescending(orderBy.Keys.First());
-
-            foreach (var expression in orderBy.Skip(1))
-            {
-                orderedData = expression.Value == SortDirection.Ascending
-                    ? orderedData.ThenBy(expression.Key)
-                    : orderedData.ThenByDescending(expression.Key);
-            }
-
-            query = orderedData;
-        }
-
-        if (skip > 0)
-        {
-            query = query.Skip(skip);
-        }
-
-        if (take > 0)
-        {
-            query = query.Take(take);
-        }
-
-        return query.If(asNoTracking, q => q.AsNoTracking());
-    }
-
-    public Task<int> SaveChangesAsync(
-        bool acceptAllChangesOnSuccess = true,
-        CancellationToken cancellationToken = default)
-    {
-        return dbContext.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-
-    public int SaveChanges(bool acceptAllChangesOnSuccess = true)
-    {
-        return dbContext.SaveChanges();
-    }
-
-    public IQueryable<TEntity> NewGet(
-        int skip = 0,
-        int take = 0,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null)
     {
@@ -294,5 +235,17 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         }
 
         return query;
+    }
+
+    public Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess = true,
+        CancellationToken cancellationToken = default)
+    {
+        return dbContext.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    public int SaveChanges(bool acceptAllChangesOnSuccess = true)
+    {
+        return dbContext.SaveChanges();
     }
 }

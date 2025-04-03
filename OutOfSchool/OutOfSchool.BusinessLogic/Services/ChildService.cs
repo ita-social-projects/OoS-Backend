@@ -15,6 +15,10 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class ChildService : IChildService
 {
+    private readonly Func<IQueryable<Child>, IQueryable<Child>> includeFunc =
+        c => c.Include(c => c.SocialGroups)
+              .Include(c => c.Parent).ThenInclude(p => p.User);
+
     private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly IApplicationRepository applicationRepository;
@@ -97,9 +101,6 @@ public class ChildService : IChildService
 
         logger.LogDebug(
             $"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
-
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
 
         var newChildWithDetails = (await childRepository.GetByFilter(
                                     whereExpression: c => c.Id == newChild.Id,
@@ -197,17 +198,14 @@ public class ChildService : IChildService
             { x => x.Id, SortDirection.Ascending },
         };
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
-
         var children = await childRepository
             .Get(
                  skip: filter.From,
                  take: filter.Size,
-                 includeExpression: includeFunc,
                  whereExpression: filterPredicate,
-                 orderBy: sortExpression,
-                 asNoTracking: true)
+                 orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -250,9 +248,6 @@ public class ChildService : IChildService
 
         logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
-
         var child = (await childRepository.GetByFilter(
                         whereExpression: c => c.Id == id,
                         includeExpression: includeFunc)
@@ -281,9 +276,6 @@ public class ChildService : IChildService
 
         var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
-
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
             { x => x.FirstName, SortDirection.Ascending },
@@ -293,9 +285,11 @@ public class ChildService : IChildService
             .Get(
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
-                 includeExpression: includeFunc,
                  whereExpression: x => x.ParentId == parentId,
                  orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            // TODO: ?
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -327,9 +321,6 @@ public class ChildService : IChildService
             predicate = predicate.And(x => !x.IsParent);
         }
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
-
         var totalAmount = await childRepository.Count(predicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
@@ -342,8 +333,10 @@ public class ChildService : IChildService
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
                  whereExpression: predicate,
-                 includeExpression: includeFunc,
                  orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            // TODO: ?
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -376,9 +369,6 @@ public class ChildService : IChildService
 
         var totalAmount = childrenGuids.Count;
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
-
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
             { x => x.FirstName, SortDirection.Ascending },
@@ -389,8 +379,10 @@ public class ChildService : IChildService
                  skip: offsetFilter.From,
                  take: offsetFilter.Size,
                  whereExpression: x => childrenGuids.Contains(x.Id),
-                 includeExpression: includeFunc,
                  orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            // TODO: ?
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -415,8 +407,6 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Updating the child with Id: {childId} and {nameof(userId)}: {userId} started.");
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.SocialGroups)
-                                                    .Include(c => c.Parent).ThenInclude(p => p.User);
         var child = (await childRepository
                         .GetByFilter(
                             whereExpression: c => c.Id == childId,
@@ -454,11 +444,11 @@ public class ChildService : IChildService
 
         logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
-        var includeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent);
+        var localIncludeFunc = (IQueryable<Child> c) => c.Include(c => c.Parent);
 
         var child = await childRepository.GetByFilterNoTracking(
                                             whereExpression: c => c.Id == id,
-                                            includeExpression: includeFunc)
+                                            includeExpression: localIncludeFunc)
                                          .SingleOrDefaultAsync()
                                          .ConfigureAwait(false)
                     ?? throw new UnauthorizedAccessException(
