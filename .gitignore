@@ -341,5 +341,3 @@ fabric.properties
 
 # Add buildpacks bin folder
 !buildpacks/**/bin/
-/OutOfSchool/OutOfSchool.WebApi.Benchmarks/OutOfSchool.WebApi.Benchmarks.csproj
-/OutOfSchool/OutOfSchool.WebApi.Benchmarks
