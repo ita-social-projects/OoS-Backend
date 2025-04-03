@@ -288,8 +288,6 @@ public class ChildService : IChildService
                  whereExpression: x => x.ParentId == parentId,
                  orderBy: sortExpression)
             .IncludeProperties(includeFunc)
-            // TODO: ?
-            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -335,8 +333,6 @@ public class ChildService : IChildService
                  whereExpression: predicate,
                  orderBy: sortExpression)
             .IncludeProperties(includeFunc)
-            // TODO: ?
-            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -381,8 +377,6 @@ public class ChildService : IChildService
                  whereExpression: x => childrenGuids.Contains(x.Id),
                  orderBy: sortExpression)
             .IncludeProperties(includeFunc)
-            // TODO: ?
-            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
