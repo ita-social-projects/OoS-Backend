@@ -9,9 +9,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class WorkshopRequiredPropertiesDtoGenerator
 {
     private static readonly Faker<WorkshopRequiredPropertiesDto> Faker = new Faker<WorkshopRequiredPropertiesDto>()
-        .RuleFor(w => w.ShortStay, f => f.Random.Bool())
         .RuleFor(w => w.IsSelfFinanced, f => f.Random.Bool())
-        .RuleFor(w => w.IsSpecial, f => f.Random.Bool())
         .RuleFor(w => w.SpecialNeedsType, f => f.Random.Enum<SpecialNeedsType>())
         .RuleFor(w => w.IsInclusive, f => f.Random.Bool())
         .RuleFor(w => w.EducationalShift, f => f.Random.Enum<EducationalShift>())

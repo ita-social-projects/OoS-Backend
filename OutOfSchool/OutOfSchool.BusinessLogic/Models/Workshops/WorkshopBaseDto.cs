@@ -97,11 +97,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = false;
-
     public bool IsSelfFinanced { get; set; } = false;
-
-    public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;

@@ -883,9 +883,7 @@ public class WorkshopServiceTests
         var filter = new WorkshopFilter()
         {
             Statuses = [WorkshopStatus.Open],
-            ShortStay = true,
             IsSelfFinanced = true,
-            IsSpecial = true,
             IsInclusive = true,
             AreThereBenefits = true,
             AgeComposition = [AgeComposition.SameAge, AgeComposition.DifferentAge],
@@ -957,9 +955,7 @@ public class WorkshopServiceTests
         var filter = new WorkshopFilter()
         {
             Statuses = [WorkshopStatus.Open],
-            ShortStay = true,
             IsSelfFinanced = true,
-            IsSpecial = true,
             IsInclusive = true,
             AreThereBenefits = true,
             AgeComposition = [AgeComposition.SameAge, AgeComposition.DifferentAge],

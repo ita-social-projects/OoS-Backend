@@ -1030,19 +1030,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(x => filter.FormOfLearning.Contains(x.FormOfLearning));
         }
 
-        if (filter.ShortStay)
-        {
-            predicate = predicate.And(x => x.ShortStay);
-        }
-
         if (filter.IsSelfFinanced)
         {
             predicate = predicate.And(x => x.IsSelfFinanced);
-        }
-
-        if (filter.IsSpecial)
-        {
-            predicate = predicate.And(x => x.IsPaid);
         }
 
         if (filter.IsInclusive)

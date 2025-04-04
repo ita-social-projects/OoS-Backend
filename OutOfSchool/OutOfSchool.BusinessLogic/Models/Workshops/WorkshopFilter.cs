@@ -70,13 +70,9 @@ public class WorkshopFilter : OffsetFilter
 
     public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; } = new List<EducationalShift>();
 
-    public bool ShortStay { get; set; }
-
     public bool IsSelfFinanced { get; set; }
 
     public bool IsPaid { get; set; }
-
-    public bool IsSpecial { get; set; }
 
     public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; } = new List<SpecialNeedsType>();
 

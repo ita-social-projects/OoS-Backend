@@ -8,14 +8,8 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
 public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 {
-    [Required(ErrorMessage = "Short stay is required")]
-    public bool ShortStay { get; set; } = false;
-
     [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
     public bool IsSelfFinanced { get; set; } = false;
-
-    [Required(ErrorMessage = "Property IsSpecial is required")]
-    public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;

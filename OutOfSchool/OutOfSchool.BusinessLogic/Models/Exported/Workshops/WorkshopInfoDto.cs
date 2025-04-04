@@ -82,11 +82,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = false;
-
     public bool IsSelfFinanced { get; set; } = false;
-
-    public bool IsSpecial { get; set; } = false;
 
     public bool IsInclusive { get; set; } = false;
     
