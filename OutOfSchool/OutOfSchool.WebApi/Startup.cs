@@ -457,6 +457,7 @@ public static class Startup
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
+        services.AddTransient<IPositionRepository, PositionRepository>();
 
         services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
 

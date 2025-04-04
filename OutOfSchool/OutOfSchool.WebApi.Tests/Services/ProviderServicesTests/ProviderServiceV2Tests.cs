@@ -77,9 +77,9 @@ public class ProviderServiceV2Tests
         providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
-        var individualRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
-        var officialRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
-        var positionRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
+        var individualRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
+        var officialRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Official>>();
+        var positionRepo = new Mock<IPositionRepository>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderServiceV2>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();

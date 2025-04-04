@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Common;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -470,17 +469,5 @@ public static class ModelBuilderExtension
                 .HasMaxLength(36)
                 .IsRequired(true);
         });
-    }
-
-    public static ModelBuilder ApplySoftDelete<T>(this ModelBuilder builder)
-        where T : class, IKeyedEntity, new()
-    {
-        builder.Entity<T>().Property<bool>("IsDeleted").ValueGeneratedOnAdd().HasDefaultValue(false);
-
-        builder.Entity<T>().HasIndex("IsDeleted");
-
-        builder.Entity<T>().HasQueryFilter(m => EF.Property<bool>(m, "IsDeleted") == false);
-
-        return builder;
     }
 }

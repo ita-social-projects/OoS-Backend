@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Position;
 
@@ -30,6 +31,8 @@ public class PositionCreateUpdateDto
     public string GenitiveName { get; set; }
 
     public bool IsTeachingPosition { get; set; }
+    
+    public bool IsForRuralAreas { get; set; }
 
     [Required]
     public float Rate { get; set; }
@@ -41,5 +44,6 @@ public class PositionCreateUpdateDto
     [MaxLength(60)]
     public string ClassifierType { get; set; }
 
-    public bool IsForRuralAreas { get; set; }
+    [EnumDataType(typeof(PositionType), ErrorMessage = Constants.EnumErrorMessage)]
+    public PositionType PositionType { get; set; } = PositionType.Employee;
 }

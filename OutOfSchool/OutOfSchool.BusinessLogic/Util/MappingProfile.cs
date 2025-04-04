@@ -871,24 +871,24 @@ public class MappingProfile : Profile
                     .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
 
         CreateMap<PositionCreateUpdateDto, Position>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
-                .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
-                .ForMember(dest => dest.Document, opt => opt.Ignore())
-                .ForMember(dest => dest.File, opt => opt.Ignore())
-                .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-                .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
-                .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-                .ForMember(dest => dest.Officials, opt => opt.Ignore())
-                .ForMember(dest => dest.Provider, opt => opt.Ignore())
-                .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
-                .ForMember(dest => dest.ContactId, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());        
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.Officials, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
+            .ForMember(dest => dest.ContactId, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());        
         
         CreateMap<Position, PositionDto>();
 

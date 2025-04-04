@@ -295,4 +295,10 @@ public static class Constants
     {
         public const string OutOfSchoolApi = "outofschool_api";
     }
+    
+    public static class UploadEmployees
+    {
+        public const string DeputyDirector = "Заступник директора";
+        public const string Employee = "Співробітник ЗО";
+    }
 }
