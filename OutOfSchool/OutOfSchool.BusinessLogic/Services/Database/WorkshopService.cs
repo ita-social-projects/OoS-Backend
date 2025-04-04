@@ -1295,7 +1295,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             dto.DefaultTeacher.Id = Guid.Empty;
         }
 
-        dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
 

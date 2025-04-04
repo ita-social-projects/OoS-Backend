@@ -172,7 +172,6 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.ToTimeSpan()));
 
         CreateMap<WorkshopDescriptionItemDraft, WorkshopDescriptionItemDto>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
             .ReverseMap();
 
