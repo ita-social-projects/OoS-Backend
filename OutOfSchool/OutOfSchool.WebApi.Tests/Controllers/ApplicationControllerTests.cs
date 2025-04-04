@@ -920,7 +920,6 @@ public class ApplicationControllerTests
         var id = Guid.NewGuid();
         return new WorkshopDescriptionItemDto
         {
-            Id = id,
             SectionName = "test heading",
             Description = $"test description text sentence for id: {id.ToString()}",
         };

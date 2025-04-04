@@ -299,7 +299,6 @@ public class ChildControllerTests
                 {
                     new WorkshopDescriptionItemDto
                     {
-                        Id = Guid.NewGuid(),
                         SectionName = "test heading",
                         Description = "test description",
                     },
