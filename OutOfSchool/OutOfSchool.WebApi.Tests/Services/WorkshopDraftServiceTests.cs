@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -503,11 +502,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
 
         // Act
@@ -547,13 +543,10 @@ public class WorkshopDraftServiceTests
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x =>
-            x.Get(It.IsAny<int>(),
+           x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
 
         //Act & Assert
@@ -608,11 +601,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);

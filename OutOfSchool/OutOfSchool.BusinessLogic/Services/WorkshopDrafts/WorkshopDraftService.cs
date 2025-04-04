@@ -513,8 +513,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             throw new UnauthorizedAccessException("User has no rights to perform operation.");
         }
 
-        var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id,
-                asNoTracking: true).FirstOrDefaultAsync();        
+        var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();        
 
         if (draft != null)
         {
