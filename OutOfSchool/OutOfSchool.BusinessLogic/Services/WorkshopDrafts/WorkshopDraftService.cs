@@ -140,8 +140,11 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             }
             else
             {
-                await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId);
-            }            
+                if (!await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
+                {
+                    throw new UnauthorizedAccessException("User has no rights to perform operation.");
+                }
+            }
         }       
 
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
@@ -209,7 +212,10 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 }
                 else
                 {
-                    await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId);
+                    if (!await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
+                    {
+                        throw new UnauthorizedAccessException("User has no rights to perform operation.");
+                    }
                 }
             }
 
@@ -477,7 +483,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         };
     }
        
-    /// <inheritdoc/>
+    // <inheritdoc/>
     public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
     {
         var draft = await GetWorkshopDraftById(id);
@@ -488,6 +494,45 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         }
 
         return await MapWorkshopDraftWithDetails(draft);
+    }
+
+    public async Task<WorkshopV2Dto> UpdateWorkshop(WorkshopV2Dto workshopV2Dto)
+    {
+        logger.LogDebug("Workshop Update started. Workshop Id = {Id}.", workshopV2Dto.Id);
+
+        var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
+
+        if (existingWorkshop == null)
+        {
+            throw new InvalidOperationException($"There is no Workshop with such Id. Workshop can`t be updated.");
+        }
+
+        if (!await IsUserProviderOrProviderEmployee(workshopV2Dto.ProviderId) ||
+            !await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
+        {
+            throw new UnauthorizedAccessException("User has no rights to perform operation.");
+        }
+
+        var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id,
+                asNoTracking: true).FirstOrDefaultAsync();        
+
+        if (draft != null)
+        {
+            logger.LogDebug("WorkshopDraft for this Workshop exists. Workshop can`t be updated. Workshop Id = {Id}.", workshopV2Dto.Id);
+
+            throw new InvalidOperationException("WorkshopDraft for this Workshop exists. Workshop can`t be updated.");
+        }
+
+        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        {
+            logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
+
+            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;            
+        }
+
+        logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
+
+        return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
     }
 
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
@@ -700,7 +745,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         
         if (filter.InstitutionId != Guid.Empty)
         {
-            predicate = predicate.And(x => x.WorkshopDraftContent.InstitutionId.ToString() == filter.InstitutionId.ToString());
+            predicate = predicate.And(x => EF.Functions.JsonUnquote(x.WorkshopDraftContent.InstitutionId.ToString()) == filter.InstitutionId.ToString());
         }
 
         if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
@@ -831,5 +876,43 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             return responseDto;
 
         }).ToList();
+    }
+
+    private static bool AreModeratedFieldsChanged(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
+    {             
+        if (workshopV2Dto.CoverImage != null ||
+            workshopV2Dto.ImageFiles != null)
+        {
+            return true;
+        }
+
+        if (!(workshopV2Dto.Keywords ?? [])
+                .SequenceEqual(existingWorkshop.Keywords ?? []))
+        {
+            return true;
+        }
+
+        if (!workshopV2Dto.WorkshopDescriptionItems.Select(wdi => wdi.SectionName + wdi.Description)
+                .SequenceEqual(existingWorkshop.WorkshopDescriptionItems.Select(wdi => wdi.SectionName + wdi.Description)))
+        {
+            return true;
+        }
+
+        var stringFieldsToCompare = new List<Func<WorkshopDto, string>>
+        { 
+            w => w.CompetitiveSelectionDescription,
+            w => w.EnrollmentProcedureDescription,
+            w => w.PreferentialTermsOfParticipation,
+            w => w.ShortTitle,
+            w => w.Title
+        };
+
+        return stringFieldsToCompare.Any(field =>
+        {
+            var newValue = field(workshopV2Dto);
+            var oldValue = field(existingWorkshop);
+
+            return newValue != oldValue;
+        });
     }
 }

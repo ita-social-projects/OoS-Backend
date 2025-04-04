@@ -119,7 +119,8 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<WorkshopDraft, WorkshopV2Dto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.WorkshopId))
-            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds,
+                opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
