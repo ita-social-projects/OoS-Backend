@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
@@ -7,7 +8,7 @@ namespace OutOfSchool.AuthCommon.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class MinistryAdminController : Controller
 {
     private readonly ILogger<MinistryAdminController> logger;
@@ -54,7 +55,7 @@ public class MinistryAdminController : Controller
 
     [HttpPut("{ministryAdminId}")]
     [HasPermission(Permissions.MinistryAdminEdit)]
-    public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseDto updateMinistryAdminDto)
+    public async Task<ResponseDto> Update(string ministryAdminId, MinistryAdminBaseUpdateDto updateMinistryAdminDto)
     {
         logger.LogDebug("Operation initiated by User(id): {UserId}", userId);
 

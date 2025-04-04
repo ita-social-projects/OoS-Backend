@@ -562,6 +562,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AccountStatus, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, MinistryAdminBaseUpdateDto>()
+           .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Email,opt => opt.MapFrom(src => src.Email))
+           .ForMember(dest => dest.PhoneNumber,opt => opt.MapFrom(src => src.PhoneNumber))
+           .ForMember(dest => dest.FirstName,opt => opt.Ignore())
+           .ForMember(dest => dest.LastName,opt => opt.Ignore())
+           .ForMember(dest => dest.MiddleName,opt => opt.Ignore())
+           .ForMember(dest => dest.CreatingTime,opt => opt.Ignore())
+           .ForMember(dest => dest.InstitutionId,opt => opt.Ignore());
+
         CreateMap<RegionAdmin, RegionAdminDto>()
             .IncludeBase<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
@@ -615,17 +625,47 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RegionId, opt => opt.Ignore())
             .ForMember(dest => dest.RegionName, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseUpdateDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
         CreateMap<BaseUserDto, AreaAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+
         CreateMap<BaseUserDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, RegionAdminBaseUpdateDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
 
         CreateMap<BaseUserDto, MinistryAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))

@@ -238,7 +238,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(
         string userId,
-        BaseUserDto updateRegionAdminDto,
+        BaseUpdateUserDto updateRegionAdminDto,
         string token)
     {
         _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
@@ -263,7 +263,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
-            Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
+            Data = mapper.Map<RegionAdminBaseUpdateDto>(updateRegionAdminDto),
         };
 
         Logger.LogDebug(

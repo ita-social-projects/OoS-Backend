@@ -197,7 +197,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, MinistryAdminDto>> UpdateMinistryAdminAsync(
         string userId,
-        BaseUserDto updateMinistryAdminDto,
+        BaseUpdateUserDto updateMinistryAdminDto,
         string token)
     {
         _ = updateMinistryAdminDto ?? throw new ArgumentNullException(nameof(updateMinistryAdminDto));
@@ -222,7 +222,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
-            Data = mapper.Map<MinistryAdminBaseDto>(updateMinistryAdminDto),
+            Data = mapper.Map<MinistryAdminBaseUpdateDto>(updateMinistryAdminDto),
         };
 
         Logger.LogDebug(

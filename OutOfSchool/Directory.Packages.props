@@ -4,7 +4,7 @@
     <!-- TODO: Re-use base version again when we switch to Net 9 -->
     <DIAbstractions>8.0.2</DIAbstractions>
     <EFCoreVersion>8.0.13</EFCoreVersion>
-    <OpenIdDictVersion>6.1.0</OpenIdDictVersion>
+    <OpenIdDictVersion>6.1.1</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
     <QuartzVersion>3.13.1</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
