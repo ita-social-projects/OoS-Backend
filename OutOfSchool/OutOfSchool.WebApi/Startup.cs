@@ -17,6 +17,7 @@ using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.Logging;
@@ -25,6 +26,7 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.TempSave;
+using OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Communication;
@@ -286,6 +288,11 @@ public static class Startup
         {
             throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
         }
+
+        //registartion of thumbnail generation 
+        builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
+        builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
+
 
         var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
             "DefaultConnection",
