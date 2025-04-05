@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
+using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -12,7 +16,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for CompetitiveEvent entity.
 /// </summary>
-public class CompetitiveEventService : ICompetitiveEventService
+public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEventServiceV2
 {
     private readonly ICompetitiveEventRepository competitiveEventRepository;
     private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
@@ -21,6 +25,7 @@ public class CompetitiveEventService : ICompetitiveEventService
     private readonly IMapper mapper;
     private readonly ICurrentUserService currentUserService;
     private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
+    private readonly IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService;
 
     /// <summary>
     /// Create a delegate to include other entities in CompetitiveEvent entity
@@ -39,7 +44,8 @@ public class CompetitiveEventService : ICompetitiveEventService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         ICurrentUserService currentUserService,
-        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService)
+        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService,
+        IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
         this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
@@ -48,6 +54,7 @@ public class CompetitiveEventService : ICompetitiveEventService
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.currentUserService = currentUserService;
         this.contactsService = contactsService;
+        this.competitiveImagesService = competitiveImagesService;
     }
 
     /// <inheritdoc/>
@@ -268,5 +275,214 @@ public class CompetitiveEventService : ICompetitiveEventService
             }
         }
     }
+
+    #region V2 features with images
+
+    /// <summary>
+    /// Checks whether a competitive event with the specified Id exists in the database
+    /// </summary>
+    /// <param name="id">The identifier of the competitive event</param>
+    /// <returns>True if the event exists, otherwise - false</returns>
+    private Task<bool> Exists(Guid id)
+    {
+        logger.LogInformation($"Checking if Competitive event exists by Id started. Looking Id = {id}.");
+
+        return competitiveEventRepository.Any(x => x.Id == id);
+    }
+
+    /// <summary>
+    /// Validates the incoming DTO and prepares a <see cref="CompetitiveEvent"/> entity for creation
+    /// Checks for the existence of the parent event, maps the DTO to the entity, and prepares contacts
+    /// </summary>
+    /// <param name="dto">The DTO used to create the competitive event</param>
+    /// <returns>A prepared <see cref="CompetitiveEvent"/> entity ready to be saved</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the DTO is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the specified parent event does not exist</exception>
+    private async Task<CompetitiveEvent> CheckDtoAndPrepareCreatedCompetitiveEvent(CompetitiveEventCreateUpdateDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+        //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
+        //{
+        //    var errorMessage = $"The parent competitive event (ID = {dto.ParentId}) does not exist.";
+        //    throw new InvalidOperationException(errorMessage);
+        //}
+
+        var createdEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
+            ? mapper.Map<CompetitiveEvent>(v2Dto)
+            : mapper.Map<CompetitiveEvent>(dto);
+
+        //configure additional default value by the logic 
+
+        contactsService.PrepareNewContacts(createdEvent, dto);
+
+        return createdEvent;
+    }
+
+    /// <summary>
+    /// Persists changes to the competitive event in the database
+    /// Logs any exceptions that occurs during the update process
+    /// </summary>
+    /// <exception cref="DbUpdateException">Thrown if saving changes fails</exception>
+    private async Task UpdateCompetitiveEvent()
+    {
+        try
+        {
+            await competitiveEventRepository.SaveChangesAsync().ConfigureAwait(false);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, $"Updating a competitive event failed. Exception: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new version 2 competitive event, including handling of image and cover uploads
+    /// All operations are executed within a transaction
+    /// </summary>
+    /// <param name="dto">The DTO containing data for the new competitive event with images</param>
+    /// <returns>A result DTO containing the created competitive event and image upload results</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
+    public async Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2CreateRequestDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+        logger.LogDebug("CompetitiveEvent creating was started.");
+
+        var createdEvent = await CheckDtoAndPrepareCreatedCompetitiveEvent(dto);
+
+        async Task<(CompetitiveEvent newEvent, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateCompetitiveEventAndDependencies()
+        {
+            var competitiveEvent = await competitiveEventRepository.Create(createdEvent).ConfigureAwait(false);
+
+            MultipleImageUploadingResult imagesUploadingResult = null;
+
+            if (dto.ImageFiles?.Count > 0)
+            {
+                competitiveEvent.Images = new List<Image<CompetitiveEvent>>();
+                imagesUploadingResult = await competitiveImagesService.AddManyImagesAsync(competitiveEvent, dto.ImageFiles)
+                    .ConfigureAwait(false);
+            }
+
+            Result<string> uploadingCoverImageResult = null;
+
+            if (dto.CoverImage != null)
+            {
+                uploadingCoverImageResult = await competitiveImagesService.AddCoverImageAsync(competitiveEvent, dto.CoverImage)
+                    .ConfigureAwait(false);
+            }
+
+            await UpdateCompetitiveEvent().ConfigureAwait(false);
+
+            return (competitiveEvent, imagesUploadingResult, uploadingCoverImageResult);
+        }
+
+        var (lastCompetitiveEvent, imagesUploadResult, coverImageUploadResult) = await competitiveEventRepository
+           .RunInTransaction(CreateCompetitiveEventAndDependencies).ConfigureAwait(false);
+
+        logger.LogInformation($"Competitive event with Id = {lastCompetitiveEvent.Id} created successfully.");
+
+        return new CompetitiveEventResultDto
+        {
+            CompetitiveEventV2 = mapper.Map<CompetitiveEventV2Dto>(lastCompetitiveEvent),
+            UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
+            UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
+        };
+    }
+
+    /// <summary>
+    /// Updates an existing version 2 competitive event, including description changes, image updates, and cover image replacement
+    /// All operations are executed within a transaction
+    /// </summary>
+    /// <param name="dto">The DTO containing updated data for the competitive event</param>
+    /// <returns>A result DTO containing the updated competitive event and results of the image updates</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
+    /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
+    public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        logger.LogInformation($"Updating {nameof(CompetitiveEvent)} with Id = {dto.Id} started.");
+
+        async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,
+           ImageChangingResult changingCoverImageResult)> UpdateCompetitiveEventWithDependencies()
+        {
+            var currentCompetitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
+               dto.Id, String.Empty, includeFunc).ConfigureAwait(false);
+
+            if (currentCompetitiveEvent is null)
+            {
+                var message = $"Updating failed. CompetitiveEvent with Id = {dto.Id} doesn't exist in the system.";
+                logger.LogError(message);
+                throw new DbUpdateConcurrencyException(message);
+            }
+
+            await ChangeCompetitiveEventDescriptionItems(currentCompetitiveEvent, dto.CompetitiveEventDescriptionItems
+                ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+
+            dto.ImageIds ??= new List<string>();
+            var multipleImageChangingResult = await competitiveImagesService
+                .ChangeImagesAsync(currentCompetitiveEvent, dto.ImageIds, dto.ImageFiles)
+                .ConfigureAwait(false);
+
+            contactsService.PrepareUpdatedContacts(currentCompetitiveEvent, dto);
+
+            mapper.Map(dto, currentCompetitiveEvent);
+
+            var changingCoverImageResult = await competitiveImagesService
+                .ChangeCoverImageAsync(currentCompetitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+
+            await UpdateCompetitiveEvent().ConfigureAwait(false);
+
+            return (currentCompetitiveEvent, multipleImageChangingResult, changingCoverImageResult);
+        }
+
+        var (updatedCompetitiveEvent, multipleImageChangeResult, changeCoverImageResult) = await competitiveEventRepository
+            .RunInTransaction(UpdateCompetitiveEventWithDependencies).ConfigureAwait(false);
+
+        return new CompetitiveEventResultDto
+        {
+            CompetitiveEventV2 = mapper.Map<CompetitiveEventV2Dto>(updatedCompetitiveEvent),
+            UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
+            UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
+        };
+    }
+
+    /// <summary>
+    /// Deletes a competitive event and removes any associated images and cover image if present
+    /// The operation is executed within a transaction
+    /// </summary>
+    /// <param name="id">The Id of the competitive event to be deleted</param>
+    public async Task DeleteV2(Guid id)
+    {
+        logger.LogDebug("Deleting CompetitiveEvent with Id = {id} started.", id);
+
+        async Task<Workshop> TransactionOperation()
+        {
+            var entity = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
+
+            if (entity.Images.Count > 0)
+            {
+                await competitiveImagesService
+                    .RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList())
+                    .ConfigureAwait(false);
+            }
+
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
+            {
+                await competitiveImagesService.RemoveCoverImageAsync(entity).ConfigureAwait(false);
+            }
+
+            await competitiveEventRepository.Delete(entity).ConfigureAwait(false);
+
+            return null;
+        }
+
+        await competitiveEventRepository.RunInTransaction(TransactionOperation).ConfigureAwait(false);
+
+        logger.LogInformation($"{nameof(CompetitiveEvent)} with Id = {id} successfully deleted.");     
+    }
+
+    #endregion
 }
 

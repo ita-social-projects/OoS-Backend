@@ -41,4 +41,20 @@ public interface IObjectImagesSyncDataRepository
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a list of <see cref="string"/>.</returns>
     Task<List<string>> GetIntersectProviderImagesIds(IEnumerable<string> searchIds);
+
+    /// <summary>
+    /// Asynchronously gets an intersect between CompetitiveEventCoverImages ids and the given collection ids.
+    /// </summary>
+    /// <param name="searchIds">Collection to find intersect with.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a list of <see cref="string"/>.</returns>
+    Task<List<string>> GetIntersectCompetitiveEventCoverImagesIds(IEnumerable<string> searchIds);
+
+    /// <summary>
+    /// Asynchronously gets an intersect between CompetitiveEventImages ids and the given collection ids.
+    /// </summary>
+    /// <param name="searchIds">Collection to find intersect with.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains a list of <see cref="string"/>.</returns>
+    Task<List<string>> GetIntersectCompetitiveEventImagesIds(IEnumerable<string> searchIds);
 }

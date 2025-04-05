@@ -143,7 +143,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
 
     public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
-    
+
+    public DbSet<Image<CompetitiveEvent>> CompetitiveEventsImages { get; set; }
 
     public DbSet<SubDirection> SubDirections { get; set; }
 
@@ -180,6 +181,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new EmployeeConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEvent>());
         builder.ApplyConfiguration(new FavoriteConfiguration());
         builder.ApplyConfiguration(new IndividualConfiguration());
         builder.ApplyConfiguration(new InstitutionAdminConfiguration());
