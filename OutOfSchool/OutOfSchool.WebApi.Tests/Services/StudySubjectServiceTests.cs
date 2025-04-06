@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -453,7 +455,10 @@ public class StudySubjectServiceTests
             .ReturnsAsync(studySubject);
 
         workshopRepositoryMock
-            .Setup(repo => repo.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), "", null))
+            .Setup(repo => repo.GetByFilter(
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         // Act
@@ -581,7 +586,10 @@ public class StudySubjectServiceTests
         // Arrange
         SetupWithMocks();
 
-        providerService.Setup(s => s.HasProviderRights(providerId)).Returns(Task.CompletedTask);
+        currentUserService
+            .Setup(x => x.UserHasRights(It.Is<ProviderRights[]>(rights => rights.Length == 1 && rights[0].providerId == providerId)))
+            .Returns(Task.CompletedTask);
+
         studySubjectRepositoryMock
             .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
             .ReturnsAsync((StudySubject)null);
@@ -601,8 +609,8 @@ public class StudySubjectServiceTests
     public void UpdateWorkshopsForStudySubject_ThrowsUnauthorized_WhenProviderHasNoRights()
     {
         // Arrange
-        providerService
-            .Setup(s => s.HasProviderRights(providerId))
+        currentUserService
+            .Setup(x => x.UserHasRights(It.IsAny<IUserRights[]>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
         // Act & Assert
@@ -764,7 +772,7 @@ public class StudySubjectServiceTests
         studySubjectRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>>();
         languageRepositoryMock = new Mock<IEntityRepository<long, Language>>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        providerService = new Mock<IProviderService>();
+        currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<StudySubjectService>>();
         mapperMock = new Mock<IMapper>();
 
@@ -791,7 +799,7 @@ public class StudySubjectServiceTests
             studySubjectRepositoryMock.Object,
             workshopRepositoryMock.Object,
             languageRepositoryMock.Object,
-            providerService.Object,
+            currentUserService.Object,
             logger.Object,
             mapper
         );

@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Linq.Expressions;
+using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class StudySubjectService : IStudySubjectService
@@ -278,7 +279,7 @@ public class StudySubjectService : IStudySubjectService
         Guid providerId,
         IEnumerable<WorkshopAttachmentStatusDto> workshopsWithStatus)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         // Load the study subject with its workshops
         var studySubject = await studySubjectRepository
@@ -287,6 +288,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null)
         {
+            logger.LogWarning("StudySubject with Id = {StudySubjectId} was not found", studySubjectId);
             return NotFoundResult<StudySubjectDto>(studySubjectId);
         }
 
@@ -310,7 +312,12 @@ public class StudySubjectService : IStudySubjectService
         foreach (var workshopDto in workshopsWithStatus)
         {
             var workshop = allWorkshops.FirstOrDefault(w => w.Id == workshopDto.Id);
-            if (workshop == null) continue; // Skip if workshop was not found
+            if (workshop == null) // Skip if workshop was not found
+            {
+                logger.LogWarning("Workshop with Id = {WorkshopId} was passed but not found among provider {ProviderId}'s workshops",
+                          workshopDto.Id, providerId);
+                continue;
+            }    
 
             if (workshopDto.IsAttached)
             {
@@ -347,7 +354,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<Result<StudySubjectDto>> DetachAllWorkshops(Guid studySubjectId, Guid providerId)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         // Load the study subject with its workshops
         var studySubject = await studySubjectRepository
@@ -356,6 +363,7 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null)
         {
+            logger.LogWarning("StudySubject with Id = {StudySubjectId} was not found", studySubjectId);
             return NotFoundResult<StudySubjectDto>(studySubjectId);
         }
 
@@ -365,15 +373,18 @@ public class StudySubjectService : IStudySubjectService
             return Result<StudySubjectDto>.Success(null);
         }
 
-        // Load workshops that belong to the given provider
+        // Extract workshop IDs from the current StudySubject
+        var workshopIds = studySubject.Workshops.Select(ws => ws.Id).ToList();
+
+        // Get only the workshops of this provider among the study subject's workshops
         var providerWorkshops = await workshopRepository
-            .GetByFilter(w => w.ProviderId == providerId && studySubject.Workshops.Select(ws => ws.Id).Contains(w.Id))
+            .GetByFilter(w => w.ProviderId == providerId && workshopIds.Contains(w.Id))
             .ConfigureAwait(false);
 
         if (!providerWorkshops.Any())
         {
-            logger.LogInformation("No workshops owned by provider {ProviderId} found for StudySubject " +
-                                  "{StudySubjectId}", providerId, studySubjectId);
+            logger.LogInformation("No workshops owned by provider {ProviderId} found for StudySubject {StudySubjectId}", 
+                                   providerId, studySubjectId);
             return NotFoundResult<StudySubjectDto>(providerId);
         }
 
@@ -397,23 +408,6 @@ public class StudySubjectService : IStudySubjectService
                 Description = $"Failed to detach provider-owned workshops from StudySubject with Id = {studySubjectId}."
             });
         }
-    }
-
-    /// <summary>
-    /// Returns a standardized "Not Found" result for an entity.
-    /// </summary>
-    /// <typeparam name="T">The type of the entity that was not found.</typeparam>
-    /// <param name="id">The unique identifier of the missing entity.</param>
-    /// <returns>A failed <see cref="Result{T}"/> indicating that the entity was not found.</returns>
-    private Result<T> NotFoundResult<T>(Guid id)
-    {
-        var entityName = typeof(T).Name;
-        logger.LogWarning("{EntityName} with Id = {Id} was not found", entityName, id);
-        return Result<T>.Failed(new OperationError
-        {
-            Code = "404",
-            Description = $"{entityName} with Id = {id} was not found"
-        });
     }
 
     private async Task UpdateEntityLanguages(StudySubjectCreateUpdateDto dto, StudySubject studySubject)
