@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -28,6 +29,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     private Mock<IMapper> mockMapper;
     private Mock<ICurrentUserService> userService;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
+    private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> competitiveImagesService;
 
     private CompetitiveEventService service;
 
@@ -41,6 +43,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockMapper = new Mock<IMapper>();
         userService = new Mock<ICurrentUserService>();
         contactsService = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
+        competitiveImagesService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
 
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
@@ -49,7 +52,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
             mockLocalizer.Object,
             mockMapper.Object,
             userService.Object,
-            contactsService.Object);
+            contactsService.Object,
+            competitiveImagesService.Object);
     }
 
     [Test]

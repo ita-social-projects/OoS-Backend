@@ -4,8 +4,6 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
 public class WorkshopDescriptionItemDto
 {
-    public Guid Id { get; set; }
-
     [Required]
     [MaxLength(200)]
     public string SectionName { get; set; }

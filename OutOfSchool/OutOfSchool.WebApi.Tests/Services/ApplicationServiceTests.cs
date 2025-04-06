@@ -417,22 +417,16 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
         mapper.Setup(x => x.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
@@ -456,11 +450,9 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-            false)).Returns(mockQuery);
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
 
         // Act
         var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
@@ -477,11 +469,9 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-            false)).Returns(mockQuery);
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
 
         // Act
         var filter = new ApplicationFilter();
@@ -574,11 +564,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
 
@@ -962,11 +949,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
 
@@ -1033,11 +1017,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
 
@@ -1127,11 +1108,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
@@ -1151,11 +1129,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
@@ -1184,11 +1159,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
@@ -1202,11 +1174,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
@@ -1221,21 +1190,15 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
@@ -1250,21 +1213,15 @@ public class ApplicationServiceTests
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(emptyWorkshopsList)
             .Verifiable();
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
         mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
@@ -1289,11 +1246,8 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
         applicationRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(application);

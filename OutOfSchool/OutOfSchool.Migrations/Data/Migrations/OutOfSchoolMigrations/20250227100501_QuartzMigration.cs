@@ -2,15 +2,15 @@
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+/// <inheritdoc />
+public partial class QuartzMigration : Migration
 {
     /// <inheritdoc />
-    public partial class QuartzMigration : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        { 
-            migrationBuilder.Sql(@"
+    protected override void Up(MigrationBuilder migrationBuilder)
+    { 
+        migrationBuilder.Sql(@"
                 # By: Ron Cordell - roncordell
                 #  I didn't see this anywhere, so I thought I'd post it here. This is the script from Quartz to create the tables in a MySQL database, modified to use INNODB instead of MYISAM.
 
@@ -191,12 +191,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 CREATE INDEX IDX_QRTZ_FT_TG ON QRTZ_FIRED_TRIGGERS(SCHED_NAME, TRIGGER_GROUP);
 
                 commit;");
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql(@"
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.Sql(@"
                 DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
                 DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;
                 DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;
@@ -208,6 +208,5 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 DROP TABLE IF EXISTS QRTZ_TRIGGERS;
                 DROP TABLE IF EXISTS QRTZ_JOB_DETAILS;
                 DROP TABLE IF EXISTS QRTZ_CALENDARS;");
-        }
     }
 }

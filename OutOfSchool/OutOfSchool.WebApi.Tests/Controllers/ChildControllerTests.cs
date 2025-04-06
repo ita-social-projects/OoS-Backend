@@ -299,16 +299,13 @@ public class ChildControllerTests
                 {
                     new WorkshopDescriptionItemDto
                     {
-                        Id = Guid.NewGuid(),
                         SectionName = "test heading",
                         Description = "test description",
                     },
                 },
             Price = 1000,
-            WithDisabilityOptions = true,
             ProviderId = Guid.NewGuid(),
             ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
             Website = "website1",
             Instagram = "insta1",
             Facebook = "facebook1",
@@ -340,7 +337,6 @@ public class ChildControllerTests
                 DirectionIds = existingWorkshop.DirectionIds,
                 ProviderId = existingWorkshop.ProviderId,
                 Address = existingWorkshop.Address,
-                WithDisabilityOptions = existingWorkshop.WithDisabilityOptions,
                 Rating = existingWorkshop.Rating,
                 ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,

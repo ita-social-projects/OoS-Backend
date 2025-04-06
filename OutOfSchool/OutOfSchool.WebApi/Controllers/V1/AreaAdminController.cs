@@ -167,7 +167,7 @@ public class AreaAdminController : Controller
     /// <summary>
     /// To update AreaAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateAreaAdminDto">BaseUserDto object with new properties.</param>
+    /// <param name="updateAreaAdminDto">BaseUpdateUserDto object with new properties.</param>
     /// <returns>AreaAdmin's key.</returns>
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAdminDto))]
@@ -176,7 +176,7 @@ public class AreaAdminController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HasPermission(Permissions.AreaAdminEdit)]
     [HttpPut]
-    public async Task<ActionResult> Update([FromBody] BaseUserDto updateAreaAdminDto)
+    public async Task<ActionResult> Update([FromBody] BaseUpdateUserDto updateAreaAdminDto)
     {
         if (updateAreaAdminDto == null)
         {

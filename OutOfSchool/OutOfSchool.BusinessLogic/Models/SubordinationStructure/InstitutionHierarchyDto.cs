@@ -19,5 +19,5 @@ public class InstitutionHierarchyDto
 
     public InstitutionDto Institution { get; set; }
 
-    public List<DirectionDto> Directions { get; set; }
+    public List<SubDirectionDto> SubDirections { get; set; }
 }

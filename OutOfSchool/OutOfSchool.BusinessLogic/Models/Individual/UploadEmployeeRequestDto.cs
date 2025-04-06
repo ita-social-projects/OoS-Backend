@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Individual;
 
@@ -30,4 +31,7 @@ public class UploadEmployeeRequestDto
     [MaxLength(60)]
     [RegularExpression("^[-а-щА-ЩЬьЮюЯяЇїІіЄєҐґ'0-9 ]+$", ErrorMessage = "AssignedRole is not valid. It contains invalid characters.")]
     public string AssignedRole { get; set; }
+
+    [EnumDataType(typeof(PositionType), ErrorMessage = Constants.EnumErrorMessage)]
+    public PositionType PositionType { get; set; } = PositionType.Employee;
 }

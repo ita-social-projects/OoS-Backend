@@ -14,7 +14,7 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<TeacherDraft, TeacherDraftResponseDto>();
 
         CreateMap<WorkshopDraftContent, WorkshopDraftResponseDto>()
-            .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())           
+            .ForMember(dest => dest.WorkshopDraftId, opt => opt.Ignore())
             .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
             .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDetails, opt => opt.Ignore());
@@ -31,33 +31,32 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.WorkshopDetails, opt => opt.MapFrom(src => src))
             .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
             .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore());
-        
+
         CreateMap<Workshop, WorkshopDraftViewCardDto>()
            .ForMember(dest => dest.WorkshopDraftId, opt => opt.MapFrom(src => src.Id)) // Assuming `WorkshopDraftId` corresponds to `Workshop.Id`
            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
            .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id)))
            .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
            .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore());
-        
+
         CreateMap<Workshop, WorkshopDraft>()
             .ForMember(dest => dest.DraftStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.RejectionMessage, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())            
+            .ForMember(dest => dest.ModifiedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Version, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDraftContent, opt => opt.Ignore())
-            .ForMember(dest => dest.Workshop, opt => opt.Ignore())            
-            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())            
-            .ForMember(dest => dest.ModifiedBy, opt => opt.MapFrom(src => src.ModifiedBy))            
+            .ForMember(dest => dest.Workshop, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.MapFrom(src => src.ModifiedBy))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverImageId))
             .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.ProviderId))
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.Id));
-
 
         CreateMap<WorkshopDraft, WorkshopDraftViewCardDto>()
             .ForMember(dest => dest.WorkshopDraftId, opt => opt.MapFrom(src => src.Id))
@@ -66,15 +65,20 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.RejectionMessage, opt => opt.MapFrom(src => src.RejectionMessage))
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
 
-
         CreateMap<WorkshopV2Dto, WorkshopDraftContent>()
             .ForMember(dest => dest.OwnershipType, opt => opt.MapFrom(src => src.ProviderOwnership))
             .ForMember(dest => dest.WorkshopStatus, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.MapFrom(src => src.IncludedStudyGroups.Select(g => g.Id)));          
+            .ForMember(dest => dest.IncludedStudyGroupsIds, opt => opt.MapFrom(src => src.IncludedStudyGroups.Select(g => g.Id)))
+            .ForMember(dest => dest.TagIds, opt => opt.MapFrom((src, dest, destMember, context) =>
+            {
+                var tagIdsFromTags = src.Tags == null ? [] : src.Tags.Select(t => t.Id);
+                var tagIds = src.TagIds;
+                return tagIdsFromTags.Concat(tagIds);
+            }))
+            .ApplyDefaultsForHiddenFields();
 
         CreateMap<WorkshopV2Dto, WorkshopDraft>()
-            .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))
-            .ForPath(dest => dest.WorkshopDraftContent.TagIds, opt => opt.MapFrom(src => src.Tags.Select(t => t.Id).Concat(src.TagIds)))
+            .ForPath(dest => dest.WorkshopDraftContent, opt => opt.MapFrom(src => src))            
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -115,7 +119,8 @@ public class WorkshopDraftMappingProfile : Profile
         CreateMap<WorkshopDraft, WorkshopV2Dto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.WorkshopId))
-            .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
+            .ForMember(dest => dest.ImageIds,
+                opt => opt.MapFrom(src => src.Images.Select(w => w.ExternalStorageId).ToList()))
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
@@ -167,7 +172,6 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.ToTimeSpan()));
 
         CreateMap<WorkshopDescriptionItemDraft, WorkshopDescriptionItemDto>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
             .ReverseMap();
 

@@ -14,6 +14,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
@@ -76,13 +77,14 @@ public class ProviderServiceV2Tests
         providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
-        var individualRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
-        var officialRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
-        var positionRepo = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
+        var individualRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
+        var officialRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Official>>();
+        var positionRepo = new Mock<IPositionRepository>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderServiceV2>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var changesLogService = new Mock<IChangesLogService>();
+        var providerContactsServiceMock = new Mock<IContactsService<Provider, IHasContactsDto<Provider>>>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
         providerAdminService = new Mock<IEmployeeService>();
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
@@ -99,7 +101,7 @@ public class ProviderServiceV2Tests
         providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderServiceV2(
@@ -130,7 +132,8 @@ public class ProviderServiceV2Tests
             userServiceMock.Object,
             authorizationServerConfig,
             communicationService.Object,
-            searchStringServiceMock.Object);
+            searchStringServiceMock.Object,
+            providerContactsServiceMock.Object);
         providersRepositoryMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
     }
 
@@ -141,7 +144,7 @@ public class ProviderServiceV2Tests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderCreateDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate().WithAddress();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -149,7 +152,7 @@ public class ProviderServiceV2Tests
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
-        expected.CoverImageId = null;
+        expected.CoverImageId = string.Empty;
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
@@ -157,7 +160,7 @@ public class ProviderServiceV2Tests
 
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
-        providersRepositoryMock.Setup(r => r.GetById(expected.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(mapper.Map<Provider>(expected));
         notificationService
             .Setup(s => s.Create(
@@ -211,42 +214,6 @@ public class ProviderServiceV2Tests
     }
 
     [Test]
-    public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
-    {
-        // Arrange
-        var expectedEntity = ProviderCreateDtoGenerator.Generate();
-        expectedEntity.ActualAddress = expectedEntity.LegalAddress;
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
-            Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(expectedEntity).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Null);
-    }
-
-    [Test]
-    public async Task Create_WhenActualAddressDiffersFromTheLegal_ActualAddressIsSaved()
-    {
-        // Arrange
-        var expectedEntity = ProvidersGenerator.Generate();
-        expectedEntity.ActualAddress.CATOTTGId = 4970;
-        expectedEntity.ActualAddress.CATOTTG.Id = 4970;
-
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
-        Assert.AreEqual(expectedEntity.ActualAddress, receivedProvider.ActualAddress);
-    }
-
-    [Test]
     public void Create_WhenProviderWithTheSameEdrpouOrIpnExist_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -269,7 +236,8 @@ public class ProviderServiceV2Tests
         var recipientsIds = new List<string>() { fakeUser.Id };
 
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
-        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddManyImagesAsync(expectedEntity, expectedEntityDto.ImageFiles)).ReturnsAsync(new MultipleImageUploadingResult());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -298,7 +266,8 @@ public class ProviderServiceV2Tests
         var recipientsIds = new List<string>() { fakeUser.Id };
 
         providersRepositoryMock.Setup(p => p.Create(It.IsAny<Provider>())).ReturnsAsync(expectedEntity);
-        providersRepositoryMock.Setup(r => r.GetById(expectedEntity.Id)).ReturnsAsync(mapper.Map<Provider>(expectedEntity));
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(mapper.Map<Provider>(expectedEntity));
         providerImagesService.Setup(p => p.AddCoverImageAsync(expectedEntity, expectedEntityDto.CoverImage)).ReturnsAsync(new Result<string>());
         notificationService.Setup(s => s.Create(
                 NotificationType.Provider,
@@ -323,7 +292,7 @@ public class ProviderServiceV2Tests
     public async Task Update_UserCanUpdateExistingEntityOfRelatedProvider_UpdatesExistedEntity()
     {
         // Arrange
-        var provider = fakeProviders.RandomItem();
+        var provider = fakeProviders.RandomItem().WithAddress();
         provider.Status = ProviderStatus.Recheck;
 
         var updatedTitle = Guid.NewGuid().ToString();
@@ -334,7 +303,9 @@ public class ProviderServiceV2Tests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
@@ -368,13 +339,13 @@ public class ProviderServiceV2Tests
 
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
-        providerToUpdateDto.ShortTitle = updatedTitle;
+        providerToUpdateDto.ShortTitleEn = updatedTitle;
 
         var expected = mapper.Map<ProviderDto>(provider);
         expected.Status = initialStatus;
-        expected.ShortTitle = updatedTitle;
+        expected.ShortTitleEn = updatedTitle;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -405,50 +376,12 @@ public class ProviderServiceV2Tests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        notificationService.Setup(s => s.Create(
-                NotificationType.Provider,
-                NotificationAction.Update,
-                provider.Id,
-                recipientsIds,
-                It.IsAny<Dictionary<string, string>>(),
-                null))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
-
-        // Assert
-        TestHelper.AssertDtosAreEqual(expected, result);
-    }
-
-    [TestCase(ProviderStatus.Recheck)]
-    [TestCase(ProviderStatus.Editing)]
-    [TestCase(ProviderStatus.Approved)]
-    public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToRecheck(ProviderStatus initialStatus)
-    {
-        // Arrange
-        var provider = fakeProviders.RandomItem();
-        provider.EdrpouIpn = "1234512345";
-        var updatedEdrpouIpn = "1234567890";
-        provider.Status = initialStatus;
-
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
-        providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
-
-        var expected = mapper.Map<ProviderDto>(provider);
-        expected.Status = ProviderStatus.Recheck;
-        expected.EdrpouIpn = updatedEdrpouIpn;
-
-        var recipientsIds = new List<string>() { fakeUser.Id };
-
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
@@ -490,7 +423,9 @@ public class ProviderServiceV2Tests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -528,7 +463,7 @@ public class ProviderServiceV2Tests
         expected.LicenseStatus = ProviderLicenseStatus.NotProvided;
         expected.License = updatedLicense;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -569,7 +504,7 @@ public class ProviderServiceV2Tests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         var expectedProviderDto = mapper.Map<ProviderDto>(provider);
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);

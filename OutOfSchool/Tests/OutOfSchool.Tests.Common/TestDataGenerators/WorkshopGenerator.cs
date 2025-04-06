@@ -17,8 +17,6 @@ public static class WorkshopGenerator
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal())
         .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
-        .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
-        .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.Keywords, f => f.Lorem.Sentence())
@@ -34,8 +32,6 @@ public static class WorkshopGenerator
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(3))
         .RuleFor(x => x.IsPaid, _ => true)
         .RuleFor(x => x.IsSelfFinanced, f => f.Random.Bool())
-        .RuleFor(x => x.IsSpecial, _ => false)
-        .RuleFor(x => x.ShortStay, f => f.Random.Bool())
         .RuleFor(x => x.ShortTitle, f => f.Company.CompanyName());
 
     public static Workshop Generate() => faker.Generate();

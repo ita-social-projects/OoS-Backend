@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class EmployeesController : Controller
 {
     private readonly ILogger<EmployeesController> logger;

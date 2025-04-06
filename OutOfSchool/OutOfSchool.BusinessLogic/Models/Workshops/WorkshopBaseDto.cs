@@ -61,11 +61,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
-
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
@@ -102,11 +97,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = false;
-
     public bool IsSelfFinanced { get; set; } = false;
-
-    public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;

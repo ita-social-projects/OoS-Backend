@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class AreaAdminController : Controller
 {
     private readonly ILogger<AreaAdminController> logger;
@@ -53,7 +54,7 @@ public class AreaAdminController : Controller
 
     [HttpPut("{areaAdminId}")]
     [HasPermission(Permissions.AreaAdminEdit)]
-    public async Task<ResponseDto> Update(string areaAdminId, AreaAdminBaseDto updateAreaAdminDto)
+    public async Task<ResponseDto> Update(string areaAdminId, AreaAdminBaseUpdateDto updateAreaAdminDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",

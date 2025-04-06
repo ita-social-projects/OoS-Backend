@@ -1,10 +1,8 @@
-using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -29,13 +27,11 @@ public class AdminController : Controller
     private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveWorkshopsService workshopService;
-    private readonly ISensitiveApplicationService applicationService;
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
 
     public AdminController(
         ILogger<AdminController> logger,
         ISensitiveMinistryAdminService ministryAdminService,
-        ISensitiveApplicationService applicationService,
         ISensitiveDirectionService directionService,
         ISensitiveProviderService providerService,
         ISensitiveWorkshopsService workshopService,
@@ -44,7 +40,6 @@ public class AdminController : Controller
     {
         this.localizer = localizer;
         this.logger = logger;
-        this.applicationService = applicationService;
         this.directionService = directionService;
         this.providerService = providerService;
         this.workshopService = workshopService;
@@ -77,28 +72,6 @@ public class AdminController : Controller
     }
 
     /// <summary>
-    /// Get all applications from the database.
-    /// </summary>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of all applications.</returns>
-    /// <response code="200">All entities were found.</response>
-    /// <response code="204">No entity was found.</response>
-    /// <response code="403">If the user has no rights to use this method.</response>
-    /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.AdminDataRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> GetApplications([FromQuery] ApplicationFilter filter)
-    {
-        var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
-
-        return this.SearchResultToOkOrNoContent(applications);
-    }
-
-    /// <summary>
     /// To update Direction entity that already exists.
     /// </summary>
     /// <param name="directionDto">DirectionDto object with new properties.</param>
@@ -114,6 +87,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.DirectionManagement))]
     public async Task<ActionResult> UpdateDirections(DirectionDto directionDto)
     {
         if (!IsTechAdmin())
@@ -146,7 +120,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [FeatureGate(nameof(Feature.ShowForProduction))]
+    [FeatureGate(nameof(Feature.DirectionManagement))]
     public async Task<ActionResult> DeleteDirectionById(long id)
     {
         if (!IsTechAdmin())
@@ -256,31 +230,6 @@ public class AdminController : Controller
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
         return Ok(result);
     }
-
-    /// <summary>
-    /// Export all Providers to CSV file.
-    /// </summary>
-    /// <returns>CSV file containing all providers.</returns>
-    [HttpGet("~/api/v{version:apiVersion}/admin/providers/export")]
-    [Authorize(Roles = "techadmin")]
-    [FeatureGate(nameof(Feature.TechAdminExport))]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ExportProviders()
-    {
-        var providersCsvData = await providerService.GetCsvExportData().ConfigureAwait(false);
-
-        if (providersCsvData is null or { Length: 0 })
-        {
-            return NoContent();
-        }
-
-        return File(providersCsvData, MediaTypeNames.Text.Csv, "providers.csv");
-    }
-
     /// <summary>
     /// Get all Workshop Drafts from the database by filter.
     /// </summary>
@@ -291,7 +240,7 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
          await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);    

@@ -174,7 +174,7 @@ public class AreaAdminControllerTests
         // Arrange
 
         // Act
-        var result = await areaAdminController.Update("fakeAdminId", new AreaAdminBaseDto());
+        var result = await areaAdminController.Update("fakeAdminId", new AreaAdminBaseUpdateDto());
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -191,11 +191,11 @@ public class AreaAdminControllerTests
         var userId = string.Empty;
         AreaAdmin areaAdmin = new AreaAdmin { UserId = userId, InstitutionId = oldInstitutionId, CATOTTGId = oldCAOTTGId };
         await SeedAreaAdmin(areaAdmin);
-        var areaAdminToUpdate = new AreaAdminBaseDto 
+        var areaAdminToUpdate = new AreaAdminBaseUpdateDto 
         { 
             UserId = userId,
-            FirstName = string.Empty,
-            LastName = string.Empty,
+            Email = "fakeEmail@gmail.com",
+            PhoneNumber = "+380989846888",
             InstitutionId = Guid.NewGuid(),
             CATOTTGId = long.MaxValue 
         };

@@ -42,7 +42,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
-    private Mock<ICodeficatorService> codeficatorServiceMock; 
+    private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -82,7 +82,7 @@ public class SensitiveWorkshopDraftServiceTests
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         var employeeService = new Mock<IEmployeeService>();
-        
+
         userId = "someUserId";
 
         service = new WorkshopDraftService(
@@ -199,22 +199,16 @@ public class SensitiveWorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
 
         codeficatorRepository.Setup(
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<CATOTTG>, IQueryable<CATOTTG>>>(),
                 It.IsAny<Expression<Func<CATOTTG, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(new List<CATOTTG>().AsTestAsyncEnumerableQuery());
 
         return new SearchResult<WorkshopDraftResponseDto>()
@@ -241,11 +235,8 @@ public class SensitiveWorkshopDraftServiceTests
                 w => w.Get(
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null),
-                    It.Is<bool>(x => x.Equals(true))))
+                    It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null)))
             .Returns(workshopDraftsReturned.AsTestAsyncEnumerableQuery());
     }
 }

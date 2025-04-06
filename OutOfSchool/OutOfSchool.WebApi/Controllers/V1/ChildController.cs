@@ -1,9 +1,11 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -51,6 +53,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<IActionResult> GetAllForAdmin([FromQuery] ChildSearchFilter filter)
     {
         return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
@@ -70,6 +73,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("/api/v{version:apiVersion}/parents/{id}/children")]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<IActionResult> GetChildrenListByParentId([FromRoute] Guid id, [FromQuery] bool? isParent = null)
     {
         var children = await service.GetChildrenListByParentId(id, isParent).ConfigureAwait(false);
@@ -151,8 +155,8 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("/api/v{version:apiVersion}/workshops/{id}/children/approved")]
-    public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
+    [HttpGet("/api/v{version:apiVersion}/workshops/{workshopId}/children/approved")]
+    public async Task<IActionResult> GetApprovedByWorkshopId([FromRoute] Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
     {
         var isWorkshopExists = await combinedWorkshopService.Exists(workshopId).ConfigureAwait(false);
 
@@ -256,7 +260,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] ChildUpdateDto dto, Guid id)
     {
@@ -276,7 +280,7 @@ public class ChildController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}")]    
     public async Task<IActionResult> Delete(Guid id)
     {
         string userId = GettingUserProperties.GetUserId(User);

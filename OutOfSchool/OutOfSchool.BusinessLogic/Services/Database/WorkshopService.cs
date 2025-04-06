@@ -26,10 +26,10 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 {
-    private readonly string includingPropertiesForMappingDtoModel =
-        $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
-
-    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc = 
+    /// <summary>
+    /// Create a delegate to include other entities in Workshop entity
+    /// </summary>
+    private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc =
         w => w.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
@@ -224,8 +224,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
-                    includeExpression: includeFunc,
                     orderBy: sortExpression)
+                .IncludeProperties(includeFunc)
                 .ToList();
 
         logger.LogInformation(!workshops.Any()
@@ -311,15 +311,13 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeExpression: includeFunc,
                 whereExpression: filterPredicate)
+                .IncludeProperties(includeFunc)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-        var chatrooms = roomRepository.Get(
-            skip: 0,
-            take: 0,
-            includeProperties: "ChatMessages");
+        var chatrooms = roomRepository.Get(skip: 0, take: 0)
+            .Include(crw => crw.ChatMessages);
 
         var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
 
@@ -381,19 +379,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
             if (!dto.TagIds.IsNullOrEmpty())
             {
-                var tags = new List<TagDto>();
-                foreach (var tagId in dto.TagIds)
-                {
-                    var tag = await tagService.GetById(tagId);
-                    if (tag != null)
-                    {
-                        var tagDto = mapper.Map<TagDto>(tag);
-                        tags.Add(tagDto);
-                    }
-                }
+                var tagEntities = await tagRepository
+                    .GetByFilter(t => dto.TagIds.Contains(t.Id));
 
                 currentWorkshop.Tags.Clear();
-                currentWorkshop.Tags.AddRange(tags.Select(tagDto => new Tag { Id = tagDto.Id }));
+                currentWorkshop.Tags.AddRange(tagEntities);
             }
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
@@ -649,10 +639,10 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
                 whereExpression: filterPredicate,
                 orderBy: orderBy)
-            .ToList();
+                .IncludeProperties(includeFunc)
+                .ToList();
 
         logger.LogInformation(!workshops.Any()
             ? "There was no matching entity found."
@@ -764,11 +754,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
-                whereExpression: predicate,
-                asNoTracking: true)
-            .ToListAsync()
-            .ConfigureAwait(false);
+                whereExpression: predicate)
+                .IncludeProperties(includeFunc)
+                .AsNoTracking()
+                .ToListAsync()
+                .ConfigureAwait(false);
 
         var workshopsCount = await workshopRepository
             .Count(predicate)
@@ -796,9 +786,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         var filterPredicate = PredicateBuild(filter, false);
 
-        var query = workshopRepository.Get(
-            whereExpression: filterPredicate,
-            includeProperties: "");
+        var query = workshopRepository.Get(whereExpression: filterPredicate);
 
         var priceRange = await query.GroupBy(_ => 1)
             .Select(g => new PriceRange
@@ -939,7 +927,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
                 foreach (var item in settlementsFilter.SettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -968,9 +956,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var tempPredicate = PredicateBuilder.False<Workshop>();
 
             // Fix Rider ambiguous method with either char or string args
-            // ReSharper disable once UseCollectionExpression
-            // ReSharper disable once RedundantExplicitArrayCreation
-            foreach (var word in filter.SearchText.Split(new char[] {' ', ','}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var word in filter.SearchText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             {
                 tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
             }
@@ -983,7 +969,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var tempPredicate = PredicateBuilder.False<Workshop>();
             foreach (var direction in filter.DirectionIds)
             {
-                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.Directions.Any(d => !d.IsDeleted && d.Id == direction));
+                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.SubDirections.Any(d => !d.Direction.IsDeleted && d.DirectionId == direction));
             }
 
             predicate = predicate.And(tempPredicate);
@@ -1011,11 +997,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = filter.IsAppropriateAge
                 ? predicate.And(x => x.MinAge >= filter.MinAge && x.MaxAge <= filter.MaxAge)
                 : predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
-        }
-
-        if (filter.WithDisabilityOptions)
-        {
-            predicate = predicate.And(x => x.WithDisabilityOptions);
         }
 
         if (filter.Workdays.Any())
@@ -1054,19 +1035,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             predicate = predicate.And(x => filter.FormOfLearning.Contains(x.FormOfLearning));
         }
 
-        if (filter.ShortStay)
-        {
-            predicate = predicate.And(x => x.ShortStay);
-        }
-
         if (filter.IsSelfFinanced)
         {
             predicate = predicate.And(x => x.IsSelfFinanced);
-        }
-
-        if (filter.IsSpecial)
-        {
-            predicate = predicate.And(x => x.IsPaid);
         }
 
         if (filter.IsInclusive)
@@ -1324,7 +1295,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             dto.DefaultTeacher.Id = Guid.Empty;
         }
 
-        dto.WorkshopDescriptionItems?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.Teachers?.ToList().ForEach(e => e.Id = Guid.Empty);
         dto.DateTimeRanges?.ToList().ForEach(e => e.Id = default);
 

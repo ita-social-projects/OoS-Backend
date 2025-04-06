@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
@@ -40,7 +41,9 @@ public class CompetitiveEventServiceTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ICurrentUserService> userService;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
+    private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> competitiveImagesService;
     private IMapper mapper;
+
 
     private CompetitiveEventService service;
     private Guid firstId;
@@ -66,6 +69,7 @@ public class CompetitiveEventServiceTests
         logger = new Mock<ILogger<CompetitiveEventService>>();
         userService = new Mock<ICurrentUserService>();
         contactsService = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
+        competitiveImagesService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
 
         service = new CompetitiveEventService(
             repo,
@@ -74,7 +78,8 @@ public class CompetitiveEventServiceTests
             localizer.Object,
             mapper,
             userService.Object,
-            contactsService.Object);
+            contactsService.Object,
+            competitiveImagesService.Object);
 
         SeedDatabase();
     }

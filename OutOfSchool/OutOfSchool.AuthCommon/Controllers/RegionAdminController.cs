@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 
@@ -7,7 +8,7 @@ namespace OutOfSchool.AuthCommon.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-[Authorize]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 public class RegionAdminController : Controller
 {
     private readonly ILogger<RegionAdminController> logger;
@@ -53,7 +54,7 @@ public class RegionAdminController : Controller
 
     [HttpPut("{regionAdminId}")]
     [HasPermission(Permissions.RegionAdminEdit)]
-    public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseDto updateRegionAdminDto)
+    public async Task<ResponseDto> Update(string regionAdminId, RegionAdminBaseUpdateDto updateRegionAdminDto)
     {
         logger.LogDebug(
             "Operation initiated by User(id): {UserId}",

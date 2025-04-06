@@ -9,6 +9,10 @@ public class SubDirectionsInfoDto : SubDirectionsInfoBaseDto
     [MaxLength(100)]
     [MinLength(1)]
     public string Title { get; set; }
-    
-    public List<long> DirectionIds { get; set; }
+
+    [MaxLength(500)]
+    [DataType(DataType.Text)]
+    public string Description { get; set; } = string.Empty;
+
+    public long DirectionId { get; set; }
 }

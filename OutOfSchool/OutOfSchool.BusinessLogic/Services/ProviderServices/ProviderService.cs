@@ -1,9 +1,5 @@
-﻿using System.Data;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using CsvHelper;
-using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -17,6 +13,7 @@ using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -32,9 +29,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Individual> individualRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Official> officialRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Position> positionRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Official> officialRepository;
+    private readonly IPositionRepository positionRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
@@ -53,6 +50,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly ICommunicationService communicationService;
     private readonly ILogger<ProviderService> logger;
     private readonly ISearchStringService searchStringService;
+    private readonly IContactsService<Provider, IHasContactsDto<Provider>> contactsService;
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
@@ -89,6 +87,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="authorizationServerConfig">Path to authorization server.</param>
     /// <param name="communicationService">Service for communication.</param>
     /// <param name="searchStringService">Service for handling search string.</param>
+    /// <param name="contactsService">Service for handling contacts.</param>
     public ProviderService(
         IProviderRepository providerRepository,
         IEntityRepositorySoftDeleted<string, User> usersRepository,
@@ -96,9 +95,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
-        IEntityRepositorySoftDeleted<Guid, Individual> individualRepository,
-        IEntityRepositorySoftDeleted<Guid, Official> officialRepository,
-        IEntityRepositorySoftDeleted<Guid, Position> positionRepository,
+        ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
+        ISensitiveEntityRepositorySoftDeleted<Official> officialRepository,
+        IPositionRepository positionRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
@@ -117,7 +116,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IUserService userService,
         IOptions<AuthorizationServerConfig> authorizationServerConfig,
         ICommunicationService communicationService,
-        ISearchStringService searchStringService)
+        ISearchStringService searchStringService,
+        IContactsService<Provider, IHasContactsDto<Provider>> contactsService)
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -147,6 +147,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
+        this.contactsService = contactsService ?? throw new ArgumentNullException(nameof(contactsService));
     }
 
     private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -170,7 +171,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             var childSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId).ConfigureAwait(false);
 
-            filterPredicate = filterPredicate.And(x => childSettlementsIds.Contains(x.LegalAddress.CATOTTGId));
+            filterPredicate = filterPredicate.And(x => x.Contacts.Any(c => c.IsDefault && childSettlementsIds.Contains(c.Address.CATOTTGId)));
         }
 
         if (currentUserService.IsMinistryAdmin())
@@ -191,7 +192,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
             foreach (var item in subSettlementsIds)
             {
-                tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+                tempPredicate = tempPredicate.Or(x => x.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
             }
 
             filterPredicate = filterPredicate.And(tempPredicate);
@@ -209,7 +210,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
             foreach (var item in subSettlementsIds)
             {
-                tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+                tempPredicate = tempPredicate.Or(x => x.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
             }
 
             filterPredicate = filterPredicate.And(tempPredicate);
@@ -228,10 +229,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: string.Empty,
                 whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: false)
+                orderBy: sortExpression)
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -262,18 +261,18 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             return null;
         }
 
+        Func<IQueryable<Provider>, IQueryable<Provider>> includeFunc =
+            p => p.Include(p => p.ProviderSectionItems)
+                  .Include(p => p.Type)
+                  .Include(p => p.Institution)
+                  .Include(p => p.Images)
+                  .IncludeContactsWithCodeficatorHierarchy();
+
         Expression<Func<Provider, bool>> providerFilter = p => p.Id == id;
-        var provider = await providerRepository.Get(
-            whereExpression: providerFilter,
-            asNoTracking: true)
-            .Include(p => p.ActualAddress).ThenInclude(a => a.CATOTTG)
-                .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent).ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
-            .Include(p => p.LegalAddress).ThenInclude(a => a.CATOTTG)
-                .ThenInclude(ac => ac.Parent).ThenInclude(acp => acp.Parent).ThenInclude(acpp => acpp.Parent).ThenInclude(acppp => acppp.Parent)
-            .Include(p => p.ProviderSectionItems)
-            .Include(p => p.Type)
-            .Include(p => p.Institution)
-            .Include(p => p.Images)
+        var provider = await providerRepository
+            .Get(whereExpression: providerFilter)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .FirstAsync()
             .ConfigureAwait(false);
 
@@ -333,40 +332,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         return mapper.Map<ProviderDto>(provider);
     }
-
-    /// <inheritdoc/>
-    public async Task<byte[]> GetCsvExportData()
-    {
-        var providers = await providerRepository
-            .Get(asNoTracking: true)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        if (providers.Length == 0)
-        {
-            return [];
-        }
-
-        var providerDtos = mapper.Map<Provider[], ProviderCsvDto[]>(providers);
-
-        var csvConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            Delimiter = ";",
-            Encoding = Encoding.UTF8,
-        };
-
-        using var stream = new MemoryStream();
-        using var streamWriter = new StreamWriter(stream);
-        using var csvWriter = new CsvWriter(streamWriter, csvConfiguration);
-
-        await csvWriter.WriteRecordsAsync(providerDtos).ConfigureAwait(false);
-        await csvWriter.FlushAsync().ConfigureAwait(false);
-
-        var csvData = stream.GetBuffer();
-
-        return csvData;
-    }
-
     /// <inheritdoc/>
     public async Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId)
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
@@ -385,7 +350,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         _ = providerBlockDto ?? throw new ArgumentNullException(nameof(providerBlockDto));
 
-        var provider = await providerRepository.GetById(providerBlockDto.Id).ConfigureAwait(false);
+        var provider = await providerRepository.GetByIdWithDetails(
+            id: providerBlockDto.Id,
+            includeExpression: q => q.Include(p => p.Contacts).ThenInclude(c => c.Address)).ConfigureAwait(false);
 
         if (provider is null)
         {
@@ -551,6 +518,13 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         // Check list of Employees for uploading.
         CheckListOfEmployeesForUploading(data);
 
+        foreach (var employee in data)
+        {
+            employee.PositionType = employee.AssignedRole.Contains(Constants.UploadEmployees.DeputyDirector)
+                ? PositionType.DeputyDirector
+                : PositionType.Employee;
+        }
+
         var uploadResponse = new UploadEmployeeResponse();
 
         async Task UploadEmployeesIntoDb()
@@ -573,7 +547,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         var recipientIds = new List<string>();
 
-        var provider = await providerRepository.GetById(objectId).ConfigureAwait(false);
+        var provider = await providerRepository.GetByIdWithDetails(
+                id: objectId, includeExpression: q => q.Include(p => p.Contacts).ThenInclude(c => c.Address))
+            .ConfigureAwait(false);
 
         if (provider is null)
         {
@@ -584,8 +560,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         {
             recipientIds.AddRange(GetTechAdminsIds());
             recipientIds.AddRange(GetMinistryAdminsIds(provider.InstitutionId));
-            recipientIds.AddRange(GetRegionAdminsIds(provider.LegalAddress));
-            recipientIds.AddRange(GetAreaAdminsIds(provider.LegalAddress));
+            recipientIds.AddRange(GetRegionAdminsIds(provider.Contacts.Where(c => c.IsDefault).Select(c => c.Address).Single()));
+            recipientIds.AddRange(GetAreaAdminsIds(provider.Contacts.Where(c => c.IsDefault).Select(c => c.Address).Single()));
         }
         else if (action == NotificationAction.Update)
         {
@@ -597,7 +573,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 {
                     recipientIds.AddRange(GetTechAdminsIds());
                     recipientIds.AddRange(GetMinistryAdminsIds(provider.InstitutionId));
-                    recipientIds.AddRange(GetRegionAdminsIds(provider.LegalAddress));
+                    recipientIds.AddRange(GetRegionAdminsIds(provider.Contacts.Where(c => c.IsDefault).Select(c => c.Address).Single()));
                 }
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
@@ -647,13 +623,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             throw new InvalidOperationException(localizer["You can not create more than one account."]);
         }
 
-        // Note: clear the actual address if it is equal to the legal to avoid data duplication in the database
-        if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
-        {
-            providerDto.ActualAddress = null;
-        }
-
         var providerDomainModel = mapper.Map<Provider>(providerDto);
+
+        contactsService.PrepareNewContacts(providerDomainModel, providerDto);
 
         // BUG: concurrency issue:
         //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
@@ -665,7 +637,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
         providerDomainModel.User = users.Single();
         providerDomainModel.User.IsRegistered = true;
-        providerDomainModel.User.PhoneNumber = providerDto.PhoneNumber;
         providerDomainModel.Status = ProviderStatus.Pending;
         providerDomainModel.LicenseStatus = providerDomainModel.License == null
             ? ProviderLicenseStatus.NotProvided
@@ -699,18 +670,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             throw new ArgumentNullException(nameof(userId));
         }
 
-        if (await ExistsAnotherProviderWithTheSameEdrpouIpn(providerUpdateDto))
-        {
-            logger.LogTrace("Provider with Id = {providerUpdateDtoId} wasn't updated: Edrpou or Ipn isn't unique.", providerUpdateDto.Id);
-
-            return null;
-        }
-
         logger.LogDebug("Updating Provider with Id = {Id} was started", providerUpdateDto.Id);
 
         try
         {
-            var checkProvider = await providerRepository.GetById(providerUpdateDto.Id).ConfigureAwait(false);
+            var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);
 
             if (checkProvider?.UserId != userId)
             {
@@ -719,62 +683,43 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
             ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
-            providerUpdateDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+            contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
 
-            if (providerUpdateDto.LegalAddress.Equals(providerUpdateDto.ActualAddress))
-            {
-                providerUpdateDto.ActualAddress = null;
-            }
 
-            if (providerUpdateDto.ActualAddress is null && checkProvider.ActualAddress is { })
+            if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {
-                var checkProviderActualAddress = checkProvider.ActualAddress;
-                checkProvider.ActualAddressId = null;
-                checkProvider.ActualAddress = null;
-                mapper.Map(providerUpdateDto, checkProvider);
-                await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
+                checkProvider = await providerRepository.RunInTransaction(async () =>
+                {
+                    var workshops = await workshopServiceCombiner
+                        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle,
+                            providerUpdateDto.FullTitleEn)
+                        .ConfigureAwait(false);
+
+                    mapper.Map(providerUpdateDto, checkProvider);
+                    LogProviderChanges(checkProvider, userId);
+                    await UpdateProvider().ConfigureAwait(false);
+
+                    foreach (var workshop in workshops)
+                    {
+                        logger.LogDebug("Provider's properties with Id = {ProviderId} " +
+                                              "in workshops with Id = {WorkshopId} updated successfully", checkProvider?.Id, workshop?.Id);
+                    }
+
+                    return checkProvider;
+                }).ConfigureAwait(false);
             }
             else
             {
-                if (providerUpdateDto.ActualAddress != null)
-                {
-                    providerUpdateDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
-                }
-
-                if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
-                {
-                    checkProvider = await providerRepository.RunInTransaction(async () =>
-                    {
-                        var workshops = await workshopServiceCombiner
-                            .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle, providerUpdateDto.FullTitleEn)
-                            .ConfigureAwait(false);
-
-                        mapper.Map(providerUpdateDto, checkProvider);
-                        LogProviderChanges(checkProvider, userId);
-                        await UpdateProvider().ConfigureAwait(false);
-
-                        foreach (var workshop in workshops)
-                        {
-                            logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                                                  $"in workshops with Id = {workshop?.Id} updated successfully.");
-                        }
-
-                        return checkProvider;
-                    }).ConfigureAwait(false);
-                }
-                else
-                {
-                    mapper.Map(providerUpdateDto, checkProvider);
-                }
-
-                if (actionBeforeUpdating != null)
-                {
-                    await actionBeforeUpdating(checkProvider).ConfigureAwait(false);
-                }
-
-                LogProviderChanges(checkProvider, userId);
-                await UpdateProvider().ConfigureAwait(false);
+                mapper.Map(providerUpdateDto, checkProvider);
             }
+
+            if (actionBeforeUpdating != null)
+            {
+                await actionBeforeUpdating(checkProvider).ConfigureAwait(false);
+            }
+
+            LogProviderChanges(checkProvider, userId);
+            await UpdateProvider().ConfigureAwait(false);
 
             logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
@@ -877,7 +822,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         if (checkProvider.Status != ProviderStatus.Pending &&
             !(checkProvider.FullTitle == providerDto.FullTitle
-              && checkProvider.EdrpouIpn == providerDto.EdrpouIpn))
+              && checkProvider.ShortTitle == providerDto.ShortTitle))
         {
             checkProvider.Status = ProviderStatus.Recheck;
             statusChanged = true;
@@ -909,14 +854,14 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         {
             var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
-            return regionAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+            return regionAdmin.InstitutionId == provider.InstitutionId && provider.Contacts.Any(c => c.IsDefault && listOfCATOTTG.Contains(c.Address.CATOTTGId));
         }
 
         if (currentUserService.IsAreaAdmin())
         {
             var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId).ConfigureAwait(false);
             var listOfCATOTTG = await codeficatorService.GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
-            return areaAdmin.InstitutionId == provider.InstitutionId && listOfCATOTTG.Contains(provider.LegalAddress.CATOTTGId);
+            return areaAdmin.InstitutionId == provider.InstitutionId && provider.Contacts.Any(c => c.IsDefault && listOfCATOTTG.Contains(c.Address.CATOTTGId));
         }
 
         return true;
@@ -955,12 +900,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
             foreach (var word in searchStringService.SplitSearchString(filter.SearchString))
             {
-                if (word.Any(c => char.IsLetter(c)))
+                if (word.Any(char.IsLetter))
                 {
                     tempPredicate = tempPredicate.Or(
                         x => x.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                             || x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Contacts.Any(c => c.Emails.Any(e => e.Address.Contains(word, StringComparison.InvariantCultureIgnoreCase)))
                             || x.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase)
                             || x.ShortTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                 }
@@ -970,9 +915,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                     if (searchNumber.Length > 0)
                     {
                         tempPredicate = tempPredicate.Or(
-                            x => x.PhoneNumber.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
-                                || x.EdrpouIpn.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
-                                || x.Email.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase));
+                            x => x.Contacts.Any(c => c.Phones.Any(p =>
+                                     p.Number.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)))
+                                 || x.Edrpou.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.Contacts.Any(c => c.Emails.Any(e =>
+                                     e.Address.Contains(searchNumber, StringComparison.InvariantCultureIgnoreCase))));
                     }
                 }
             }
@@ -1035,7 +982,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return ministryAdminsIds;
     }
 
-    private List<string> GetRegionAdminsIds(Address address)
+    private List<string> GetRegionAdminsIds(ContactsAddress address)
     {
         var regionAdminsIds = regionAdminRepository
             .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
@@ -1045,30 +992,21 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return regionAdminsIds;
     }
 
-    private List<string> GetAreaAdminsIds(Address address)
+    private List<string> GetAreaAdminsIds(ContactsAddress address)
         => areaAdminRepository
             .GetByFilterNoTracking(a => a.CATOTTGId == address.CATOTTGId)
             .Select(a => a.UserId)
             .ToList();
 
-    private async Task<bool> ExistsAnotherProviderWithTheSameEdrpouIpn(ProviderUpdateDto providerUpdateDto)
-    {
-        var providersWithTheSameEdrpouIpn = await providerRepository
-            .GetByFilter(x => x.EdrpouIpn == providerUpdateDto.EdrpouIpn && x.Id != providerUpdateDto.Id)
-            .ConfigureAwait(false);
-
-        return providersWithTheSameEdrpouIpn.Any();
-    }
-
     private void CheckListOfEmployeesForUploading(UploadEmployeeRequestDto[] data)
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
-        logger.LogDebug("Upload employees for provider was started.");
+        logger.LogDebug("Upload employees for provider was started");
 
         if (data.Length == 0)
         {
-            var errorMessage = "The number of entries to upload should be greater than 0.";
+            var errorMessage = "The number of entries to upload should be greater than 0";
             logger.LogError(errorMessage);
             throw new ArgumentOutOfRangeException(errorMessage);
         }
@@ -1076,16 +1014,16 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         if (data.Length > Constants.MaxNumberOfEmployeesToUpload)
         {
             var errorMessage = $"The number of entries should not exceed {Constants.MaxNumberOfEmployeesToUpload}.";
-            logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}.", Constants.MaxNumberOfEmployeesToUpload);
+            logger.LogError("The number of entries should not exceed {MaxNumberOfEmployeesToUpload}", Constants.MaxNumberOfEmployeesToUpload);
             throw new ArgumentOutOfRangeException(errorMessage);
         }
 
         var uploadEmployeesRnokpps = data.Select(e => e.Rnokpp).ToList();
 
-        // Check if the Rnokpp property values ​​are unique?
+        // Check if the Rnokpp property values are unique?
         if (uploadEmployeesRnokpps.Distinct().Count() != data.Length)
         {
-            var errorMessage = "The Rnokpp property values are not unique.";
+            var errorMessage = "The Rnokpp property values are not unique";
             logger.LogError(errorMessage);
             throw new InvalidOperationException(errorMessage);
         }
@@ -1107,9 +1045,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         // Loop to add individuals to DB and populate the Dictionary for uploading employees
         foreach (var employee in data)
         {
-            if (existingIndividuals.ContainsKey(employee.Rnokpp))
+            if (existingIndividuals.TryGetValue(employee.Rnokpp, out var individual))
             {
-                uploadDictionary.Add(existingIndividuals[employee.Rnokpp].Id, employee);
+                uploadDictionary.Add(individual.Id, employee);
             }
             else // Add an Individual to DB if it has not already existed in DB
             {
@@ -1126,12 +1064,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                                                          Guid providerId,
                                                          UploadEmployeeResponse uploadResponse)
     {
-        // Get a dictionary (Lookup) with keys - IndividualId and values ​​- Official.Position.FullName for a certain Provider.
+        // Get a dictionary (Lookup) with keys - IndividualId and values - Official.Position.FullName for a certain Provider.
         var existingOfficialsForProvider = (await officialRepository.GetByFilter(o =>
                                                                                  o.Position.ProviderId == providerId
                                                                                  && uploadDictionary.Keys.Contains(o.IndividualId)
                                                                                  && (o.DismissalOrder == null || o.DismissalOrder == string.Empty)
-                                                                                 , includeProperties: "Position")
+                                                                                 , includeExpression: q => q.Include(o => o.Position))
                                                                                  .ConfigureAwait(false))
                                                                                  .ToLookup(o => o.IndividualId, o => o?.Position?.FullName);
 
@@ -1158,7 +1096,8 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 new Position
                 {
                     ProviderId = providerId,
-                    FullName = uploadDictionary[key].AssignedRole
+                    FullName = uploadDictionary[key].AssignedRole,
+                    PositionType = uploadDictionary[key].PositionType,
                 }).ConfigureAwait(false);
                 uploadResponse.CountOfCreatedPositions++;
             }
@@ -1172,10 +1111,5 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
         }
-    }
-
-    public async Task HasProviderRights(Guid providerId)
-    {
-        await currentUserService.UserHasRights(new ProviderRights(providerId));
     }
 }

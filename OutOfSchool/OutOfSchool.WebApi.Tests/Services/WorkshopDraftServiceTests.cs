@@ -1,37 +1,39 @@
-﻿using AutoMapper;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MockQueryable.Moq;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
-using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using System;
-using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using System.Linq.Expressions;
-using System.Linq;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Common.Extensions;
-using FluentAssertions;
-using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
-using System.Collections.Generic;
-using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -57,6 +59,7 @@ public class WorkshopDraftServiceTests
 
         var config = new MapperConfiguration(cfg =>
             cfg.UseProfile<CommonProfile>()
+                .UseProfile<ContactsProfile>()
                .UseProfile<MappingProfile>()
                .UseProfile<WorkshopDraftMappingProfile>());
 
@@ -394,11 +397,8 @@ public class WorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
@@ -409,11 +409,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(emptyList.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
@@ -446,11 +443,8 @@ public class WorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
         currentUserServiceMoq.Setup(x => x.UserId)
             .Returns(userId).Verifiable(Times.Once);
@@ -461,11 +455,8 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
@@ -477,5 +468,155 @@ public class WorkshopDraftServiceTests
         currentUserServiceMoq.VerifyAll();
         result.Entities.Should().BeEquivalentTo(workshopDraftResponses);
     }
-    #endregion    
+    #endregion
+
+    #region UpdateWorkshop
+    [Test]
+    public async Task UpdateWorkshop_WhenModeratedFieldsWasNotChanged_ShouldCallWorkshopUpdate()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var providerDto = new ProviderDto
+        {
+            UserId = userId
+        };
+
+        var workshopResultDto = new WorkshopResultDto
+        {
+            Workshop = workshopV2Dto
+        };
+
+        var workshopDrafts = new List<WorkshopDraft>();
+
+        currentUserServiceMoq.Setup(x => x.UserId)
+            .Returns(userId).Verifiable(Times.Exactly(2));
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(2));
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>()))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(workshopResultDto)).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
+
+        // Assert
+        providerServiceMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+
+    [Test]
+    public void UpdateWorkshop_WhenDraftExists_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var providerDto = new ProviderDto
+        {
+            UserId = userId
+        };
+
+        var workshopDrafts = new List<WorkshopDraft>()
+        {
+            new WorkshopDraft()
+        };
+
+        currentUserServiceMoq.Setup(x => x.UserId)
+            .Returns(userId).Verifiable(Times.Exactly(2));
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(2));
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x =>
+           x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        //Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateWorkshop(workshopV2Dto));
+
+        providerServiceMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();        
+    }
+
+    [Test]
+    public void UpdateWorkshop_WhenWorkshopIsNotFound_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = (WorkshopDto)null;
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+
+        //Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateWorkshop(workshopV2Dto));
+
+        workshopServiceCombinerV2Moq.VerifyAll();
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenModeratedFieldsWasChanged_ShouldCallCreateDraft()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        workshopDto.Title = "Changed title";
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var providerDto = new ProviderDto
+        {
+            UserId = userId
+        };
+
+        var workshopDrafts = new List<WorkshopDraft>();
+        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+
+        currentUserServiceMoq.Setup(x => x.UserId)
+            .Returns(userId).Verifiable(Times.Exactly(4));
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(4));
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Exactly(2));
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
+            .ReturnsAsync(workshopDraft);
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
+
+        // Assert
+        providerServiceMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+    #endregion
 }

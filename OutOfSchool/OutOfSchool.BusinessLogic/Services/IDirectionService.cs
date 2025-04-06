@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -22,7 +23,7 @@ public interface IDirectionService
     /// <param name="dto">DirectionDto element.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="DirectionDto"/> that was created.</returns>
-    Task<DirectionDto> Create(DirectionDto dto);
+    Task<Result<DirectionDto>> Create(DirectionDto dto);
 
     /// <summary>
     /// Get all Direction objects from DB.

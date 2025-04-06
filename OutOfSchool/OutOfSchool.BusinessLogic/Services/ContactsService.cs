@@ -14,10 +14,9 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
     /// <inheritdoc/>
     public void PrepareNewContacts(TEntity entity, TDto dto)
     {
-        // TODO: During transition leave it as optional and if it is empty - do nothing.
         if (dto.Contacts.IsNullOrEmpty())
         {
-            return;
+            throw new InvalidOperationException("At least one contact is required.");
         }
         
         // here we check only top level contacts uniqueness
@@ -33,10 +32,9 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
     /// <inheritdoc/>
     public void PrepareUpdatedContacts([NotNull] TEntity entity, [NotNull] TDto dto)
     {
-        // TODO: During transition leave it as optional and if it is empty - do nothing.
         if (dto.Contacts.IsNullOrEmpty())
         {
-            return;
+            throw new InvalidOperationException("At least one contact is required.");
         }
 
         // here we check only top level contacts uniqueness

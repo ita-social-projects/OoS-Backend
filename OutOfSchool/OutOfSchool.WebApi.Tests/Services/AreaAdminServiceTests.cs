@@ -203,11 +203,8 @@ public class AreaAdminServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>(),
                 It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>()))
             .Returns(areaAdminsMock);
 
         // Act
@@ -233,7 +230,7 @@ public class AreaAdminServiceTests
         // Act
         areaAdminService
             .Invoking(x => x
-                .UpdateAreaAdminAsync(It.IsAny<string>(), It.IsAny<AreaAdminDto>(), It.IsAny<string>()))
+                .UpdateAreaAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
@@ -406,11 +403,8 @@ public class AreaAdminServiceTests
         areaAdminRepositoryMock.Setup(repo => repo.Get(
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
-                It.Is<string>(x => x == includeProperties),
-                It.IsAny<Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>>>(),
                 It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>(),
-                It.Is<bool>(x => x)))
+                It.IsAny<Dictionary<Expression<Func<AreaAdmin, dynamic>>, SortDirection>>()))
             .Returns(filteredAreaAdmins.AsQueryable()
             .BuildMock());
     }

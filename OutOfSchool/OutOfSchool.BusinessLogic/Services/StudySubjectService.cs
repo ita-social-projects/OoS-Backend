@@ -2,7 +2,7 @@
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 using System.Linq.Expressions;
 
@@ -11,7 +11,7 @@ public class StudySubjectService : IStudySubjectService
 {
     private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
     private readonly IEntityRepository<long, Language> languageRepository;
-    private readonly IProviderService providerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<StudySubjectService> logger;
     private readonly IMapper mapper;
 
@@ -20,19 +20,19 @@ public class StudySubjectService : IStudySubjectService
     /// </summary>
     /// <param name="studySubjectRepository">Repository for StudySubject.</param>
     /// <param name="languageRepository">Repository for Language.</param>
-    /// <param name="providerService">Provider service.</param>
+    /// <param name="currentUserService">Current User service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public StudySubjectService(
         IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
         IEntityRepository<long, Language> languageRepository,
-        IProviderService providerService,
+        ICurrentUserService currentUserService,
         ILogger<StudySubjectService> logger,
         IMapper mapper)
     {
         this.studySubjectRepository = studySubjectRepository ?? throw new ArgumentNullException(nameof(studySubjectRepository));
         this.languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
-        this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
@@ -40,7 +40,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
         
         logger.LogDebug("StudySubject creating was started");
 
@@ -65,7 +65,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<Result<StudySubjectDto>> Delete(Guid id, Guid providerId)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         logger.LogDebug("Deleting StudySubject with Id = {Id} started", id);
 
@@ -102,7 +102,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<SearchResult<StudySubjectDto>> GetByFilter(Guid providerId, StudySubjectFilter filter)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         logger.LogDebug("Getting all StudySubjects by filter started");
 
@@ -115,9 +115,9 @@ public class StudySubjectService : IStudySubjectService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Language",
-                whereExpression: predicate
-            ).AsNoTracking()
+                whereExpression: predicate)
+            .Include(ss => ss.Language)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -135,7 +135,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<StudySubjectDto> GetById(Guid id, Guid providerId)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         logger.LogDebug("Getting StudySubject by Id started. Looking Id = {Id}", id);
 
@@ -156,7 +156,7 @@ public class StudySubjectService : IStudySubjectService
     /// <inheritdoc/>
     public async Task<Result<StudySubjectDto>> Update(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
-        await providerService.HasProviderRights(providerId).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(providerId)).ConfigureAwait(false);
 
         logger.LogDebug("Updating StudySubject started");
 

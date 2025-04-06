@@ -17,7 +17,7 @@ namespace OutOfSchool.Tests.Common;
 // TODO: Need to refactor tests that use mappings in this file
 public class TestMappingProfile : Profile
 {
-    public const char MappingSeparator = '¤';
+    public const char MappingSeparator = 'ï¿½';
 
     public TestMappingProfile()
     {
@@ -125,7 +125,7 @@ public class TestMappingProfile : Profile
             .ForMember(
                 dest => dest.DirectionIds,
                 opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges,
@@ -146,8 +146,7 @@ public class TestMappingProfile : Profile
         IMappingExpression<Provider, T> mappings)
         where T : ProviderBaseDto
         => mappings
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+            .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
             .Apply(IgnoreAllImages)
             .Apply(MapImageIds);

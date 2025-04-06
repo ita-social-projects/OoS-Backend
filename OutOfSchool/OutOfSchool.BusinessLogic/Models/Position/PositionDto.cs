@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Models.Position;
+﻿using OutOfSchool.Common.Enums;
+
+namespace OutOfSchool.BusinessLogic.Models.Position;
 public class PositionDto // for get method
 {
     public Guid Id { get; set; }
@@ -38,6 +40,8 @@ public class PositionDto // for get method
     public DateOnly ActiveFrom { get; set; }
 
     public DateOnly ActiveTo { get; set; }
+    
+    public PositionType PositionType { get; set; } = PositionType.Employee;
 
     public bool IsDeleted { get; set; }
 }

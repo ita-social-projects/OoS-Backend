@@ -212,15 +212,15 @@ public class ExternalExportControllerTests
         {
             new()
             {
-                Id = Guid.Parse("b7e1322e-7575-48c1-a444-4effb8f4d083"),
+                Id = 1,
                 Title = "A",
-                DirectionIds = []
+                DirectionId = 1
             },
             new()
             {
-                Id = Guid.Parse("a042661d-9be8-4bfb-adcd-06cbe91388a0"),
+                Id = 2,
                 Title = "B",
-                DirectionIds = [1, 2]
+                DirectionId = 2
             },
         };
 

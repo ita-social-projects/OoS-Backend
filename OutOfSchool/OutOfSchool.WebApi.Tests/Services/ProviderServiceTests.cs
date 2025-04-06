@@ -32,6 +32,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -61,9 +62,10 @@ public class ProviderServiceTests
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Individual>> individualRepositoryMock;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Official>> officialRepositoryMock;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Position>> positionRepositoryMock;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Individual>> individualRepositoryMock;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Official>> officialRepositoryMock;
+    private Mock<IPositionRepository> positionRepositoryMock;
+    private Mock<IContactsService<Provider, IHasContactsDto<Provider>>> providerContactsServiceMock;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -98,13 +100,14 @@ public class ProviderServiceTests
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
-        individualRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Individual>>();
-        officialRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Official>>();
-        positionRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Position>>();
+        individualRepositoryMock = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
+        officialRepositoryMock = new Mock<ISensitiveEntityRepositorySoftDeleted<Official>>();
+        positionRepositoryMock = new Mock<IPositionRepository>();
+        providerContactsServiceMock = new Mock<IContactsService<Provider, IHasContactsDto<Provider>>>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
+        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
 
         providerService = new ProviderService(
@@ -135,7 +138,8 @@ public class ProviderServiceTests
             userServiceMock.Object,
             authorizationServerConfig,
             communicationService.Object,
-            searchStringServiceMock.Object);
+            searchStringServiceMock.Object,
+            providerContactsServiceMock.Object);
     }
 
     #region Create
@@ -145,7 +149,7 @@ public class ProviderServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
     {
         // Arrange
-        var dto = ProviderCreateDtoGenerator.Generate();
+        var dto = ProviderCreateDtoGenerator.Generate().WithAddress();
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
@@ -153,7 +157,7 @@ public class ProviderServiceTests
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
-        expected.CoverImageId = null;
+        expected.CoverImageId = string.Empty;
         expected.ImageIds = new List<string>();
         expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
 
@@ -161,7 +165,7 @@ public class ProviderServiceTests
 
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
-        providersRepositoryMock.Setup(r => r.GetById(expected.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(mapper.Map<Provider>(expected));
         notificationService
             .Setup(s => s.Create(
@@ -215,42 +219,6 @@ public class ProviderServiceTests
     }
 
     [Test]
-    public async Task Create_WhenActualAddressIsTheSameAsLegal_ActualAddressIsCleared()
-    {
-        // Arrange
-        var expectedEntity = ProviderCreateDtoGenerator.Generate();
-        expectedEntity.ActualAddress = expectedEntity.LegalAddress;
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
-            Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(expectedEntity).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Null);
-    }
-
-    [Test]
-    public async Task Create_WhenActualAddressDiffersFromTheLegal_ActualAddressIsSaved()
-    {
-        // Arrange
-        var expectedEntity = ProvidersGenerator.Generate();
-        expectedEntity.ActualAddress.CATOTTGId = 4970;
-        expectedEntity.ActualAddress.CATOTTG.Id = 4970;
-
-        Provider receivedProvider = default;
-        providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
-
-        // Act
-        await providerService.Create(mapper.Map<ProviderCreateDto>(expectedEntity));// expectedEntity.ToModel());
-
-        // Assert
-        Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
-        Assert.AreEqual(expectedEntity.ActualAddress, receivedProvider.ActualAddress);
-    }
-
-    [Test]
     public void Create_WhenProviderWithTheSameEdrpouOrIpnExist_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -295,11 +263,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -349,11 +314,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -410,11 +372,8 @@ public class ProviderServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
             .Returns(providersMock);
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(It.IsAny<IEnumerable<Guid>>()))
             .ReturnsAsync(fakeRatings);
@@ -442,11 +401,8 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Get(
                 0,
                 0,
-                string.Empty,
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>(),
                 It.IsAny<Expression<Func<Provider, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
-                true))
+                It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>()))
         .Returns(providersMock);
 
         providersRepositoryMock.Setup(r => r.Any(It.IsAny<Expression<Func<Provider, bool>>>())).ReturnsAsync(true);
@@ -492,7 +448,9 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
@@ -526,13 +484,13 @@ public class ProviderServiceTests
 
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
-        providerToUpdateDto.ShortTitle = updatedTitle;
+        providerToUpdateDto.ShortTitleEn = updatedTitle;
 
         var expected = mapper.Map<ProviderDto>(provider);
         expected.Status = initialStatus;
-        expected.ShortTitle = updatedTitle;
+        expected.ShortTitleEn = updatedTitle;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -563,50 +521,12 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
             .Returns((Func<Task<Provider>> f) => f.Invoke());
-        providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-        notificationService.Setup(s => s.Create(
-                NotificationType.Provider,
-                NotificationAction.Update,
-                provider.Id,
-                recipientsIds,
-                It.IsAny<Dictionary<string, string>>(),
-                null))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
-
-        // Assert
-        TestHelper.AssertDtosAreEqual(expected, result);
-    }
-
-    [TestCase(ProviderStatus.Recheck)]
-    [TestCase(ProviderStatus.Editing)]
-    [TestCase(ProviderStatus.Approved)]
-    public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToRecheck(ProviderStatus initialStatus)
-    {
-        // Arrange
-        var provider = fakeProviders.RandomItem();
-        provider.EdrpouIpn = "1234512345";
-        var updatedEdrpouIpn = "1234567890";
-        provider.Status = initialStatus;
-
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
-        providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
-
-        var expected = mapper.Map<ProviderDto>(provider);
-        expected.Status = ProviderStatus.Recheck;
-        expected.EdrpouIpn = updatedEdrpouIpn;
-
-        var recipientsIds = new List<string>() { fakeUser.Id };
-
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         notificationService.Setup(s => s.Create(
@@ -648,7 +568,9 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
+            .ReturnsAsync(provider);
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -686,7 +608,7 @@ public class ProviderServiceTests
         expected.LicenseStatus = ProviderLicenseStatus.NotProvided;
         expected.License = updatedLicense;
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -727,7 +649,7 @@ public class ProviderServiceTests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         var expectedProviderDto = mapper.Map<ProviderDto>(provider);
 
-        providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+        providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -868,7 +790,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { provider.UserId };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -921,7 +843,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { provider.UserId };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -962,7 +884,14 @@ public class ProviderServiceTests
 
         var provider = ProvidersGenerator.Generate();
         provider.InstitutionId = institutionId;
-        provider.LegalAddress.CATOTTGId = catottgId;
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate(),
+        };
+        contacts.Address.CATOTTGId = catottgId;
+        provider.Contacts = [contacts];
 
         RegionAdminDto regionAdmin = AdminGenerator.GenerateRegionAdminDto();
         regionAdmin.InstitutionId = institutionId;
@@ -977,7 +906,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { provider.UserId };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -1020,7 +949,14 @@ public class ProviderServiceTests
 
         var provider = ProvidersGenerator.Generate();
         provider.InstitutionId = institutionId;
-        provider.LegalAddress.CATOTTGId = catottgId;
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate(),
+        };
+        contacts.Address.CATOTTGId = catottgId;
+        provider.Contacts = [contacts];
 
         AreaAdminDto areaAdmin = AdminGenerator.GenerateAreaAdminDto();
         areaAdmin.InstitutionId = institutionId;
@@ -1035,7 +971,7 @@ public class ProviderServiceTests
 
         var recipientsIds = new List<string>() { provider.UserId };
 
-        providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
         providersRepositoryMock.Setup(r => r.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
@@ -1082,7 +1018,7 @@ public class ProviderServiceTests
             BlockReason = "Test reason",
         };
 
-        providersRepositoryMock.Setup(r => r.GetById(providerBlockDto.Id))
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
             .ReturnsAsync(provider);
 
         currentUserServiceMock.Setup(x => x.IsAdmin())
@@ -1357,7 +1293,7 @@ public class ProviderServiceTests
         officialRepositoryMock
             .Setup(r => r.GetByFilter(
                 It.IsAny<Expression<Func<Official, bool>>>(),
-                "Position",
+                string.Empty,
                 It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
             .Returns(Task.FromResult(FakeOfficials))
             .Verifiable(Times.Once)
@@ -1413,8 +1349,13 @@ public class ProviderServiceTests
     private static IEnumerable<Individual> GetFakeUploadIndividuals(UploadEmployeeRequestDto[] data,
                                                                     out Individual createdIndividual)
     {
-        var mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        var list = data.Select(mapper.Map<Individual>).ToList();
+        var list = data.Select(u => new Individual
+        {
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+            MiddleName = u.MiddleName,
+            Rnokpp = u.Rnokpp
+        }).ToList();
         list.ForEach(i => i.Id = Guid.NewGuid());
         int number = data.Length - 1;
         createdIndividual = list[number];

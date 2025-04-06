@@ -10,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -135,24 +136,25 @@ public class DirectionControllerTests
 
     [Test]
     [TestCase(10)]
-    public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
+    public async Task GetById_WhenIdIsInvalid_ReturnsNotFound(long id)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id)).ReturnsAsync((long id) => directions.SingleOrDefault(x => x.Id == id));
 
         // Act
-        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetById(id).ConfigureAwait(false) as NotFoundObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
+        Assert.AreEqual(404, result.StatusCode);
     }
-
+    
     [Test]
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.Create(direction)).ReturnsAsync(direction);
+        var returnedResult = Result<DirectionDto>.Success(direction);
+        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
 
         // Act
         var result = await controller.Create(direction).ConfigureAwait(false) as CreatedAtActionResult;
@@ -161,7 +163,7 @@ public class DirectionControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(201, result.StatusCode);
     }
-
+    
     [Test]
     public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
@@ -174,6 +176,25 @@ public class DirectionControllerTests
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task Create_WhenModelTitleIsDuplicated_ReturnsBadRequestObjectResult()
+    {
+        //Arrange
+        var returnedResult = Result<DirectionDto>.Failed(new OperationError()
+        {
+            Code = "400",
+            Description = "There is already a Direction with such a data.",
+        });
+        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
+
+        // Act
+        var result = await controller.Create(direction).ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
     private DirectionDto FakeDirection()
@@ -191,16 +212,19 @@ public class DirectionControllerTests
         {
             new DirectionDto()
             {
+                Id = 1,
                 Title = "Test1",
                 Description = "Test1",
             },
             new DirectionDto
             {
+                Id = 2,
                 Title = "Test2",
                 Description = "Test2",
             },
             new DirectionDto
             {
+                Id = 3,
                 Title = "Test3",
                 Description = "Test3",
             },

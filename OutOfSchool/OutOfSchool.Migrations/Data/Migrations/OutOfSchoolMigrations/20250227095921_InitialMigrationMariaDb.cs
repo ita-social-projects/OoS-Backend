@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations;
+
+/// <inheritdoc />
+public partial class InitialMigrationMariaDb : Migration
 {
     /// <inheritdoc />
-    public partial class InitialMigrationMariaDb : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+        migrationBuilder.AlterDatabase()
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementTypes",
                 columns: table => new
                 {
@@ -32,9 +32,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AchievementTypes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -51,9 +51,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
@@ -101,9 +101,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AverageRatings",
                 columns: table => new
                 {
@@ -118,9 +118,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AverageRatings", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CATOTTGs",
                 columns: table => new
                 {
@@ -150,9 +150,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "CATOTTGs",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompanyInformation",
                 columns: table => new
                 {
@@ -165,9 +165,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompanyInformation", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventAccountingTypes",
                 columns: table => new
                 {
@@ -183,9 +183,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompetitiveEventAccountingTypes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventCoverages",
                 columns: table => new
                 {
@@ -201,9 +201,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompetitiveEventCoverages", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventRegistrationDeadlines",
                 columns: table => new
                 {
@@ -219,9 +219,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompetitiveEventRegistrationDeadlines", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DataProtectionKeys",
                 columns: table => new
                 {
@@ -236,9 +236,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Directions",
                 columns: table => new
                 {
@@ -255,9 +255,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Directions", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ElasticsearchSyncRecords",
                 columns: table => new
                 {
@@ -271,9 +271,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_ElasticsearchSyncRecords", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "FilesInDb",
                 columns: table => new
                 {
@@ -287,9 +287,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_FilesInDb", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Institutions",
                 columns: table => new
                 {
@@ -305,9 +305,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Institutions", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionStatuses",
                 columns: table => new
                 {
@@ -323,9 +323,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_InstitutionStatuses", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Languages",
                 columns: table => new
                 {
@@ -340,9 +340,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Languages", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -363,9 +363,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "OperationsWithObjects",
                 columns: table => new
                 {
@@ -383,9 +383,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_OperationsWithObjects", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "PermissionsForRoles",
                 columns: table => new
                 {
@@ -402,9 +402,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_PermissionsForRoles", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderTypes",
                 columns: table => new
                 {
@@ -417,9 +417,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_ProviderTypes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "QuartzJobs",
                 columns: table => new
                 {
@@ -433,9 +433,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_QuartzJobs", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "SocialGroups",
                 columns: table => new
                 {
@@ -451,9 +451,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_SocialGroups", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "StatisticReports",
                 columns: table => new
                 {
@@ -470,9 +470,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_StatisticReports", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "StatisticReportsCSV",
                 columns: table => new
                 {
@@ -528,9 +528,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_StatisticReportsCSV", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
@@ -545,9 +545,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Tags", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -570,9 +570,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
@@ -595,9 +595,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
@@ -620,9 +620,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
@@ -647,9 +647,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
@@ -672,9 +672,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChangesLog",
                 columns: table => new
                 {
@@ -703,9 +703,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Individuals",
                 columns: table => new
                 {
@@ -751,9 +751,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Parents",
                 columns: table => new
                 {
@@ -774,9 +774,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Addresses",
                 columns: table => new
                 {
@@ -801,9 +801,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "CATOTTGs",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompanyInformationItems",
                 columns: table => new
                 {
@@ -824,9 +824,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AreaAdmins",
                 columns: table => new
                 {
@@ -858,9 +858,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionAdmins",
                 columns: table => new
                 {
@@ -885,9 +885,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionFieldDescriptions",
                 columns: table => new
                 {
@@ -908,9 +908,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionHierarchies",
                 columns: table => new
                 {
@@ -938,9 +938,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "RegionAdmins",
                 columns: table => new
                 {
@@ -972,9 +972,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "StudySubjects",
                 columns: table => new
                 {
@@ -1014,9 +1014,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Children",
                 columns: table => new
                 {
@@ -1045,9 +1045,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ParentBlockedByAdminLog",
                 columns: table => new
                 {
@@ -1077,9 +1077,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Ratings",
                 columns: table => new
                 {
@@ -1101,9 +1101,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DirectionInstitutionHierarchy",
                 columns: table => new
                 {
@@ -1126,9 +1126,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChildSocialGroup",
                 columns: table => new
                 {
@@ -1151,9 +1151,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementChild",
                 columns: table => new
                 {
@@ -1170,9 +1170,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Achievements",
                 columns: table => new
                 {
@@ -1194,9 +1194,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementTeachers",
                 columns: table => new
                 {
@@ -1217,9 +1217,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Applications",
                 columns: table => new
                 {
@@ -1251,9 +1251,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "BlockedProviderParents",
                 columns: table => new
                 {
@@ -1280,9 +1280,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChatMessageWorkshops",
                 columns: table => new
                 {
@@ -1299,9 +1299,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_ChatMessageWorkshops", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChatRoomWorkshops",
                 columns: table => new
                 {
@@ -1321,9 +1321,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEventDescriptionItems",
                 columns: table => new
                 {
@@ -1338,9 +1338,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompetitiveEventDescriptionItems", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents",
                 columns: table => new
                 {
@@ -1431,9 +1431,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents_Contacts",
                 columns: table => new
                 {
@@ -1468,9 +1468,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Judges",
                 columns: table => new
                 {
@@ -1500,9 +1500,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Providers",
                 columns: table => new
                 {
@@ -1602,9 +1602,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents_Contacts_Emails",
                 columns: table => new
                 {
@@ -1626,9 +1626,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents_Contacts_Phones",
                 columns: table => new
                 {
@@ -1650,9 +1650,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompetitiveEvents_Contacts_SocialNetworks",
                 columns: table => new
                 {
@@ -1673,9 +1673,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "EmployeeChangesLog",
                 columns: table => new
                 {
@@ -1717,9 +1717,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -1739,9 +1739,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Positions",
                 columns: table => new
                 {
@@ -1796,9 +1796,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderImages",
                 columns: table => new
                 {
@@ -1816,9 +1816,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderSectionItems",
                 columns: table => new
                 {
@@ -1840,9 +1840,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Officials",
                 columns: table => new
                 {
@@ -1892,9 +1892,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DateTimeRanges",
                 columns: table => new
                 {
@@ -1911,9 +1911,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     table.PrimaryKey("PK_DateTimeRanges", x => x.Id);
                     table.CheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "EmployeeWorkshop",
                 columns: table => new
                 {
@@ -1931,9 +1931,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Favorites",
                 columns: table => new
                 {
@@ -1954,9 +1954,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "TagWorkshop",
                 columns: table => new
                 {
@@ -1973,9 +1973,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "TeacherDraft",
                 columns: table => new
                 {
@@ -2000,9 +2000,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_TeacherDraft", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Teachers",
                 columns: table => new
                 {
@@ -2026,9 +2026,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Teachers", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops",
                 columns: table => new
                 {
@@ -2125,9 +2125,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "WorkshopDescriptionItems",
                 columns: table => new
                 {
@@ -2149,9 +2149,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "WorkshopDrafts",
                 columns: table => new
                 {
@@ -2188,9 +2188,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "Workshops",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "WorkshopImages",
                 columns: table => new
                 {
@@ -2208,9 +2208,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops_Contacts",
                 columns: table => new
                 {
@@ -2245,9 +2245,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "WorkshopDraftImages",
                 columns: table => new
                 {
@@ -2265,9 +2265,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops_Contacts_Emails",
                 columns: table => new
                 {
@@ -2289,9 +2289,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops_Contacts_Phones",
                 columns: table => new
                 {
@@ -2313,9 +2313,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops_Contacts_SocialNetworks",
                 columns: table => new
                 {
@@ -2336,1317 +2336,1316 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.InsertData(
-                table: "AchievementTypes",
-                columns: new[] { "Id", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1L, "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)", "Winners of international and all-Ukrainian sports competitions (individual and team)" },
-                    { 2L, "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів", "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects" },
-                    { 3L, "Реципієнти міжнародних грантів", "Recipients of international grants" },
-                    { 4L, "Призери міжнародних культурних конкурсів та фестивалів", "Winners of international cultural competitions and festivals" },
-                    { 5L, "Соціально активні категорії учнів", "Socially active categories of students" },
-                    { 6L, "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти", "Google digital tools for institutions of higher and professional pre-higher education" },
-                    { 7L, "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів", "Winners and participants of olympiads at the international and all-Ukrainian levels" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventAccountingTypes",
-                columns: new[] { "Id", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, "Освітній проєкт", "Educational project" },
-                    { 2, "Конкурс (не має етапів)", "Competition" },
-                    { 3, "Основний конкурс (має мати підпорядковані конкурси-етапи)", "Main competition" },
-                    { 4, "Етап конкурсу (має мати батьківський основний конкурс)", "Contest stage" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventCoverages",
-                columns: new[] { "Id", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, "Локальний (Шкільний)", "Local (School)" },
-                    { 2, "Міський", "City" },
-                    { 3, "Районний", "Raional" },
-                    { 4, "Обласний", "Regional" },
-                    { 5, "Всеукраїнський", "All-Ukrainian" },
-                    { 6, "Міжнародний", "International" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "CompetitiveEventRegistrationDeadlines",
-                columns: new[] { "Id", "Title", "TitleEn" },
-                values: new object[,]
-                {
-                    { 1, "Постійно (протягом року)", "Constantly (during the year)" },
-                    { 2, "Певний місяць або місяці року", "A certain month or months of the year" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "InstitutionStatuses",
-                columns: new[] { "Id", "Name", "NameEn" },
-                values: new object[,]
-                {
-                    { 1L, "Працює", "Active" },
-                    { 2L, "Перебуває в стані реорганізації", "Undergoing reorganization" },
-                    { 3L, "Має намір на реорганізацію", "Waiting for reorganization" },
-                    { 4L, "Відсутній статус", "Without status" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Languages",
-                columns: new[] { "Id", "Code", "Name" },
-                values: new object[,]
-                {
-                    { 1L, "en", "English" },
-                    { 2L, "uk", "Українська" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "PermissionsForRoles",
-                columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
-                values: new object[,]
-                {
-                    { 1L, "techadmin permissions", "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGeW", "TechAdmin" },
-                    { 2L, "provider permissions", "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5mgoaOi", "Provider" },
-                    { 3L, "parent permissions", "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=", "Parent" },
-                    { 4L, "employee permissions", "ZQMCAQQKCzI2SEdJRlBRW1xUlg==", "Employee" },
-                    { 5L, "ministry admin permissions", "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWeW", "MinistryAdmin" },
-                    { 6L, "region admin permissions", "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15nlg==", "RegionAdmin" },
-                    { 7L, "area admin permissions", "ZWYDAgEECjI1NzgoFFBRRlSMjVteZ5Y=", "AreaAdmin" },
-                    { 8L, "moderator permissions", "MjdaXlQ=", "Moderator" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "ProviderTypes",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1L, "Дитячо-юнацькі спортивні школи: комплексні дитячо-юнацькі спортивні школи, дитячо-юнацькі спортивні школи з видів спорту, дитячо-юнацькі спортивні школи для осіб з інвалідністю, спеціалізовані дитячо-юнацькі школи олімпійського резерву, спеціалізовані дитячо-юнацькі спортивні школи для осіб з інвалідністю паралімпійського та дефлімпійського резерву" },
-                    { 2L, "Клуби: військово-патріотичного виховання, дитячо-юнацькі (моряків, річковиків, авіаторів, космонавтів, парашутистів, десантників, прикордонників, радистів, пожежників, автолюбителів, краєзнавців, туристів, етнографів, фольклористів, фізичної підготовки та інших напрямів)" },
-                    { 3L, "Мала академія мистецтв (народних ремесел)" },
-                    { 4L, "Мала академія наук учнівської молоді" },
-                    { 5L, "Оздоровчі заклади для дітей та молоді: дитячо-юнацькі табори (містечка, комплекси): оздоровчі, заміські, профільні, праці та відпочинку, санаторного типу, з денним перебуванням; туристські бази" },
-                    { 6L, "Мистецькі школи: музична, художня, хореографічна, хорова, школа мистецтв тощо" },
-                    { 7L, "Центр, палац, будинок, клуб художньої творчості дітей, юнацтва та молоді, художньо-естетичної творчості учнівської молоді, дитячої та юнацької творчості, естетичного виховання" },
-                    { 8L, "Центр, будинок, клуб еколого-натуралістичної творчості учнівської молоді, станція юних натуралістів" },
-                    { 9L, "Центр, будинок, клуб науково-технічної творчості учнівської молоді, станція юних техніків" },
-                    { 10L, "Центр, будинок, клуб, бюро туризму, краєзнавства, спорту та екскурсій учнівської молоді, туристсько-краєзнавчої творчості учнівської молоді, станція юних туристів" },
-                    { 11L, "Центри: військово-патріотичного та інших напрямів позашкільної освіти" },
-                    { 12L, "Дитяча бібліотека, дитяча флотилія моряків і річковиків, дитячий парк, дитячий стадіон, дитячо-юнацька картинна галерея, дитячо-юнацька студія (хорова, театральна, музична, фольклорна тощо), кімната школяра, курси, студії, школи мистецтв, освітньо-культурні центри національних меншин" },
-                    { 13L, "Інше" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "SocialGroups",
-                columns: new[] { "Id", "Name", "NameEn" },
-                values: new object[,]
-                {
-                    { 1L, "Діти із багатодітних сімей", "Children from large families" },
-                    { 2L, "Діти із малозабезпечених сімей", "Children from low-income families" },
-                    { 3L, "Діти з інвалідністю", "Children with disabilities" },
-                    { 4L, "Діти-сироти", "Orphans" },
-                    { 5L, "Діти, позбавлені батьківського піклування", "Children deprived of parental care" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Tags",
-                columns: new[] { "Id", "Name", "NameEn" },
-                values: new object[,]
-                {
-                    { 1L, "Музичний Гурток", "Music Workshop" },
-                    { 2L, "Спортивна Секція", "Sports Section" },
-                    { 3L, "Хореографія", "Choreography" },
-                    { 4L, "Образотворче Мистецтво", "Fine Arts" },
-                    { 5L, "Театральна Студія", "Theater Studio" },
-                    { 6L, "Футбол", "Football" },
-                    { 7L, "Волейбол", "Volleyball" },
-                    { 8L, "Плавання", "Swimming" },
-                    { 9L, "Легка Атлетика", "Track and Field" },
-                    { 10L, "Баскетбол", "Basketball" },
-                    { 11L, "Гімнастика", "Gymnastics" },
-                    { 12L, "Танці", "Dancing" },
-                    { 13L, "Йога", "Yoga" },
-                    { 14L, "Карате", "Karate" },
-                    { 15L, "Айкідо", "Aikido" },
-                    { 16L, "Боротьба", "Wrestling" },
-                    { 17L, "Джудо", "Judo" },
-                    { 18L, "Кулінарія", "Culinary Arts" },
-                    { 19L, "Рукоділля", "Handicrafts" },
-                    { 20L, "Малювання", "Drawing" },
-                    { 21L, "Скульптура", "Sculpture" },
-                    { 22L, "Фотографія", "Photography" },
-                    { 23L, "Кіно Мистецтво", "Cinema Art" },
-                    { 24L, "Акторська Майстерність", "Acting" },
-                    { 25L, "Психологічні Тренінги", "Psychological Training" },
-                    { 26L, "Робототехніка", "Robotics" },
-                    { 27L, "Програмування", "Programming" },
-                    { 28L, "Інформаційні Технології", "Information Technology" },
-                    { 29L, "Шахи", "Chess" },
-                    { 30L, "Логіка", "Logic" },
-                    { 31L, "Екологія", "Ecology" },
-                    { 32L, "Наукові Дослідження", "Scientific Research" },
-                    { 33L, "Біологія", "Biology" },
-                    { 34L, "Астрономія", "Astronomy" },
-                    { 35L, "Математика", "Mathematics" },
-                    { 36L, "Фізика", "Physics" },
-                    { 37L, "Хімія", "Chemistry" },
-                    { 38L, "Іноземні Мови", "Foreign Languages" },
-                    { 39L, "Англійська Мова", "English Language" },
-                    { 40L, "Німецька Мова", "German Language" },
-                    { 41L, "Французька Мова", "French Language" },
-                    { 42L, "Іспанська Мова", "Spanish Language" },
-                    { 43L, "Журналістика", "Journalism" },
-                    { 44L, "Риторика", "Rhetoric" },
-                    { 45L, "Літературна Творчість", "Literary Creativity" },
-                    { 46L, "Історія", "History" },
-                    { 47L, "Археологія", "Archaeology" },
-                    { 48L, "Мистецтвознавство", "Art Studies" },
-                    { 49L, "Культурологія", "Cultural Studies" },
-                    { 50L, "Краєзнавство", "Local History" },
-                    { 51L, "Етнографія", "Ethnography" },
-                    { 52L, "Радіо Аматорство", "Radio Amateur" },
-                    { 53L, "Модельний Спорт", "Model Sports" },
-                    { 54L, "Авіамоделювання", "Aeromodelling" },
-                    { 55L, "Судномоделювання", "Ship Modelling" },
-                    { 56L, "Конструювання", "Construction" },
-                    { 57L, "Технічне Моделювання", "Technical Modelling" },
-                    { 58L, "Декоративно Прикладне Мистецтво", "Decorative Arts" },
-                    { 59L, "Кераміка", "Ceramics" },
-                    { 60L, "Різьба По Дереву", "Wood Carving" },
-                    { 61L, "Вишивка", "Embroidery" },
-                    { 62L, "Плетіння", "Weaving" },
-                    { 63L, "Бісероплетіння", "Bead Weaving" },
-                    { 64L, "Флористика", "Floristry" },
-                    { 65L, "Дизайн", "Design" },
-                    { 66L, "Архітектура", "Architecture" },
-                    { 67L, "Моделювання Одягу", "Fashion Design" },
-                    { 68L, "Кравецтво", "Tailoring" },
-                    { 69L, "Хенд Мейд", "Handmade" },
-                    { 70L, "Графічний Дизайн", "Graphic Design" },
-                    { 71L, "Анімація", "Animation" },
-                    { 72L, "3D Моделювання", "3D Modelling" },
-                    { 73L, "Мультиплікація", "Cartoon Making" },
-                    { 74L, "Відеомонтаж", "Video Editing" },
-                    { 75L, "Цифровий Мистецький Дизайн", "Digital Art Design" },
-                    { 76L, "Сучасне Мистецтво", "Modern Art" },
-                    { 77L, "Естрадний Спів", "Pop Singing" },
-                    { 78L, "Вокальний Ансамбль", "Vocal Ensemble" },
-                    { 79L, "Оркестр", "Orchestra" },
-                    { 80L, "Гра На Гітарі", "Guitar Playing" },
-                    { 81L, "Гра На Фортепіано", "Piano Playing" },
-                    { 82L, "Сольний Спів", "Solo Singing" },
-                    { 83L, "Хоровий Спів", "Choral Singing" },
-                    { 84L, "Фольклорний Ансамбль", "Folklore Ensemble" },
-                    { 85L, "Етнічна Музика", "Ethnic Music" },
-                    { 86L, "Духові Інструменти", "Wind Instruments" },
-                    { 87L, "Струнні Інструменти", "String Instruments" },
-                    { 88L, "Барабани", "Drums" },
-                    { 89L, "Перкусія", "Percussion" },
-                    { 90L, "Музичний Театр", "Musical Theater" },
-                    { 91L, "Сценічна Мова", "Stage Speech" },
-                    { 92L, "Імпровізація", "Improvisation" },
-                    { 93L, "Сценічний Рух", "Stage Movement" },
-                    { 94L, "Сценографія", "Scenography" },
-                    { 95L, "Художнє Читання", "Artistic Reading" },
-                    { 96L, "Модерн", "Modern Dance" },
-                    { 97L, "Балет", "Ballet" },
-                    { 98L, "Сучасні Танці", "Modern Dances" },
-                    { 99L, "Народні Танці", "Folk Dances" },
-                    { 100L, "Фітнес", "Fitness" }
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementChild_ChildrenId",
-                table: "AchievementChild",
-                column: "ChildrenId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Achievements_AchievementTypeId",
-                table: "Achievements",
-                column: "AchievementTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Achievements_IsDeleted",
-                table: "Achievements",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Achievements_WorkshopId",
-                table: "Achievements",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementTeachers_AchievementId",
-                table: "AchievementTeachers",
-                column: "AchievementId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementTeachers_IsDeleted",
-                table: "AchievementTeachers",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementTypes_IsDeleted",
-                table: "AchievementTypes",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Addresses_CATOTTGId",
-                table: "Addresses",
-                column: "CATOTTGId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Addresses_IsDeleted",
-                table: "Addresses",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_ChildId",
-                table: "Applications",
-                column: "ChildId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_IsDeleted",
-                table: "Applications",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_ParentId",
-                table: "Applications",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_WorkshopId",
-                table: "Applications",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AreaAdmins_CATOTTGId",
-                table: "AreaAdmins",
-                column: "CATOTTGId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AreaAdmins_InstitutionId",
-                table: "AreaAdmins",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AreaAdmins_IsDeleted",
-                table: "AreaAdmins",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetRoleClaims_RoleId",
-                table: "AspNetRoleClaims",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserClaims_UserId",
-                table: "AspNetUserClaims",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserLogins_UserId",
-                table: "AspNetUserLogins",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserRoles_RoleId",
-                table: "AspNetUserRoles",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                table: "AspNetUsers",
-                column: "NormalizedEmail");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_IsDeleted",
-                table: "AspNetUsers",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                table: "AspNetUsers",
-                column: "NormalizedUserName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AverageRatings_EntityId",
-                table: "AverageRatings",
-                column: "EntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AverageRatings_IsDeleted",
-                table: "AverageRatings",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BlockedProviderParents_IsDeleted",
-                table: "BlockedProviderParents",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BlockedProviderParents_ParentId",
-                table: "BlockedProviderParents",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BlockedProviderParents_ProviderId",
-                table: "BlockedProviderParents",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CATOTTGs_IsDeleted",
-                table: "CATOTTGs",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CATOTTGs_ParentId",
-                table: "CATOTTGs",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChangesLog_UserId",
-                table: "ChangesLog",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessageWorkshops_ChatRoomId",
-                table: "ChatMessageWorkshops",
-                column: "ChatRoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessageWorkshops_IsDeleted",
-                table: "ChatMessageWorkshops",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRoomWorkshops_IsDeleted",
-                table: "ChatRoomWorkshops",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRoomWorkshops_ParentId",
-                table: "ChatRoomWorkshops",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRoomWorkshops_WorkshopId",
-                table: "ChatRoomWorkshops",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Children_IsDeleted",
-                table: "Children",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Children_ParentId",
-                table: "Children",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildSocialGroup_SocialGroupsId",
-                table: "ChildSocialGroup",
-                column: "SocialGroupsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompanyInformationItems_CompanyInformationId",
-                table: "CompanyInformationItems",
-                column: "CompanyInformationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventAccountingTypes_IsDeleted",
-                table: "CompetitiveEventAccountingTypes",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventCoverages_IsDeleted",
-                table: "CompetitiveEventCoverages",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventDescriptionItems_CompetitiveEventId",
-                table: "CompetitiveEventDescriptionItems",
-                column: "CompetitiveEventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEventRegistrationDeadlines_IsDeleted",
-                table: "CompetitiveEventRegistrationDeadlines",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_CompetitiveEventAccountingTypeId",
-                table: "CompetitiveEvents",
-                column: "CompetitiveEventAccountingTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_CoverageId",
-                table: "CompetitiveEvents",
-                column: "CoverageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_InstitutionHierarchyId",
-                table: "CompetitiveEvents",
-                column: "InstitutionHierarchyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_IsDeleted",
-                table: "CompetitiveEvents",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_OrganizerOfTheEventId",
-                table: "CompetitiveEvents",
-                column: "OrganizerOfTheEventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_ParentId",
-                table: "CompetitiveEvents",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_Address_CATOTTGId",
-                table: "CompetitiveEvents_Contacts",
-                column: "Address_CATOTTGId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_OwnerId",
-                table: "CompetitiveEvents_Contacts",
-                column: "OwnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_Emails_Address",
-                table: "CompetitiveEvents_Contacts_Emails",
-                column: "Address");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_Emails_ContactsId",
-                table: "CompetitiveEvents_Contacts_Emails",
-                column: "ContactsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_Phones_ContactsId",
-                table: "CompetitiveEvents_Contacts_Phones",
-                column: "ContactsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_Phones_Number",
-                table: "CompetitiveEvents_Contacts_Phones",
-                column: "Number");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CompetitiveEvents_Contacts_SocialNetworks_ContactsId",
-                table: "CompetitiveEvents_Contacts_SocialNetworks",
-                column: "ContactsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DateTimeRanges_IsDeleted",
-                table: "DateTimeRanges",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DateTimeRanges_WorkshopId",
-                table: "DateTimeRanges",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DirectionInstitutionHierarchy_InstitutionHierarchiesId",
-                table: "DirectionInstitutionHierarchy",
-                column: "InstitutionHierarchiesId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Directions_IsDeleted",
-                table: "Directions",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmployeeChangesLog_EmployeeUserId",
-                table: "EmployeeChangesLog",
-                column: "EmployeeUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmployeeChangesLog_ProviderId",
-                table: "EmployeeChangesLog",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmployeeChangesLog_UserId",
-                table: "EmployeeChangesLog",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Employees_IsDeleted",
-                table: "Employees",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Employees_ProviderId",
-                table: "Employees",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmployeeWorkshop_ManagedWorkshopsId",
-                table: "EmployeeWorkshop",
-                column: "ManagedWorkshopsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Favorites_IsDeleted",
-                table: "Favorites",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Favorites_UserId",
-                table: "Favorites",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Favorites_WorkshopId",
-                table: "Favorites",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Individuals_IsDeleted",
-                table: "Individuals",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Individuals_Rnokpp",
-                table: "Individuals",
-                column: "Rnokpp",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Individuals_UserId",
-                table: "Individuals",
-                column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionAdmins_InstitutionId",
-                table: "InstitutionAdmins",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionAdmins_IsDeleted",
-                table: "InstitutionAdmins",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionFieldDescriptions_InstitutionId",
-                table: "InstitutionFieldDescriptions",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionFieldDescriptions_IsDeleted",
-                table: "InstitutionFieldDescriptions",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionHierarchies_InstitutionId",
-                table: "InstitutionHierarchies",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionHierarchies_IsDeleted",
-                table: "InstitutionHierarchies",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionHierarchies_ParentId",
-                table: "InstitutionHierarchies",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Institutions_IsDeleted",
-                table: "Institutions",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionStatuses_IsDeleted",
-                table: "InstitutionStatuses",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Judges_CompetitiveEventId",
-                table: "Judges",
-                column: "CompetitiveEventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Languages_Code",
-                table: "Languages",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId",
-                table: "Notifications",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Officials_IndividualId",
-                table: "Officials",
-                column: "IndividualId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Officials_IsDeleted",
-                table: "Officials",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Officials_PositionId",
-                table: "Officials",
-                column: "PositionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_EntityId",
-                table: "OperationsWithObjects",
-                column: "EntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_EntityType",
-                table: "OperationsWithObjects",
-                column: "EntityType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_OperationType",
-                table: "OperationsWithObjects",
-                column: "OperationType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationsWithObjects_RowSeparator",
-                table: "OperationsWithObjects",
-                column: "RowSeparator");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ParentBlockedByAdminLog_ParentId",
-                table: "ParentBlockedByAdminLog",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ParentBlockedByAdminLog_UserId",
-                table: "ParentBlockedByAdminLog",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Parents_IsDeleted",
-                table: "Parents",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Parents_UserId",
-                table: "Parents",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Positions_IsDeleted",
-                table: "Positions",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Positions_ProviderId",
-                table: "Positions",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_CompetitiveEventId",
-                table: "Providers",
-                column: "CompetitiveEventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_EdrpouIpn",
-                table: "Providers",
-                column: "EdrpouIpn");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_InstitutionId",
-                table: "Providers",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_InstitutionStatusId",
-                table: "Providers",
-                column: "InstitutionStatusId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_IsDeleted",
-                table: "Providers",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_TypeId",
-                table: "Providers",
-                column: "TypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_UserId",
-                table: "Providers",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderSectionItems_IsDeleted",
-                table: "ProviderSectionItems",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderSectionItems_ProviderId",
-                table: "ProviderSectionItems",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_EntityId",
-                table: "Ratings",
-                column: "EntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_IsDeleted",
-                table: "Ratings",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_ParentId",
-                table: "Ratings",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RegionAdmins_CATOTTGId",
-                table: "RegionAdmins",
-                column: "CATOTTGId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RegionAdmins_InstitutionId",
-                table: "RegionAdmins",
-                column: "InstitutionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RegionAdmins_IsDeleted",
-                table: "RegionAdmins",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SocialGroups_IsDeleted",
-                table: "SocialGroups",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StudySubjects_IsDeleted",
-                table: "StudySubjects",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StudySubjects_LanguageId",
-                table: "StudySubjects",
-                column: "LanguageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TagWorkshop_WorkshopsId",
-                table: "TagWorkshop",
-                column: "WorkshopsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TeacherDraft_WorkshopDraftId",
-                table: "TeacherDraft",
-                column: "WorkshopDraftId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Teachers_IsDeleted",
-                table: "Teachers",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Teachers_WorkshopId",
-                table: "Teachers",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopDescriptionItems_IsDeleted",
-                table: "WorkshopDescriptionItems",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopDescriptionItems_WorkshopId",
-                table: "WorkshopDescriptionItems",
-                column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopDrafts_ProviderId",
-                table: "WorkshopDrafts",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopDrafts_WorkshopId",
-                table: "WorkshopDrafts",
-                column: "WorkshopId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_DefaultTeacherId",
-                table: "Workshops",
-                column: "DefaultTeacherId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_InstitutionHierarchyId",
-                table: "Workshops",
-                column: "InstitutionHierarchyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_IsDeleted",
-                table: "Workshops",
-                column: "IsDeleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_ParentWorkshopId",
-                table: "Workshops",
-                column: "ParentWorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_ProviderId",
-                table: "Workshops",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_Address_CATOTTGId",
-                table: "Workshops_Contacts",
-                column: "Address_CATOTTGId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_OwnerId",
-                table: "Workshops_Contacts",
-                column: "OwnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_Emails_Address",
-                table: "Workshops_Contacts_Emails",
-                column: "Address");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_Emails_ContactsId",
-                table: "Workshops_Contacts_Emails",
-                column: "ContactsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_Phones_ContactsId",
-                table: "Workshops_Contacts_Phones",
-                column: "ContactsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_Phones_Number",
-                table: "Workshops_Contacts_Phones",
-                column: "Number");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_Contacts_SocialNetworks_ContactsId",
-                table: "Workshops_Contacts_SocialNetworks",
-                column: "ContactsId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AchievementChild_Achievements_AchievementsId",
-                table: "AchievementChild",
-                column: "AchievementsId",
-                principalTable: "Achievements",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Achievements_Workshops_WorkshopId",
-                table: "Achievements",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Applications_Workshops_WorkshopId",
-                table: "Applications",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_BlockedProviderParents_Providers_ProviderId",
-                table: "BlockedProviderParents",
-                column: "ProviderId",
-                principalTable: "Providers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_ChatMessageWorkshops_ChatRoomWorkshops_ChatRoomId",
-                table: "ChatMessageWorkshops",
-                column: "ChatRoomId",
-                principalTable: "ChatRoomWorkshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_ChatRoomWorkshops_Workshops_WorkshopId",
-                table: "ChatRoomWorkshops",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_CompetitiveEventDescriptionItems_CompetitiveEvents_Competiti~",
-                table: "CompetitiveEventDescriptionItems",
-                column: "CompetitiveEventId",
-                principalTable: "CompetitiveEvents",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_CompetitiveEvents_Providers_OrganizerOfTheEventId",
-                table: "CompetitiveEvents",
-                column: "OrganizerOfTheEventId",
-                principalTable: "Providers",
-                principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_DateTimeRanges_Workshops_WorkshopId",
-                table: "DateTimeRanges",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_EmployeeWorkshop_Workshops_ManagedWorkshopsId",
-                table: "EmployeeWorkshop",
-                column: "ManagedWorkshopsId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Favorites_Workshops_WorkshopId",
-                table: "Favorites",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_TagWorkshop_Workshops_WorkshopsId",
-                table: "TagWorkshop",
-                column: "WorkshopsId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_TeacherDraft_WorkshopDrafts_WorkshopDraftId",
-                table: "TeacherDraft",
-                column: "WorkshopDraftId",
-                principalTable: "WorkshopDrafts",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
-                table: "Teachers",
-                column: "WorkshopId",
-                principalTable: "Workshops",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teachers_Workshops_WorkshopId",
-                table: "Teachers");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Addresses_CATOTTGs_CATOTTGId",
-                table: "Addresses");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_AspNetUsers_UserId",
-                table: "Providers");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_InstitutionHierarchies_Institutions_InstitutionId",
-                table: "InstitutionHierarchies");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Providers_Institutions_InstitutionId",
-                table: "Providers");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_CompetitiveEvents_Providers_OrganizerOfTheEventId",
-                table: "CompetitiveEvents");
-
-            migrationBuilder.DropTable(
-                name: "AchievementChild");
-
-            migrationBuilder.DropTable(
-                name: "AchievementTeachers");
-
-            migrationBuilder.DropTable(
-                name: "Applications");
-
-            migrationBuilder.DropTable(
-                name: "AreaAdmins");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "AverageRatings");
-
-            migrationBuilder.DropTable(
-                name: "BlockedProviderParents");
-
-            migrationBuilder.DropTable(
-                name: "ChangesLog");
-
-            migrationBuilder.DropTable(
-                name: "ChatMessageWorkshops");
-
-            migrationBuilder.DropTable(
-                name: "ChildSocialGroup");
-
-            migrationBuilder.DropTable(
-                name: "CompanyInformationItems");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventDescriptionItems");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventRegistrationDeadlines");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents_Contacts_Emails");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents_Contacts_Phones");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents_Contacts_SocialNetworks");
-
-            migrationBuilder.DropTable(
-                name: "DataProtectionKeys");
-
-            migrationBuilder.DropTable(
-                name: "DateTimeRanges");
-
-            migrationBuilder.DropTable(
-                name: "DirectionInstitutionHierarchy");
-
-            migrationBuilder.DropTable(
-                name: "ElasticsearchSyncRecords");
-
-            migrationBuilder.DropTable(
-                name: "EmployeeChangesLog");
-
-            migrationBuilder.DropTable(
-                name: "EmployeeWorkshop");
-
-            migrationBuilder.DropTable(
-                name: "Favorites");
-
-            migrationBuilder.DropTable(
-                name: "FilesInDb");
-
-            migrationBuilder.DropTable(
-                name: "InstitutionAdmins");
-
-            migrationBuilder.DropTable(
-                name: "InstitutionFieldDescriptions");
-
-            migrationBuilder.DropTable(
-                name: "Judges");
-
-            migrationBuilder.DropTable(
-                name: "Notifications");
-
-            migrationBuilder.DropTable(
-                name: "Officials");
-
-            migrationBuilder.DropTable(
-                name: "OperationsWithObjects");
-
-            migrationBuilder.DropTable(
-                name: "ParentBlockedByAdminLog");
-
-            migrationBuilder.DropTable(
-                name: "PermissionsForRoles");
-
-            migrationBuilder.DropTable(
-                name: "ProviderImages");
-
-            migrationBuilder.DropTable(
-                name: "ProviderSectionItems");
-
-            migrationBuilder.DropTable(
-                name: "QuartzJobs");
-
-            migrationBuilder.DropTable(
-                name: "Ratings");
-
-            migrationBuilder.DropTable(
-                name: "RegionAdmins");
-
-            migrationBuilder.DropTable(
-                name: "StatisticReports");
-
-            migrationBuilder.DropTable(
-                name: "StatisticReportsCSV");
-
-            migrationBuilder.DropTable(
-                name: "StudySubjects");
-
-            migrationBuilder.DropTable(
-                name: "TagWorkshop");
-
-            migrationBuilder.DropTable(
-                name: "TeacherDraft");
-
-            migrationBuilder.DropTable(
-                name: "WorkshopDescriptionItems");
-
-            migrationBuilder.DropTable(
-                name: "WorkshopDraftImages");
-
-            migrationBuilder.DropTable(
-                name: "WorkshopImages");
-
-            migrationBuilder.DropTable(
-                name: "Workshops_Contacts_Emails");
-
-            migrationBuilder.DropTable(
-                name: "Workshops_Contacts_Phones");
-
-            migrationBuilder.DropTable(
-                name: "Workshops_Contacts_SocialNetworks");
-
-            migrationBuilder.DropTable(
-                name: "Achievements");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "ChatRoomWorkshops");
-
-            migrationBuilder.DropTable(
-                name: "Children");
-
-            migrationBuilder.DropTable(
-                name: "SocialGroups");
-
-            migrationBuilder.DropTable(
-                name: "CompanyInformation");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents_Contacts");
-
-            migrationBuilder.DropTable(
-                name: "Directions");
-
-            migrationBuilder.DropTable(
-                name: "Employees");
-
-            migrationBuilder.DropTable(
-                name: "Individuals");
-
-            migrationBuilder.DropTable(
-                name: "Positions");
-
-            migrationBuilder.DropTable(
-                name: "Languages");
-
-            migrationBuilder.DropTable(
-                name: "Tags");
-
-            migrationBuilder.DropTable(
-                name: "WorkshopDrafts");
-
-            migrationBuilder.DropTable(
-                name: "Workshops_Contacts");
-
-            migrationBuilder.DropTable(
-                name: "AchievementTypes");
-
-            migrationBuilder.DropTable(
-                name: "Parents");
-
-            migrationBuilder.DropTable(
-                name: "Workshops");
-
-            migrationBuilder.DropTable(
-                name: "Teachers");
-
-            migrationBuilder.DropTable(
-                name: "CATOTTGs");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "Institutions");
-
-            migrationBuilder.DropTable(
-                name: "Providers");
-
-            migrationBuilder.DropTable(
-                name: "Addresses");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEvents");
-
-            migrationBuilder.DropTable(
-                name: "InstitutionStatuses");
-
-            migrationBuilder.DropTable(
-                name: "ProviderTypes");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventAccountingTypes");
-
-            migrationBuilder.DropTable(
-                name: "CompetitiveEventCoverages");
-
-            migrationBuilder.DropTable(
-                name: "InstitutionHierarchies");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
+
+        migrationBuilder.InsertData(
+            table: "AchievementTypes",
+            columns: new[] { "Id", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1L, "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)", "Winners of international and all-Ukrainian sports competitions (individual and team)" },
+                { 2L, "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів", "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects" },
+                { 3L, "Реципієнти міжнародних грантів", "Recipients of international grants" },
+                { 4L, "Призери міжнародних культурних конкурсів та фестивалів", "Winners of international cultural competitions and festivals" },
+                { 5L, "Соціально активні категорії учнів", "Socially active categories of students" },
+                { 6L, "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти", "Google digital tools for institutions of higher and professional pre-higher education" },
+                { 7L, "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів", "Winners and participants of olympiads at the international and all-Ukrainian levels" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventAccountingTypes",
+            columns: new[] { "Id", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, "Освітній проєкт", "Educational project" },
+                { 2, "Конкурс (не має етапів)", "Competition" },
+                { 3, "Основний конкурс (має мати підпорядковані конкурси-етапи)", "Main competition" },
+                { 4, "Етап конкурсу (має мати батьківський основний конкурс)", "Contest stage" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventCoverages",
+            columns: new[] { "Id", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, "Локальний (Шкільний)", "Local (School)" },
+                { 2, "Міський", "City" },
+                { 3, "Районний", "Raional" },
+                { 4, "Обласний", "Regional" },
+                { 5, "Всеукраїнський", "All-Ukrainian" },
+                { 6, "Міжнародний", "International" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "CompetitiveEventRegistrationDeadlines",
+            columns: new[] { "Id", "Title", "TitleEn" },
+            values: new object[,]
+            {
+                { 1, "Постійно (протягом року)", "Constantly (during the year)" },
+                { 2, "Певний місяць або місяці року", "A certain month or months of the year" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "InstitutionStatuses",
+            columns: new[] { "Id", "Name", "NameEn" },
+            values: new object[,]
+            {
+                { 1L, "Працює", "Active" },
+                { 2L, "Перебуває в стані реорганізації", "Undergoing reorganization" },
+                { 3L, "Має намір на реорганізацію", "Waiting for reorganization" },
+                { 4L, "Відсутній статус", "Without status" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "Languages",
+            columns: new[] { "Id", "Code", "Name" },
+            values: new object[,]
+            {
+                { 1L, "en", "English" },
+                { 2L, "uk", "Українська" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "PermissionsForRoles",
+            columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
+            values: new object[,]
+            {
+                { 1L, "techadmin permissions", "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGeW", "TechAdmin" },
+                { 2L, "provider permissions", "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5mgoaOi", "Provider" },
+                { 3L, "parent permissions", "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=", "Parent" },
+                { 4L, "employee permissions", "ZQMCAQQKCzI2SEdJRlBRW1xUlg==", "Employee" },
+                { 5L, "ministry admin permissions", "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWeW", "MinistryAdmin" },
+                { 6L, "region admin permissions", "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15nlg==", "RegionAdmin" },
+                { 7L, "area admin permissions", "ZWYDAgEECjI1NzgoFFBRRlSMjVteZ5Y=", "AreaAdmin" },
+                { 8L, "moderator permissions", "MjdaXlQ=", "Moderator" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "ProviderTypes",
+            columns: new[] { "Id", "Name" },
+            values: new object[,]
+            {
+                { 1L, "Дитячо-юнацькі спортивні школи: комплексні дитячо-юнацькі спортивні школи, дитячо-юнацькі спортивні школи з видів спорту, дитячо-юнацькі спортивні школи для осіб з інвалідністю, спеціалізовані дитячо-юнацькі школи олімпійського резерву, спеціалізовані дитячо-юнацькі спортивні школи для осіб з інвалідністю паралімпійського та дефлімпійського резерву" },
+                { 2L, "Клуби: військово-патріотичного виховання, дитячо-юнацькі (моряків, річковиків, авіаторів, космонавтів, парашутистів, десантників, прикордонників, радистів, пожежників, автолюбителів, краєзнавців, туристів, етнографів, фольклористів, фізичної підготовки та інших напрямів)" },
+                { 3L, "Мала академія мистецтв (народних ремесел)" },
+                { 4L, "Мала академія наук учнівської молоді" },
+                { 5L, "Оздоровчі заклади для дітей та молоді: дитячо-юнацькі табори (містечка, комплекси): оздоровчі, заміські, профільні, праці та відпочинку, санаторного типу, з денним перебуванням; туристські бази" },
+                { 6L, "Мистецькі школи: музична, художня, хореографічна, хорова, школа мистецтв тощо" },
+                { 7L, "Центр, палац, будинок, клуб художньої творчості дітей, юнацтва та молоді, художньо-естетичної творчості учнівської молоді, дитячої та юнацької творчості, естетичного виховання" },
+                { 8L, "Центр, будинок, клуб еколого-натуралістичної творчості учнівської молоді, станція юних натуралістів" },
+                { 9L, "Центр, будинок, клуб науково-технічної творчості учнівської молоді, станція юних техніків" },
+                { 10L, "Центр, будинок, клуб, бюро туризму, краєзнавства, спорту та екскурсій учнівської молоді, туристсько-краєзнавчої творчості учнівської молоді, станція юних туристів" },
+                { 11L, "Центри: військово-патріотичного та інших напрямів позашкільної освіти" },
+                { 12L, "Дитяча бібліотека, дитяча флотилія моряків і річковиків, дитячий парк, дитячий стадіон, дитячо-юнацька картинна галерея, дитячо-юнацька студія (хорова, театральна, музична, фольклорна тощо), кімната школяра, курси, студії, школи мистецтв, освітньо-культурні центри національних меншин" },
+                { 13L, "Інше" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "SocialGroups",
+            columns: new[] { "Id", "Name", "NameEn" },
+            values: new object[,]
+            {
+                { 1L, "Діти із багатодітних сімей", "Children from large families" },
+                { 2L, "Діти із малозабезпечених сімей", "Children from low-income families" },
+                { 3L, "Діти з інвалідністю", "Children with disabilities" },
+                { 4L, "Діти-сироти", "Orphans" },
+                { 5L, "Діти, позбавлені батьківського піклування", "Children deprived of parental care" }
+            });
+
+        migrationBuilder.InsertData(
+            table: "Tags",
+            columns: new[] { "Id", "Name", "NameEn" },
+            values: new object[,]
+            {
+                { 1L, "Музичний Гурток", "Music Workshop" },
+                { 2L, "Спортивна Секція", "Sports Section" },
+                { 3L, "Хореографія", "Choreography" },
+                { 4L, "Образотворче Мистецтво", "Fine Arts" },
+                { 5L, "Театральна Студія", "Theater Studio" },
+                { 6L, "Футбол", "Football" },
+                { 7L, "Волейбол", "Volleyball" },
+                { 8L, "Плавання", "Swimming" },
+                { 9L, "Легка Атлетика", "Track and Field" },
+                { 10L, "Баскетбол", "Basketball" },
+                { 11L, "Гімнастика", "Gymnastics" },
+                { 12L, "Танці", "Dancing" },
+                { 13L, "Йога", "Yoga" },
+                { 14L, "Карате", "Karate" },
+                { 15L, "Айкідо", "Aikido" },
+                { 16L, "Боротьба", "Wrestling" },
+                { 17L, "Джудо", "Judo" },
+                { 18L, "Кулінарія", "Culinary Arts" },
+                { 19L, "Рукоділля", "Handicrafts" },
+                { 20L, "Малювання", "Drawing" },
+                { 21L, "Скульптура", "Sculpture" },
+                { 22L, "Фотографія", "Photography" },
+                { 23L, "Кіно Мистецтво", "Cinema Art" },
+                { 24L, "Акторська Майстерність", "Acting" },
+                { 25L, "Психологічні Тренінги", "Psychological Training" },
+                { 26L, "Робототехніка", "Robotics" },
+                { 27L, "Програмування", "Programming" },
+                { 28L, "Інформаційні Технології", "Information Technology" },
+                { 29L, "Шахи", "Chess" },
+                { 30L, "Логіка", "Logic" },
+                { 31L, "Екологія", "Ecology" },
+                { 32L, "Наукові Дослідження", "Scientific Research" },
+                { 33L, "Біологія", "Biology" },
+                { 34L, "Астрономія", "Astronomy" },
+                { 35L, "Математика", "Mathematics" },
+                { 36L, "Фізика", "Physics" },
+                { 37L, "Хімія", "Chemistry" },
+                { 38L, "Іноземні Мови", "Foreign Languages" },
+                { 39L, "Англійська Мова", "English Language" },
+                { 40L, "Німецька Мова", "German Language" },
+                { 41L, "Французька Мова", "French Language" },
+                { 42L, "Іспанська Мова", "Spanish Language" },
+                { 43L, "Журналістика", "Journalism" },
+                { 44L, "Риторика", "Rhetoric" },
+                { 45L, "Літературна Творчість", "Literary Creativity" },
+                { 46L, "Історія", "History" },
+                { 47L, "Археологія", "Archaeology" },
+                { 48L, "Мистецтвознавство", "Art Studies" },
+                { 49L, "Культурологія", "Cultural Studies" },
+                { 50L, "Краєзнавство", "Local History" },
+                { 51L, "Етнографія", "Ethnography" },
+                { 52L, "Радіо Аматорство", "Radio Amateur" },
+                { 53L, "Модельний Спорт", "Model Sports" },
+                { 54L, "Авіамоделювання", "Aeromodelling" },
+                { 55L, "Судномоделювання", "Ship Modelling" },
+                { 56L, "Конструювання", "Construction" },
+                { 57L, "Технічне Моделювання", "Technical Modelling" },
+                { 58L, "Декоративно Прикладне Мистецтво", "Decorative Arts" },
+                { 59L, "Кераміка", "Ceramics" },
+                { 60L, "Різьба По Дереву", "Wood Carving" },
+                { 61L, "Вишивка", "Embroidery" },
+                { 62L, "Плетіння", "Weaving" },
+                { 63L, "Бісероплетіння", "Bead Weaving" },
+                { 64L, "Флористика", "Floristry" },
+                { 65L, "Дизайн", "Design" },
+                { 66L, "Архітектура", "Architecture" },
+                { 67L, "Моделювання Одягу", "Fashion Design" },
+                { 68L, "Кравецтво", "Tailoring" },
+                { 69L, "Хенд Мейд", "Handmade" },
+                { 70L, "Графічний Дизайн", "Graphic Design" },
+                { 71L, "Анімація", "Animation" },
+                { 72L, "3D Моделювання", "3D Modelling" },
+                { 73L, "Мультиплікація", "Cartoon Making" },
+                { 74L, "Відеомонтаж", "Video Editing" },
+                { 75L, "Цифровий Мистецький Дизайн", "Digital Art Design" },
+                { 76L, "Сучасне Мистецтво", "Modern Art" },
+                { 77L, "Естрадний Спів", "Pop Singing" },
+                { 78L, "Вокальний Ансамбль", "Vocal Ensemble" },
+                { 79L, "Оркестр", "Orchestra" },
+                { 80L, "Гра На Гітарі", "Guitar Playing" },
+                { 81L, "Гра На Фортепіано", "Piano Playing" },
+                { 82L, "Сольний Спів", "Solo Singing" },
+                { 83L, "Хоровий Спів", "Choral Singing" },
+                { 84L, "Фольклорний Ансамбль", "Folklore Ensemble" },
+                { 85L, "Етнічна Музика", "Ethnic Music" },
+                { 86L, "Духові Інструменти", "Wind Instruments" },
+                { 87L, "Струнні Інструменти", "String Instruments" },
+                { 88L, "Барабани", "Drums" },
+                { 89L, "Перкусія", "Percussion" },
+                { 90L, "Музичний Театр", "Musical Theater" },
+                { 91L, "Сценічна Мова", "Stage Speech" },
+                { 92L, "Імпровізація", "Improvisation" },
+                { 93L, "Сценічний Рух", "Stage Movement" },
+                { 94L, "Сценографія", "Scenography" },
+                { 95L, "Художнє Читання", "Artistic Reading" },
+                { 96L, "Модерн", "Modern Dance" },
+                { 97L, "Балет", "Ballet" },
+                { 98L, "Сучасні Танці", "Modern Dances" },
+                { 99L, "Народні Танці", "Folk Dances" },
+                { 100L, "Фітнес", "Fitness" }
+            });
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementChild_ChildrenId",
+            table: "AchievementChild",
+            column: "ChildrenId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Achievements_AchievementTypeId",
+            table: "Achievements",
+            column: "AchievementTypeId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Achievements_IsDeleted",
+            table: "Achievements",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Achievements_WorkshopId",
+            table: "Achievements",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementTeachers_AchievementId",
+            table: "AchievementTeachers",
+            column: "AchievementId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementTeachers_IsDeleted",
+            table: "AchievementTeachers",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementTypes_IsDeleted",
+            table: "AchievementTypes",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Addresses_CATOTTGId",
+            table: "Addresses",
+            column: "CATOTTGId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Addresses_IsDeleted",
+            table: "Addresses",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_ChildId",
+            table: "Applications",
+            column: "ChildId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_IsDeleted",
+            table: "Applications",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_ParentId",
+            table: "Applications",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_WorkshopId",
+            table: "Applications",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AreaAdmins_CATOTTGId",
+            table: "AreaAdmins",
+            column: "CATOTTGId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AreaAdmins_InstitutionId",
+            table: "AreaAdmins",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AreaAdmins_IsDeleted",
+            table: "AreaAdmins",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetRoleClaims_RoleId",
+            table: "AspNetRoleClaims",
+            column: "RoleId");
+
+        migrationBuilder.CreateIndex(
+            name: "RoleNameIndex",
+            table: "AspNetRoles",
+            column: "NormalizedName",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserClaims_UserId",
+            table: "AspNetUserClaims",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserLogins_UserId",
+            table: "AspNetUserLogins",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserRoles_RoleId",
+            table: "AspNetUserRoles",
+            column: "RoleId");
+
+        migrationBuilder.CreateIndex(
+            name: "EmailIndex",
+            table: "AspNetUsers",
+            column: "NormalizedEmail");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUsers_IsDeleted",
+            table: "AspNetUsers",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "UserNameIndex",
+            table: "AspNetUsers",
+            column: "NormalizedUserName",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AverageRatings_EntityId",
+            table: "AverageRatings",
+            column: "EntityId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_AverageRatings_IsDeleted",
+            table: "AverageRatings",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_BlockedProviderParents_IsDeleted",
+            table: "BlockedProviderParents",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_BlockedProviderParents_ParentId",
+            table: "BlockedProviderParents",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_BlockedProviderParents_ProviderId",
+            table: "BlockedProviderParents",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CATOTTGs_IsDeleted",
+            table: "CATOTTGs",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CATOTTGs_ParentId",
+            table: "CATOTTGs",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChangesLog_UserId",
+            table: "ChangesLog",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatMessageWorkshops_ChatRoomId",
+            table: "ChatMessageWorkshops",
+            column: "ChatRoomId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatMessageWorkshops_IsDeleted",
+            table: "ChatMessageWorkshops",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatRoomWorkshops_IsDeleted",
+            table: "ChatRoomWorkshops",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatRoomWorkshops_ParentId",
+            table: "ChatRoomWorkshops",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatRoomWorkshops_WorkshopId",
+            table: "ChatRoomWorkshops",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Children_IsDeleted",
+            table: "Children",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Children_ParentId",
+            table: "Children",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ChildSocialGroup_SocialGroupsId",
+            table: "ChildSocialGroup",
+            column: "SocialGroupsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompanyInformationItems_CompanyInformationId",
+            table: "CompanyInformationItems",
+            column: "CompanyInformationId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventAccountingTypes_IsDeleted",
+            table: "CompetitiveEventAccountingTypes",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventCoverages_IsDeleted",
+            table: "CompetitiveEventCoverages",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventDescriptionItems_CompetitiveEventId",
+            table: "CompetitiveEventDescriptionItems",
+            column: "CompetitiveEventId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEventRegistrationDeadlines_IsDeleted",
+            table: "CompetitiveEventRegistrationDeadlines",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_CompetitiveEventAccountingTypeId",
+            table: "CompetitiveEvents",
+            column: "CompetitiveEventAccountingTypeId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_CoverageId",
+            table: "CompetitiveEvents",
+            column: "CoverageId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_InstitutionHierarchyId",
+            table: "CompetitiveEvents",
+            column: "InstitutionHierarchyId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_IsDeleted",
+            table: "CompetitiveEvents",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_OrganizerOfTheEventId",
+            table: "CompetitiveEvents",
+            column: "OrganizerOfTheEventId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_ParentId",
+            table: "CompetitiveEvents",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_Address_CATOTTGId",
+            table: "CompetitiveEvents_Contacts",
+            column: "Address_CATOTTGId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_OwnerId",
+            table: "CompetitiveEvents_Contacts",
+            column: "OwnerId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_Emails_Address",
+            table: "CompetitiveEvents_Contacts_Emails",
+            column: "Address");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_Emails_ContactsId",
+            table: "CompetitiveEvents_Contacts_Emails",
+            column: "ContactsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_Phones_ContactsId",
+            table: "CompetitiveEvents_Contacts_Phones",
+            column: "ContactsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_Phones_Number",
+            table: "CompetitiveEvents_Contacts_Phones",
+            column: "Number");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_CompetitiveEvents_Contacts_SocialNetworks_ContactsId",
+            table: "CompetitiveEvents_Contacts_SocialNetworks",
+            column: "ContactsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_DateTimeRanges_IsDeleted",
+            table: "DateTimeRanges",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_DateTimeRanges_WorkshopId",
+            table: "DateTimeRanges",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_DirectionInstitutionHierarchy_InstitutionHierarchiesId",
+            table: "DirectionInstitutionHierarchy",
+            column: "InstitutionHierarchiesId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Directions_IsDeleted",
+            table: "Directions",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_EmployeeChangesLog_EmployeeUserId",
+            table: "EmployeeChangesLog",
+            column: "EmployeeUserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_EmployeeChangesLog_ProviderId",
+            table: "EmployeeChangesLog",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_EmployeeChangesLog_UserId",
+            table: "EmployeeChangesLog",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Employees_IsDeleted",
+            table: "Employees",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Employees_ProviderId",
+            table: "Employees",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_EmployeeWorkshop_ManagedWorkshopsId",
+            table: "EmployeeWorkshop",
+            column: "ManagedWorkshopsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Favorites_IsDeleted",
+            table: "Favorites",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Favorites_UserId",
+            table: "Favorites",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Favorites_WorkshopId",
+            table: "Favorites",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Individuals_IsDeleted",
+            table: "Individuals",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Individuals_Rnokpp",
+            table: "Individuals",
+            column: "Rnokpp",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Individuals_UserId",
+            table: "Individuals",
+            column: "UserId",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionAdmins_InstitutionId",
+            table: "InstitutionAdmins",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionAdmins_IsDeleted",
+            table: "InstitutionAdmins",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionFieldDescriptions_InstitutionId",
+            table: "InstitutionFieldDescriptions",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionFieldDescriptions_IsDeleted",
+            table: "InstitutionFieldDescriptions",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionHierarchies_InstitutionId",
+            table: "InstitutionHierarchies",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionHierarchies_IsDeleted",
+            table: "InstitutionHierarchies",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionHierarchies_ParentId",
+            table: "InstitutionHierarchies",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Institutions_IsDeleted",
+            table: "Institutions",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionStatuses_IsDeleted",
+            table: "InstitutionStatuses",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Judges_CompetitiveEventId",
+            table: "Judges",
+            column: "CompetitiveEventId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Languages_Code",
+            table: "Languages",
+            column: "Code",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Notifications_UserId",
+            table: "Notifications",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Officials_IndividualId",
+            table: "Officials",
+            column: "IndividualId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Officials_IsDeleted",
+            table: "Officials",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Officials_PositionId",
+            table: "Officials",
+            column: "PositionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_EntityId",
+            table: "OperationsWithObjects",
+            column: "EntityId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_EntityType",
+            table: "OperationsWithObjects",
+            column: "EntityType");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_OperationType",
+            table: "OperationsWithObjects",
+            column: "OperationType");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_OperationsWithObjects_RowSeparator",
+            table: "OperationsWithObjects",
+            column: "RowSeparator");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ParentBlockedByAdminLog_ParentId",
+            table: "ParentBlockedByAdminLog",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ParentBlockedByAdminLog_UserId",
+            table: "ParentBlockedByAdminLog",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Parents_IsDeleted",
+            table: "Parents",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Parents_UserId",
+            table: "Parents",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Positions_IsDeleted",
+            table: "Positions",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Positions_ProviderId",
+            table: "Positions",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_CompetitiveEventId",
+            table: "Providers",
+            column: "CompetitiveEventId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_EdrpouIpn",
+            table: "Providers",
+            column: "EdrpouIpn");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_InstitutionId",
+            table: "Providers",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_InstitutionStatusId",
+            table: "Providers",
+            column: "InstitutionStatusId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_IsDeleted",
+            table: "Providers",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_TypeId",
+            table: "Providers",
+            column: "TypeId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_UserId",
+            table: "Providers",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderSectionItems_IsDeleted",
+            table: "ProviderSectionItems",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderSectionItems_ProviderId",
+            table: "ProviderSectionItems",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Ratings_EntityId",
+            table: "Ratings",
+            column: "EntityId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Ratings_IsDeleted",
+            table: "Ratings",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Ratings_ParentId",
+            table: "Ratings",
+            column: "ParentId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_RegionAdmins_CATOTTGId",
+            table: "RegionAdmins",
+            column: "CATOTTGId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_RegionAdmins_InstitutionId",
+            table: "RegionAdmins",
+            column: "InstitutionId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_RegionAdmins_IsDeleted",
+            table: "RegionAdmins",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_SocialGroups_IsDeleted",
+            table: "SocialGroups",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_StudySubjects_IsDeleted",
+            table: "StudySubjects",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_StudySubjects_LanguageId",
+            table: "StudySubjects",
+            column: "LanguageId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_TagWorkshop_WorkshopsId",
+            table: "TagWorkshop",
+            column: "WorkshopsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_TeacherDraft_WorkshopDraftId",
+            table: "TeacherDraft",
+            column: "WorkshopDraftId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Teachers_IsDeleted",
+            table: "Teachers",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Teachers_WorkshopId",
+            table: "Teachers",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_WorkshopDescriptionItems_IsDeleted",
+            table: "WorkshopDescriptionItems",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_WorkshopDescriptionItems_WorkshopId",
+            table: "WorkshopDescriptionItems",
+            column: "WorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_WorkshopDrafts_ProviderId",
+            table: "WorkshopDrafts",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_WorkshopDrafts_WorkshopId",
+            table: "WorkshopDrafts",
+            column: "WorkshopId",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_DefaultTeacherId",
+            table: "Workshops",
+            column: "DefaultTeacherId",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_InstitutionHierarchyId",
+            table: "Workshops",
+            column: "InstitutionHierarchyId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_IsDeleted",
+            table: "Workshops",
+            column: "IsDeleted");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_ParentWorkshopId",
+            table: "Workshops",
+            column: "ParentWorkshopId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_ProviderId",
+            table: "Workshops",
+            column: "ProviderId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_Address_CATOTTGId",
+            table: "Workshops_Contacts",
+            column: "Address_CATOTTGId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_OwnerId",
+            table: "Workshops_Contacts",
+            column: "OwnerId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_Emails_Address",
+            table: "Workshops_Contacts_Emails",
+            column: "Address");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_Emails_ContactsId",
+            table: "Workshops_Contacts_Emails",
+            column: "ContactsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_Phones_ContactsId",
+            table: "Workshops_Contacts_Phones",
+            column: "ContactsId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_Phones_Number",
+            table: "Workshops_Contacts_Phones",
+            column: "Number");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_Contacts_SocialNetworks_ContactsId",
+            table: "Workshops_Contacts_SocialNetworks",
+            column: "ContactsId");
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_AchievementChild_Achievements_AchievementsId",
+            table: "AchievementChild",
+            column: "AchievementsId",
+            principalTable: "Achievements",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_Achievements_Workshops_WorkshopId",
+            table: "Achievements",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_Applications_Workshops_WorkshopId",
+            table: "Applications",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_BlockedProviderParents_Providers_ProviderId",
+            table: "BlockedProviderParents",
+            column: "ProviderId",
+            principalTable: "Providers",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_ChatMessageWorkshops_ChatRoomWorkshops_ChatRoomId",
+            table: "ChatMessageWorkshops",
+            column: "ChatRoomId",
+            principalTable: "ChatRoomWorkshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_ChatRoomWorkshops_Workshops_WorkshopId",
+            table: "ChatRoomWorkshops",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_CompetitiveEventDescriptionItems_CompetitiveEvents_Competiti~",
+            table: "CompetitiveEventDescriptionItems",
+            column: "CompetitiveEventId",
+            principalTable: "CompetitiveEvents",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_CompetitiveEvents_Providers_OrganizerOfTheEventId",
+            table: "CompetitiveEvents",
+            column: "OrganizerOfTheEventId",
+            principalTable: "Providers",
+            principalColumn: "Id");
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_DateTimeRanges_Workshops_WorkshopId",
+            table: "DateTimeRanges",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_EmployeeWorkshop_Workshops_ManagedWorkshopsId",
+            table: "EmployeeWorkshop",
+            column: "ManagedWorkshopsId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_Favorites_Workshops_WorkshopId",
+            table: "Favorites",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_TagWorkshop_Workshops_WorkshopsId",
+            table: "TagWorkshop",
+            column: "WorkshopsId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_TeacherDraft_WorkshopDrafts_WorkshopDraftId",
+            table: "TeacherDraft",
+            column: "WorkshopDraftId",
+            principalTable: "WorkshopDrafts",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+
+        migrationBuilder.AddForeignKey(
+            name: "FK_Teachers_Workshops_WorkshopId",
+            table: "Teachers",
+            column: "WorkshopId",
+            principalTable: "Workshops",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+    }
+
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Teachers_Workshops_WorkshopId",
+            table: "Teachers");
+
+        migrationBuilder.DropForeignKey(
+            name: "FK_Addresses_CATOTTGs_CATOTTGId",
+            table: "Addresses");
+
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_AspNetUsers_UserId",
+            table: "Providers");
+
+        migrationBuilder.DropForeignKey(
+            name: "FK_InstitutionHierarchies_Institutions_InstitutionId",
+            table: "InstitutionHierarchies");
+
+        migrationBuilder.DropForeignKey(
+            name: "FK_Providers_Institutions_InstitutionId",
+            table: "Providers");
+
+        migrationBuilder.DropForeignKey(
+            name: "FK_CompetitiveEvents_Providers_OrganizerOfTheEventId",
+            table: "CompetitiveEvents");
+
+        migrationBuilder.DropTable(
+            name: "AchievementChild");
+
+        migrationBuilder.DropTable(
+            name: "AchievementTeachers");
+
+        migrationBuilder.DropTable(
+            name: "Applications");
+
+        migrationBuilder.DropTable(
+            name: "AreaAdmins");
+
+        migrationBuilder.DropTable(
+            name: "AspNetRoleClaims");
+
+        migrationBuilder.DropTable(
+            name: "AspNetUserClaims");
+
+        migrationBuilder.DropTable(
+            name: "AspNetUserLogins");
+
+        migrationBuilder.DropTable(
+            name: "AspNetUserRoles");
+
+        migrationBuilder.DropTable(
+            name: "AspNetUserTokens");
+
+        migrationBuilder.DropTable(
+            name: "AverageRatings");
+
+        migrationBuilder.DropTable(
+            name: "BlockedProviderParents");
+
+        migrationBuilder.DropTable(
+            name: "ChangesLog");
+
+        migrationBuilder.DropTable(
+            name: "ChatMessageWorkshops");
+
+        migrationBuilder.DropTable(
+            name: "ChildSocialGroup");
+
+        migrationBuilder.DropTable(
+            name: "CompanyInformationItems");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventDescriptionItems");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventRegistrationDeadlines");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents_Contacts_Emails");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents_Contacts_Phones");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents_Contacts_SocialNetworks");
+
+        migrationBuilder.DropTable(
+            name: "DataProtectionKeys");
+
+        migrationBuilder.DropTable(
+            name: "DateTimeRanges");
+
+        migrationBuilder.DropTable(
+            name: "DirectionInstitutionHierarchy");
+
+        migrationBuilder.DropTable(
+            name: "ElasticsearchSyncRecords");
+
+        migrationBuilder.DropTable(
+            name: "EmployeeChangesLog");
+
+        migrationBuilder.DropTable(
+            name: "EmployeeWorkshop");
+
+        migrationBuilder.DropTable(
+            name: "Favorites");
+
+        migrationBuilder.DropTable(
+            name: "FilesInDb");
+
+        migrationBuilder.DropTable(
+            name: "InstitutionAdmins");
+
+        migrationBuilder.DropTable(
+            name: "InstitutionFieldDescriptions");
+
+        migrationBuilder.DropTable(
+            name: "Judges");
+
+        migrationBuilder.DropTable(
+            name: "Notifications");
+
+        migrationBuilder.DropTable(
+            name: "Officials");
+
+        migrationBuilder.DropTable(
+            name: "OperationsWithObjects");
+
+        migrationBuilder.DropTable(
+            name: "ParentBlockedByAdminLog");
+
+        migrationBuilder.DropTable(
+            name: "PermissionsForRoles");
+
+        migrationBuilder.DropTable(
+            name: "ProviderImages");
+
+        migrationBuilder.DropTable(
+            name: "ProviderSectionItems");
+
+        migrationBuilder.DropTable(
+            name: "QuartzJobs");
+
+        migrationBuilder.DropTable(
+            name: "Ratings");
+
+        migrationBuilder.DropTable(
+            name: "RegionAdmins");
+
+        migrationBuilder.DropTable(
+            name: "StatisticReports");
+
+        migrationBuilder.DropTable(
+            name: "StatisticReportsCSV");
+
+        migrationBuilder.DropTable(
+            name: "StudySubjects");
+
+        migrationBuilder.DropTable(
+            name: "TagWorkshop");
+
+        migrationBuilder.DropTable(
+            name: "TeacherDraft");
+
+        migrationBuilder.DropTable(
+            name: "WorkshopDescriptionItems");
+
+        migrationBuilder.DropTable(
+            name: "WorkshopDraftImages");
+
+        migrationBuilder.DropTable(
+            name: "WorkshopImages");
+
+        migrationBuilder.DropTable(
+            name: "Workshops_Contacts_Emails");
+
+        migrationBuilder.DropTable(
+            name: "Workshops_Contacts_Phones");
+
+        migrationBuilder.DropTable(
+            name: "Workshops_Contacts_SocialNetworks");
+
+        migrationBuilder.DropTable(
+            name: "Achievements");
+
+        migrationBuilder.DropTable(
+            name: "AspNetRoles");
+
+        migrationBuilder.DropTable(
+            name: "ChatRoomWorkshops");
+
+        migrationBuilder.DropTable(
+            name: "Children");
+
+        migrationBuilder.DropTable(
+            name: "SocialGroups");
+
+        migrationBuilder.DropTable(
+            name: "CompanyInformation");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents_Contacts");
+
+        migrationBuilder.DropTable(
+            name: "Directions");
+
+        migrationBuilder.DropTable(
+            name: "Employees");
+
+        migrationBuilder.DropTable(
+            name: "Individuals");
+
+        migrationBuilder.DropTable(
+            name: "Positions");
+
+        migrationBuilder.DropTable(
+            name: "Languages");
+
+        migrationBuilder.DropTable(
+            name: "Tags");
+
+        migrationBuilder.DropTable(
+            name: "WorkshopDrafts");
+
+        migrationBuilder.DropTable(
+            name: "Workshops_Contacts");
+
+        migrationBuilder.DropTable(
+            name: "AchievementTypes");
+
+        migrationBuilder.DropTable(
+            name: "Parents");
+
+        migrationBuilder.DropTable(
+            name: "Workshops");
+
+        migrationBuilder.DropTable(
+            name: "Teachers");
+
+        migrationBuilder.DropTable(
+            name: "CATOTTGs");
+
+        migrationBuilder.DropTable(
+            name: "AspNetUsers");
+
+        migrationBuilder.DropTable(
+            name: "Institutions");
+
+        migrationBuilder.DropTable(
+            name: "Providers");
+
+        migrationBuilder.DropTable(
+            name: "Addresses");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEvents");
+
+        migrationBuilder.DropTable(
+            name: "InstitutionStatuses");
+
+        migrationBuilder.DropTable(
+            name: "ProviderTypes");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventAccountingTypes");
+
+        migrationBuilder.DropTable(
+            name: "CompetitiveEventCoverages");
+
+        migrationBuilder.DropTable(
+            name: "InstitutionHierarchies");
     }
 }

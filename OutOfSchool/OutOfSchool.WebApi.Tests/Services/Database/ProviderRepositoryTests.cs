@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
@@ -47,12 +46,9 @@ public class ProviderRepositoryTests
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
         var initialProvidersCount = context.Providers.Count(x => !x.IsDeleted);
-        IQueryable<Provider> includeFunc(IQueryable<Provider> p) => p.Include(p => p.LegalAddress)
-                  .Include(p => p.ActualAddress);
-        var provider = context.Providers.IncludeProperties("LegalAddress,ActualAddress", includeFunc).First();
+        var provider = context.Providers.First();
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
-        var expectedAddressesCount = context.Addresses.Count() - 2; // 2 = Legal + Actual
         var expectedProviderAdminsCount = context.Employees.Count() - provider.Employees.Count;
 
         // Act
@@ -71,7 +67,6 @@ public class ProviderRepositoryTests
         // Assert
         Assert.AreEqual(initialProvidersCount, context.Providers.IgnoreQueryFilters().Count());
         Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedProviderAdminsCount, context.Employees.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
@@ -91,7 +86,7 @@ public class ProviderRepositoryTests
         using var context = GetContext();
         var providerRepository = GetProviderRepository(context);
 
-        var firstEdrpou = context.Providers.First().EdrpouIpn;
+        var firstEdrpou = context.Providers.First().Edrpou;
 
         var data = new Dictionary<int, string>()
         {

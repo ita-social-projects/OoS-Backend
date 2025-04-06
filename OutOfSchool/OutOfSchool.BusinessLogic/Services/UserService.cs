@@ -65,7 +65,7 @@ public class UserService : IUserService
         return mapper.Map<ShortUserDto>(user);
     }
 
-    public async Task<ShortUserDto> Update(ShortUserDto dto)
+    public async Task<ShortUserDto> Update(BaseUpdateUserDto dto)
     {
         logger.LogInformation($"Updating User with Id = {dto?.Id} started.");
 

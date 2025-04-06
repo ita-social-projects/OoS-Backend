@@ -31,8 +31,6 @@ public class WorkshopFilterES
 
     public string City { get; set; } = string.Empty;
 
-    public bool WithDisabilityOptions { get; set; } = false;
-
     public string Workdays { get; set; } = string.Empty;
 
     public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);
@@ -67,13 +65,9 @@ public class WorkshopFilterES
 
     public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; } = new List<EducationalShift>();
 
-    public bool ShortStay { get; set; }
-
     public bool IsSelfFinanced { get; set; }
 
     public bool IsPaid { get; set; }
-
-    public bool IsSpecial { get; set; }
 
     public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; } = new List<SpecialNeedsType>();
 

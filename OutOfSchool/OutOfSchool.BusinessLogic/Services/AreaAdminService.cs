@@ -16,6 +16,16 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class AreaAdminService : CommunicationService, IAreaAdminService
 {
+    /// <summary>
+    /// Create a delegate to include other entities in AreaAdmin entity
+    /// </summary>
+    private readonly Func<IQueryable<AreaAdmin>, IQueryable<AreaAdmin>> includeFunc =
+                    aa => aa.Include(aa => aa.Institution)
+                            .Include(aa => aa.User)
+                            .Include(aa => aa.CATOTTG)
+                            .ThenInclude(c => c.Parent)
+                            .ThenInclude(p => p.Parent);
+
     private readonly AuthorizationServerConfig authorizationServerConfig;
     private readonly IAreaAdminRepository areaAdminRepository;
     private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
@@ -197,6 +207,8 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         int count = await areaAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
+
+
         var sortExpression = new Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection>
         {
             { x => x.User.IsBlocked, SortDirection.Ascending },
@@ -208,10 +220,10 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User,CATOTTG.Parent.Parent",
                 whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: true)
+                orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -240,7 +252,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, AreaAdminDto>> UpdateAreaAdminAsync(
         string userId,
-        BaseUserDto updateAreaAdminDto,
+        BaseUpdateUserDto updateAreaAdminDto,
         string token)
     {
         _ = updateAreaAdminDto ?? throw new ArgumentNullException(nameof(updateAreaAdminDto));
@@ -273,7 +285,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 authorizationServerConfig.Authority,
                 CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
-            Data = mapper.Map<AreaAdminBaseDto>(updateAreaAdminDto),
+            Data = mapper.Map<AreaAdminBaseUpdateDto>(updateAreaAdminDto),
         };
 
         Logger.LogDebug(

@@ -380,13 +380,10 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         {
             await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
             try
-            {
-                user.FirstName = ministryAdminUpdateDto.FirstName;
-                user.LastName = ministryAdminUpdateDto.LastName;
-                user.MiddleName = ministryAdminUpdateDto.MiddleName;
+            {         
                 user.Email = ministryAdminUpdateDto.Email;
-                user.UserName = ministryAdminUpdateDto.Email;
                 user.PhoneNumber = ministryAdminUpdateDto.PhoneNumber;
+                user.UserName = ministryAdminUpdateDto.Email;
 
                 var updateResult = await userManager.UpdateAsync(user);
 

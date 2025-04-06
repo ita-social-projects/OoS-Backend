@@ -1,11 +1,13 @@
 ﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -16,6 +18,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "provider,parent")]
+[FeatureGate(nameof(Feature.MessagingFeature))]
 public class ChatWorkshopController : ControllerBase
 {
     // TODO: define the algorithm of logging information and warnings  in the solution

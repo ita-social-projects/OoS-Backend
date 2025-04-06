@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
@@ -36,10 +38,14 @@ public class ChangesLogRepositoryTests
         institution2 = InstitutionsGenerator.Generate();
 
         provider = ProvidersGenerator.Generate();
-        provider.LegalAddress.Id = 6;
-        provider.LegalAddressId = 6;
-        provider.LegalAddress.CATOTTGId = 4970;
-        provider.LegalAddress.CATOTTG.Id = 4970;
+        var contacts = new Contacts
+        {
+            Title = "Test",
+            IsDefault = true,
+            Address = ContactsAddressGenerator.Generate(),
+        };
+        contacts.Address.CATOTTGId = 4970;
+        provider.Contacts = [contacts];
         provider.InstitutionId = institution1.Id;
         provider.InstitutionStatusId = InstitutionStatusId1; // Safe to use, because institution statuses would be seeded on context building phase
         user = UserGenerator.Generate();
@@ -59,35 +65,27 @@ public class ChangesLogRepositoryTests
         // Arrange
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
-        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+        var trackedProperties = new[] { "FullTitle", "ShortTitle", "Contacts.Address", };
         var provider = await context.Providers.FirstAsync();
 
         var oldFullTitle = provider.FullTitle;
-        var oldDirector = provider.Director;
 
         // Act
         provider.FullTitle += "new";
-        provider.Director += "new";
 
         var newFullTitle = provider.FullTitle;
-        var newDirector = provider.Director;
 
         var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
         // Assert
         var fullTitleChanges = context.ChangesLog.Local
             .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
-        var directorChanges = context.ChangesLog.Local
-            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.Director));
 
         Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
-        Assert.AreEqual(2, context.ChangesLog.Local.Count);
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
         Assert.AreEqual(oldFullTitle, fullTitleChanges.OldValue);
         Assert.AreEqual(newFullTitle, fullTitleChanges.NewValue);
         Assert.AreEqual(user.Id, fullTitleChanges.UserId);
-        Assert.AreEqual(oldDirector, directorChanges.OldValue);
-        Assert.AreEqual(newDirector, directorChanges.NewValue);
-        Assert.AreEqual(user.Id, directorChanges.UserId);
     }
 
     [Test]
@@ -125,7 +123,7 @@ public class ChangesLogRepositoryTests
         // Arrange
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
-        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+        var trackedProperties = new[] { "FullTitle", "ShortTitle", "Contacts.Address",};
         var provider = await context.Providers.FirstAsync();
 
         // Act
@@ -142,14 +140,13 @@ public class ChangesLogRepositoryTests
         // Arrange
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
-        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
+        var trackedProperties = new[] { "FullTitle", "ShortTitle", "Contacts.Address", };
         var provider = await context.Providers.FirstAsync();
 
         var oldFullTitle = provider.FullTitle;
 
         // Act
         provider.FullTitle += "new";
-        provider.Director += "new";
 
         var newFullTitle = provider.FullTitle;
 
@@ -225,16 +222,15 @@ public class ChangesLogRepositoryTests
         // Arrange
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
-        var trackedProperties = new[] { "LegalAddress" };
-        var provider = await context.Providers.Include(p => p.LegalAddress).ThenInclude(p => p.CATOTTG).FirstAsync();
+        var trackedProperties = new[] { "Contacts.Address" };
+        var provider = await context.Providers.Include(p => p.Contacts).ThenInclude(c => c.Address).ThenInclude(p => p.CATOTTG).FirstAsync();
 
-        var oldLegalAddress = ProjectAddress(provider.LegalAddress);
+        var oldContacts = this.ProjectAddress(provider.Contacts.Single(c => c.IsDefault).Address);
 
         // Act
-        //provider.LegalAddress.CATOTTGId += 1;
-        provider.LegalAddress.BuildingNumber += "X";
+        provider.Contacts.Single(c => c.IsDefault).Address.BuildingNumber += "X";
 
-        var newLegalAddress = ProjectAddress(provider.LegalAddress);
+        var newLegalAddress = this.ProjectAddress(provider.Contacts.Single(c => c.IsDefault).Address);
 
         var added = changesLogRepository.AddChangesLogToDbContext(
             provider,
@@ -243,14 +239,14 @@ public class ChangesLogRepositoryTests
             valueProjector.ProjectValue);
 
         // Assert
-        var legalAddressChanges = context.ChangesLog.Local
-            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.LegalAddress));
+        var contactsChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName.Contains(nameof(Provider.Contacts)));
 
         Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
         Assert.AreEqual(1, context.ChangesLog.Local.Count);
-        Assert.AreEqual(oldLegalAddress, legalAddressChanges.OldValue);
-        Assert.AreEqual(newLegalAddress, legalAddressChanges.NewValue);
-        Assert.AreEqual(user.Id, legalAddressChanges.UserId);
+        Assert.AreEqual(oldContacts, contactsChanges.OldValue);
+        Assert.AreEqual(newLegalAddress, contactsChanges.NewValue);
+        Assert.AreEqual(user.Id, contactsChanges.UserId);
     }
 
     [Test]
@@ -323,8 +319,8 @@ public class ChangesLogRepositoryTests
         // Arrange
         using var context = GetContext();
         var changesLogRepository = GetChangesLogRepository(context);
-        var trackedProperties = new[] { "LegalAddress" };
-        var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
+        var trackedProperties = new[] { "Contacts.Address" };
+        var provider = await context.Providers.Include(p => p.Contacts).FirstAsync();
 
         // Act
         var added = changesLogRepository.AddChangesLogToDbContext(
@@ -375,15 +371,20 @@ public class ChangesLogRepositoryTests
         await context.SaveChangesAsync();
     }
 
-    private string ProjectAddress(Address address) =>
-        address == null
-            ? null
-            : $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}";
+    private string ProjectAddress(ContactsAddress address)
+    {
+        if (address == null)
+        {
+            return null;
+        }
+        
+        return $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}";
+    }
 
     public class ProviderTest : IKeyedEntity
     {
         public string FullTitle { get; set; }
 
-        public Address LegalAddress { get; set; }
+        public List<Contacts> Contacts { get; set; }
     }
 }
