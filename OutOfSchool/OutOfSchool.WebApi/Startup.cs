@@ -17,7 +17,6 @@ using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -451,9 +450,6 @@ public static class Startup
         services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
 
         services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
-
-        services.Configure<WorkshopFlag>(configuration.GetSection("Features"));
-
 
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;

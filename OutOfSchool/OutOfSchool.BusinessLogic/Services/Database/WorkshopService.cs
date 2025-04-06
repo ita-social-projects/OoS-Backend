@@ -2,7 +2,6 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
-using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -55,7 +54,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
-    private readonly WorkshopFlag featureFlags;
+    private readonly IFeatureManager featureManager;
 
 
     /// <summary>
@@ -99,7 +98,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
         IApplicationRepository applicationRepository,
-        IOptions<WorkshopFlag> featureFlagsOptions)
+        IFeatureManager featureManager)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -120,7 +119,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
-        this.featureFlags = featureFlagsOptions.Value;
+        this.featureManager = featureManager;
     }
 
     /// <inheritdoc/>
@@ -1269,7 +1268,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
-        if(!featureFlags.EnableWorkshopGroupTypeField)
+        if(await featureManager.IsEnabledAsync("EnableWorkshopGroupTypeField"))
         {
             dto.WorkshopType = WorkshopType.Workshop;
         }

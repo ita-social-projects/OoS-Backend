@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
@@ -52,6 +53,8 @@ public class WorkshopServiceDBTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
+    private Mock<IFeatureManager> featureManagerMock;
+
 
     [SetUp]
     public async Task SetUp()
@@ -83,6 +86,7 @@ public class WorkshopServiceDBTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
+        featureManagerMock = new Mock<IFeatureManager>();
 
         workshopService =
                 new WorkshopService(
@@ -104,7 +108,8 @@ public class WorkshopServiceDBTests
                     tagServiceMock.Object,
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
-                    applicationRepositoryMock.Object);
+                    applicationRepositoryMock.Object,
+                    featureManagerMock.Object);
 
         Seed();
     }

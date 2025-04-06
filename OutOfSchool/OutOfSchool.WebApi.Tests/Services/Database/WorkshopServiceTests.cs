@@ -8,7 +8,7 @@ using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -60,7 +60,7 @@ public class WorkshopServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IOptions<WorkshopFlag>> featureFlags;
+    private Mock<IFeatureManager> featureManager;
 
 
     [SetUp]
@@ -86,7 +86,7 @@ public class WorkshopServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
-        featureFlags = new Mock<IOptions<WorkshopFlag>>();
+        featureManager = new Mock<IFeatureManager>();
 
 
     workshopService =
@@ -110,7 +110,7 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureFlags.Object);
+                    featureManager.Object);
     }
 
     #region Create

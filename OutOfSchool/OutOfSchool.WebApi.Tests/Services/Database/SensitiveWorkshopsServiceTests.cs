@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
@@ -44,6 +45,8 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
+    private Mock<IFeatureManager> featureManagerMock;
+
 
     [SetUp]
     public void SetUp()
@@ -59,6 +62,7 @@ public class SensitiveWorkshopsServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
+        featureManagerMock = new Mock<IFeatureManager>();
 
         sensitiveWorkshopService =
             new WorkshopService(
@@ -80,7 +84,8 @@ public class SensitiveWorkshopsServiceTests
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
-                applicationRepositoryMock.Object);
+                applicationRepositoryMock.Object,
+                featureManagerMock.Object);
     }
 
     #region FetchByFilterForAdmins

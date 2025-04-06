@@ -12,4 +12,5 @@ public enum Feature
     ShowForProduction,
     TechAdminImport,
     TechAdminExport,
+    EnableWorkshopGroupTypeField
 }

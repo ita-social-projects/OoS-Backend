@@ -17,4 +17,6 @@ public class FeatureManagementConfig
     public bool Images { get; set; }
 
     public bool TechAdminExport { get; set; }
+
+    public bool EnableWorkshopGroupTypeField { get; set; }
 }
