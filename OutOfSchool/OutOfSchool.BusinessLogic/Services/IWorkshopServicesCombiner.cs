@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -42,16 +43,22 @@ public interface IWorkshopServicesCombiner
     Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false);
 
     /// <summary>
-    /// Get a list of workshops with their attachment status for a given provider and study subject.
+    /// Retrieves a paginated list of workshops along with their attachment status
+    /// for a given provider and study subject.
     /// </summary>
     /// <param name="studySubjectId">The unique identifier of the study subject.</param>
     /// <param name="providerId">The unique identifier of the provider.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="Result"/> object 
-    /// which holds an <see cref="IEnumerable{WorkshopAttachmentStatusDto}"/> representing the list of workshops 
-    /// with their attachment status.</returns>
-    Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
-            Guid studySubjectId,
-            Guid providerId);
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a 
+    /// <see cref="PaginatedResult{WorkshopAttachmentStatusDto}"/> with the workshops and pagination metadata.
+    /// </returns>
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
+           Guid studySubjectId,
+           Guid providerId,
+           int page,
+           int pageSize);
 
     /// <summary>
     /// Update existing entity in the database.

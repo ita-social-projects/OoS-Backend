@@ -6,6 +6,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -270,11 +271,13 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
         await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
-         Guid studySubjectId,
-         Guid providerId)
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
+           Guid studySubjectId,
+           Guid providerId,
+           int page,
+           int pageSize)
     {
-        return workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+        return workshopService.GetAttachedWorkshops(studySubjectId, providerId, page, pageSize);
     }
 
     /// <inheritdoc/>

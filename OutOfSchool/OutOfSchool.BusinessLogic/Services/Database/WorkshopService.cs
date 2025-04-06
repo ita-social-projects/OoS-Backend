@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
@@ -52,7 +53,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -74,7 +74,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
     /// <param name="tagService">Service for Tag entity.</param>
-    /// <param name="studySubjectRepository">Repository for StudySubject entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, Tag> tagRepository,
@@ -93,8 +92,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository,
-        IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository)
+        IApplicationRepository applicationRepository)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -114,7 +112,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
-        this.studySubjectRepository = studySubjectRepository;
     }
 
     /// <inheritdoc/>
@@ -340,45 +337,27 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<IEnumerable<WorkshopAttachmentStatusDto>>> GetWorkshopsWithAttachmentStatusByProviderId(
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
            Guid studySubjectId,
-           Guid providerId)
+           Guid providerId,
+           int page,
+           int pageSize)
     {
-        // Get all workshops for the provider
-        var allWorkshops = await workshopRepository
-            .GetByFilter(whereExpression: x => x.ProviderId == providerId)
-            .ConfigureAwait(false);
+        logger.LogInformation("Getting workshops with attachment status. ProviderId = {ProviderId}, " +
+                              "StudySubjectId = {StudySubjectId}, Page = {Page}, PageSize = {PageSize}",
+                               providerId, studySubjectId, page, pageSize);
 
-        // Get the study subject with the specified Id and include the workshops
-        var studySubject = await studySubjectRepository
-            .GetByIdWithDetails(studySubjectId, includeProperties: "Workshops")
-            .ConfigureAwait(false);
-
-        if (studySubject == null)
-        {
-            logger.LogWarning("StudySubject with Id = {StudySubjectId} was not found", studySubjectId);
-            return Result<IEnumerable<WorkshopAttachmentStatusDto>>.Failed(new OperationError
+        var query = workshopRepository
+            .GetByFilterNoTracking(whereExpression: w => w.ProviderId == providerId)
+            .Select(w => new WorkshopAttachmentStatusDto
             {
-                Code = "404",
-                Description = $"StudySubject with Id = {studySubjectId} was not found"
-            });
-        }
-
-        // Get the IDs of the already attached workshops
-        var attachedWorkshopIds = studySubject.Workshops.Select(w => w.Id).ToList();
-
-        // Map the workshops to the DTOs and set the IsAttached property
-        var result = allWorkshops
-            .Select(w =>
-            {
-                var dto = mapper.Map<WorkshopAttachmentStatusDto>(w);
-                dto.IsAttached = attachedWorkshopIds.Contains(w.Id);
-                return dto;
+                Id = w.Id,
+                Title = w.Title,
+                IsAttached = w.StudySubjects.Any(ss => ss.Id == studySubjectId)
             })
-            .OrderBy(w => w.Title)
-            .ToList();
+            .OrderBy(w => w.Title);
 
-        return Result<IEnumerable<WorkshopAttachmentStatusDto>>.Success(result);
+        return query.ToPaginatedResultAsync(page, pageSize);
     }
 
     /// <inheritdoc/>

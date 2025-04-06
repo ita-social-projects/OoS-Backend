@@ -58,7 +58,6 @@ public class WorkshopServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>> studySubjectRepositoryMock;
     private Guid providerId;
     private Guid studySubjectId;
 
@@ -84,7 +83,6 @@ public class WorkshopServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
-        studySubjectRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
 
@@ -107,8 +105,7 @@ public class WorkshopServiceTests
                     tagServiceMock.Object,
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
-                    applicationRepository.Object,
-                    studySubjectRepositoryMock.Object
+                    applicationRepository.Object
                     );
     }
 
@@ -583,126 +580,160 @@ public class WorkshopServiceTests
     }
     #endregion
 
-    #region GetWorkshopsWithAttachmentStatusByProviderId
+    #region GetAttachedWorkshops
 
     [Test]
-    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsWorkshopsWithCorrectStatus()
+    public async Task GetAttachedWorkshops_ReturnsCorrectIsAttachedFlags()
     {
         // Arrange
-        var attachedWorkshop = new Workshop { Id = Guid.NewGuid(), ProviderId = providerId, Title = "Attached Workshop" };
-        var detachedWorkshop = new Workshop { Id = Guid.NewGuid(), ProviderId = providerId, Title = "Detached Workshop" };
+        var page = 1;
+        var pageSize = 10;
 
-        var studySubject = new StudySubject
+        var studySubject = new StudySubject { Id = studySubjectId };
+
+        var workshops = new List<Workshop>
         {
-            Id = studySubjectId,
-            Workshops = new List<Workshop> { attachedWorkshop }
+            new Workshop
+            {
+                Id = Guid.NewGuid(),
+                Title = "Math Basics",
+                ProviderId = providerId,
+                StudySubjects = new List<StudySubject> { studySubject }
+            },
+            new Workshop
+            {
+                Id = Guid.NewGuid(),
+                Title = "Science Explorers",
+                ProviderId = providerId,
+                StudySubjects = new List<StudySubject>()
+            },
         };
 
-        workshopRepository
-            .Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), "", null))
-            .ReturnsAsync(new List<Workshop> { attachedWorkshop, detachedWorkshop });
-
-        studySubjectRepositoryMock
-            .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
-            .ReturnsAsync(studySubject);
-
-        mapperMock.Setup(m => m.Map<WorkshopAttachmentStatusDto>(It.IsAny<Workshop>()))
-            .Returns((Workshop w) => new WorkshopAttachmentStatusDto { Id = w.Id, Title = w.Title });
+        SetupRepoForAttachedWorkshops(workshops);
 
         // Act
-        var result = await workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+        var result = await workshopService.GetAttachedWorkshops(studySubjectId, providerId, page, pageSize);
 
         // Assert
-        Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Value.Count(), Is.EqualTo(2));
-        Assert.That(result.Value.First(w => w.Id == attachedWorkshop.Id).IsAttached, Is.True);
-        Assert.That(result.Value.First(w => w.Id == detachedWorkshop.Id).IsAttached, Is.False);
+        var resultList = result.Items.ToList();
+        Assert.AreEqual(2, resultList.Count);
+
+        Assert.AreEqual("Math Basics", resultList[0].Title);
+        Assert.IsTrue(resultList[0].IsAttached);
+
+        Assert.AreEqual("Science Explorers", resultList[1].Title);
+        Assert.IsFalse(resultList[1].IsAttached);
     }
 
     [Test]
-    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsNotFound_WhenStudySubjectNotExists()
+    public async Task GetAttachedWorkshops_FiltersByProvider()
     {
         // Arrange
-        studySubjectRepositoryMock
-            .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
-            .ReturnsAsync((StudySubject)null);
+        var otherProviderId = Guid.NewGuid();
+
+        var workshops = new List<Workshop>
+        {
+            new Workshop
+            {
+                Id = Guid.NewGuid(),
+                Title = "Art Fun",
+                ProviderId = providerId,
+                StudySubjects = new List<StudySubject> { new StudySubject { Id = studySubjectId } }
+            },
+            new Workshop
+            {
+                Id = Guid.NewGuid(),
+                Title = "Other Provider Workshop",
+                ProviderId = otherProviderId,
+                StudySubjects = new List<StudySubject> { new StudySubject { Id = studySubjectId } }
+            },
+        };
+
+        SetupRepoForAttachedWorkshops(workshops.Where(w => w.ProviderId == providerId).ToList());
 
         // Act
-        var result = await workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+        var result = await workshopService.GetAttachedWorkshops(studySubjectId, providerId, 1, 10);
 
         // Assert
-        Assert.That(result.Succeeded, Is.False);
-        Assert.That(result.OperationResult.Errors.First().Code, Is.EqualTo("404"));
+        var items = result.Items.ToList();
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual("Art Fun", items[0].Title);
+        Assert.IsTrue(items[0].IsAttached);
     }
 
     [Test]
-    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsEmptyList_WhenNoWorkshopsFound()
+    public async Task GetAttachedWorkshops_ReturnsEmpty_WhenNoWorkshops()
     {
         // Arrange
-        var studySubject = new StudySubject { Id = studySubjectId, Workshops = new List<Workshop>() };
-
-        workshopRepository
-            .Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), "", null))
-            .ReturnsAsync(new List<Workshop>());
-
-        studySubjectRepositoryMock
-            .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
-            .ReturnsAsync(studySubject);
+        SetupRepoForAttachedWorkshops(new List<Workshop>());
 
         // Act
-        var result = await workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+        var result = await workshopService.GetAttachedWorkshops(Guid.NewGuid(), Guid.NewGuid(), 1, 10);
 
         // Assert
-        Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Value, Is.Empty);
+        Assert.IsNotNull(result);
+        Assert.IsEmpty(result.Items);
     }
 
     [Test]
-    public async Task GetWorkshopsWithAttachmentStatusByProviderId_ReturnsWorkshopsWithIsAttachedFalse_WhenNotLinked()
+    public void GetAttachedWorkshops_ThrowsException_WhenRepositoryFails()
     {
         // Arrange
-        var detachedWorkshop = new Workshop { Id = Guid.NewGuid(), ProviderId = providerId, Title = "Detached Workshop" };
-
-        var studySubject = new StudySubject { Id = studySubjectId, Workshops = new List<Workshop>() };
-
         workshopRepository
-            .Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), "", null))
-            .ReturnsAsync(new List<Workshop> { detachedWorkshop });
+            .Setup(m => m.GetByFilterNoTracking(
+                It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>(), null))
+            .Throws(new Exception("DB Failure"));
 
-        studySubjectRepositoryMock
-            .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
-            .ReturnsAsync(studySubject);
-
-        mapperMock.Setup(m => m.Map<WorkshopAttachmentStatusDto>(It.IsAny<Workshop>()))
-            .Returns((Workshop w) => new WorkshopAttachmentStatusDto { Id = w.Id, Title = w.Title });
-
-        // Act
-        var result = await workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
-
-        // Assert
-        Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Value.Count(), Is.EqualTo(1));
-        Assert.That(result.Value.First().IsAttached, Is.False);
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<Exception>(() =>
+            workshopService.GetAttachedWorkshops(studySubjectId, providerId, 1, 10));
+        Assert.That(ex.Message, Is.EqualTo("DB Failure"));
     }
 
     [Test]
-    public void GetWorkshopsWithAttachmentStatusByProviderId_ReturnsFailure_WhenDbErrorOccurs()
+    public async Task GetAttachedWorkshops_RespectsPagination()
     {
         // Arrange
-        workshopRepository
-            .Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), "", null))
-            .ThrowsAsync(new Exception("Database error"));
+        var workshops = new List<Workshop>
+    {
+        new Workshop { Id = Guid.NewGuid(), Title = "A", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+        new Workshop { Id = Guid.NewGuid(), Title = "B", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+        new Workshop { Id = Guid.NewGuid(), Title = "C", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+    };
 
-        studySubjectRepositoryMock
-            .Setup(s => s.GetByIdWithDetails(studySubjectId, "Workshops", null))
-            .ReturnsAsync(new StudySubject { Id = studySubjectId, Workshops = new List<Workshop>() });
+        SetupRepoForAttachedWorkshops(workshops);
 
         // Act
-        var exception = Assert.ThrowsAsync<Exception>(async () =>
-            await workshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId));
+        var result = await workshopService.GetAttachedWorkshops(Guid.NewGuid(), providerId, page: 2, pageSize: 1);
 
         // Assert
-        Assert.That(exception.Message, Is.EqualTo("Database error"));
+        var items = result.Items.ToList();
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual("B", items[0].Title);
+        Assert.AreEqual(3, result.TotalCount);
+        Assert.AreEqual(3, result.TotalPages);
+        Assert.AreEqual(2, result.Page);
+    }
+
+    [Test]
+    public async Task GetAttachedWorkshops_SortsByTitleAscending()
+    {
+        // Arrange
+        var workshops = new List<Workshop>
+    {
+        new Workshop { Id = Guid.NewGuid(), Title = "Zebra Workshop", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+        new Workshop { Id = Guid.NewGuid(), Title = "Apple Workshop", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+        new Workshop { Id = Guid.NewGuid(), Title = "Math Club", ProviderId = providerId, StudySubjects = new List<StudySubject>() },
+    };
+
+        SetupRepoForAttachedWorkshops(workshops);
+
+        // Act
+        var result = await workshopService.GetAttachedWorkshops(Guid.NewGuid(), providerId, 1, 10);
+
+        // Assert
+        var titles = result.Items.Select(x => x.Title).ToList();
+        CollectionAssert.AreEqual(new[] { "Apple Workshop", "Math Club", "Zebra Workshop" }, titles);
     }
 
     #endregion
@@ -1451,6 +1482,23 @@ public class WorkshopServiceTests
             It.IsAny<Expression<Func<Workshop, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
         .Returns(queryableWorkshops).Verifiable();
+    }
+
+    private void SetupRepoForAttachedWorkshops(List<Workshop> workshops)
+    {
+        // Create an IQueryable<Workshop> to mock the repository behavior:
+        // If the list is null or empty, return an empty async-compatible query,
+        // otherwise, wrap the list in TestAsyncEnumerableQuery to simulate an EF Core async query.
+        IQueryable<Workshop> queryable = workshops == null || workshops.Count == 0
+        ? QueryableExtensions.AsEmptyTestAsyncEnumerableQuery<Workshop>()
+        : new TestAsyncEnumerableQuery<Workshop>(workshops);
+
+        workshopRepository
+            .Setup(r => r.GetByFilterNoTracking(
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .Returns(queryable);
     }
 
     #endregion
