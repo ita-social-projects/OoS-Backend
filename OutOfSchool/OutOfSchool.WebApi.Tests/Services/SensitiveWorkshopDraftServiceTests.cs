@@ -1,33 +1,33 @@
-﻿using AutoMapper;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.Tests.Common.TestDataGenerators;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System;
+using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config.Images;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Extensions;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.BusinessLogic.Models;
-using System.Linq;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.Services.Enums;
-using System.Linq.Expressions;
-using FluentAssertions;
-using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -81,7 +81,6 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
-        var employeeService = new Mock<IEmployeeService>();
 
         userId = "someUserId";
 
@@ -95,7 +94,6 @@ public class SensitiveWorkshopDraftServiceTests
                    teacherDraftImagesService.Object,
                    tagRepositoryMock.Object,
                    options.Object,
-                   employeeService.Object,
                    workshopServiceCombinerV2Mock.Object,
                    regionAdminServiceMock.Object,
                    ministryAdminServiceMock.Object,

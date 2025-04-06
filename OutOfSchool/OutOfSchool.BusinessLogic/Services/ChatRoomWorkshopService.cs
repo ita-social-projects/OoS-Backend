@@ -553,11 +553,8 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
             var tempPredicate = PredicateBuilder.False<ChatRoomWorkshop>()
-                .Or(x => x.Workshop.Provider.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
-                .Or(x => x.Workshop.Provider.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
-                .Or(x => x.Workshop.Provider.User.Email.StartsWith(filter.SearchText))
                 .Or(x => x.Parent.User.Email.StartsWith(filter.SearchText))
                 .Or(x => x.Workshop.Title.ToLower().Contains(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.PhoneNumber.StartsWith(filter.SearchText))

@@ -29,9 +29,6 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
         builder.Property(x => x.Ownership)
             .IsRequired();
 
-        builder.Property(x => x.UserId)
-            .IsRequired();
-
         builder.Property(x => x.InstitutionType)
             .IsRequired();
 

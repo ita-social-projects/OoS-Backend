@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.WebUtilities;
@@ -7,6 +9,7 @@ using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.Services.Enums;
@@ -29,6 +32,7 @@ public class AuthController : Controller
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IEmailSenderService emailSender;
     private readonly IFeatureManager featureManager;
+    private readonly OutOfSchoolDbContext dbContext;
     private string userId;
 
     /// <summary>
@@ -44,6 +48,7 @@ public class AuthController : Controller
     /// <param name="renderer"> Renderer for Razor page.</param>
     /// <param name="emailSender">E-mail sender service.</param>
     /// <param name="featureManager">Feature management service.</param>
+    /// <param name="dbContext">Database context.</param>
     public AuthController(
         UserManager<User> userManager,
         IUserManagerAdditionalService userManagerAdditionalService,
@@ -54,7 +59,8 @@ public class AuthController : Controller
         IOptions<AuthServerConfig> identityServerConfig,
         IRazorViewToStringRenderer renderer,
         IEmailSenderService emailSender,
-        IFeatureManager featureManager)
+        IFeatureManager featureManager,
+        OutOfSchoolDbContext dbContext)
     {
         this.logger = logger;
         this.signInManager = signInManager;
@@ -66,6 +72,7 @@ public class AuthController : Controller
         this.renderer = renderer;
         this.emailSender = emailSender;
         this.featureManager = featureManager;
+        this.dbContext = dbContext;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
@@ -211,6 +218,76 @@ public class AuthController : Controller
                     {
                         throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
                                                             $" ({lastLoginResult}) for user with ID '{user.Id}'.");
+                    }
+
+                    // To mirror new production logic
+                    // Check if user has provider or employee role and add appropriate claims
+                    if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase) || 
+                        Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var individual = await GetIndividualByUserIdAsync(user.Id);
+                        
+                        if (individual != null)
+                        {
+                            var positions = await GetPositionsForIndividualAsync(individual.Id);
+                            
+                            if (positions.Count > 0)
+                            {
+                                // Process provider-specific logic
+                                if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var directorPosition = positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
+                                    if (directorPosition == null)
+                                    {
+                                        ModelState.AddModelError(string.Empty, localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
+
+                                        return View(new LoginViewModel
+                                        {
+                                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                            ReturnUrl = model.ReturnUrl,
+                                        });
+                                    }
+                                }
+                                // Process employee-specific logic
+                                else if (Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
+                                    if (employeePosition == null)
+                                    {
+                                        ModelState.AddModelError(string.Empty, localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
+
+                                        return View(new LoginViewModel
+                                        {
+                                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                            ReturnUrl = model.ReturnUrl,
+                                        });
+                                    }
+                                }
+                                
+                                var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
+                                var providerEdrpou = positions.Select(p => p.ProviderEdrpou).FirstOrDefault() ?? string.Empty;
+                                var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
+                                
+                                var claims = BuildProviderClaims(individual, user, providerId, providerEdrpou, isDeputy);
+                                
+                                var properties = new AuthenticationProperties
+                                {
+                                    RedirectUri = model.ReturnUrl,
+                                    IsPersistent = model.RememberMe,
+                                };
+                                
+                                await signInManager.SignInWithClaimsAsync(user, properties, claims);
+                                
+                                return Redirect(model.ReturnUrl);
+                            }
+                        }
+                        
+                        ModelState.AddModelError(string.Empty, localizer["IndividualOrProviderNotFound"]);
+                        return View(new LoginViewModel
+                        {
+                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                            ReturnUrl = model.ReturnUrl,
+                        });
                     }
 
                     return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
@@ -477,4 +554,65 @@ public class AuthController : Controller
 
         return false;
     }
+
+    /// <summary>
+    /// Gets individual by user ID.
+    /// </summary>
+    /// <param name="userId">User ID.</param>
+    /// <returns>Individual entity or null if not found.</returns>
+    private async Task<Individual?> GetIndividualByUserIdAsync(string userId)
+    {
+        return await dbContext.Individuals
+            .FirstOrDefaultAsync(i => !i.IsDeleted && i.UserId == userId);
+    }
+
+    /// <summary>
+    /// Gets positions for an individual.
+    /// </summary>
+    /// <param name="individualId">Individual ID.</param>
+    /// <returns>List of positions for the individual.</returns>
+    private async Task<List<PositionProjection>> GetPositionsForIndividualAsync(Guid individualId)
+    {
+        // Get the Positions that have officials linked to the individual
+        var positions = await dbContext.Positions
+            .Include(p => p.Provider)
+            .Where(x => !x.IsDeleted && !x.Provider.IsDeleted && x.Officials.Any(o => o.IndividualId == individualId && !o.IsDeleted))
+            .Select(p => new PositionProjection(p.Provider.FullTitle, p.ProviderId, p.Provider.Edrpou, p.PositionType))
+            .ToListAsync();
+            
+        return positions;
+    }
+
+    /// <summary>
+    /// Builds claims list for the user based on individual and user info.
+    /// </summary>
+    /// <param name="individual">Individual entity.</param>
+    /// <param name="user">User entity.</param>
+    /// <param name="providerId">Provider ID.</param>
+    /// <param name="providerEdrpou">Provider's Edrpou</param>
+    /// <param name="isDeputy">Boolean flag to show if individual has deputy director position.</param>
+    /// <returns>List of claims for the user.</returns>
+    private List<Claim> BuildProviderClaims(
+        Individual individual,
+        User user,
+        Guid providerId,
+        string providerEdrpou,
+        bool isDeputy)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, user.Role),
+            new(ClaimTypes.GivenName, individual.FirstName),
+            new(ClaimTypes.Surname, individual.LastName),
+            new(ClaimTypes.Email, user.Email),
+            new(Constants.ClaimTypes.Edrpou, providerEdrpou),
+            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
+            new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
+            new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString()),
+        };
+
+        return claims;
+    }
+
+    private record PositionProjection(string ProviderTitle, Guid ProviderId, string ProviderEdrpou, PositionType PositionType);
 }

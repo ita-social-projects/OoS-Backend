@@ -15,8 +15,8 @@ using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Base;
-using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 
@@ -28,7 +28,7 @@ public class OfficialServiceTests
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private OfficialService service;
-    private ISensitiveEntityRepositorySoftDeleted<Official> repository;
+    private IOfficialRepository repository;
     private Mock<ICurrentUserService> currentUserService;
     private Mock<ILogger<OfficialService>> logger;
     private IMapper mapper;
@@ -43,14 +43,14 @@ public class OfficialServiceTests
         options = builder.Options;
         context = new TestOutOfSchoolDbContext(options);
 
-        repository = new SensitiveEntityRepositorySoftDeleted<Official>(context);
+        repository = new OfficialRepository(context);
         providerId = Guid.NewGuid();
 
         currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<OfficialService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        service = new OfficialService(repository, currentUserService.Object, logger.Object, mapper);
+        service = new OfficialService(repository, new Mock<IOfficialChangesLogService>().Object, currentUserService.Object, logger.Object, mapper);
 
         SeedDatabase();
     }

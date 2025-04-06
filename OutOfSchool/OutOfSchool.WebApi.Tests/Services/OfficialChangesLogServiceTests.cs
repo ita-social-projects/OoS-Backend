@@ -3,26 +3,25 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.AuthCommon.Services;
-using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.AuthServer.Tests.Services;
+namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
-public class EmployeeChangesLogServiceTests
+public class OfficialChangesLogServiceTests
 {
-    private IEmployeeChangesLogService employeeChangesLogService;
+    private IOfficialChangesLogService officialChangesLogService;
     private Mock<IEntityAddOnlyRepository<long, EmployeeChangesLog>> providerAdminChangesLogRepositoryMock;
 
     [SetUp]
     public void SetUp()
     {
         providerAdminChangesLogRepositoryMock = new Mock<IEntityAddOnlyRepository<long, EmployeeChangesLog>>();
-        employeeChangesLogService =
-            new EmployeeChangesLogService(providerAdminChangesLogRepositoryMock.Object);
+        officialChangesLogService =
+            new OfficialChangesLogService(providerAdminChangesLogRepositoryMock.Object);
     }
 
     #region SaveChangesLogAsync
@@ -30,15 +29,21 @@ public class EmployeeChangesLogServiceTests
     public async Task SaveChangesLogAsync_WhenEntityValid_ShouldSaveLogItem()
     {
         // Arrange
-        var providerAdmin = new Employee()
+        var official = new Official
         {
-            UserId = Guid.NewGuid().ToString(),
-            ProviderId = Guid.NewGuid(),
+            Individual = new Individual
+            {
+                UserId = Guid.NewGuid().ToString()
+            },
+            Position = new Position
+            {
+                ProviderId = Guid.NewGuid(),
+            }
         };
         var expectedResult = new EmployeeChangesLog()
         {
-            EmployeeUserId = providerAdmin.UserId,
-            ProviderId = providerAdmin.ProviderId,
+            EmployeeUserId = Guid.NewGuid().ToString(),
+            ProviderId = Guid.NewGuid(),
         };
         var userId = Guid.NewGuid().ToString();
         var operationType = OperationType.Create;
@@ -50,8 +55,8 @@ public class EmployeeChangesLogServiceTests
             .ReturnsAsync(expectedResult);
 
         // Act
-        var result = await employeeChangesLogService.SaveChangesLogAsync(
-            providerAdmin,
+        var result = await officialChangesLogService.SaveChangesLogAsync(
+            official,
             userId,
             operationType,
             propertyName,
@@ -66,7 +71,7 @@ public class EmployeeChangesLogServiceTests
     public async Task SaveChangesLogAsync_WhenEntityIsNull_ShouldThrowArgumentNullException()
     {
         // Arrange
-        Employee employee = null;
+        Official official = null;
         var userId = Guid.NewGuid().ToString();
         var operationType = OperationType.Create;
         var propertyName = "FirstName";
@@ -74,8 +79,8 @@ public class EmployeeChangesLogServiceTests
         var newValue = "John";
         
         // Act
-        Func<Task> action = async () => await employeeChangesLogService.SaveChangesLogAsync(
-            employee,
+        Func<Task> action = async () => await officialChangesLogService.SaveChangesLogAsync(
+            official,
             userId,
             operationType,
             propertyName,

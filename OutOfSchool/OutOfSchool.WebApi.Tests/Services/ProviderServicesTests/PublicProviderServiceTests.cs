@@ -31,7 +31,7 @@ public class PublicProviderServiceTests
         fakeProviders = ProvidersGenerator.Generate(10);
         fakeUser = UserGenerator.Generate();
 
-        providersRepositoryMock = ProviderTestsHelper.CreateProvidersRepositoryMock(fakeProviders);
+        providersRepositoryMock = new Mock<IProviderRepository>();
 
         // TODO: configure mock and writer tests for provider admins
         var logger = new Mock<ILogger<ProviderService>>();

@@ -29,8 +29,8 @@ public class ChildControllerTests
     private ChildController controller;
     private Mock<IChildService> service;
     private Mock<IProviderService> providerService;
-    private Mock<IEmployeeService> providerAdminService;
     private Mock<IWorkshopServicesCombiner> workshopService;
+    private Mock<ICurrentUserService> currentUserService;
     private List<ChildDto> children;
     private ChildDto child;
     private ChildCreateDto childCreateDto;
@@ -44,10 +44,10 @@ public class ChildControllerTests
     {
         service = new Mock<IChildService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IEmployeeService>();
         workshopService = new Mock<IWorkshopServicesCombiner>();
+        currentUserService = new Mock<ICurrentUserService>();
 
-        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
+        controller = new ChildController(service.Object, providerService.Object, workshopService.Object, currentUserService.Object);
 
         // TODO: find out why it is a string but not a GUID
         currentUserId = Guid.NewGuid().ToString();
@@ -79,10 +79,10 @@ public class ChildControllerTests
     public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
     {
         // Act and Assert
-        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object, workshopService.Object));
-        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object, workshopService.Object));
-        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null, workshopService.Object));
-        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, providerAdminService.Object, null));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, workshopService.Object, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, workshopService.Object, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, workshopService.Object, null));
     }
 
     [Test]
@@ -319,7 +319,7 @@ public class ChildControllerTests
             },
         };
 
-        ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());
+        ProviderDto existingProvider = ProviderDtoGenerator.Generate();
 
         ApplicationDto existingApplication = ApplicationDTOsGenerator
             .Generate()
@@ -349,7 +349,7 @@ public class ChildControllerTests
 
         workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
-        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
+        providerService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
             new Claim[]

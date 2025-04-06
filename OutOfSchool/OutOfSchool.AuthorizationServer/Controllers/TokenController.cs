@@ -95,6 +95,16 @@ public class TokenController : Controller
             {
                 identityToPopulate.SetClaim(Constants.ClaimTypes.Edrpou, existingPrincipal.GetClaim(Constants.ClaimTypes.Edrpou));
             }
+            
+            if (existingPrincipal.HasClaim(Constants.ClaimTypes.ProviderId))
+            {
+                identityToPopulate.SetClaim(Constants.ClaimTypes.ProviderId, existingPrincipal.GetClaim(Constants.ClaimTypes.ProviderId));
+            }
+            
+            if (existingPrincipal.HasClaim(Constants.ClaimTypes.IsDeputy))
+            {
+                identityToPopulate.SetClaim(Constants.ClaimTypes.IsDeputy, existingPrincipal.GetClaim(Constants.ClaimTypes.IsDeputy), ClaimValueTypes.Boolean);
+            }
 
             if (existingPrincipal.HasClaim(Constants.ClaimTypes.AikomProviderId))
             {
@@ -298,7 +308,6 @@ public class TokenController : Controller
                 return View(new AuthorizeViewModel
                 {
                     ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
-                    Scope = request.Scope
                 });
         }
     }

@@ -133,8 +133,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual ICollection<Workshop>
         IncludedStudyGroups { get; set; } // Navigation property to included study groups
 
-    public virtual List<Employee> Employees { get; set; }
-
     public virtual List<Teacher> Teachers { get; set; }
 
     public virtual List<Application> Applications { get; set; }

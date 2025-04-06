@@ -1,9 +1,8 @@
-﻿@using Microsoft.AspNetCore.Mvc.Localization
-@using OutOfSchool.AuthCommon
-
-@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+﻿@inject IHtmlLocalizer<SharedResource> SharedLocalizer
 @inject SignInManager<User> SignInManager
 
+@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.AuthCommon
 @model OutOfSchool.AuthCommon.ViewModels.LoginViewModel
 @{
     ViewData["Title"] = SharedLocalizer["Login to Extracurricular activities"];
@@ -50,10 +49,10 @@
                                         </span>
                                         <div>
                                             <span class="login-role-select__text">@SharedLocalizer["Service provider"]</span>
-                                            <small>@SharedLocalizer["For employees of state and municipal institutions"]</small>
+                                            <small>@SharedLocalizer["For directors of state and municipal institutions"]</small>
                                         </div>
                                     </div>
-                                    <div class="login-role-select__option login-role-select__option-right" data-value="parent" id="login_role_select_parent">
+                                    <div class="login-role-select__option login-role-select__option-right" data-value="employee" id="login_role_select_employee">
                                         <span class="login-role-select__icon-small">
                                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
                                                  xmlns="http://www.w3.org/2000/svg">
@@ -63,8 +62,8 @@
                                             </svg>
                                         </span>
                                         <div>
-                                            <span class="login-role-select__text">@SharedLocalizer["User"]</span>
-                                            <small>@SharedLocalizer["For personal accounts"]</small>
+                                            <span class="login-role-select__text">@SharedLocalizer["Employee"]</span>
+                                            <small>@SharedLocalizer["For employees of state and municipal institutions"]</small>
                                         </div>
                                     </div>
                                     <div class="login-role-select__divider"></div>

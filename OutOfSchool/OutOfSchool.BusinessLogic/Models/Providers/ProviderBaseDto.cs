@@ -66,11 +66,6 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages, IHasContactsDto<Provi
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
 
-    // TODO: Does not used by front-end, can be removed.
-    //       Unit test should be updated
-    [Required]
-    public string UserId { get; set; }
-
     public long? InstitutionStatusId { get; set; } = default;
 
     public Guid? InstitutionId { get; set; }

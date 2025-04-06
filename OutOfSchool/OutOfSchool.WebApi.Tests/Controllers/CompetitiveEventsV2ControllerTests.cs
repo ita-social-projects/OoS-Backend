@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Controllers.V2;
-using System.Threading.Tasks;
-using System;
-using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
-using OutOfSchool.BusinessLogic.Models;
-using System.Collections.Generic;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 public class CompetitiveEventsV2ControllerTests
@@ -29,9 +28,7 @@ public class CompetitiveEventsV2ControllerTests
 
         controller = new CompetitiveEventController(
             competitiveEventServiceMock.Object,
-            Mock.Of<IProviderService>(),
             userServiceMock.Object,
-            Mock.Of<IEmployeeService>(),
             loggerMock.Object);
     }
 

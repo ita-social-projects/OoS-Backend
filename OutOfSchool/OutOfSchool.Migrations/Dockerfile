@@ -22,7 +22,6 @@ COPY ["OutOfSchool.DataAccess/OutOfSchool.DataAccess.csproj", "OutOfSchool.DataA
 COPY ["OutOfSchool.AuthCommon/OutOfSchool.AuthCommon.csproj", "OutOfSchool.AuthCommon/"]
 COPY ["OutOfSchool.EmailSender/OutOfSchool.EmailSender.csproj", "OutOfSchool.EmailSender/"]
 COPY ["OutOfSchool.RazorTemplatesData/OutOfSchool.RazorTemplatesData.csproj", "OutOfSchool.RazorTemplatesData/"]
-COPY ["OutOfSchool.GRPC/OutOfSchool.GRPC.csproj", "OutOfSchool.GRPC/"]
 RUN dotnet restore "OutOfSchool.Migrations/OutOfSchool.Migrations.csproj" --use-current-runtime
 
 #### Create EF Migration Bundle ###

@@ -1,12 +1,10 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -20,38 +18,29 @@ public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly IProviderService providerService;
-    private readonly IEmployeeService employeeService;
     private readonly IUserService userService;
-    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<WorkshopController> logger;
-    private readonly AppDefaultsConfig options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopController"/> class.
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="userService">Service for operations with users.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-    /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
-        IEmployeeService employeeService,
         IUserService userService,
-        IStringLocalizer<SharedResource> localizer,
-        ILogger<WorkshopController> logger,
-        IOptions<AppDefaultsConfig> options)
+        ICurrentUserService currentUserService,
+        ILogger<WorkshopController> logger)
     {
-        this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
-        this.employeeService = employeeService;
         this.providerService = providerService;
         this.userService = userService;
+        this.currentUserService = currentUserService;
         this.logger = logger;
-        this.options = options.Value;
     }
 
     /// <summary>
@@ -100,36 +89,6 @@ public class WorkshopController : ControllerBase
         }
 
         var workshops = await combinedWorkshopService.GetWorkshopListByProviderId(providerId).ConfigureAwait(false);
-
-        if (!workshops.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(workshops);
-    }
-
-    /// <summary>
-    /// Get all workshops (Id, Title) from the database by employee's id sorted by Title.
-    /// </summary>
-    /// <param name="employeeId">Id of the employee.</param>
-    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{employeeId}")]
-    public async Task<IActionResult> GetWorkshopListByEmployeeId(string employeeId)
-    {
-        if (employeeId == string.Empty)
-        {
-            return BadRequest("Emplyee id is empty.");
-        }
-
-        var workshops = await combinedWorkshopService.GetWorkshopListByEmployeeId(employeeId);
 
         if (!workshops.Any())
         {
@@ -293,25 +252,11 @@ public class WorkshopController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to create workshops for another providers.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(dto.ProviderId), new EmployeeRights(dto.ProviderId));
 
         try
         {
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-
-            // here we will get "false" if workshop was created by assistant provider admin
-            // because user is not currently associated with new workshop
-            // so we can update information to allow assistant manage created workshop
-            if (!await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false))
-            {
-                var userId = User.FindFirst("sub")?.Value;
-                await employeeService.GiveEmployeeAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
-            }
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -367,12 +312,7 @@ public class WorkshopController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
-
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to update workshops, which are not related to you");
-        }
+        await currentUserService.UserHasRights(new EmployeeWorkshopRights(dto.Id));
 
         var result = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
@@ -460,11 +400,7 @@ public class WorkshopController : ControllerBase
             return NotFound($"There is no Workshop in DB with Id - {request.WorkshopId}");
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to update workshops, which are not related to you");
-        }
+        await currentUserService.UserHasRights(new EmployeeWorkshopRights(workshop.Id));
 
         try
         {
@@ -510,11 +446,7 @@ public class WorkshopController : ControllerBase
             return StatusCode(403, "Forbidden to delete the workshop by the blocked provider.");
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to delete workshops of another providers.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshop.ProviderId), new EmployeeRights(workshop.ProviderId));
 
         await combinedWorkshopService.Delete(id).ConfigureAwait(false);
 
@@ -542,38 +474,6 @@ public class WorkshopController : ControllerBase
         var priceRange = await combinedWorkshopService.GetPriceRangeAsync(filter).ConfigureAwait(false);
 
         return Ok(priceRange);
-    }
-
-    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
-    {
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
-        {
-            var userId = GettingUserProperties.GetUserId(User);
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-            if (provider != null)
-            {
-                if (provider.Id != providerId)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                var isUserRelatedAdmin = await employeeService
-                    .CheckUserIsRelatedEmployee(userId, providerId, workshopId)
-                    .ConfigureAwait(false);
-
-                if (!isUserRelatedAdmin)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     private async Task<bool> IsCurrentUserBlocked()

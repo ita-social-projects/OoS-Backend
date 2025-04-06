@@ -28,8 +28,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Provider> Providers { get; set; }
 
-    public DbSet<Employee> Employees { get; set; }
-
     public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
     public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
@@ -178,7 +176,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new CompetitiveEventRegistrationDeadlineConfiguration());
         builder.ApplyConfiguration(new DateTimeRangeConfiguration());
         builder.ApplyConfiguration(new DirectionConfiguration());
-        builder.ApplyConfiguration(new EmployeeConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEvent>());

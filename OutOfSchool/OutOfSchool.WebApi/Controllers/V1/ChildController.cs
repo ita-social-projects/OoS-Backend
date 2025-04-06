@@ -4,6 +4,7 @@ using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 
@@ -19,26 +20,25 @@ public class ChildController : ControllerBase
 {
     private readonly IChildService service;
     private readonly IProviderService providerService;
-    private readonly IEmployeeService employeeService;
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
+    private readonly ICurrentUserService currentUserService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChildController"/> class.
     /// </summary>
     /// <param name="service">Service for Child model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="employeeService">Service for Employee model.</param>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     public ChildController(
         IChildService service,
         IProviderService providerService,
-        IEmployeeService employeeService,
-        IWorkshopServicesCombiner combinedWorkshopService)
+        IWorkshopServicesCombiner combinedWorkshopService,
+        ICurrentUserService currentUserService)
     {
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.combinedWorkshopService = combinedWorkshopService ?? throw new ArgumentNullException(nameof(combinedWorkshopService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     /// <summary>
@@ -165,36 +165,9 @@ public class ChildController : ControllerBase
             return NotFound($"There is no Workshop in DB with Id - {workshopId}");
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden for another providers.");
-        }
+        await currentUserService.UserHasRights(new EmployeeWorkshopRights(workshopId));
 
         return Ok(await service.GetApprovedByWorkshopId(workshopId, offsetFilter).ConfigureAwait(false));
-    }
-
-    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
-    {
-        var isProvider = User.IsInRole(nameof(Role.Provider).ToLower());
-        var isEmployee = User.IsInRole(nameof(Role.Employee).ToLower());
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
-        {
-            Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
-            var userId = GettingUserProperties.GetUserId(User);
-
-            if (isEmployee)
-            {
-                return await employeeService.CheckUserIsRelatedEmployee(userId, workshopProviderId, workshopId).ConfigureAwait(false);
-            }
-            else
-            {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                return workshopProviderId == provider?.Id;
-            }
-        }
-
-        return false;
     }
 
     /// <summary>

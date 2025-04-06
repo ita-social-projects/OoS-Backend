@@ -1,13 +1,13 @@
 ﻿using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.AuthCommon.Services.Interfaces;
+namespace OutOfSchool.BusinessLogic.Services;
 
-public interface IEmployeeChangesLogService
+public interface IOfficialChangesLogService
 {
     /// <summary>
-    /// Create changes log for the given <see cref="Employee"/> entity.
+    /// Create changes log for the given <see cref="Official"/> entity.
     /// </summary>
-    /// <param name="entity">Modified <see cref="Employee"/> entity.</param>
+    /// <param name="entity">Modified <see cref="Official"/> entity.</param>
     /// <param name="userId">ID of user that performs the change.</param>
     /// <param name="operationType">Type of the change operation.</param>
     /// <param name="propertyName">Name of the property that is changing.</param>
@@ -15,7 +15,7 @@ public interface IEmployeeChangesLogService
     /// <param name="newValue">New value of the property that is changing.</param>
     /// <returns>Number of the added log records.</returns>
     Task<int> SaveChangesLogAsync(
-        Employee entity,
+        Official entity,
         string userId,
         OperationType operationType,
         string propertyName,

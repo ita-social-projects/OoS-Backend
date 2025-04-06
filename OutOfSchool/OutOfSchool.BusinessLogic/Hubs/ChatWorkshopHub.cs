@@ -26,9 +26,9 @@ public class ChatWorkshopHub : Hub
     private readonly IWorkshopRepository workshopRepository;
     private readonly IParentRepository parentRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IEmployeeRepository employeeRepository;
     private readonly IBlockedProviderParentService blockedProviderParentService;
-    private readonly ICurrentUser currentUser;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IOfficialRepository officialRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
@@ -40,7 +40,6 @@ public class ChatWorkshopHub : Hub
     /// <param name="workshopRepository">Repository for workshop entities.</param>
     /// <param name="parentRepository">Repository for parent entities.</param>
     /// <param name="localizer">Localizer.</param>
-    /// <param name="employeeRepository">EmployeeRepository.</param>
     public ChatWorkshopHub(
         ILogger<ChatWorkshopHub> logger,
         IChatMessageWorkshopService chatMessageService,
@@ -49,9 +48,9 @@ public class ChatWorkshopHub : Hub
         IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         IStringLocalizer<SharedResource> localizer,
-        IEmployeeRepository employeeRepository,
         IBlockedProviderParentService blockedProviderParentService,
-        ICurrentUser currentUser)
+        ICurrentUserService currentUserService,
+        IOfficialRepository officialRepository)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -60,9 +59,9 @@ public class ChatWorkshopHub : Hub
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         this.localizer = localizer;
-        this.employeeRepository = employeeRepository;
         this.blockedProviderParentService = blockedProviderParentService;
-        this.currentUser = currentUser;
+        this.currentUserService = currentUserService;
+        this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
     }
 
     public override async Task OnConnectedAsync()
@@ -89,17 +88,9 @@ public class ChatWorkshopHub : Hub
         }
         else
         {
-            if (userRole is Role.Employee)
-            {
-                var employees = await employeeRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false);
-                var workshopsIds = employees.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
-                usersRoomIds = await roomService.GetChatRoomIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
-            }
-            else
-            {
-                var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
-                usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
-            }
+            var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole)
+                .ConfigureAwait(false);
+            usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
         }
 
         // TODO: add parallel execution (Task.WhenAll(tasks))
@@ -164,23 +155,18 @@ public class ChatWorkshopHub : Hub
             var parent = await parentRepository.GetById(chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
             await AddConnectionsToGroupAsync(parent.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
 
-            // Add Provider's connections to the Group.
-            var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
-            var workshop = workshops.SingleOrDefault();
-            await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+            // Add Provider employees connections to the Group.
+            var workshop = await workshopRepository.GetByIdWithDetails(chatMessageWorkshopCreateDto.WorkshopId, includeExpression: q => q.Include(w => w.Provider)).ConfigureAwait(false);
+            var providerEmployeeUserIds = await officialRepository
+                .Get(whereExpression: o => !o.IsDeleted && o.Position.ProviderId == workshop.Provider.Id && o.Individual.UserId != null)
+                .Include(o => o.Individual)
+                .Select(o => o.Individual.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            // Add Provider's deputy connections to the Group.
-            var providersDeputies = await employeeRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId).ConfigureAwait(false);
-            foreach (var providersDeputy in providersDeputies)
+            foreach (var userId in providerEmployeeUserIds)
             {
-                await AddConnectionsToGroupAsync(providersDeputy.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
-            }
-
-            // Add Provider's admin connections to the Group.
-            var providersAdmins = await employeeRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshop.Id)).ConfigureAwait(false);
-            foreach (var providersAdmin in providersAdmins)
-            {
-                await AddConnectionsToGroupAsync(providersAdmin.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+                await AddConnectionsToGroupAsync(userId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
             }
 
             // Send chatMessage.
@@ -250,9 +236,9 @@ public class ChatWorkshopHub : Hub
         var userRole = GettingUserProperties.GetUserRole(Context.User);
         LogErrorThrowExceptionIfPropertyIsNull(userRole, nameof(userRole));
 
-        bool userRoleIsProvider = currentUser.IsInRole(Role.Provider.ToString());
+        bool userRoleIsProvider = currentUserService.IsInRole(Role.Provider.ToString());
 
-        bool userRoleIsEmployee = currentUser.IsInRole(Role.Employee.ToString());
+        bool userRoleIsEmployee = currentUserService.IsInRole(Role.Employee.ToString());
 
         var workshop = await workshopRepository.GetById(workshopId);
 
@@ -268,7 +254,15 @@ public class ChatWorkshopHub : Hub
             var userRoleName = GettingUserProperties.GetUserRole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
-            return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
+            try
+            {
+                await currentUserService.UserHasRights(new EmployeeWorkshopRights(workshopId)).ConfigureAwait(false);
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
 
         return await validationService.UserIsParentOwnerAsync(userId, parentId);
