@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi", "OutOfSchool.WebApi\OutOfSchool.WebApi.csproj", "{CD28DCB5-C0F3-4011-B56C-AD2BCF795F72}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8} = {FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.DataAccess", "OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj", "{4DBB87B9-8B99-4A06-A623-0B852F054543}"
 EndProject
