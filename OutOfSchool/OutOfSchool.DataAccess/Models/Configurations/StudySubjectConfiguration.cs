@@ -29,7 +29,7 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
             .WithMany(x => x.StudySubjects);
 
         builder.HasOne(x => x.Provider)
-            .WithMany(x => x.StudySubjects)
+            .WithMany()
             .HasForeignKey(x => x.ProviderId)
             .OnDelete(DeleteBehavior.Restrict);
     }
