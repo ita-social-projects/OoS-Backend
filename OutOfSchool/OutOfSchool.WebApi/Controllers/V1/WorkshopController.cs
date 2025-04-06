@@ -21,6 +21,7 @@ public class WorkshopController : ControllerBase
     private readonly IUserService userService;
     private readonly ICurrentUserService currentUserService;
     private readonly ILogger<WorkshopController> logger;
+    private const int DefaultPageSize = 9;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -99,22 +100,29 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a list of workshops along with their attachment status for a given provider and study subject.
+    /// Retrieves a paginated list of workshops along with their attachment status
+    /// for a given provider and study subject.
     /// </summary>
     /// <param name="studySubjectId">The unique identifier of the study subject.</param>
     /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation. The task result contains a list of <see cref="ShortEntityDto"/> 
-    /// representing the workshops associated with the provider.
+    /// A task that represents the asynchronous operation. The task result contains a 
+    /// <see cref="PaginatedResult{WorkshopAttachmentStatusDto}"/> with the workshops and pagination metadata.
     /// </returns>
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopAttachmentStatusDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ValidatePagination]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedResult<WorkshopAttachmentStatusDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{studySubjectId}/{providerId}")]
-    public async Task<IActionResult> GetWorkshopsWithAttachmentStatusByProviderId(Guid studySubjectId, Guid providerId)
+    [HttpGet("providers/{providerId}/studysubjects/{studySubjectId}/workshops/attached")]
+    public async Task<IActionResult> GetAttachedWorkshops(
+    Guid studySubjectId,
+    Guid providerId,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = DefaultPageSize)
     {
         if (studySubjectId == Guid.Empty)
         {
@@ -126,14 +134,10 @@ public class WorkshopController : ControllerBase
             return BadRequest("Provider id is empty.");
         }
 
-        var result = await combinedWorkshopService.GetWorkshopsWithAttachmentStatusByProviderId(studySubjectId, providerId);
+        var result = await combinedWorkshopService
+            .GetAttachedWorkshops(studySubjectId, providerId, page, pageSize);
 
-        if (result.Value is null || !result.Value.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     /// <summary>
