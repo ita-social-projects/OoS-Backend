@@ -166,14 +166,11 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
 
-        var createdDraftDto = mapper.Map<WorkshopDraftResponseDto>(createdDraftWithAssociatedTeachers);
-        createdDraftDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(createdDraftWithAssociatedTeachers);
-
         logger.LogDebug("WorkshopDraft created successfully.");
 
         return new WorkshopDraftResultDto
         {
-            WorkshopDraft = createdDraftDto,
+            WorkshopDraft = await MapWorkshopDraftWithDetails(createdDraftWithAssociatedTeachers),
             UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult,
             UploadingImagesResults = uploadImagesResult.WorkshopImagesUploadingResult?.MultipleKeyValueOperationResult,
             TeachersCreateUpdateResult = uploadImagesResult.TeacherImagesUploadingResults
@@ -264,12 +261,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         var (updatedDraft, coverImageResult, imagesResult, teacherCreateUpdateResult) = await workshopDraftRepository
             .RunInTransaction(UpdateDraftWithDependencies).ConfigureAwait(false);
 
-        var workshopDraftResponse = mapper.Map<WorkshopDraftResponseDto>(updatedDraft);
-        workshopDraftResponse.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(updatedDraft);
-
         return new WorkshopDraftResultDto()
         {
-            WorkshopDraft = workshopDraftResponse,
+            WorkshopDraft = await MapWorkshopDraftWithDetails(updatedDraft),
             UploadingCoverImgWorkshopResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
             TeachersCreateUpdateResult = teacherCreateUpdateResult
@@ -412,7 +406,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 .FirstOrDefault(i => 
                     i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
                 ?.SubDirections
-                .Select(d => d.Id)
+                .Select(d => d.DirectionId)
                 .ToList();
 
             workshopDraftResponseDtos.Add(responseDto);
@@ -796,7 +790,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             id: (Guid) workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
 
-        return institutionHierarchyDto.SubDirections.Select(d => d.Id).ToList();
+        return institutionHierarchyDto.SubDirections.Select(d => d.DirectionId).ToList();
     }
 
     private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
@@ -862,7 +856,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 .FirstOrDefault(i => i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId);
 
             responseDto.WorkshopDetails.DirectionIds = institutionHierarchy?.SubDirections
-                .Select(d => d.Id)
+                .Select(d => d.DirectionId)
                 .ToList();
 
             responseDto.WorkshopDetails.Contacts
