@@ -292,6 +292,10 @@ public class ExternalAuthController : Controller
         var user = await userManager.FindByNameAsync(userInfo.DrfoCode);
         if (user != null)
         {
+            if (!await userManager.IsInRoleAsync(user, selectedRole))
+            {
+                await userManager.AddToRoleAsync(user, selectedRole);
+            }
             return user;
         }
 
@@ -391,10 +395,10 @@ public class ExternalAuthController : Controller
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
-            new(ClaimTypes.GivenName, individual.FirstName),
-            new(ClaimTypes.Surname, individual.LastName),
-            new(ClaimTypes.Email, userInfo.Email),
+            new(OpenIddictConstants.Claims.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, userInfo.Email),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
@@ -436,7 +440,8 @@ public class ExternalAuthController : Controller
 
         var user = await userManager.FindByNameAsync(claims
             .First(c => c.Type == Constants.ClaimTypes.Rnokpp).Value);
-        await signInManager.SignInWithClaimsAsync(user, properties, claims);
+        await signInManager.SignInWithClaimsAsync(user, properties, claims.Where(c => c.Type != OpenIddictConstants.Claims.Role));
+        User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
         return properties;
     }
     

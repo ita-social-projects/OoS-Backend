@@ -111,7 +111,7 @@ public class TokenControllerTests
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "username")
+            new(OpenIddictConstants.Claims.Name, "username")
         };
         var identity = new ClaimsIdentity(claims, "TestAuthType");
         var principal = new ClaimsPrincipal(identity);
@@ -168,7 +168,7 @@ public class TokenControllerTests
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "username")
+            new(OpenIddictConstants.Claims.Name, "username")
         };
         var identity = new ClaimsIdentity(claims, "TestAuthType");
         var principal = new ClaimsPrincipal(identity);
@@ -235,10 +235,10 @@ public class TokenControllerTests
         var externalClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "1234567890"),
-            new(ClaimTypes.Role, "provider"),
-            new(ClaimTypes.Surname, "Name"),
-            new(ClaimTypes.GivenName, "Surname"),
+            new(OpenIddictConstants.Claims.Name, "1234567890"),
+            new(OpenIddictConstants.Claims.Role, "provider"),
+            new(OpenIddictConstants.Claims.FamilyName, "Name"),
+            new(OpenIddictConstants.Claims.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
             new(Constants.ClaimTypes.AikomProviderId, "12345"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
@@ -282,10 +282,10 @@ public class TokenControllerTests
         var externalClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "1234567890"),
-            new(ClaimTypes.Role, "provider"),
-            new(ClaimTypes.Surname, "Name"),
-            new(ClaimTypes.GivenName, "Surname"),
+            new(OpenIddictConstants.Claims.Name, "1234567890"),
+            new(OpenIddictConstants.Claims.Role, "provider"),
+            new(OpenIddictConstants.Claims.FamilyName, "Name"),
+            new(OpenIddictConstants.Claims.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
             new(Constants.ClaimTypes.Edrpou, "1234567890"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider")
@@ -328,10 +328,10 @@ public class TokenControllerTests
         var externalClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "1234567890"),
-            new(ClaimTypes.Role, "provider"),
-            new(ClaimTypes.Surname, "Name"),
-            new(ClaimTypes.GivenName, "Surname"),
+            new(OpenIddictConstants.Claims.Name, "1234567890"),
+            new(OpenIddictConstants.Claims.Role, "provider"),
+            new(OpenIddictConstants.Claims.FamilyName, "Name"),
+            new(OpenIddictConstants.Claims.GivenName, "Surname"),
             new(Constants.ClaimTypes.Rnokpp, "1234567890"),
             new(Constants.ClaimTypes.Edrpou, "1234567890"),
             new(OpenIddictConstants.Claims.Private.ProviderName, "ExternalProvider"),
@@ -377,7 +377,7 @@ public class TokenControllerTests
         var internalClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, "123"),
-            new(ClaimTypes.Name, "username")
+            new(OpenIddictConstants.Claims.Name, "username")
         };
         var identity = new ClaimsIdentity(internalClaims, "TestAuthType");
         var principal = new ClaimsPrincipal(identity);

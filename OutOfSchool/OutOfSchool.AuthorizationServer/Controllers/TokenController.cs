@@ -81,9 +81,9 @@ public class TokenController : Controller
             existingPrincipal.HasClaim(Constants.ClaimTypes.ExternalIdProviderName))
         {
             // Take claims from external principal
-            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role, [existingPrincipal.GetClaim(ClaimTypes.Role)]);
-            identityToPopulate.SetClaim(OpenIddictConstants.Claims.FamilyName, existingPrincipal.GetClaim(ClaimTypes.Surname));
-            identityToPopulate.SetClaim(OpenIddictConstants.Claims.GivenName, existingPrincipal.GetClaim(ClaimTypes.GivenName));
+            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role, [existingPrincipal.GetClaim(OpenIddictConstants.Claims.Role)]);
+            identityToPopulate.SetClaim(OpenIddictConstants.Claims.FamilyName, existingPrincipal.GetClaim(OpenIddictConstants.Claims.FamilyName));
+            identityToPopulate.SetClaim(OpenIddictConstants.Claims.GivenName, existingPrincipal.GetClaim(OpenIddictConstants.Claims.GivenName));
             identityToPopulate.SetClaim(Constants.ClaimTypes.Rnokpp, existingPrincipal.GetClaim(Constants.ClaimTypes.Rnokpp));
 
             // Set the provider name claim
