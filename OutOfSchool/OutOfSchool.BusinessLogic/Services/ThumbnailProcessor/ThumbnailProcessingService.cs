@@ -1,19 +1,25 @@
 ﻿using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Models;
 using SkiaSharp;
+//using System.Net.Mime;
 
 namespace OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
 public class ThumbnailProcessingService : IThumbnailProcessingService
 {
     private readonly IImageService imageService;
+    private readonly IImageStorage imageStorage;
     private readonly ILogger<ThumbnailProcessingService> logger;
     private readonly ThumbnailGenerationOptions options;
     public ThumbnailProcessingService(
         IImageService service,
+        IImageStorage imageStorage,
         ILogger<ThumbnailProcessingService> logger,
         IOptions<ThumbnailGenerationOptions> options)
     {
         this.imageService = service;
+        this.imageStorage = imageStorage;
         this.logger = logger;
         this.options = options.Value;
     }
@@ -86,7 +92,21 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
                 ContentType = "image/jpeg"
             };
 
-            //await imageService.UploadImageAsync(formFile);
+            var uploadedThumbnailId = await imageStorage.UploadAsync(
+                new ImageFileModel
+                {
+                    ContentStream = thumbnailStream,
+                    ContentType = "image/jpeg"
+                },
+                cacheControl: Constants.PublicImageCacheControl,
+                metadata: metadata);
+
+            //var imageStorageId = await imageStorage
+            //.UploadAsync(
+            //      new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
+            //      prefix,
+            //      Constants.PublicImageCacheControl)
+            //  .ConfigureAwait(false);
 
             logger.LogInformation("Thumbnail saved: {ThumbnailId}", thumbnailId);
 
