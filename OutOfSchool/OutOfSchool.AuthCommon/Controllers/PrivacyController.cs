@@ -17,16 +17,9 @@ public class PrivacyController : Controller
         return View();
     }
 
-    public IActionResult ParentTerms()
+    public IActionResult Terms()
     {
         logger.LogInformation("The parent's terms of use page was shown.");
-
-        return View();
-    }
-
-    public IActionResult ProviderTerms()
-    {
-        logger.LogInformation("The provider's terms of use page was shown.");
 
         return View();
     }

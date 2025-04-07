@@ -11,12 +11,9 @@ namespace OutOfSchool.Services.Repository;
 
 public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>, IProviderRepository
 {
-    private readonly OutOfSchoolDbContext db;
-
     public ProviderRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
-    {
-        this.db = dbContext;        
+    {      
     }
 
     /// <summary>
@@ -24,14 +21,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => db.Providers.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
-
-    /// <summary>
-    /// Checks if the user is trying to create second account.
-    /// </summary>
-    /// <param name="id">User id.</param>
-    /// <returns>Bool.</returns>
-    public bool ExistsUserId(string id) => db.Providers.Any(x => !x.IsDeleted && x.UserId == id);
+    public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -44,8 +34,8 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
         return await RunInTransaction(
                 () =>
                 {
-                    var provider = db.Providers.Add(providerEntity);
-                    db.SaveChanges();
+                    var provider = dbSet.Add(providerEntity);
+                    dbContext.SaveChanges();
 
                     return Task.FromResult(provider.Entity);
                 })
@@ -59,14 +49,14 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     public new async Task Delete(Provider entity)
     {
-        db.Entry(entity).State = EntityState.Deleted;
+        dbContext.Entry(entity).State = EntityState.Deleted;
 
-        await db.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<Provider> GetWithNavigations(Guid id)
     {
-        return await db.Providers
+        return await dbSet
          .Include(x => x.Workshops)
          .ThenInclude(w => w.Applications)
          .Include(ws => ws.Contacts).ThenInclude(c => c.Emails)
@@ -84,22 +74,11 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
 
     public async Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous)
     {
-        var existingEdrpouIpn = await db.Providers
+        var existingEdrpouIpn = await dbSet
             .Where(x => edrpous.Values.Contains(x.Edrpou))
             .Select(x => x.Edrpou)
             .ToListAsync();
 
         return edrpous.Where(x => existingEdrpouIpn.Contains(x.Value)).Select(x => x.Key).ToList();
-    }
-
-    public async Task<List<int>> CheckExistsByEmails(Dictionary<int, string> emails)
-    {
-        var existingEmails = await db.Providers
-            .Include(x => x.User)
-            .Where(x => emails.Values.Contains(x.User.Email))
-            .Select(x => x.User.Email)
-            .ToListAsync();
-
-        return emails.Where(x => existingEmails.Contains(x.Value)).Select(x => x.Key).ToList();
     }
 }

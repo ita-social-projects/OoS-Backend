@@ -67,8 +67,6 @@ public class ChatRoomWorkshopServiceWithDBTests
         ];
 
         providers = ProvidersGenerator.Generate(2).ToArray();
-        providers[0].UserId = users[2].Id;
-        providers[1].UserId = users[3].Id;
 
         workshops = WorkshopGenerator.Generate(3).ToArray();
         workshops[0].ProviderId = providers[0].Id;

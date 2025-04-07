@@ -7,9 +7,9 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
-using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -22,18 +22,18 @@ internal class AchievementControllerTest
     private AchievementController controller;
     private Mock<IAchievementService> achievementService;
     private Mock<IProviderService> providerService;
-    private Mock<IEmployeeService> employeeService;
     private Mock<IWorkshopService> workshopService;
+    private Mock<ICurrentUserService> currentUserService;
 
     [SetUp]
     public void Setup()
     {
         achievementService = new Mock<IAchievementService>();
         providerService = new Mock<IProviderService>();
-        employeeService = new Mock<IEmployeeService>();
         workshopService = new Mock<IWorkshopService>();
+        currentUserService = new Mock<ICurrentUserService>();
 
-        controller = new AchievementController(achievementService.Object, providerService.Object, employeeService.Object, workshopService.Object);
+        controller = new AchievementController(achievementService.Object, providerService.Object, workshopService.Object, currentUserService.Object);
     }
 
     [Test]
@@ -80,7 +80,7 @@ internal class AchievementControllerTest
     }
 
     [Test]
-    public async Task CreateAchievement_UserDontHaveRights_ShouldReturnForbidden()
+    public void CreateAchievement_UserDontHaveRights_ShouldReturnForbidden()
     {
         // Arrange
         var dto = GetAchievementCreateDTO();
@@ -93,12 +93,11 @@ internal class AchievementControllerTest
         controller.ControllerContext.HttpContext = new DefaultHttpContext();
         controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
 
-        // Act
-        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
+        currentUserService.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
 
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(403, result.StatusCode);
+        // Act &Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() =>  controller.Create(dto));
     }
 
     [Test]
@@ -117,9 +116,7 @@ internal class AchievementControllerTest
         controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService.Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId)).ReturnsAsync(true);
         achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto { Id = providerId });
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
@@ -145,11 +142,7 @@ internal class AchievementControllerTest
         controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
 
         workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
-        employeeService
-            .Setup(s => s.CheckUserIsRelatedEmployee(userId, providerId, dto.WorkshopId))
-            .ReturnsAsync(true);
         achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
-        providerService.Setup(s => s.GetByUserId(userId, false)).ReturnsAsync(new ProviderDto() { Id = providerId });
 
         // Act
         var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;

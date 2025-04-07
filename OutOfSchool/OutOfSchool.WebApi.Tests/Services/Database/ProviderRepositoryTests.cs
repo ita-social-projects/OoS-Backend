@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -24,9 +23,7 @@ public class ProviderRepositoryTests
     public async Task SetUp()
     {
         providers = ProvidersGenerator.Generate(3)
-            .WithWorkshops().WithUser();
-
-        AddProviderAdmins(providers);
+            .WithWorkshops();
 
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
@@ -49,16 +46,10 @@ public class ProviderRepositoryTests
         var provider = context.Providers.First();
         var expectedProvidersCount = initialProvidersCount - 1;
         var expectedWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted) - provider.Workshops.Count;
-        var expectedProviderAdminsCount = context.Employees.Count() - provider.Employees.Count;
-
+        
         // Act
         await providerRepository.Delete(provider);
         var workshops = context.Workshops
-            .IgnoreQueryFilters()
-            .Where(x => x.ProviderId == provider.Id)
-            .Select(x => context.Entry(x))
-            .ToList();
-        var providerAdmins = context.Employees
             .IgnoreQueryFilters()
             .Where(x => x.ProviderId == provider.Id)
             .Select(x => context.Entry(x))
@@ -68,15 +59,11 @@ public class ProviderRepositoryTests
         Assert.AreEqual(initialProvidersCount, context.Providers.IgnoreQueryFilters().Count());
         Assert.AreEqual(expectedProvidersCount, context.Providers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
-        Assert.AreEqual(expectedProviderAdminsCount, context.Employees.Count(x => !x.IsDeleted));
         Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
-        Assert.False(context.Employees.Any(x => !x.IsDeleted && x.ProviderId == provider.Id));
-        Assert.True(context.Employees.IgnoreQueryFilters().Any(x => x.ProviderId == provider.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(provider).State);
         Assert.AreEqual(true, context.Entry(provider).CurrentValues["IsDeleted"]);
         Assert.True(workshops.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
-        Assert.True(providerAdmins.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
     }
 
     [Test]
@@ -106,35 +93,6 @@ public class ProviderRepositoryTests
         // Assert
         Assert.AreEqual(expectedResult, result);
     }
-
-    [Test]
-    public async Task CheckExistsByEmails_ReturnValues_ExcludeExistsValues()
-    {
-        // Arrange
-        using var context = GetContext();
-        var providerRepository = GetProviderRepository(context);
-
-        var firstEmail = context.Providers.First().User.Email;
-
-        var data = new Dictionary<int, string>()
-        {
-            { 1, firstEmail },
-            { 2, "q" + firstEmail },
-            { 3, "qq" + firstEmail },
-        };
-
-        var expectedResult = new List<int>()
-        {
-            1,
-        };
-
-        // Act
-        var result = await providerRepository.CheckExistsByEmails(data).ConfigureAwait(false);
-
-        // Assert
-        Assert.AreEqual(expectedResult, result);
-    }
-
     #endregion
 
     #region private
@@ -151,24 +109,6 @@ public class ProviderRepositoryTests
         context.Database.EnsureCreated();
         context.AddRange(providers);
         await context.SaveChangesAsync();
-    }
-
-    private void AddProviderAdmins(List<Provider> providers)
-    {
-        providers.ForEach(p =>
-        {
-            p.Employees = new List<Employee>
-            {
-                { new Employee { Id = (Guid.NewGuid().ToString(), p.Id)} },
-                {
-                    new Employee
-                    {
-                        Id = (Guid.NewGuid().ToString(), p.Id),
-                        ManagedWorkshops = p.Workshops.ToList(),
-                    }
-                },
-            };
-        });
     }
 
     #endregion

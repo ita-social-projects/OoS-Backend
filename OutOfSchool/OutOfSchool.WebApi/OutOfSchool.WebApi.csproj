@@ -23,14 +23,9 @@
         <PackageReference Include="Elastic.CommonSchema" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
         <PackageReference Include="AutoMapper" />
+        <!-- TODO: Check who is using Protobuf -->
         <PackageReference Include="Google.Protobuf" />
-        <PackageReference Include="Grpc.Net.Client" />
-        <PackageReference Include="Grpc.Tools">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="H3Lib" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
@@ -88,7 +83,6 @@
         <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
         <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
         <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj" />
-        <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
     </ItemGroup>
 </Project>

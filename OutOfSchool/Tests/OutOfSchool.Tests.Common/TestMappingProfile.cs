@@ -74,11 +74,9 @@ public class TestMappingProfile : Profile
         CreateSoftDeletedMap<ProviderDto, Provider>()
             .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
-            .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.Positions, opt => opt.Ignore())
             .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore());
 

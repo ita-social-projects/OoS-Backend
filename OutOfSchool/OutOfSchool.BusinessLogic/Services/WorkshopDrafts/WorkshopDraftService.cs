@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -11,13 +13,12 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using System.Collections.Concurrent;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
@@ -33,7 +34,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     private readonly IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService;
     private readonly IProviderService providerService;
     private readonly ICurrentUserService currentUserService;
-    private readonly IEmployeeService employeeService;
     private readonly IWorkshopServicesCombinerV2 workshopServicesCombinerV2;
     private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
     private readonly IEntityRepository<long, Tag> tagRepository;
@@ -63,7 +63,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
     /// <param name="options">Provides configuration settings for upload concurrency.</param>    
     /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
-    /// <param name="employeeService">Service for managing employees.</param>
     /// <param name="currentUserService">Service for managing current user.</param>
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="ministryAdminService"> Service for ministry admin.</param>
@@ -81,7 +80,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
         IEntityRepository<long, Tag> tagRepository,
         IOptions<UploadConcurrencySettings> options,
-        IEmployeeService employeeService,
         IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
         IRegionAdminService regionAdminService,
         IMinistryAdminService ministryAdminService,
@@ -99,7 +97,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         this.teacherDraftImagesService = teacherDraftImagesService ?? throw new ArgumentNullException(nameof(teacherDraftImagesService));
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
         this.maxParallelUploads = options.Value.MaxParallelImageUploads;
-        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.workshopServicesCombinerV2 = workshopServicesCombinerV2 ?? throw new ArgumentNullException(nameof(workshopServicesCombinerV2));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
@@ -125,10 +122,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         logger.LogDebug("Workshop draft creating was started.");
 
-        if (!await IsUserProviderOrProviderEmployee(workshopV2Dto.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
         if (workshopV2Dto.Id != Guid.Empty)
         {
@@ -140,10 +134,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             }
             else
             {
-                if (!await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
-                {
-                    throw new UnauthorizedAccessException("User has no rights to perform operation.");
-                }
+                await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
             }
         }       
 
@@ -196,11 +187,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         {
             var workshopDraft = await GetWorkshopDraftById(workshopDraftUpdateDto.Id);            
 
-            if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId) ||
-                !await IsUserProviderOrProviderEmployee(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId))
-            {
-                throw new UnauthorizedAccessException("User has no rights to perform operation.");
-            }
+            await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
+            await currentUserService.UserHasRights(new ProviderRights(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId), new EmployeeRights(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId)).ConfigureAwait(false);
 
             if (workshopDraftUpdateDto.WorkshopV2Dto.Id != Guid.Empty)
             {
@@ -212,10 +200,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 }
                 else
                 {
-                    if (!await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
-                    {
-                        throw new UnauthorizedAccessException("User has no rights to perform operation.");
-                    }
+                    await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
                 }
             }
 
@@ -283,10 +268,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
         if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
         {
@@ -304,10 +286,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (!await IsUserProviderOrProviderEmployee(workshopDraft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
         if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
         {
@@ -378,10 +357,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     {
         logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
 
-        if (!await IsUserProviderOrProviderEmployee(id))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(id), new EmployeeRights(id)).ConfigureAwait(false);
 
         filter ??= new ExcludeIdFilter();
         ValidateExcludedIdFilter(filter);
@@ -488,10 +464,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     {
         var draft = await GetWorkshopDraftById(id);
 
-        if (!await IsUserProviderOrProviderEmployee(draft.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(draft.ProviderId), new EmployeeRights(draft.ProviderId)).ConfigureAwait(false);
 
         return await MapWorkshopDraftWithDetails(draft);
     }
@@ -507,11 +480,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             throw new InvalidOperationException($"There is no Workshop with such Id. Workshop can`t be updated.");
         }
 
-        if (!await IsUserProviderOrProviderEmployee(workshopV2Dto.ProviderId) ||
-            !await IsUserProviderOrProviderEmployee(existingWorkshop.ProviderId))
-        {
-            throw new UnauthorizedAccessException("User has no rights to perform operation.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
         var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id)
             .AsNoTracking()
@@ -676,23 +646,6 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             return null;
         }
         return task.Result;
-    }
-       
-    private async Task<bool> IsUserProviderOrProviderEmployee(Guid providerId)
-    {
-        var userId = currentUserService.UserId;
-
-        var provider = await providerService.GetById(providerId);
-
-        if (provider.UserId == userId)
-        {
-            return true;
-        }
-
-        var employees = await employeeService.GetRelatedEmployees(provider.UserId);
-        var employeesIds = employees.Select(emp => emp.Id);
-
-        return employeesIds.Contains(userId);
     }
 
     private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>

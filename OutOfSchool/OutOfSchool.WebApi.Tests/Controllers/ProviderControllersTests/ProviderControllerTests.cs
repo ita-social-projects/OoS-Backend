@@ -70,7 +70,7 @@ public class ProviderControllerTests
     public async Task GetProfile_WhenNoProviderWithSuchUserId_ReturnsNoContent()
     {
         // Arrange
-        providerService.Setup(x => x.GetByUserId(userId, false)).ReturnsAsync(null as ProviderDto);
+        providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(null as ProviderDto);
 
         // Act
         var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -84,7 +84,7 @@ public class ProviderControllerTests
     {
         // Arrange
         var expected = mapper.Map<ProviderDto>(provider);
-        providerService.Setup(x => x.GetByUserId(userId, false)).ReturnsAsync(mapper.Map<ProviderDto>(provider));
+        providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(mapper.Map<ProviderDto>(provider));
 
         // Act
         var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -94,7 +94,7 @@ public class ProviderControllerTests
     }
 
     [Test]
-    public async Task GetProfile_WhenUserIdIsNull_ReturnsBadRequest()
+    public async Task GetProfile_WhenUserIdIsNull_ReturnsNoContentResult()
     {
         // Arrange
         currentUserService.Setup(x => x.UserId).Returns(string.Empty);
@@ -103,22 +103,7 @@ public class ProviderControllerTests
         var result = await providerController.GetProfile().ConfigureAwait(false);
 
         // Assert
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
-        Assert.AreEqual("Invalid user information.", ((BadRequestObjectResult)result).Value);
-    }
-
-    [Test]
-    public async Task GetProfile_WhenUserIsEmployee_PassesCorrectFlagToService()
-    {
-        // Arrange
-        currentUserService.Setup(x => x.IsInRole(Role.Employee)).Returns(true);
-        providerService.Setup(x => x.GetByUserId(userId, true)).ReturnsAsync(mapper.Map<ProviderDto>(provider));
-
-        // Act
-        await providerController.GetProfile().ConfigureAwait(false);
-
-        // Assert
-        providerService.Verify(x => x.GetByUserId(userId, true), Times.Once);
+        Assert.IsInstanceOf<NoContentResult>(result);
     }
 
     [Test]
@@ -261,17 +246,17 @@ public class ProviderControllerTests
     }
 
     [Test]
-    public async Task DeleteProvider_WhenIdIsValid_ReturnsOkResult()
+    public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
     {
         // Arrange
         var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
-        providerService.Setup(x => x.Delete(existingProviderGuid, It.IsAny<string>())).ReturnsAsync(new ObjectResult(null));
+        providerService.Setup(x => x.Delete(existingProviderGuid)).ReturnsAsync(true);
 
         // Act
         var result = await providerController.Delete(existingProviderGuid);
 
         // Assert
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<NoContentResult>(result);
     }
 
     [Test]
@@ -280,7 +265,7 @@ public class ProviderControllerTests
         // Arrange
         var guid = Guid.NewGuid();
         var errorMessage = TestDataHelper.GetRandomWords();
-        providerService.Setup(x => x.Delete(guid, It.IsAny<string>())).ReturnsAsync(new ErrorResponse { HttpStatusCode = HttpStatusCode.NotFound, Message = errorMessage });
+        providerService.Setup(x => x.Delete(guid)).ReturnsAsync(new ErrorResponse { HttpStatusCode = HttpStatusCode.NotFound, Message = errorMessage });
 
         // Act
         var result = await providerController.Delete(guid).ConfigureAwait(false);
@@ -459,21 +444,6 @@ public class ProviderControllerTests
         //Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         providerService.VerifyAll();
-    }
-
-    [Test]
-    public async Task Create_WhenModelIsValid_SetsUserIdFromCurrentUser()
-    {
-        // Arrange
-        var providerToCreate = mapper.Map<ProviderCreateDto>(provider);
-        providerService.Setup(x => x.Create(It.IsAny<ProviderCreateDto>()))
-            .ReturnsAsync(mapper.Map<ProviderDto>(provider));
-
-        // Act
-        await providerController.Create(providerToCreate).ConfigureAwait(false);
-
-        // Assert
-        Assert.AreEqual(userId, providerToCreate.UserId);
     }
 
     [Test]

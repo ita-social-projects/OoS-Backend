@@ -8,14 +8,10 @@ using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -25,6 +21,7 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -46,16 +43,14 @@ public class WorkshopControllerTests
     private static WorkshopCreateUpdateDto workshopUpdateDto;
     private static WorkshopCreateRequestDto workshopCreateRequestDto;
     private static ProviderDto provider;
-    private static Mock<IOptions<AppDefaultsConfig>> options;
 
     private WorkshopController controller;
     private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
-    private Mock<IEmployeeService> employeeService;
-    private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
     private Mock<HttpContext> httpContextMoq;
+    private Mock<ICurrentUserService> currentUserServiceMoq;
     private IMapper mapper;
 
     private string userId;
@@ -85,10 +80,6 @@ public class WorkshopControllerTests
         workshopProviderViewCardList = WorkshopProviderViewCardGenerator.Generate(5);
 
         workshopCreateRequestDto.ProviderId = provider.Id;
-        var config = new AppDefaultsConfig();
-        config.City = "Київ";
-        options = new Mock<IOptions<AppDefaultsConfig>>();
-        options.Setup(x => x.Value).Returns(config);
     }
 
     [SetUp]
@@ -96,20 +87,16 @@ public class WorkshopControllerTests
     {
         workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
         providerServiceMoq = new Mock<IProviderService>();
-        employeeService = new Mock<IEmployeeService>();
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
-        employeeService = new Mock<IEmployeeService>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
+        currentUserServiceMoq = new Mock<ICurrentUserService>();
 
         controller = new WorkshopController(
             workshopServiceMoq.Object,
             providerServiceMoq.Object,
-            employeeService.Object,
             userServiceMoq.Object,
-            localizer.Object,
-            loggerMoq.Object,
-            options.Object)
+            currentUserServiceMoq.Object,
+            loggerMoq.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
@@ -644,8 +631,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Exactly(2));
         workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Once);
 
@@ -653,7 +638,6 @@ public class WorkshopControllerTests
         var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as CreatedAtActionResult;
 
         // Assert
-        providerServiceMoq.VerifyAll();
         workshopServiceMoq.VerifyAll();
         userServiceMoq.VerifyAll();
         Assert.That(result, Is.Not.Null);
@@ -672,7 +656,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Never);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
@@ -698,7 +682,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(true).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
@@ -724,7 +708,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(true).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
@@ -752,7 +736,7 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
@@ -769,10 +753,11 @@ public class WorkshopControllerTests
     }
 
     [Test]
-    public async Task CreateWorkshop_WhenProviderHasNoRights_ShouldReturn403ObjectResult()
+    public void CreateWorkshop_WhenProviderHasNoRights_ShouldThrowException()
     {
         // Arrange
-        var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
+        currentUserServiceMoq.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
 
         providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
             .ReturnsAsync(provider.Id).Verifiable(Times.Never);
@@ -780,20 +765,13 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(notAuthorProvider).Verifiable(Times.Once);
         workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
-        // Act
-        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
-
-        // Assert
-        providerServiceMoq.VerifyAll();
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Create(workshopCreateRequestDto));
         workshopServiceMoq.VerifyAll();
         userServiceMoq.VerifyAll();
-        Assert.IsNotNull(result);
-        Assert.AreEqual(Forbidden, result.StatusCode);
     }
 
     [Test]
@@ -806,8 +784,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Once);
         workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto)).
             ThrowsAsync(new InvalidOperationException(It.IsAny<string>())).Verifiable(Times.Once);
 
@@ -822,42 +798,6 @@ public class WorkshopControllerTests
         Assert.AreEqual(BadRequest, result.StatusCode);
     }
 
-    [Test]
-    public async Task CreateWorkshop_WhenUserProvidersOwnerOrAdmin_ShouldCallGiveAssistantAccessToWorkshopOnce()
-    {
-        // Arrange
-        var workshopReturnedDto = WorkshopDtoGenerator.Generate();
-        workshopReturnedDto.Id = Guid.Empty;
-        workshopReturnedDto.ProviderId = provider.Id;
-
-        providerServiceMoq.Setup(x => x.GetProviderIdForWorkshopById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider.Id).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))
-            .ReturnsAsync(false).Verifiable(Times.Once);
-        userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
-            .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync((ProviderDto)null).Verifiable(Times.Exactly(2));
-        workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
-            .ReturnsAsync(workshopReturnedDto).Verifiable(Times.Once);
-
-        int n = 0;
-        employeeService.Setup(x => x.CheckUserIsRelatedEmployee(userId, provider.Id, Guid.Empty))
-            .ReturnsAsync(() => n++ <= 0).Verifiable(Times.Exactly(2));
-        employeeService.Setup(x => x.GiveEmployeeAccessToWorkshop(userId, workshopReturnedDto.Id))
-            .Verifiable(Times.Once);
-
-        // Act
-        var result = await controller.Create(workshopCreateRequestDto).ConfigureAwait(false) as CreatedAtActionResult;
-
-        // Assert
-        employeeService.VerifyAll();
-        providerServiceMoq.VerifyAll();
-        workshopServiceMoq.VerifyAll();
-        userServiceMoq.VerifyAll();
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(Create, result.StatusCode);
-    }
     #endregion
 
     #region UpdateWorkshop
@@ -891,21 +831,15 @@ public class WorkshopControllerTests
     }
 
     [Test]
-    public async Task UpdateWorkshop_WhenIdProviderHasNoRights_ShouldReturn403ObjectResult()
+    public void UpdateWorkshop_WhenIdProviderHasNoRights_ShouldThrowException()
     {
         // Arrange
-        var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
-        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
-            .ReturnsAsync(notAuthorProvider);
-
-        // Act
-        var result = await controller.Update(workshopUpdateDto).ConfigureAwait(false) as ObjectResult;
-
-        // Assert
+        currentUserServiceMoq.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Update(workshopUpdateDto));
         providerServiceMoq.VerifyAll();
         workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
-        Assert.IsNotNull(result);
-        Assert.AreEqual(Forbidden, result.StatusCode);
     }
 
     [Test]
@@ -982,7 +916,7 @@ public class WorkshopControllerTests
         // Arrange
         workshop.ProviderId = provider.Id;
 
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
 
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
 
@@ -1028,7 +962,7 @@ public class WorkshopControllerTests
         workshop.ProviderId = provider.Id;
         workshop.ProviderOwnership = OwnershipType.Common;
 
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest)).
@@ -1043,22 +977,18 @@ public class WorkshopControllerTests
     }
 
     [Test]
-    public async Task UpdateStatus_WhenProviderHasNoRights_ShouldReturn403ObjectResult()
+    public void UpdateStatus_WhenProviderHasNoRights_ShouldThrowException()
     {
         // Arrange
+        currentUserServiceMoq.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
         var workShopStatusDto = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
-        var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
         workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
-        // Act
-        var result = await controller.UpdateStatus(workShopStatusDto) as ObjectResult;
-
-        // Assert
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.UpdateStatus(workShopStatusDto));
         workshopServiceMoq.Verify(x => x.Create(workshopCreateRequestDto), Times.Never);
-        Assert.IsNotNull(result);
-        Assert.AreEqual(Forbidden, result.StatusCode);
     }
 
     #endregion
@@ -1070,7 +1000,7 @@ public class WorkshopControllerTests
         // Arrange
         workshop.ProviderId = provider.Id;
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
 
@@ -1078,7 +1008,6 @@ public class WorkshopControllerTests
         var result = await controller.Delete(workshop.Id) as NoContentResult;
 
         // Assert
-        providerServiceMoq.VerifyAll();
         workshopServiceMoq.VerifyAll();
         workshopServiceMoq.Verify(x => x.Delete(It.IsAny<Guid>()), Times.Once);
         Assert.That(result, Is.Not.Null);
@@ -1102,22 +1031,17 @@ public class WorkshopControllerTests
     }
 
     [Test]
-    public async Task DeleteWorkshop_WhenIdProviderHasNoRights_ShouldReturn403ObjectResult()
+    public void DeleteWorkshop_WhenIdProviderHasNoRights_ShouldThrowException()
     {
         // Arrange
+        currentUserServiceMoq.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
-        var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
 
-        // Act
-        var result = await controller.Delete(workshop.Id) as ObjectResult;
-
-        // Assert
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Delete(workshop.Id));
         workshopServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         workshopServiceMoq.Verify(x => x.Delete(It.IsAny<Guid>()), Times.Never);
-        Assert.IsNotNull(result);
-        Assert.AreEqual(Forbidden, result.StatusCode);
     }
     #endregion
 
@@ -1164,7 +1088,7 @@ public class WorkshopControllerTests
     {
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
-        providerServiceMoq.Setup(x => x.GetByUserId(userId, It.IsAny<bool>()))
+        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto))
             .ReturnsAsync(result);

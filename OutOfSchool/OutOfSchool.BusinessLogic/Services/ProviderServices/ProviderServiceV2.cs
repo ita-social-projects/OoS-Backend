@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
@@ -24,14 +23,12 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
         ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
-        ISensitiveEntityRepositorySoftDeleted<Official> officialRepository,
+        IOfficialRepository officialRepository,
         IPositionRepository positionRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
-        IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
         IChangesLogService changesLogService,
         INotificationService notificationService,
-        IEmployeeService employeeService,
         IInstitutionAdminRepository institutionAdminRepository,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
@@ -57,11 +54,9 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
               officialRepository,
               positionRepository,
               workshopServiceCombiner,
-              employeeRepository,
               providerImagesService,
               changesLogService,
               notificationService,
-              employeeService,
               institutionAdminRepository,
               currentUserService,
               ministryAdminService,
@@ -115,21 +110,28 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
             .ConfigureAwait(false);
     }
 
-    public new async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token)
+    public new Task<Either<ErrorResponse, bool>> Delete(Guid id, string token)
     {
-        async Task BeforeDeleteAction(Provider provider)
-        {
-            if (provider.Images?.Count > 0)
+        return Task.FromResult<Either<ErrorResponse, bool>>(
+            new ErrorResponse()
             {
-                await ProviderImagesService.RemoveManyImagesAsync(provider, provider.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
-            }
-
-            if (!string.IsNullOrEmpty(provider.CoverImageId))
-            {
-                await ProviderImagesService.RemoveCoverImageAsync(provider).ConfigureAwait(false);
-            }
-        }
-
-        return await DeleteProviderWithActionBefore(id, token, BeforeDeleteAction).ConfigureAwait(false);
+                Message = "Deleting provider is not allowed.",
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            });
+        // TODO: do not allow provider deletion while requirements are updated
+        // async Task BeforeDeleteAction(Provider provider)
+        // {
+        //     if (provider.Images?.Count > 0)
+        //     {
+        //         await ProviderImagesService.RemoveManyImagesAsync(provider, provider.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+        //     }
+        //
+        //     if (!string.IsNullOrEmpty(provider.CoverImageId))
+        //     {
+        //         await ProviderImagesService.RemoveCoverImageAsync(provider).ConfigureAwait(false);
+        //     }
+        // }
+        //
+        // return await DeleteProviderWithActionBefore(id, BeforeDeleteAction).ConfigureAwait(false);
     }
 }

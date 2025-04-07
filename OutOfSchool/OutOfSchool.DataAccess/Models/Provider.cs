@@ -78,9 +78,6 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     [MaxLength(500)]
     public string BlockReason { get; set; }
 
-    [Required]
-    public string UserId { get; set; }
-
     public long? InstitutionStatusId { get; set; }
 
     public Guid? InstitutionId { get; set; }
@@ -119,8 +116,6 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     
     #region Navigation properties
     
-    public virtual User User { get; set; }
-    
     public virtual ProviderType Type { get; set; }
     
     public virtual List<Workshop> Workshops { get; set; }
@@ -136,8 +131,6 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
 
     public virtual Institution Institution { get; set; }
-
-    public virtual ICollection<Employee> Employees { get; set; }
     
     #endregion
 

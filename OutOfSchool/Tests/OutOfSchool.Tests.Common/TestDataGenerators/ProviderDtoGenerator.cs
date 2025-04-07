@@ -20,7 +20,6 @@ public static class ProviderDtoGenerator
         .RuleFor(x => x.Type, _ => new ProviderTypeDto{Id=1, Name = "pro"})
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
-        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>());
 
     /// <summary>
@@ -34,8 +33,5 @@ public static class ProviderDtoGenerator
     /// </summary>
     /// <param name="count">count of instances to generate.</param>
     public static List<ProviderDto> Generate(int count) => faker.Generate(count);
-
-    public static ProviderDto WithUserId(this ProviderDto providerDto, string userId)
-        => TestDataHelper.ApplyOnItem(providerDto, (x, y) => x.UserId = y, userId);
 
 }

@@ -124,7 +124,7 @@
     <value>згоду на обробку персональних даних</value>
   </data>
   <data name="By registering I agree with" xml:space="preserve">
-    <value>Реєструючись я погоджуюсь з</value>
+    <value>Я погоджуюсь з</value>
   </data>
   <data name="You must be agreed with 'Terms of use' to register!" xml:space="preserve">
     <value>Для реєстрації Ви повинні погодитись з Правилами користування.</value>
@@ -172,7 +172,7 @@
     <value>Реєстрація в Позашкілля</value>
   </data>
   <data name="Service provider" xml:space="preserve">
-    <value>Надавач послуг</value>
+    <value>Директор ЗО</value>
   </data>
   <data name="Sign In" xml:space="preserve">
     <value>Увійти</value>
@@ -388,7 +388,7 @@ Login: {0}
     <value>та надаю </value>
   </data>
   <data name="Consent Title" xml:space="preserve">
-    <value>Згода</value>
+    <value>Згода на обробку даних</value>
   </data>
   <data name="Terms of use Title" xml:space="preserve">
     <value>Правила користування</value>
@@ -430,7 +430,7 @@ Login: {0}
     <value>Для особистих облікових записів</value>
   </data>
   <data name="For employees of state and municipal institutions" xml:space="preserve">
-    <value>ля співробітників державних і комунальних установ</value>
+    <value>Для співробітників державних і комунальних установ</value>
   </data>
   <data name="Log in with {0}" xml:space="preserve">
     <value>Увійти з {0}</value>
@@ -446,5 +446,20 @@ Login: {0}
   </data>
   <data name="NotAProviderDirector" xml:space="preserve">
     <value>Ви не зареєстровані як директор цієї організації. Лише директори організації можуть входити з роллю "Надавач послуг".</value>
+  </data>
+  <data name="Employee" xml:space="preserve">
+    <value>Співробітник ЗО</value>
+  </data>
+  <data name="For directors of state and municipal institutions" xml:space="preserve">
+    <value>Для директорів державних і комунальних установ</value>
+  </data>
+  <data name="IndividualOrProviderNotFound" xml:space="preserve">
+    <value>Вашої інормації або ЗО не знайдено. Зверніться до директора ЗО або адміністатора системи.</value>
+  </data>
+  <data name="IndividualIsNotProviderDirector" xml:space="preserve">
+    <value>Ви не вказані як директор ЗО "{0}". Якщо це помилка - зверніться до адміністатора системи.</value>
+  </data>
+  <data name="IndividualIsNotProviderEmployee" xml:space="preserve">
+    <value>Ви не вказані як співробітник ЗО "{0}". Зверніться до директора ЗО.</value>
   </data>
 </root>

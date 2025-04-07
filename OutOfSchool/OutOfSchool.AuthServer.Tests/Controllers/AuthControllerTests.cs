@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,9 +20,12 @@ using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -29,6 +34,9 @@ namespace OutOfSchool.AuthServer.Tests.Controllers;
 [TestFixture]
 public class AuthControllerTests
 {
+    private const string TestRnkopp = "1234567";
+    private const string TestEdrpou = "0987654321";
+
     private Mock<FakeUserManager> fakeUserManager;
     private Mock<IUserManagerAdditionalService> fakeUserManagerAdditionalService;
     private Mock<FakeSignInManager> fakeSignInManager;
@@ -63,6 +71,7 @@ public class AuthControllerTests
         fakeEmailSender = new Mock<IEmailSenderService>();
         fakeRenderer = new Mock<IRazorViewToStringRenderer>();
         fakeFeatureManager = new Mock<IFeatureManager>();
+        var dbContext = GetContext();
 
         fakeLocalizer
             .Setup(localizer => localizer[It.IsAny<string>()])
@@ -77,7 +86,54 @@ public class AuthControllerTests
             fakeIdentityServerConfig.Object,
             fakeRenderer.Object,
             fakeEmailSender.Object,
-            fakeFeatureManager.Object);
+            fakeFeatureManager.Object,
+            dbContext);
+        
+        dbContext.Database.EnsureDeleted();
+        dbContext.Database.EnsureCreated();
+        
+        // Create Individual
+        var individual = new Individual
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Test",
+            LastName = "Test",
+            Rnokpp = TestRnkopp,
+        };
+        dbContext.Individuals.Add(individual);
+        
+        // Create Provider
+        var provider = new Provider 
+        { 
+            Id = Guid.NewGuid(), 
+            Edrpou = TestEdrpou,
+            FullTitle = "Test Provider",
+            IsDeleted = false
+        };
+        dbContext.Providers.Add(provider);
+        
+        // Create Position
+        var position = new Position
+        {
+            Id = Guid.NewGuid(),
+            FullName = "Test Position",
+            ProviderId = provider.Id,
+            PositionType = PositionType.Director,
+            IsDeleted = false
+        };
+        dbContext.Positions.Add(position);
+        
+        // Create Official to link Individual to Position
+        var official = new Official
+        {
+            Id = Guid.NewGuid(),
+            IndividualId = individual.Id,
+            PositionId = position.Id,
+            IsDeleted = false
+        };
+        dbContext.Officials.Add(official);
+        
+        dbContext.SaveChanges();
     }
 
     [Test]
@@ -210,6 +266,7 @@ public class AuthControllerTests
     {
         // Arrange
         var user = UserGenerator.Generate();
+        user.Role = "parent";
         var loginViewModel = CreateLoginViewModelFromData(user.UserName);
         user.MustChangePassword = false;
         SetupDefaultUserManagerFindByEmailAsync(user);
@@ -247,6 +304,7 @@ public class AuthControllerTests
     {
         // Arrange
         var user = UserGenerator.Generate();
+        user.Role = "parent";
         var loginViewModel = CreateLoginViewModelFromData(user.UserName, returnUrl: string.Empty);
         user.MustChangePassword = false;
         SetupDefaultUserManagerFindByEmailAsync(user);
@@ -267,6 +325,7 @@ public class AuthControllerTests
     {
         // Arrange
         var user = UserGenerator.Generate();
+        user.Role = "parent";
         user.MustChangePassword = true;
         var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData();
         SetupDefaultUserManagerFindByEmailAsync(user);
@@ -293,6 +352,7 @@ public class AuthControllerTests
     {
         // Arrange
         var user = UserGenerator.Generate();
+        user.Role = "parent";
         user.MustChangePassword = true;
         var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData(returnUrl: string.Empty);
         SetupDefaultUserManagerFindByEmailAsync(user);
@@ -335,6 +395,7 @@ public class AuthControllerTests
     {
         // Arrange
         var user = UserGenerator.Generate();
+        user.Role = "parent";
         user.MustChangePassword = true;
         var changePasswordLoginViewModel = CreateChangePasswordLoginViewModelFromData();
         SetupDefaultUserManagerFindByEmailAsync(user);
@@ -566,5 +627,15 @@ public class AuthControllerTests
             ConfirmNewPassword = confirmNewPassword,
             ReturnUrl = returnUrl
         };
+    }
+    
+    private static OutOfSchoolDbContext GetContext()
+    {
+        return new TestOutOfSchoolDbContext(
+            new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+                .UseLazyLoadingProxies()
+                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .Options);
     }
 }

@@ -68,7 +68,7 @@ public class Worker : IHostedService
                             descriptor = new OpenIddictApplicationDescriptor
                             {
                                 ClientId = clientId,
-                                ConsentType = ConsentTypes.Implicit,
+                                ConsentType = ConsentTypes.Explicit,
                                 DisplayName = client.DisplayName,
                                 Permissions =
                                 {

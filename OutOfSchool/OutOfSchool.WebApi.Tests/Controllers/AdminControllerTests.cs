@@ -100,7 +100,6 @@ public class AdminControllerTests
         workshopDto.ProviderId = providerId;
         parent = ParentDtoGenerator.Generate().WithUserId(userId);
         provider = ProviderDtoGenerator.Generate();
-        provider.UserId = userId;
         provider.Id = providerId;
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshopCards.First()).WithParent(parent);
         listWorkshopDto = WorkshopDtoGenerator.Generate(5);

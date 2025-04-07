@@ -1,19 +1,19 @@
 ﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
 
-namespace OutOfSchool.AuthCommon.Services;
+namespace OutOfSchool.BusinessLogic.Services;
 
-public class EmployeeChangesLogService : IEmployeeChangesLogService
+public class OfficialChangesLogService : IOfficialChangesLogService
 {
     private readonly IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository;
 
-    public EmployeeChangesLogService(IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository)
+    public OfficialChangesLogService(IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository)
     {
         this.employeeChangesLogRepository = employeeChangesLogRepository;
     }
 
     public async Task<int> SaveChangesLogAsync(
-        Employee entity,
+        Official entity,
         string userId,
         OperationType operationType,
         string propertyName,
@@ -24,8 +24,8 @@ public class EmployeeChangesLogService : IEmployeeChangesLogService
 
         var logRecord = new EmployeeChangesLog
         {
-            EmployeeUserId = entity.UserId,
-            ProviderId = entity.ProviderId,
+            EmployeeUserId = entity.Individual.UserId,
+            ProviderId = entity.Position.ProviderId,
             OperationType = operationType,
             OperationDate = DateTime.UtcNow,
             UserId = userId,

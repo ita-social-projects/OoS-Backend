@@ -42,7 +42,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
-    private readonly IEmployeeRepository employeeRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
     private readonly ICurrentUserService currentUserService;
@@ -73,7 +72,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
-    /// <param name="codeficatorService">Service for CATOTTG.</param>
     /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
@@ -84,7 +82,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ILogger<WorkshopService> logger,
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
-        IEmployeeRepository employeeRepository,
         IAverageRatingService averageRatingService,
         IProviderRepository providerRepository,
         ICurrentUserService currentUserService,
@@ -104,7 +101,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.logger = logger;
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
-        this.employeeRepository = employeeRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
         this.currentUserService = currentUserService;
@@ -273,21 +269,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
 
         return result;
-    }
-
-    /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByEmployeeId(string employeeId)
-    {
-        logger.LogDebug(
-            "Getting Workshop (Id, Title) by organization started. Looking EmployeeId = {employeeId}",
-            employeeId);
-
-        var employee = (await employeeRepository.GetByFilter(pa => pa.UserId == employeeId)).FirstOrDefault();
-        return (await workshopRepository
-                .GetByFilter(w => employee.Provider.Workshops.Contains(w)))
-            .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
-            .OrderBy(workshop => workshop.Title)
-            .ToList();
     }
 
     /// <inheritdoc/>

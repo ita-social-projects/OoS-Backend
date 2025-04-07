@@ -1,6 +1,5 @@
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.EntityFrameworkCore;
-using GrpcServiceServer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
 using OpenIddict.Abstractions;
@@ -397,15 +396,5 @@ public static class Startup
         });
 
         app.MapRazorPages();
-
-        var gRPCConfig = app.Configuration.GetSection(GrpcConfig.Name).Get<GrpcConfig>();
-
-        if (gRPCConfig.Enabled)
-        {
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGrpcService<ProviderAdminServiceGrpc>().RequireHost($"*:{gRPCConfig.Port}");
-            });
-        }
     }
 }
