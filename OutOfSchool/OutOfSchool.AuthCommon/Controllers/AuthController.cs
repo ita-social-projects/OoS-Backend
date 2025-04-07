@@ -192,6 +192,81 @@ public class AuthController : Controller
                 });
             }
 
+            // To mirror new production logic
+            // Check if user has provider or employee role and add appropriate claims
+            if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
+                Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+            {
+                var individual = await GetIndividualByUserIdAsync(user.Id);
+
+                if (individual != null)
+                {
+                    var positions = await GetPositionsForIndividualAsync(individual.Id);
+
+                    if (positions.Count > 0)
+                    {
+                        // Process provider-specific logic
+                        if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var directorPosition =
+                                positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
+                            if (directorPosition == null)
+                            {
+                                ModelState.AddModelError(string.Empty,
+                                    localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
+
+                                return View(new LoginViewModel
+                                {
+                                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                    ReturnUrl = model.ReturnUrl,
+                                });
+                            }
+                        }
+                        // Process employee-specific logic
+                        else if (Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var employeePosition = positions.FirstOrDefault(p =>
+                                p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
+                            if (employeePosition == null)
+                            {
+                                ModelState.AddModelError(string.Empty,
+                                    localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
+
+                                return View(new LoginViewModel
+                                {
+                                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                    ReturnUrl = model.ReturnUrl,
+                                });
+                            }
+                        }
+
+                        var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
+                        var providerEdrpou = positions.Select(p => p.ProviderEdrpou).FirstOrDefault() ??
+                                             string.Empty;
+                        var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
+
+                        var claims = BuildProviderClaims(individual, user, providerId, providerEdrpou, isDeputy);
+
+                        var properties = new AuthenticationProperties
+                        {
+                            RedirectUri = model.ReturnUrl,
+                            IsPersistent = model.RememberMe,
+                        };
+
+                        await signInManager.SignInWithClaimsAsync(user, properties, claims);
+
+                        return Redirect(model.ReturnUrl);
+                    }
+                }
+
+                ModelState.AddModelError(string.Empty, localizer["IndividualOrProviderNotFound"]);
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
+                });
+            }
+
             if (user.MustChangePassword)
             {
                 var checkResult = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
@@ -218,76 +293,6 @@ public class AuthController : Controller
                     {
                         throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
                                                             $" ({lastLoginResult}) for user with ID '{user.Id}'.");
-                    }
-
-                    // To mirror new production logic
-                    // Check if user has provider or employee role and add appropriate claims
-                    if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase) || 
-                        Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var individual = await GetIndividualByUserIdAsync(user.Id);
-                        
-                        if (individual != null)
-                        {
-                            var positions = await GetPositionsForIndividualAsync(individual.Id);
-                            
-                            if (positions.Count > 0)
-                            {
-                                // Process provider-specific logic
-                                if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    var directorPosition = positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
-                                    if (directorPosition == null)
-                                    {
-                                        ModelState.AddModelError(string.Empty, localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
-
-                                        return View(new LoginViewModel
-                                        {
-                                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                                            ReturnUrl = model.ReturnUrl,
-                                        });
-                                    }
-                                }
-                                // Process employee-specific logic
-                                else if (Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
-                                    if (employeePosition == null)
-                                    {
-                                        ModelState.AddModelError(string.Empty, localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
-
-                                        return View(new LoginViewModel
-                                        {
-                                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                                            ReturnUrl = model.ReturnUrl,
-                                        });
-                                    }
-                                }
-                                
-                                var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
-                                var providerEdrpou = positions.Select(p => p.ProviderEdrpou).FirstOrDefault() ?? string.Empty;
-                                var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
-                                
-                                var claims = BuildProviderClaims(individual, user, providerId, providerEdrpou, isDeputy);
-                                
-                                var properties = new AuthenticationProperties
-                                {
-                                    RedirectUri = model.ReturnUrl,
-                                    IsPersistent = model.RememberMe,
-                                };
-                                
-                                await signInManager.SignInWithClaimsAsync(user, properties, claims);
-                                
-                                return Redirect(model.ReturnUrl);
-                            }
-                        }
-                        
-                        ModelState.AddModelError(string.Empty, localizer["IndividualOrProviderNotFound"]);
-                        return View(new LoginViewModel
-                        {
-                            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                            ReturnUrl = model.ReturnUrl,
-                        });
                     }
 
                     return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
