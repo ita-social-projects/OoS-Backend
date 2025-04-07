@@ -9,6 +9,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class PositionController : ControllerBase
 {
     private readonly IPositionService positionService;
+    private readonly ILogger<PositionController> logger;
 
     public PositionController(IPositionService positionService)
     {
@@ -47,7 +48,8 @@ public class PositionController : ControllerBase
         }
         catch (Exception ex) 
         {
-            return BadRequest(ex.Message);
+            logger.LogError(ex, "Error occured while adding new position");
+            return BadRequest();
         }
     }
 
@@ -99,11 +101,13 @@ public class PositionController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            logger.LogError(ex, "Error occured while updating position");
+            return NotFound();
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            logger.LogError(ex, "Error occured while updating position");
+            return BadRequest();
         }
     }
 
@@ -124,6 +128,7 @@ public class PositionController : ControllerBase
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Error occured while deleting position");
             return BadRequest(ex.Message);
         }        
     }

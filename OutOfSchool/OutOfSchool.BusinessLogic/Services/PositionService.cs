@@ -2,6 +2,7 @@
 using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Position;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -121,6 +122,11 @@ public class PositionService : IPositionService
         if (position == null)
         {
             return;
+        }
+
+        if (position.PositionType == PositionType.Director)
+        {
+            throw new InvalidOperationException("Cannot delete a director");
         }
 
         logger.LogInformation("Deleting position {PositionId} for provider {ProviderId}", positionId, providerId);
