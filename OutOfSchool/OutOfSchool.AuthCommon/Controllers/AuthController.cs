@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using OpenIddict.Abstractions;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Enums;
@@ -606,14 +607,15 @@ public class AuthController : Controller
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, user.Role),
-            new(ClaimTypes.GivenName, individual.FirstName),
-            new(ClaimTypes.Surname, individual.LastName),
-            new(ClaimTypes.Email, user.Email),
+            new(OpenIddictConstants.Claims.Role, user.Role),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, user.Email),
             new(Constants.ClaimTypes.Edrpou, providerEdrpou),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString()),
+            new(Constants.ClaimTypes.ExternalIdProviderName, "mock_id_provider"),
         };
 
         return claims;
