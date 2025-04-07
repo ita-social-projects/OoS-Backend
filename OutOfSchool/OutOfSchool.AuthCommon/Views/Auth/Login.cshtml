@@ -1,6 +1,5 @@
 ﻿@inject IHtmlLocalizer<SharedResource> SharedLocalizer
 @inject SignInManager<User> SignInManager
-
 @using Microsoft.AspNetCore.Mvc.Localization
 @using OutOfSchool.AuthCommon
 @model OutOfSchool.AuthCommon.ViewModels.LoginViewModel
@@ -18,7 +17,6 @@
     <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Login to Extracurricular activities"]</h1>
         <section class="icon_wrapper">
-            <hr/>
             @{
                 var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
                 if (loginProviders.Count == 0)
@@ -32,6 +30,7 @@
                 else
                 {
                     <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" role="form">
+                        <div asp-validation-summary="ModelOnly"></div>
                         <div>
                             <div>
                                 <label class="login__label">
