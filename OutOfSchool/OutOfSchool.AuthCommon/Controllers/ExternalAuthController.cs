@@ -391,10 +391,10 @@ public class ExternalAuthController : Controller
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
-            new(ClaimTypes.GivenName, individual.FirstName),
-            new(ClaimTypes.Surname, individual.LastName),
-            new(ClaimTypes.Email, userInfo.Email),
+            new(OpenIddictConstants.Claims.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, userInfo.Email),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
