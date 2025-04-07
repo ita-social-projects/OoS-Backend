@@ -93,4 +93,11 @@ public interface IProviderService
     /// <param name="data">List of employees to upload.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data);
+    
+    /// <summary>
+    /// Gets the license status and ownership type for a provider.
+    /// </summary>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>A <see cref="Tuple{T1,T2}"/> containing the provider's license status and ownership type.</returns>
+    Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId);
 }

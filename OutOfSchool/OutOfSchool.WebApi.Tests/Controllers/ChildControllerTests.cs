@@ -349,7 +349,6 @@ public class ChildControllerTests
 
         workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
-        providerService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
             new Claim[]

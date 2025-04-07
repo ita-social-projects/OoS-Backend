@@ -528,10 +528,10 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     {
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
-        var providerDto = await providerService.GetById(workshopV2Dto.ProviderId);
+        var licenseStatusAndOwnership = await providerService.GetLicenseStatusAndOwnershipAsync(workshopV2Dto.ProviderId);
 
-        workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = providerDto.LicenseStatus;
-        workshopDraft.WorkshopDraftContent.OwnershipType = providerDto.Ownership;
+        workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = licenseStatusAndOwnership.Item1;
+        workshopDraft.WorkshopDraftContent.OwnershipType = licenseStatusAndOwnership.Item2;
         workshopDraft.WorkshopDraftContent.WorkshopStatus = WorkshopStatus.Open;
 
         var createdDraft = await workshopDraftRepository.Create(workshopDraft)

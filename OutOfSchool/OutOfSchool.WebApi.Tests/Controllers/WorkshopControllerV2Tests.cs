@@ -159,8 +159,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Never);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -185,8 +183,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(true).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -211,8 +207,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(true).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -239,8 +233,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 

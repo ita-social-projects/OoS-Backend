@@ -225,15 +225,17 @@ public class WorkshopDraftController : ControllerBase
     
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
-        var provider = await providerService.GetById(providerId);
-        if (provider == null)
+        var isBlocked = await providerService.IsBlocked(providerId).ConfigureAwait(false);
+        
+        // null means Provider does not exist
+        if (!isBlocked.HasValue)
         {
             return StatusCode(
                 StatusCodes.Status400BadRequest,
                 new { Message = $"Provider with ID {providerId} not found." });
         }
 
-        if (provider.IsBlocked)
+        if (isBlocked.Value)
         {
             return StatusCode(
                 StatusCodes.Status403Forbidden,

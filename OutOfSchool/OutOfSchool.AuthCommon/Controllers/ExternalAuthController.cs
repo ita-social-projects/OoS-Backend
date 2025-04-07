@@ -307,7 +307,7 @@ public class ExternalAuthController : Controller
             MiddleName = userInfo.MiddleName,
             Email = userInfo.Email,
             CreatingTime = DateTimeOffset.UtcNow,
-            IsRegistered = false,
+            IsRegistered = true,
             IsBlocked = false,
             MustChangePassword = false,
         };
