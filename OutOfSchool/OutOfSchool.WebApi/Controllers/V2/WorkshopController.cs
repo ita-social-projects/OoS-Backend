@@ -240,7 +240,7 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="id">Workshop's id.</param>
     /// <returns>StatusCode representing the task completion.</returns>
-    /// <response code="204">If the entity was successfully deleted, or if the entity was not found by given Id.</response>
+    /// <response code="204">If the entity was successfully archived, or if the entity was not found by given Id.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
     /// <response code="500">If any server error occures.</response>
@@ -249,7 +249,8 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
+    [HttpDelete]
+    [Route("~/api/v{version:apiVersion}/[controller]/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);

@@ -21,6 +21,7 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
@@ -597,6 +598,87 @@ public class WorkshopDraftServiceTests
 
         result.Should().NotBeNull();
     }
+    #endregion
+
+    #region CreateDraftForReactivation
+
+    [Test]
+    public async Task CreateDraftForReactivation_WhenWorkshopIdIsNull_ShouldThrowArgumentException()
+    {
+        // Arrange
+        Guid workshopId = Guid.Empty;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await service.CreateDraftForReactivation(workshopId));
+    }
+
+    [Test]
+    public async Task CreateDraftForReactivation_WhenWorkshopStatusIsNotClosed_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = workshop.ToV2Dto;
+
+        var workshopDraft = mapper.Map<WorkshopDraft>();
+        var workshopResponse = mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
+
+        var options = new Mock<IOptions<UploadConcurrencySettings>>();
+        var settings = new UploadConcurrencySettings();
+        options.Setup(o => o.Value).Returns(settings);
+
+        var logger = new Mock<ILogger<WorkshopDraftService>>();
+        var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+        var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
+        var regionAdminService = new Mock<IRegionAdminService>();
+        var ministryAdminService = new Mock<IMinistryAdminService>();
+        var codeficatorService = new Mock<ICodeficatorService>();
+        var searchStringService = new Mock<ISearchStringService>();
+
+        workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
+            .ReturnsAsync(workshopDraft);
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopV2Dto).Verifiable(Times.Once);
+        tagRepositoryMoq
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Tag, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
+            .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
+
+        var service = new WorkshopDraftService(
+                   logger.Object,
+                   workshopDraftRepoMoq.Object,
+                   workshopDraftImagesService.Object,
+                   providerServiceMoq.Object,
+                   currentUserServiceMoq.Object,
+                   teacherDraftImagesService.Object,
+                   tagRepositoryMoq.Object,
+                   options.Object,
+                   workshopServiceCombinerV2Moq.Object,
+                   regionAdminService.Object,
+                   ministryAdminService.Object,
+                   codeficatorService.Object,
+                   searchStringService.Object,
+                   institutionHierarchyRepositoryMoq.Object,
+                   codeficatorRepositoryMoq.Object);
+
+        // Act 
+        var result = await service.CreateDraftForReactivation(workshop.Id).ConfigureAwait(false);
+
+        //Assert 
+        currentUserServiceMoq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+        tagRepositoryMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+        result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
+    }
+
     #endregion
 
     #region GetWorkshopDraftIdByWorkshopId

@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
@@ -15,6 +16,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class WorkshopServicesCombiner(
     IWorkshopService workshopService,
     IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
+    ISensitiveWorkshopsService sensitiveWorkshopService,
     INotificationService notificationService,
     IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
     IApplicationRepository applicationRepository,
@@ -67,11 +69,20 @@ public class WorkshopServicesCombiner(
             });
         }
 
+        if (currentWorkshop.Status == WorkshopStatus.Archived)
+        {
+            return Result<WorkshopDto>.Failed(new OperationError
+            {
+                Code = nameof(HttpStatusCode.BadRequest),
+                Description = "Workshop is archived and cannot be updated.",
+            });
+        }
+
         if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
         {
             return Result<WorkshopDto>.Failed(new OperationError
             {
-                Code = HttpStatusCode.BadRequest.ToString(),
+                Code = nameof(HttpStatusCode.BadRequest),
                 Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
             });
         }
@@ -154,21 +165,19 @@ public class WorkshopServicesCombiner(
     }
 
     /// <inheritdoc/>
-    public async Task Delete(Guid id)
+    public async Task<OperationResult> Archive(Guid id)
     {
-        var notificationsRecipientIds = await GetNotificationsRecipientIds(id).ConfigureAwait(false);
+        return await HandleDeletionOrArchival(
+            id,
+            () => workshopService.Archive(id));
+    }
 
-        var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
-
-        await workshopService.Delete(id).ConfigureAwait(false);
-
-        await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
-                ElasticsearchSyncEntity.Workshop,
-                id,
-                ElasticsearchSyncOperation.Delete)
-            .ConfigureAwait(false);
-
-        await SendNotification(workshopDto, NotificationAction.Delete, false, notificationsRecipientIds).ConfigureAwait(false);
+    /// <inheritdoc/>
+    public async Task<OperationResult> Delete(Guid id)
+    {
+        return await HandleDeletionOrArchival(
+            id,
+            () => sensitiveWorkshopService.Delete(id));
     }
 
     /// <inheritdoc/>
@@ -344,5 +353,41 @@ public class WorkshopServicesCombiner(
                     additionalData)
                 .ConfigureAwait(false);
         }
+    }
+
+    private async Task<OperationResult> HandleDeletionOrArchival(Guid id, Func<Task<OperationResult>> operationFunc)
+    {
+        var workshopDto = await workshopService.GetById(id).ConfigureAwait(false);
+
+        var result = await operationFunc().ConfigureAwait(false);
+
+        if (result == null)
+        {
+            return OperationResult.Failed(new OperationError
+            {
+                Code = HttpStatusCode.BadRequest.ToString(),
+                Description = "Returned result was null.",
+            });
+        }
+
+        if (!result.Succeeded)
+        {
+            return OperationResult.Failed(new OperationError
+            {
+                Code = result.Errors.FirstOrDefault()?.Code,
+                Description = result.Errors.FirstOrDefault()?.Description,
+            });
+        }
+
+        var notificationsRecipientIds = await GetNotificationsRecipientIds(id).ConfigureAwait(false);
+
+        await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+            ElasticsearchSyncEntity.Workshop,
+            id,
+            ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
+
+        await SendNotification(workshopDto, NotificationAction.Delete, false, notificationsRecipientIds).ConfigureAwait(false);
+
+        return OperationResult.Success;
     }
 }

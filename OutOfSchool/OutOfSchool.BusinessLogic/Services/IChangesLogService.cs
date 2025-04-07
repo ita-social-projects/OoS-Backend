@@ -62,6 +62,14 @@ public interface IChangesLogService
     Task<SearchResult<ParentBlockedByAdminChangesLogDto>> GetParentBlockedByAdminChangesLogAsync(ParentBlockedByAdminChangesLogRequest request);
 
     /// <summary>
+    /// Get Workshop logged entities that match filter's parameters.
+    /// </summary>
+    /// <param name="request">Filter with specified searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the <see cref="SearchResult{WorkshopChangesLogDto}"/> that contains found elements.</returns>
+    Task<SearchResult<WorkshopChangesLogDto>> GetWorkshopChangesLogAsync(WorkshopChangesLogRequest request);
+
+    /// <summary>
     /// Retrieves a paginated list of changes for workshop drafts, filtered and scoped to the current user.
     /// </summary>
     /// <param name="request">Search and pagination parameters.</param>

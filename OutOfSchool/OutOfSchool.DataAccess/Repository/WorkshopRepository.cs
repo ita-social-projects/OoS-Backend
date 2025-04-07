@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -50,7 +51,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
 
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
     {
-        return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
+        return await dbSet.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
     }
 
     public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)

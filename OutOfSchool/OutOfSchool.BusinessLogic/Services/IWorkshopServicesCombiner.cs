@@ -91,11 +91,11 @@ public interface IWorkshopServicesCombiner
     Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto);
 
     /// <summary>
-    ///  Delete entity.
+    ///  Archives entity.
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<OperationResult> Archive(Guid id);
 
     /// <summary>
     /// Get all entities from the database.
@@ -168,4 +168,11 @@ public interface IWorkshopServicesCombiner
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains the price range of the entities.</returns>
     Task<PriceRange> GetPriceRangeAsync(WorkshopFilter filter);
+
+    /// <summary>
+    ///  Delete entity.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<OperationResult> Delete(Guid id);
 }

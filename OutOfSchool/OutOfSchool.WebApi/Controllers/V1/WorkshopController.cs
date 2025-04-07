@@ -467,20 +467,21 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a specific workshop from the database.
+    /// Marks a specific workshop as archived. This operation is irreversible.
     /// </summary>
     /// <param name="id">Workshop's id.</param>
     /// <returns>StatusCode representing the task completion.</returns>
-    /// <response code="204">If the entity was successfully deleted, or if the entity was not found by given Id.</response>
+    /// <response code="204">If the entity was successfully archived, or if the entity was not found by given Id.</response>
     /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
+    /// <response code="403">If the user has no rights to use this method, or archives not own workshop.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopRemove)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
+    [HttpDelete]
+    [Route("~/api/v{version:apiVersion}/[controller]/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
@@ -502,9 +503,23 @@ public class WorkshopController : ControllerBase
 
         await currentUserService.UserHasRights(new ProviderRights(workshop.ProviderId), new EmployeeRights(workshop.ProviderId));
 
-        await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+        var result = await combinedWorkshopService.Archive(id).ConfigureAwait(false);
 
-        return NoContent();
+        if (result.Succeeded)
+        {
+            return NoContent();
+        }
+        else
+        {
+            switch(result.Errors.FirstOrDefault()?.Code) {
+                case "400":
+                    return BadRequest(result.Errors.FirstOrDefault()?.Description);
+                case "404":
+                    return NotFound(result.Errors.FirstOrDefault()?.Description);
+                default:
+                    return StatusCode(500, result.Errors.FirstOrDefault()?.Description);
+            }
+        }
     }
 
     /// <summary>

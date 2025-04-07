@@ -19,6 +19,7 @@ public class ChangesLogService(
     IWorkshopDraftRepository workshopDraftRepository,
     IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository,
     IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
+    IWorkshopRepository workshopRepository,
     ILogger<ChangesLogService> logger,
     IValueProjector valueProjector,
     ICurrentUserService currentUserService,
@@ -33,6 +34,7 @@ public class ChangesLogService(
     public const char WORD_SEPARATOR_COMMA = ',';
 
     private static readonly char[] wordSplitSymbols = [ WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA ];
+
 
     public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
         where TEntity : class, IKeyedEntity, new()
@@ -284,6 +286,38 @@ public class ChangesLogService(
         {
             Entities = entities,
             TotalAmount = count,
+        };
+    }
+    
+    /// <inheritdoc />
+    public async Task<SearchResult<WorkshopChangesLogDto>> GetWorkshopChangesLogAsync(WorkshopChangesLogRequest request)
+    {
+        var filter = request.ToFilter();
+
+        var changesLog = await GetChangesLogAsync(filter).ConfigureAwait(false);
+
+        var workshops = workshopRepository.Get();
+
+        var query = changesLog
+            .Join(workshops,
+                l => l.EntityIdGuid,
+                w => w.Id,
+                (l, workshop) => new WorkshopChangesLogDto
+                {
+                    FieldName = l.PropertyName,
+                    OldValue = l.OldValue,
+                    NewValue = l.NewValue,
+                    UpdatedDate = l.UpdatedDate,
+                    User = l.User.ToDto(),
+                    WorkshopId = workshop.Id
+                });
+
+        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
+
+        return new SearchResult<WorkshopChangesLogDto>
+        {
+            Entities = entities,
+            TotalAmount = await query.CountAsync(),
         };
     }
 

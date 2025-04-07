@@ -28,6 +28,7 @@ public class AdminController : Controller
     private readonly ISensitiveWorkshopsService workshopService;
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
     private readonly IUserService userService;
+    private readonly IWorkshopServicesCombiner workshopServicesCombiner;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AdminController"/> class with required services for administrative operations.
@@ -49,7 +50,8 @@ public class AdminController : Controller
         ISensitiveWorkshopsService workshopService,
         IStringLocalizer<SharedResource> localizer,
         ISensitiveWorkshopDraftService workshopDraftService,
-        IUserService userService)
+        IUserService userService,
+        IWorkshopServicesCombiner workshopServicesCombiner)
     {
         this.localizer = localizer;
         this.logger = logger;
@@ -61,6 +63,7 @@ public class AdminController : Controller
         this.workshopDraftService =
             workshopDraftService ?? throw new ArgumentNullException(nameof(workshopDraftService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.workshopServicesCombiner = workshopServicesCombiner;
     }
 
     /// <summary>
@@ -298,4 +301,43 @@ public class AdminController : Controller
             return NotFound(e.Message);
         }
     }
-}
+
+    /// <summary>
+    /// Deletes a specific workshop from the database.
+    /// </summary>
+    /// <param name="id">Key.</param>
+    /// <returns>StatusCode representing the task completion.</returns>
+    /// <response code="204">If deleted successfully.</response>
+    /// <response code="404">If not found.</response>
+    /// <response code="403">If unauthorized.</response>
+    /// <response code="500">On server error.</response>
+    [HasPermission(Permissions.WorkshopRemove)]
+    [HttpDelete("{id}")]
+    [ActionName("workshops")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        if (!IsTechAdmin())
+        {
+            logger.LogError("You have no rights because you are not an admin");
+            return StatusCode(403, "Forbidden to delete workshop if you don't have TechAdmin role.");
+        }
+
+        var result = await workshopServicesCombiner.Delete(id).ConfigureAwait(false);
+
+        if (result.Succeeded)
+        {
+            return NoContent();
+        }
+
+        return result.Errors.FirstOrDefault()?.Code switch
+        {
+            "404" => NotFound(result.Errors.FirstOrDefault()?.Description),
+            "403" => StatusCode(403, result.Errors.FirstOrDefault()?.Description),
+            _ => StatusCode(500, result.Errors.FirstOrDefault()?.Description)
+        };
+    }
+}   

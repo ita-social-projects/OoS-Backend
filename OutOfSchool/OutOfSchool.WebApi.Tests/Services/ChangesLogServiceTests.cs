@@ -34,6 +34,7 @@ public class ChangesLogServiceTests
     private Mock<IWorkshopDraftRepository> workshopDraftRepositoryMock;
     private Mock<IEntityRepository<long, EmployeeChangesLog>> employeeChangesLogRepository;
     private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
+    private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -85,6 +86,7 @@ public class ChangesLogServiceTests
         workshopDraftRepositoryMock = new Mock<IWorkshopDraftRepository>(MockBehavior.Strict);
         employeeChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
         parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
+        workshopRepository = new Mock<IWorkshopRepository>(MockBehavior.Strict);
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -784,6 +786,65 @@ public class ChangesLogServiceTests
         Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
         Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
     }
+
+    [Test]
+    public async Task GetWorkshopChangesLogAsync_WithValidRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new WorkshopChangesLogRequest
+        {
+            From = 0,
+            Size = 5
+        };
+
+        var entitiesCount = 5;
+        var totalAmount = 10;
+        var changesMock = Enumerable.Range(1, totalAmount)
+            .Select(x => new ChangesLog
+            {
+                Id = x,
+                EntityIdGuid = workshop.Id,
+                PropertyName = "TestProperty",
+                OldValue = "OldValue",
+                NewValue = "NewValue",
+                UpdatedDate = DateTime.UtcNow,
+                User = user
+            })
+            .AsQueryable()
+            .BuildMock();
+
+        var workshopsMock = new List<Workshop> { workshop }
+            .AsQueryable()
+            .BuildMock();
+
+        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<WorkshopChangesLogRequest>()))
+            .Returns(new ChangesLogFilter());
+        mapper.Setup(m => m.Map<ShortUserDto>(user))
+            .Returns(new ShortUserDto { Id = user.Id });
+
+        changesLogRepository
+            .Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<Expression<Func<ChangesLog, bool>>>(), It.IsAny<Dictionary<Expression<Func<ChangesLog, Object>>, SortDirection>>()))
+            .Returns(changesMock);
+        workshopRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Dictionary<Expression<Func<Workshop, Object>>, SortDirection>>()))
+            .Returns(workshopsMock);
+
+        // Act  
+        var result = await changesLogService.GetWorkshopChangesLogAsync(request);
+
+        // Assert
+        Assert.AreEqual(totalAmount, result.TotalAmount);
+        Assert.AreEqual(entitiesCount, result.Entities.Count);
+        Assert.True(result.Entities.All(x => x.WorkshopId == workshop.Id));
+        Assert.True(result.Entities.All(x => x.FieldName == "TestProperty"));
+        Assert.True(result.Entities.All(x => x.OldValue == "OldValue"));
+        Assert.True(result.Entities.All(x => x.NewValue == "NewValue"));
+        Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
+    }
+
     #endregion
 
     #region GetWorkshopDraftChangesLogAsync
@@ -1277,6 +1338,7 @@ public class ChangesLogServiceTests
             workshopDraftRepositoryMock.Object,
             employeeChangesLogRepository.Object,
             parentBlockedByAdminLogRepository.Object,
+            workshopRepository.Object,
             logger.Object,
             valueProjector.Object,
             currentUserServiceMock.Object,
