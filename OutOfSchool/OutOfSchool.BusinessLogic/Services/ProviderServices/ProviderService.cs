@@ -451,7 +451,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <inheritdoc/>
     public Task<bool> Exists(Guid id)
     {
-        logger.LogInformation($"Checking if Provider exists by Id. Looking Id = {id}.");
+        logger.LogDebug("Checking if Provider exists by Id. Looking Id = {Id}", id);
 
         return providerRepository.Any(x => x.Id == id);
     }
@@ -496,7 +496,13 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return uploadResponse;
     }
 
-    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    /// <inheritdoc />
+    public async Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId) =>
+        await providerRepository.Get(whereExpression: x => x.Id == providerId)
+            .Select(p => new Tuple<ProviderLicenseStatus, OwnershipType>(p.LicenseStatus, p.Ownership))
+            .SingleOrDefaultAsync();
+
+private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 

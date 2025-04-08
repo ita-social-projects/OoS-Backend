@@ -656,8 +656,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Never);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
@@ -682,8 +680,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(true).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
@@ -708,8 +704,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(true).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
@@ -736,8 +730,6 @@ public class WorkshopControllerTests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopServiceMoq.Setup(x => x.Create(workshopCreateRequestDto))
             .ReturnsAsync(workshop).Verifiable(Times.Never);
 
@@ -916,8 +908,6 @@ public class WorkshopControllerTests
         // Arrange
         workshop.ProviderId = provider.Id;
 
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
-
         var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
 
         workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
@@ -962,7 +952,6 @@ public class WorkshopControllerTests
         workshop.ProviderId = provider.Id;
         workshop.ProviderOwnership = OwnershipType.Common;
 
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId, It.IsAny<bool>()))
             .ReturnsAsync(workshop);
         workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest)).
@@ -1000,7 +989,6 @@ public class WorkshopControllerTests
         // Arrange
         workshop.ProviderId = provider.Id;
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
         workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
 
@@ -1088,8 +1076,6 @@ public class WorkshopControllerTests
     {
         workshopUpdateDto.ProviderId = provider.Id;
         providerServiceMoq.Setup(x => x.IsBlocked(provider.Id)).ReturnsAsync(false);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider);
         workshopServiceMoq.Setup(x => x.Update(workshopUpdateDto))
             .ReturnsAsync(result);
     }

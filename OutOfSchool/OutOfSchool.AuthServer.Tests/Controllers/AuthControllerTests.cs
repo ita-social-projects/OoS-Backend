@@ -230,6 +230,7 @@ public class AuthControllerTests
         // Arrange
         var user = UserGenerator.Generate();
         var loginViewModel = CreateLoginViewModelFromData();
+        user.Role = "parent";
         user.MustChangePassword = true;
         SetupDefaultUserManagerFindByEmailAsync(user);
         SetupDefaultSignInManagerCheckPasswordSignInAsync(SignInResult.Success);

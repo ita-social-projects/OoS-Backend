@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
@@ -35,7 +36,8 @@ public class PositionControllerTests
         providerService = new Mock<IProviderService>();        
 
         controller = new PositionController(
-            positionService.Object   
+            positionService.Object,
+            new Mock<ILogger<PositionController>>().Object
         );
         
         providerId = Guid.NewGuid();

@@ -299,7 +299,6 @@ public class ApplicationControllerTests
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
         workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
-        providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
