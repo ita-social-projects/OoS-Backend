@@ -11,9 +11,13 @@ public class PositionController : ControllerBase
     private readonly IPositionService positionService;
     private readonly ILogger<PositionController> logger;
 
-    public PositionController(IPositionService positionService)
+    public PositionController(
+        IPositionService positionService,
+        ILogger<PositionController> logger
+        )
     {
         this.positionService = positionService ?? throw new ArgumentNullException(nameof(positionService));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -129,7 +133,7 @@ public class PositionController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occured while deleting position");
-            return BadRequest(ex.Message);
+            return BadRequest();
         }        
     }
 }
