@@ -140,36 +140,6 @@ public class WorkshopController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Get all workshops (Id, Title) from the database by employee's id sorted by Title.
-    /// </summary>
-    /// <param name="employeeId">Id of the employee.</param>
-    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{employeeId}")]
-    public async Task<IActionResult> GetWorkshopListByEmployeeId(string employeeId)
-    {
-        if (employeeId == string.Empty)
-        {
-            return BadRequest("Emplyee id is empty.");
-        }
-
-        var workshops = await combinedWorkshopService.GetWorkshopListByEmployeeId(employeeId);
-
-        if (!workshops.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(workshops);
-    }
-
     // TODO: Check what these two methods do
     /// <summary>
     /// Get workshop cards by Provider's Id.

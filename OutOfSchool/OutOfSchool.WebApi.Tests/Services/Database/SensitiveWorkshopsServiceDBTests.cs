@@ -91,8 +91,7 @@ public class SensitiveWorkshopsServiceDBTests
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
-                applicationRepositoryMock.Object
-                );
+                applicationRepositoryMock.Object);
 
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();

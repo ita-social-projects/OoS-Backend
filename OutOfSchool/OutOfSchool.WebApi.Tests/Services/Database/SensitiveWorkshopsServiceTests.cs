@@ -79,8 +79,7 @@ public class SensitiveWorkshopsServiceTests
                 tagServiceMock.Object,
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
-                applicationRepositoryMock.Object
-                );
+                applicationRepositoryMock.Object);
     }
 
     #region FetchByFilterForAdmins

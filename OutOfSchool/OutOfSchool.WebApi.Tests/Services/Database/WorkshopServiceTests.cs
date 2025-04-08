@@ -1376,25 +1376,6 @@ public class WorkshopServiceTests
         averageRatingServiceMock.Setup(r => r.GetByEntityIdsAsync(workshopGuids)).ReturnsAsync(WithAvarageRatings(workshopGuids));
     }
 
-    private void SetupGetWorkshopsWithAttachmentStatusByProviderId()
-    {
-        workshopRepository
-            .Setup(
-                w => w.GetByFilter(
-                    It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()));
-
-        mapperMock
-            .Setup(m => m.Map<WorkshopAttachmentStatusDto>(It.IsAny<Workshop>()))
-            .Returns((Workshop w) => new WorkshopAttachmentStatusDto
-            {
-                Id = w.Id,
-                Title = w.Title,
-                IsAttached = false
-            });
-    }
-
     private void SetupGetWorkshopsByProviderById(List<Workshop> workshopBaseCardsList)
     {
         workshopRepository
