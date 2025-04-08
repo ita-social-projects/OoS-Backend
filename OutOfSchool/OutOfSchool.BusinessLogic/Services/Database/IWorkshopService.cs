@@ -1,5 +1,4 @@
-﻿using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 

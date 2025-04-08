@@ -53,7 +53,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -75,7 +74,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
     /// <param name="tagService">Service for Tag entity.</param>
-    /// <param name="studySubjectRepository">Repository for StudySubject entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
         IEntityRepository<long, Tag> tagRepository,
@@ -94,8 +92,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository,
-        IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository)
+        IApplicationRepository applicationRepository)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -115,7 +112,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
-        this.studySubjectRepository = studySubjectRepository;
     }
 
     /// <inheritdoc/>
