@@ -156,7 +156,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of provider full title.
     /// </summary>
-    public const int MaxProviderFullTitleLength = 60;
+    public const int MaxProviderFullTitleLength = 256;
 
     /// <summary>
     /// Minimum length of provider short title.
