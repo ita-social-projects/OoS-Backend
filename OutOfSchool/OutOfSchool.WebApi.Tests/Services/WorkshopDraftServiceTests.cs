@@ -48,6 +48,7 @@ public class WorkshopDraftServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMoq;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Moq;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
+    private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
 
     private string userId;
 
@@ -69,6 +70,7 @@ public class WorkshopDraftServiceTests
         tagRepositoryMoq = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
+        codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -80,8 +82,7 @@ public class WorkshopDraftServiceTests
         var regionAdminService = new Mock<IRegionAdminService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
-        var searchStringService = new Mock<ISearchStringService>();
-        var codeficatorRepository = new Mock<ICodeficatorRepository>();        
+        var searchStringService = new Mock<ISearchStringService>();              
 
         userId = "someUserId";
 
@@ -101,7 +102,7 @@ public class WorkshopDraftServiceTests
                    codeficatorService.Object,
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
-                   codeficatorRepository.Object);
+                   codeficatorRepositoryMoq.Object);
     }
 
     #region Create
@@ -133,7 +134,12 @@ public class WorkshopDraftServiceTests
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
             .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
-        
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
+
         // Act 
         var result = await service.Create(workshopV2Dto).ConfigureAwait(false);
 
@@ -188,6 +194,11 @@ public class WorkshopDraftServiceTests
                 MultipleImageChangingResult,
                 List<TeacherCreateUpdateResultDto>)>> f) => f.Invoke())
             .Verifiable(Times.Once);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
 
         //Act
         var result = await service.Update(workshopUpdateDto).ConfigureAwait(false);
@@ -521,6 +532,11 @@ public class WorkshopDraftServiceTests
             .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
 
         // Act
         var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
