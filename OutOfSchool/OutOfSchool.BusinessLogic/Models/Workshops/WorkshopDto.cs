@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
@@ -46,5 +47,5 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
     public string Instagram { get; set; } = string.Empty;
 
-    public AddressDto Address { get; set; }
+    public ContactsAddressDto Address { get; set; }
 }

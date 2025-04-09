@@ -26,7 +26,6 @@ using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 using OutOfSchool.Services.Models.CompetitiveEvents;
-using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.BusinessLogic.Util;
@@ -189,11 +188,6 @@ public class MappingProfile : Profile
             .IncludeBase<WorkshopBaseDto, Workshop>()
             .ForMember(dest => dest.Tags, opt => opt.Ignore());
 
-        // TODO: Remove when fully refactor addresses
-        CreateMap<ContactsAddress, AddressDto>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
-
         CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
         CreateMap<WorkshopStatusDto, WorkshopStatusWithTitleDto>()
@@ -201,8 +195,6 @@ public class MappingProfile : Profile
 
         CreateMap<WorkshopStatusWithTitleDto, WorkshopStatusDto>();
 
-        CreateMap<Address, AddressDto>()
-            .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.MapFrom(src => src.CATOTTG));
 
         /// <summary>
         /// The localization is done outside the mapping
@@ -236,10 +228,6 @@ public class MappingProfile : Profile
         CreateMap<SocialGroupCreate, SocialGroup>()
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
             .ForMember(dest => dest.Children, opt => opt.Ignore());
-
-        CreateSoftDeletedMap<AddressDto, Address>()
-            .ForMember(dest => dest.CATOTTG, opt => opt.Ignore())
-            .ForMember(dest => dest.GeoHash, opt => opt.Ignore());
 
         CreateSoftDeletedMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())

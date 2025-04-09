@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -175,8 +176,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.WorkshopId, opt => opt.Ignore())
             .ReverseMap();
 
-        CreateMap<AddressDraft, AddressDto>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
+        CreateMap<AddressDraft, ContactsAddressDto>()
             .ForMember(dest => dest.CodeficatorAddressDto, opt => opt.Ignore())
             .ReverseMap();
 

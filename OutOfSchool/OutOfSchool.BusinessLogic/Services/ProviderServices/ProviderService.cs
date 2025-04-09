@@ -25,7 +25,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IProviderRepository providerRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
-    private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
     private readonly ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository;
     private readonly IOfficialRepository officialRepository;
     private readonly IPositionRepository positionRepository;
@@ -85,7 +84,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        IEntityRepositorySoftDeleted<long, Address> addressRepository,
         ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
         IOfficialRepository officialRepository,
         IPositionRepository positionRepository,
@@ -110,7 +108,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     {
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
         this.individualRepository = individualRepository ?? throw new ArgumentNullException(nameof(individualRepository));
         this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
         this.positionRepository = positionRepository ?? throw new ArgumentNullException(nameof(positionRepository));

@@ -23,4 +23,6 @@ public class AddressES
     public string BuildingNumber { get; set; }
 
     public GeoLocation Point { get; set; }
+
+
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 
@@ -57,7 +58,7 @@ public class WorkshopBaseCard : IHasRating
     public Guid ProviderId { get; set; }
 
     // TODO: for backward compatibility, remove when front changes
-    public AddressDto Address { get; set; }
+    public ContactsAddressDto Address { get; set; }
 
     public float Rating { get; set; }
 

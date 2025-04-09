@@ -110,19 +110,6 @@ public class ChangesLogServiceTests
         // Assert
         Assert.AreEqual(1, result);
     }
-
-    [Test]
-    public void AddEntityChangesToDbContext_WhenTrackingIsNotEnabledForTheEntity_DoesNotLogChanges()
-    {
-        // Arrange
-        var changesLogService = GetChangesLogService();
-
-        // Act
-        var result = changesLogService.AddEntityChangesToDbContext(new Address(), user.Id);
-
-        // Assert
-        Assert.AreEqual(0, result);
-    }
     #endregion
 
     #region AddCreatingOfEntityToDbContext
@@ -142,19 +129,6 @@ public class ChangesLogServiceTests
 
         // Assert
         Assert.AreEqual(true, result);
-    }
-
-    [Test]
-    public async Task AddCreatingOfEntityToDbContext_WhenTrackingIsNotEnabledForTheEntity_DoesNotLogChanges()
-    {
-        // Arrange
-        var changesLogService = GetChangesLogService();
-
-        // Act
-        var result = await changesLogService.AddCreatingOfEntityToDbContext(new Address(), user.Id).ConfigureAwait(false);
-
-        // Assert
-        Assert.AreEqual(false, result);
     }
     #endregion
 

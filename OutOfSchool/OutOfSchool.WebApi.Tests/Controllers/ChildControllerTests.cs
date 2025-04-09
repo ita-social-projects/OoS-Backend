@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -313,7 +314,7 @@ public class ChildControllerTests
             MaxAge = 10,
             MinAge = 4,
             CoverImageId = "image1",
-            Address = new AddressDto
+            Address = new ContactsAddressDto
             {
                 CATOTTGId = 4970,
             },

@@ -40,22 +40,6 @@ public class ElasticProfile : Profile
             .CommonFieldsMapping()
             .ApplyDefaultsForHiddenFields();
 
-        CreateMap<AddressDto, AddressES>()
-            .ForMember(
-                dest => dest.Point,
-                opt =>
-                    opt.MapFrom(a => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
-                    {
-                        Lat = a.Latitude,
-                        Lon = a.Longitude,
-                    })))
-            .ForMember(
-                dest => dest.CodeficatorAddressES,
-                opt => opt.MapFrom(c => c.CodeficatorAddressDto))
-            .ForMember(
-                dest => dest.City,
-                opt => opt.MapFrom(src => src.CodeficatorAddressDto.Settlement));
-
         CreateMap<AllAddressPartsDto, CodeficatorAddressES>()
             .ForMember(
                 dest => dest.ParentId,
@@ -90,7 +74,7 @@ public class ElasticProfile : Profile
 
         CreateMap<SearchResultES<WorkshopES>, SearchResult<WorkshopCard>>();
 
-        CreateMap<AddressES, AddressDto>()
+        CreateMap<AddressES, ContactsAddressDto>()
             .ForMember(
                 dest => dest.Latitude,
                 opt =>
@@ -102,21 +86,6 @@ public class ElasticProfile : Profile
             .ForMember(
                 dest => dest.CodeficatorAddressDto,
                 opt => opt.MapFrom(src => src.CodeficatorAddressES));
-
-        CreateMap<Address, AddressES>()
-            .ForMember(
-                dest => dest.Point,
-                opt => opt.MapFrom(gl => GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
-                {
-                    Lat = Math.Abs(gl.Latitude - 0d) < Epsilon ? gl.CATOTTG.Latitude : gl.Latitude,
-                    Lon = Math.Abs(gl.Longitude - 0d) < Epsilon ? gl.CATOTTG.Longitude : gl.Longitude,
-                })))
-            .ForMember(
-                dest => dest.City,
-                opt => opt.MapFrom(c => c.CATOTTG.Name))
-            .ForMember(
-                dest => dest.CodeficatorAddressES,
-                opt => opt.MapFrom(c => c.CATOTTG));
 
         CreateMap<ContactsAddressDto, AddressES>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())

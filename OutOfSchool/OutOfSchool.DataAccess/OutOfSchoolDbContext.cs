@@ -46,8 +46,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<PermissionsForRole> PermissionsForRoles { get; set; }
 
-    public DbSet<Address> Addresses { get; set; }
-
     public DbSet<Application> Applications { get; set; }
 
     public DbSet<Rating> Ratings { get; set; }
@@ -160,7 +158,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new AchievementConfiguration());
         builder.ApplyConfiguration(new AchievementTeacherConfiguration());
         builder.ApplyConfiguration(new AchievementTypeConfiguration());
-        builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
         builder.ApplyConfiguration(new AreaAdminConfiguration());
         builder.ApplyConfiguration(new AverageRatingConfiguration());

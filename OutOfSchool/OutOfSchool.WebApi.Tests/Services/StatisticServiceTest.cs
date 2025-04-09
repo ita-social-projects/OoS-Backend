@@ -10,6 +10,7 @@ using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
@@ -689,8 +690,8 @@ public class StatisticServiceTest
     {
         return new List<WorkshopCard>
         {
-            new WorkshopCard {Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
-            new WorkshopCard {Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
+            new WorkshopCard {Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new ContactsAddressDto {CATOTTGId = 5000}},
+            new WorkshopCard {Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new ContactsAddressDto {CATOTTGId = 4970}},
         };
     }
 
@@ -702,7 +703,7 @@ public class StatisticServiceTest
             {
                 Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
                 Title = "w3",
-                Address = new AddressDto
+                Address = new ContactsAddressDto
                 {
                     CATOTTGId = 5000,
                 },

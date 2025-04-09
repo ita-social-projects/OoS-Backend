@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.SocialGroup;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -680,9 +681,8 @@ public class ApplicationControllerTests
             CoverImageId = "image6",
             ProviderId = Guid.NewGuid(),
             InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            Address = new AddressDto
+            Address = new ContactsAddressDto
             {
-                Id = 55,
                 CATOTTGId = 4970,
                 Street = "Street55",
                 BuildingNumber = "BuildingNumber55",
@@ -742,7 +742,7 @@ public class ApplicationControllerTests
                 MinAge = 4,
                 CoverImageId = "image1",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
+                Address = new ContactsAddressDto
                 {
                     CATOTTGId = 4970,
                 },
@@ -767,7 +767,7 @@ public class ApplicationControllerTests
                 MinAge = 4,
                 CoverImageId = "image2",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
+                Address = new ContactsAddressDto
                 {
                     CATOTTGId = 4970,
                 },
@@ -837,7 +837,7 @@ public class ApplicationControllerTests
                 MinAge = 4,
                 CoverImageId = "image5",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
+                Address = new ContactsAddressDto
                 {
                     CATOTTGId = 4970,
                 },

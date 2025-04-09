@@ -72,7 +72,6 @@ public class ProviderServiceV2Tests
         providersRepositoryMock = new Mock<IProviderRepository>();
 
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
-        var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var individualRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
         var officialRepo = new Mock<IOfficialRepository>();
         var positionRepo = new Mock<IPositionRepository>();
@@ -105,7 +104,6 @@ public class ProviderServiceV2Tests
             logger.Object,
             localizer.Object,
             mapper,
-            addressRepo.Object,
             individualRepo.Object,
             officialRepo.Object,
             positionRepo.Object,
