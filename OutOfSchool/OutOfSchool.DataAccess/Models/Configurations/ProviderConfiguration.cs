@@ -40,7 +40,7 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
             .IsRequired()
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
 
-        builder.HasIndex(x => x.Edrpou);
+        builder.HasIndex(x => x.Edrpou).IsUnique();
 
         builder.Property(x => x.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate();
