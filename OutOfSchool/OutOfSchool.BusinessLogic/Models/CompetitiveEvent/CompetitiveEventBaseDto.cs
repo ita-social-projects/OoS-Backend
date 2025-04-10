@@ -101,8 +101,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
 
     public uint? NumberOfOccupiedSeats { get; set; }
 
-    public List<Guid> ParticipantsOfTheEvent { get; set; } = [];
-
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
 }

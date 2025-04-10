@@ -14,13 +14,13 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
         builder.HasOne(c => c.CompetitiveEventAccountingType)
            .WithMany()
            .HasForeignKey(c => c.CompetitiveEventAccountingTypeId)
-           .IsRequired(true)
+           .IsRequired()
            .OnDelete(DeleteBehavior.Restrict);
         
         builder.HasOne(c => c.Coverage)
             .WithMany()
             .HasForeignKey(c => c.CoverageId)
-            .IsRequired(true)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(c => c.Judges)
@@ -40,5 +40,10 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
            .HasForeignKey(c => c.InstitutionHierarchyId)
            .IsRequired(false)
            .OnDelete(DeleteBehavior.SetNull);
+        
+        builder.HasOne(c => c.OrganizerOfTheEvent)
+            .WithMany()
+            .HasForeignKey(c => c.OrganizerOfTheEventId)
+            .IsRequired();
     }
 }
