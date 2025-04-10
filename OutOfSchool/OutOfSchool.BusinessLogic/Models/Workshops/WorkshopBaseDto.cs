@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -25,8 +24,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool NoAgeRestrictions { get; set; } = false;
 
     [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]

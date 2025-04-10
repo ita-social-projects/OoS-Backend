@@ -50,7 +50,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
-            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .Apply(this.IgnoreContactsFromDto)
