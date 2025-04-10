@@ -3,7 +3,6 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Models;
 using SkiaSharp;
-//using System.Net.Mime;
 
 namespace OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
 public class ThumbnailProcessingService : IThumbnailProcessingService
@@ -27,11 +26,22 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
     {
         var thumbnailId = GetThumbnailId(imageId);
         var thumbnail = await imageService.GetByIdAsync(thumbnailId);
-        return thumbnail.Value != null;
+
+        if (thumbnail.Succeeded)
+        {
+            return thumbnail.Value != null;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private string GetThumbnailId(string imageId)
-       => Path.GetFileNameWithoutExtension(imageId) + $"-thumbnail.{options.Format}";
+    {
+        var decoded = Uri.UnescapeDataString(imageId);
+        return decoded + $"-thumbnail.{options.Format}";
+    }
 
     private (int width, int height) GetNewResizedParametres(int basicWidth, int basicHeight)
     {
@@ -45,7 +55,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
         
         try
         {
-            var image = imageService.GetByIdAsync(imageId);
+            var image = imageService.GetByIdAsync(Uri.UnescapeDataString(imageId));
             using var streamMinio = image.Result.Value.ContentStream;
 
             using var skStream = new SKManagedStream(streamMinio);
@@ -79,17 +89,14 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             using var thumbnailStream = encoded.AsStream();
 
-            var metadata = new Dictionary<string, string>
+            var metadataThumbnail = new Dictionary<string, string>
             { 
-                { "processed", "true" } 
+                { "customFileName", thumbnailId }
             };
 
-            //TODO: rewrite with metadata + IObjectStorage
-
-            var formFile = new FormFile(thumbnailStream, 0, thumbnailStream.Length, "file", "thumbnail.jpg")
+            var metadataImage = new Dictionary<string, string>
             {
-                Headers = new HeaderDictionary(),
-                ContentType = "image/jpeg"
+                { "is-processed", "true" }
             };
 
             var uploadedThumbnailId = await imageStorage.UploadAsync(
@@ -99,14 +106,12 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
                     ContentType = "image/jpeg"
                 },
                 cacheControl: Constants.PublicImageCacheControl,
-                metadata: metadata);
+                metadata: metadataThumbnail);
 
-            //var imageStorageId = await imageStorage
-            //.UploadAsync(
-            //      new ImageFileModel { ContentStream = contentStream, ContentType = contentType },
-            //      prefix,
-            //      Constants.PublicImageCacheControl)
-            //  .ConfigureAwait(false);
+            if (imageStorage is IMetadataStorage metadataStorage)
+            {
+                await metadataStorage.UpdateMetadataAsync(Uri.UnescapeDataString(imageId), metadataImage);
+            }
 
             logger.LogInformation("Thumbnail saved: {ThumbnailId}", thumbnailId);
 

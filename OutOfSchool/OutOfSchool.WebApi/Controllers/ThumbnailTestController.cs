@@ -47,4 +47,30 @@ public class ThumbnailTestController : ControllerBase
             return StatusCode(500, "Internal error occurred during thumbnail generation.");
         }
     }
+
+    [HttpPost("{imageId}")]
+    public async Task<IActionResult> HasThumbnail(string imageId)
+    {
+        if (string.IsNullOrWhiteSpace(imageId))
+        {
+            return BadRequest("Image ID is required.");
+        }
+
+        try
+        {
+            var result = await thumbnailService.HasThumbnail(imageId);
+
+            if (!result)
+            {
+                return StatusCode(500, "Thumbnail not exist.");
+            }
+
+            return Ok($"Thumbnail for imageId '{imageId}' is alrady exist in external storage.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occures while searching for thumbnail with imageId: {ImageId}", imageId);
+            return StatusCode(500, "Internal error occurred during thumbnail searching.");
+        }
+    }
 }

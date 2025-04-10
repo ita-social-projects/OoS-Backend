@@ -68,10 +68,20 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
         var fileId = this.GenerateFileId();
         var fullFileName = CreateFullPathFromFileId(fileId, main_subfolder);
+        var customFileName = String.Empty;
 
         try
         {
-            return await UploadOperationAsync(file, fullFileName, cacheControl, metadata, cancellationToken);
+            if (metadata.TryGetValue("customFileName", out customFileName))
+            {
+                metadata.Remove("customFileName");
+            }
+            else
+            {
+                customFileName = fullFileName;
+            }
+            return await UploadOperationAsync(file, fullFileName: customFileName, cacheControl, metadata, cancellationToken);
+
         }
         catch (Exception ex)
         {

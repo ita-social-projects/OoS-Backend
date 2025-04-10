@@ -8,7 +8,7 @@ using OutOfSchool.ExternalFileStore.Models;
 namespace OutOfSchool.ExternalFileStore.S3;
 
 public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> storageContext)
-    : FilesStorageBase<TFile, IMinioClient>(storageContext)
+    : FilesStorageBase<TFile, IMinioClient>(storageContext), IMetadataStorage
     where TFile : FileModel, new()
 {
     protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default)
@@ -88,5 +88,45 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
 
         throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsArgs)}", nameof(options));
+    }
+
+    public async Task<IDictionary<string, string>> GetCurrentMetadataAsync(string objectId, CancellationToken cancellationToken = default)
+    {
+        var stat = await StorageClient.StatObjectAsync(new StatObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(objectId),
+            cancellationToken);
+
+        return stat.MetaData.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToString() ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task UpdateMetadataAsync(string objectId, IDictionary<string, string> newMetadata, CancellationToken cancellationToken = default)
+    {
+        var existingMetadata = await GetCurrentMetadataAsync(objectId);
+
+        foreach (var kvp in newMetadata)
+        {
+            existingMetadata[kvp.Key] = kvp.Value;
+        }
+
+        using var stream = new MemoryStream();
+        await StorageClient.GetObjectAsync(new GetObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(objectId)
+            .WithCallbackStream(s => s.CopyTo(stream)),
+            cancellationToken);
+
+        stream.Position = 0;
+
+        await StorageClient.PutObjectAsync(new PutObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(objectId)
+            .WithStreamData(stream)
+            .WithObjectSize(stream.Length)
+            .WithHeaders(existingMetadata),
+            cancellationToken);
     }
 }
