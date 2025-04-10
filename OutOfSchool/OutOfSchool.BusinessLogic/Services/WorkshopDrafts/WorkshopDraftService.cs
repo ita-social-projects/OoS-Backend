@@ -463,6 +463,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         return await MapWorkshopDraftWithDetails(draft);
     }
 
+    // <inheritdoc/> 
     public async Task<WorkshopV2Dto> UpdateWorkshop(WorkshopV2Dto workshopV2Dto)
     {
         logger.LogDebug("Workshop Update started. Workshop Id = {Id}.", workshopV2Dto.Id);
@@ -498,6 +499,20 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
         return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
+    }
+
+    // <inheritdoc/> 
+    public async Task<Guid?> GetWorkshopDraftIdByWorkshopId(Guid workshopId)
+    {
+        var workshopDraft = await workshopDraftRepository.Get(
+            whereExpression: wd => wd.WorkshopId == workshopId).FirstOrDefaultAsync();
+
+        if (workshopDraft == null)
+        {
+            return null;
+        }
+
+        return workshopDraft.Id;
     }
 
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)

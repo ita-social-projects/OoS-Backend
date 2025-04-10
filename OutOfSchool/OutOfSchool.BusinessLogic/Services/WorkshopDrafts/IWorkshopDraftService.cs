@@ -94,8 +94,17 @@ public interface IWorkshopDraftService
     /// </summary>
     /// <param name="workshopV2Dto">Dto containing information required to update the draft.</param>   
     /// <returns>
-    /// A <see cref="WorkshopV2Dto"/> containing the details of the updated workshop, 
-    /// including any results or status from image processing operations.
+    /// A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains <see cref="WorkshopV2Dto"/> containing the details of the updated workshop.
     /// </returns>
     Task<WorkshopV2Dto> UpdateWorkshop(WorkshopV2Dto workshopV2Dto);
+
+    /// <summary>
+    /// Get WorkshopDraft Id by Workshop Id.   
+    /// </summary>
+    /// <param name="workshopId">Workshop Id.</param>   
+    /// <returns>
+    /// A <see cref="Guid"/> representing the WorkshopDraft Id, or null if no matching WorkshopDraft exists.
+    /// </returns>
+    Task<Guid?> GetWorkshopDraftIdByWorkshopId(Guid workshopId);
 }

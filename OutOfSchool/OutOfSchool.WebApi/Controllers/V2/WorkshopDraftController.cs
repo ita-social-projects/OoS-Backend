@@ -75,7 +75,7 @@ public class WorkshopDraftController : ControllerBase
             new { id = result.WorkshopDraft.WorkshopDraftId },
             result);
     }
-    
+
     [HasPermission(Permissions.WorkshopEdit)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -188,7 +188,7 @@ public class WorkshopDraftController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
-          
+
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -222,11 +222,11 @@ public class WorkshopDraftController : ControllerBase
     [HttpGet("provider/{id}/drafts")]
     public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter) =>
         await workshopDraftService.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
-    
+
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
         var isBlocked = await providerService.IsBlocked(providerId).ConfigureAwait(false);
-        
+
         // null means Provider does not exist
         if (!isBlocked.HasValue)
         {
@@ -255,5 +255,16 @@ public class WorkshopDraftController : ControllerBase
     {
         var responseDto = await workshopDraftService.GetWorkshopDraftByIdMapped(id);
         return responseDto is not null ? Ok(responseDto) : NotFound();
+    }
+
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [HttpGet("{workshopId}")]
+    public async Task<IActionResult> GetWorkshopDraftIdByWorkshopId(Guid workshopId)
+    {
+        return Ok(await workshopDraftService.GetWorkshopDraftIdByWorkshopId(workshopId));
     }
 }
