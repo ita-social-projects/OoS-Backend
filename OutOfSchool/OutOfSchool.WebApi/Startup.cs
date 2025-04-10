@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
+using Minio;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AikomApiClient.Extensions;
@@ -36,6 +37,8 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
+using OutOfSchool.ExternalFileStore.NotificationImplementations;
+using OutOfSchool.ExternalFileStore.NotificationInterfaces;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -669,6 +672,47 @@ public static class Startup
                 policy.RequireAuthenticatedUser();
                 policy.RequireClaim(OpenIddictConstants.Claims.Scope, Constants.OpenIddictScopes.ExternalExportRead);
             });
+        });
+
+        // MinIO - Redis notifications
+        builder.Services.AddSingleton<RedisStorageNotificationHandler>();
+        builder.Services.AddSingleton<MinioRedisNotificationBridge>();
+        builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
+
+        // Register redis
+        builder.Services.AddSingleton<IConnectionMultiplexer>(provider => {            
+            return ConnectionMultiplexer.Connect("localhost:6379");
+        });
+
+        // Register minio
+        builder.Services.AddSingleton<IMinioClient>(sp => {
+            var minioClient = new MinioClient()
+                .WithEndpoint("localhost", 9100)
+                .WithCredentials("minioadmin", "minioadmin")
+                .WithSSL(false)
+                .Build();
+            return minioClient;
+        });
+
+        builder.Services.AddSingleton(provider => {
+            var client = provider.GetRequiredService<IMinioClient>();
+            if (client is MinioClient minioClient)
+                return minioClient;
+
+            throw new InvalidOperationException("IMinioClient is not of type MinioClient");
+        });
+
+        builder.Services.AddHostedService(provider => {
+            var redis = provider.GetRequiredService<RedisStorageNotificationHandler>();
+            var logger = provider.GetRequiredService<ILogger<MinioNotificationBackgroundService>>();
+            var bridge = provider.GetRequiredService<MinioRedisNotificationBridge>();
+
+            return new MinioNotificationBackgroundService(
+                redis,
+                logger,
+                bridge,
+                "my-bucket"
+            );
         });
     }
 }
