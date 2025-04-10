@@ -53,11 +53,9 @@ public class ProcessNotificationService : IProcessNotificationService
         {
             _logger.LogDebug("Parsing MinIO notification: {Notification}", notification.Json);
 
-            // Parse the notification JSON
             var jsonDoc = JsonDocument.Parse(notification.Json);
             var root = jsonDoc.RootElement;
-
-            // MinIO notifications have a standard format with Records array
+            
             if (!root.TryGetProperty("Records", out var records) || records.ValueKind != JsonValueKind.Array)
             {
                 _logger.LogWarning("Notification JSON does not contain Records array: {Json}", notification.Json);
@@ -67,7 +65,7 @@ public class ProcessNotificationService : IProcessNotificationService
             // Process the first record (usually there's only one per notification)
             var record = records[0];
 
-            // Extract event data (We only care about ObjectCreated events)
+            // Extract event data
             var eventNameString = record.GetProperty("eventName").GetString();
 
             // Skip if it's not an ObjectCreated event
@@ -86,8 +84,7 @@ public class ProcessNotificationService : IProcessNotificationService
             // The object key may contain URL encoding
             var objectKey = s3.GetProperty("object").GetProperty("key").GetString();
             objectKey = Uri.UnescapeDataString(objectKey); // Decode URL-encoded characters
-
-            // Create and return the notification event
+            
             return new StorageNotificationEvent
             {
                 BucketName = bucket,
