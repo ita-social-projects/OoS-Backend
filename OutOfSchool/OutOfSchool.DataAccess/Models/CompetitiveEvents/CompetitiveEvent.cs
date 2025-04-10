@@ -65,7 +65,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set;}
-
     
     [Required]
     public int CoverageId { get; set; }
@@ -126,10 +125,8 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public virtual List<Image<CompetitiveEvent>> Images { get; set; }
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
     public virtual ICollection<Judge> Judges { get; set; }
-    public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
     public virtual CompetitiveEventCoverage Coverage { get; set; }
 
-    [ForeignKey(nameof(OrganizerOfTheEventId))]
     public virtual Provider OrganizerOfTheEvent { get; set; }
     public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
     public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
