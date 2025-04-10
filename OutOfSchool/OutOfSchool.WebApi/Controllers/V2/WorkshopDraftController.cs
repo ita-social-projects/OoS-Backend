@@ -258,13 +258,14 @@ public class WorkshopDraftController : ControllerBase
     }
 
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid?))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [HttpGet("{workshopId}")]
     public async Task<IActionResult> GetWorkshopDraftIdByWorkshopId(Guid workshopId)
     {
-        return Ok(await workshopDraftService.GetWorkshopDraftIdByWorkshopId(workshopId));
+        var result = await workshopDraftService.GetWorkshopDraftIdByWorkshopId(workshopId);
+        return result.HasValue ? Ok(result) : NoContent();
     }
 }
