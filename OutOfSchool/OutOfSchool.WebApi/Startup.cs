@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Minio;
 using OpenIddict.Abstractions;
@@ -685,33 +686,46 @@ public static class Startup
         });
 
         // Register minio
+        builder.Services.Configure<StorageOptions>(
+        builder.Configuration.GetSection(StorageOptions.SectionName));
         builder.Services.AddSingleton<IMinioClient>(sp => {
+
+            var storageOptions = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            var amazonS3 = storageOptions.Providers.AmazonS3;
+
+            var uri = new Uri($"https://{amazonS3.ServiceUrl}");
+
             var minioClient = new MinioClient()
-                .WithEndpoint("localhost", 9100)
-                .WithCredentials("minioadmin", "minioadmin")
-                .WithSSL(false)
+                .WithEndpoint(uri.Host)
+                .WithCredentials(amazonS3.AccessKey, amazonS3.SecretKey)
+                .WithSSL(uri.Scheme == "https")
                 .Build();
             return minioClient;
         });
-
+        
         builder.Services.AddSingleton(provider => {
             var client = provider.GetRequiredService<IMinioClient>();
             if (client is MinioClient minioClient)
                 return minioClient;
-
+        
             throw new InvalidOperationException("IMinioClient is not of type MinioClient");
         });
 
+        // Background service
         builder.Services.AddHostedService(provider => {
             var redis = provider.GetRequiredService<RedisStorageNotificationHandler>();
             var logger = provider.GetRequiredService<ILogger<MinioNotificationBackgroundService>>();
             var bridge = provider.GetRequiredService<MinioRedisNotificationBridge>();
 
+            var storageOptions = provider.GetRequiredService<IOptions<StorageOptions>>().Value;
+            var amazonS3 = storageOptions.Providers.AmazonS3;
+
             return new MinioNotificationBackgroundService(
                 redis,
                 logger,
                 bridge,
-                "my-bucket"
+                amazonS3.AccessKey
+
             );
         });
     }
