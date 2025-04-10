@@ -183,7 +183,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook).Url))
             .ForMember(dest => dest.Instagram,
                 opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url))
-            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
   
 

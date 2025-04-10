@@ -28,8 +28,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool NoAgeRestrictions { get; set; } = false;
 
     [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]
