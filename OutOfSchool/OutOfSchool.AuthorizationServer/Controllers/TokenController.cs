@@ -55,70 +55,6 @@ public class TokenController : Controller
         _aikomProviderService = aikomProviderService;
     }
 
-    /// <summary>
-    /// Sets essential identity claims required for proper token generation and user identification.
-    /// This method MUST be called when creating or refreshing tokens to ensure proper claim propagation,
-    /// especially for external authentication scenarios.
-    /// </summary>
-    /// <param name="identityToPopulate">The identity to populate with claims</param>
-    /// <param name="existingPrincipal">The existing principal containing source claims</param>
-    /// <param name="user">The user entity for retrieving roles when needed</param>
-    /// <remarks>
-    /// This method is critical for maintaining security context and MUST NOT be removed or modified without careful consideration.
-    /// It handles both internal and external authentication scenarios, ensuring proper claim propagation.
-    /// 
-    /// Usage requirements:
-    /// - Must be called after basic claims (Subject, Email, etc.) are set
-    /// - Must be called before token generation
-    /// - Must be called in all token generation/refresh scenarios
-    /// </remarks>
-    private async Task EnsureRequiredIdentityClaimsAsync(
-        ClaimsIdentity identityToPopulate,
-        ClaimsPrincipal existingPrincipal,
-        User user)
-    {
-        if (existingPrincipal.HasClaim(OpenIddictConstants.Claims.Private.ProviderName) ||
-            existingPrincipal.HasClaim(Constants.ClaimTypes.ExternalIdProviderName))
-        {
-            // Take claims from external principal
-            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role, [existingPrincipal.GetClaim(OpenIddictConstants.Claims.Role)]);
-            identityToPopulate.SetClaim(OpenIddictConstants.Claims.FamilyName, existingPrincipal.GetClaim(OpenIddictConstants.Claims.FamilyName));
-            identityToPopulate.SetClaim(OpenIddictConstants.Claims.GivenName, existingPrincipal.GetClaim(OpenIddictConstants.Claims.GivenName));
-            identityToPopulate.SetClaim(Constants.ClaimTypes.Rnokpp, existingPrincipal.GetClaim(Constants.ClaimTypes.Rnokpp));
-
-            // Set the provider name claim
-            identityToPopulate.SetClaim(Constants.ClaimTypes.ExternalIdProviderName,
-                existingPrincipal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName) ??
-                existingPrincipal.GetClaim(Constants.ClaimTypes.ExternalIdProviderName));
-
-            if (existingPrincipal.HasClaim(Constants.ClaimTypes.Edrpou))
-            {
-                identityToPopulate.SetClaim(Constants.ClaimTypes.Edrpou, existingPrincipal.GetClaim(Constants.ClaimTypes.Edrpou));
-            }
-            
-            if (existingPrincipal.HasClaim(Constants.ClaimTypes.ProviderId))
-            {
-                identityToPopulate.SetClaim(Constants.ClaimTypes.ProviderId, existingPrincipal.GetClaim(Constants.ClaimTypes.ProviderId));
-            }
-            
-            if (existingPrincipal.HasClaim(Constants.ClaimTypes.IsDeputy))
-            {
-                identityToPopulate.SetClaim(Constants.ClaimTypes.IsDeputy, existingPrincipal.GetClaim(Constants.ClaimTypes.IsDeputy), ClaimValueTypes.Boolean);
-            }
-
-            if (existingPrincipal.HasClaim(Constants.ClaimTypes.AikomProviderId))
-            {
-                identityToPopulate.SetClaim(Constants.ClaimTypes.AikomProviderId,
-                    existingPrincipal.GetClaim(Constants.ClaimTypes.AikomProviderId));
-            }
-        }
-        else
-        {
-            identityToPopulate.SetClaims(OpenIddictConstants.Claims.Role,
-                [..await _userManager.GetRolesAsync(user)]);
-        }
-    }
-
     #region Authorization code, implicit and hybrid flows
 
     [HttpGet("~/connect/authorize")]
@@ -259,14 +195,12 @@ public class TokenController : Controller
                     .SetClaim(OpenIddictConstants.Claims.Email, await _userManager.GetEmailAsync(user))
                     .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
                     .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
-
-                await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
                 
                 // Verify provider access if the user has the Provider role
                 // TODO: while AIKOM is not operational, do not check anything.
                 // TODO: usage is in ShouldForbidBasedOnProviderAccess docs.
 
-                await _profileService.GetProfileDataAsync(identity);
+                await _profileService.EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
 
                 // Note: in this sample, the granted scopes match the requested scope
                 // but you may want to allow the user to uncheck specific scopes.
@@ -365,15 +299,13 @@ public class TokenController : Controller
             .SetClaim(OpenIddictConstants.Claims.Email, await _userManager.GetEmailAsync(user))
             .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
             .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
-
-        // If flow reaches this point - user is already signed in with claims
-        await EnsureRequiredIdentityClaimsAsync(identity, User, user);
         
         // Verify provider access if the user has the Provider role
         // TODO: while AIKOM is not operational, do not check anything.
         // TODO: usage is in ShouldForbidBasedOnProviderAccess docs.
 
-        await _profileService.GetProfileDataAsync(identity);
+        // If flow reaches this point - user is already signed in with claims
+        await _profileService.EnsureRequiredIdentityClaimsAsync(identity, User, user);
 
         // Note: in this sample, the granted scopes match the requested scope
         // but you may want to allow the user to uncheck specific scopes.
@@ -512,7 +444,7 @@ public class TokenController : Controller
             .SetClaim(OpenIddictConstants.Claims.Name, await _userManager.GetUserNameAsync(user))
             .SetClaim(OpenIddictConstants.Claims.PreferredUsername, await _userManager.GetUserNameAsync(user));
 
-        await EnsureRequiredIdentityClaimsAsync(identity, result.Principal, user);
+        await _profileService.EnsureRequiredIdentityClaimsAsync(identity, User, user);
 
         // Verify provider access if the user has the Provider role
         // TODO: while AIKOM is not operational, do not check anything.
@@ -693,13 +625,6 @@ public class TokenController : Controller
     // ReSharper disable once UnusedMember.Local
     private async Task<bool> ShouldForbidBasedOnProviderAccess(ClaimsIdentity identity)
     {
-        // TODO: As we have two options to log in (password for dev and external for prod)
-        // This check should work only for external auth
-        if (!identity.HasClaim(Constants.ClaimTypes.ExternalIdProviderName))
-        {
-            return false;
-        }
-
         if (!identity.HasClaim(c => c.Type == OpenIddictConstants.Claims.Role && string.Equals(c.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase)))
         {
             return false;

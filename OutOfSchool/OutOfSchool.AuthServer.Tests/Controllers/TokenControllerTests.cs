@@ -148,7 +148,7 @@ public class TokenControllerTests
         scopeManager.Setup(s => s.ListResourcesAsync(It.IsAny<ImmutableArray<string>>(), It.IsAny<CancellationToken>()))
             .Returns(new List<string> {"resource1", "resource2"}.ToAsyncEnumerable());
 
-        profileService.Setup(p => p.GetProfileDataAsync(It.IsAny<ClaimsIdentity>()))
+        profileService.Setup(p => p.EnsureRequiredIdentityClaimsAsync(It.IsAny<ClaimsIdentity>(), It.IsAny<ClaimsPrincipal>(), It.IsAny<User>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -263,7 +263,6 @@ public class TokenControllerTests
         var resultIdentity = result.Principal.Identity as ClaimsIdentity;
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
     }
 
     /// <summary>
@@ -307,7 +306,6 @@ public class TokenControllerTests
         var resultIdentity = result.Principal.Identity as ClaimsIdentity;
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
     }
 
     /// <summary>
@@ -358,49 +356,6 @@ public class TokenControllerTests
         var resultIdentity = result.Principal.Identity as ClaimsIdentity;
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "provider"}));
         Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.Rnokpp, Value: "1234567890"}));
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: Constants.ClaimTypes.ExternalIdProviderName, Value: "ExternalProvider"}));
-    }
-
-    /// <summary>
-    /// Verifies that internal user claims are properly set during the Authorize flow.
-    /// This test ensures the critical claim-setting functionality is maintained and not accidentally removed.
-    /// 
-    /// Related method: <c>EnsureRequiredIdentityClaimsAsync</c>
-    /// </summary>
-    [Test]
-    public async Task Authorize_WithInternalUser_ShouldSetInternalClaims()
-    {
-        // Arrange
-        var request = new OpenIddictRequest();
-        SetOpenIddictServerRequest(httpContext, request);
-
-        var internalClaims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "123"),
-            new(OpenIddictConstants.Claims.Name, "username")
-        };
-        var identity = new ClaimsIdentity(internalClaims, "TestAuthType");
-        var principal = new ClaimsPrincipal(identity);
-        var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, "TestScheme"));
-
-        authenticationService.Setup(a => a.AuthenticateAsync(httpContext, null))
-            .ReturnsAsync(authResult);
-
-        var user = new User { Id = "123", UserName = "username" };
-        userManager.Setup(u => u.GetUserAsync(principal)).ReturnsAsync(user);
-        userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { "InternalRole1", "InternalRole2" });
-
-        SetupCommonAuthorizationMocks(user);
-
-        // Act
-        var result = await controller.Authorize() as SignInResult;
-
-        // Assert
-        Assert.IsNotNull(result);
-        var resultIdentity = result.Principal.Identity as ClaimsIdentity;
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "InternalRole1"}));
-        Assert.IsTrue(resultIdentity.HasClaim(c => c is {Type: OpenIddictConstants.Claims.Role, Value: "InternalRole2"}));
-        Assert.IsFalse(resultIdentity.HasClaim(c => c.Type == Constants.ClaimTypes.ExternalIdProviderName));
     }
 
     private void SetupCommonAuthorizationMocks(User user)
@@ -428,8 +383,16 @@ public class TokenControllerTests
         scopeManager.Setup(s => s.ListResourcesAsync(It.IsAny<ImmutableArray<string>>(), It.IsAny<CancellationToken>()))
             .Returns(new List<string> { "resource1", "resource2" }.ToAsyncEnumerable());
 
-        profileService.Setup(p => p.GetProfileDataAsync(It.IsAny<ClaimsIdentity>()))
-            .Returns(Task.CompletedTask);
+        profileService.Setup(p => p.EnsureRequiredIdentityClaimsAsync(It.IsAny<ClaimsIdentity>(), It.IsAny<ClaimsPrincipal>(), It.IsAny<User>()))
+            .Returns<ClaimsIdentity, ClaimsPrincipal, User>((identityToPopulate, existingPrincipal, _) =>
+            {
+                foreach (var c in existingPrincipal.Claims)
+                {
+                    identityToPopulate.SetClaim(c.Type, c.Value);
+                }
+
+                return Task.FromResult(identityToPopulate);
+            });
         
         aikomProviderService.Setup(x =>
                 x.VerifyDirectorAccess(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeSpan?>()))

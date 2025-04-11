@@ -615,7 +615,6 @@ public class AuthController : Controller
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString()),
-            new(Constants.ClaimTypes.ExternalIdProviderName, "mock_id_provider"),
         };
 
         return claims;
