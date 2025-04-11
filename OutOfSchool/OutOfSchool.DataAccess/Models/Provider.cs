@@ -131,7 +131,7 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
 
     public virtual Institution Institution { get; set; }
-    
+
     #endregion
 
     #region Owned entities

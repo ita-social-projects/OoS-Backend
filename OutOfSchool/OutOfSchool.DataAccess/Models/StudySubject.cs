@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
@@ -35,5 +37,8 @@ public class StudySubject : BusinessEntity
     [Required(ErrorMessage = "The primary language's ID is required.")]
     public long LanguageId { get; set; }
     public virtual Language Language { get; set; }
+    public virtual List<Workshop> Workshops { get; set; }
+    public Guid ProviderId { get; set; }
+    public virtual Provider Provider { get; set; }
 }
 

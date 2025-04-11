@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
@@ -333,6 +334,34 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    // TODO: Review this method after .NET 10 release.
+    // Consider using RIGHT JOIN (if supported by EF Core) 
+    // for more optimal query instead of filtering workshops 
+    // and checking attachment status via Any().
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
+           Guid studySubjectId,
+           Guid providerId,
+           int page,
+           int pageSize)
+    {
+        logger.LogDebug("Getting workshops with attachment status. ProviderId = {ProviderId}, " +
+                              "StudySubjectId = {StudySubjectId}, Page = {Page}, PageSize = {PageSize}",
+                               providerId, studySubjectId, page, pageSize);
+
+        var query = workshopRepository
+            .GetByFilterNoTracking(whereExpression: w => w.ProviderId == providerId)
+            .Select(w => new WorkshopAttachmentStatusDto
+            {
+                Id = w.Id,
+                Title = w.Title,
+                IsAttached = w.StudySubjects.Any(ss => ss.Id == studySubjectId)
+            })
+            .OrderBy(w => w.Title);
+
+        return query.ToPaginatedResultAsync(page, pageSize);
     }
 
     /// <inheritdoc/>

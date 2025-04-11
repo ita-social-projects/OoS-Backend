@@ -144,8 +144,10 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual List<Image<Workshop>> Images { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
+
+    public virtual List<StudySubject> StudySubjects { get; set; }
     #endregion
-    
+
     #region Owned entities
 
     public List<Contacts> Contacts { get; set; } = [];

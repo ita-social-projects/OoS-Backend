@@ -57,11 +57,15 @@ public class WorkshopControllerTests
     private List<WorkshopBaseCard> workshopBaseCards;
     private List<ShortEntityDto> workshopShortEntitiesList;
     private List<WorkshopProviderViewCard> workshopProviderViewCardList;
+    private Guid providerId;
+    private Guid studySubjectId;
 
     [OneTimeSetUp]
     public void OneTimeSetup()
     {
         userId = "someUserId";
+        providerId = Guid.NewGuid();
+        studySubjectId = Guid.NewGuid();
         httpContextMoq = new Mock<HttpContext>();
         httpContextMoq.Setup(x => x.User.FindFirst("sub"))
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
@@ -618,6 +622,103 @@ public class WorkshopControllerTests
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
         Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
     }
+    #endregion
+
+    #region GetAttachedWorkshops
+
+    [Test]
+    public async Task GetAttachedWorkshops_ReturnsBadRequest_WhenStudySubjectIdIsEmpty()
+    {
+        // Act
+        var result = await controller.GetAttachedWorkshops(Guid.Empty, providerId, 1, 10);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Study subject id is empty.", badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task GetAttachedWorkshops_ReturnsBadRequest_WhenProviderIdIsEmpty()
+    {
+        // Act
+        var result = await controller.GetAttachedWorkshops(studySubjectId, Guid.Empty, 1, 10);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.NotNull(badRequestResult);
+        Assert.AreEqual(400, badRequestResult.StatusCode);
+        Assert.AreEqual("Provider id is empty.", badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task GetAttachedWorkshops_ReturnsOk_WithEmptyList()
+    {
+        // Arrange
+        var emptyResult = new PaginatedResult<WorkshopAttachmentStatusDto>
+        {
+            Items = new List<WorkshopAttachmentStatusDto>(),
+            Page = 1,
+            PageSize = 10,
+            TotalCount = 0
+        };
+
+        workshopServiceMoq
+            .Setup(s => s.GetAttachedWorkshops(studySubjectId, providerId, 1, 10))
+            .ReturnsAsync(emptyResult);
+
+        // Act
+        var result = await controller.GetAttachedWorkshops(studySubjectId, providerId, 1, 10);
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult);
+        Assert.AreEqual(200, okResult.StatusCode);
+
+        var returned = okResult.Value as PaginatedResult<WorkshopAttachmentStatusDto>;
+        Assert.NotNull(returned);
+        Assert.AreEqual(0, returned.TotalCount);
+    }
+
+    [Test]
+    public async Task GetAttachedWorkshops_ReturnsOk_WithPaginatedResult()
+    {
+        // Arrange
+        var data = new List<WorkshopAttachmentStatusDto>
+    {
+        new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), Title = "Workshop 1", IsAttached = true },
+        new WorkshopAttachmentStatusDto { Id = Guid.NewGuid(), Title = "Workshop 2", IsAttached = false }
+    };
+
+        var paginatedResult = new PaginatedResult<WorkshopAttachmentStatusDto>
+        {
+            Items = data,
+            Page = 1,
+            PageSize = 10,
+            TotalCount = 2
+        };
+
+        workshopServiceMoq
+            .Setup(s => s.GetAttachedWorkshops(studySubjectId, providerId, 1, 10))
+            .ReturnsAsync(paginatedResult);
+
+        // Act
+        var result = await controller.GetAttachedWorkshops(studySubjectId, providerId, 1, 10);
+
+        // Assert
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult);
+        Assert.AreEqual(200, okResult.StatusCode);
+
+        var returned = okResult.Value as PaginatedResult<WorkshopAttachmentStatusDto>;
+        Assert.NotNull(returned);
+        Assert.AreEqual(2, returned.Items.Count());
+        Assert.AreEqual(1, returned.Page);
+        Assert.AreEqual(10, returned.PageSize);
+        Assert.AreEqual(2, returned.TotalCount);
+    }
+
     #endregion
 
     #region CreateWorkshop
