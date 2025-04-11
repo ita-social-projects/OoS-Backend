@@ -682,7 +682,7 @@ public static class Startup
 
         // Register redis
         builder.Services.AddSingleton<IConnectionMultiplexer>(provider => {            
-            return ConnectionMultiplexer.Connect("localhost:6379");
+            return ConnectionMultiplexer.Connect(redisConnection);
         });
 
         // Register minio
