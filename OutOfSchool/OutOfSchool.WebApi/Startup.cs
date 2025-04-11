@@ -681,8 +681,19 @@ public static class Startup
         builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
 
         // Register redis
-        builder.Services.AddSingleton<IConnectionMultiplexer>(provider => {            
-            return ConnectionMultiplexer.Connect(redisConnection);
+        builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+        {
+            ConfigurationOptions config = ConfigurationOptions.Parse(redisConnection);
+            config.AbortOnConnectFail = false;
+
+            if (isAPMEnabled)
+            {                
+                var connection = ConnectionMultiplexer.Connect(config);
+                connection.UseElasticApm();
+                return connection;
+            }
+
+            return ConnectionMultiplexer.Connect(config);
         });
 
         // Register minio
