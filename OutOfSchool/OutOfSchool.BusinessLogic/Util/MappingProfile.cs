@@ -105,6 +105,7 @@ public class MappingProfile : Profile
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
             .ApplyDefaultsForHiddenFields()
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.IsPaid ? src.Price : 0))
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
