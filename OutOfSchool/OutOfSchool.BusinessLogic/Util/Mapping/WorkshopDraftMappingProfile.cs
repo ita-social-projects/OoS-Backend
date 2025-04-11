@@ -114,7 +114,8 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
 
         CreateMap<WorkshopDraft, WorkshopV2Dto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
@@ -136,7 +137,8 @@ public class WorkshopDraftMappingProfile : Profile
                 opt => opt.MapFrom(src => src.Teachers.FirstOrDefault(t => t.IsDefaultTeacher)))
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.Tags, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
 
         CreateMap<WorkshopDraftContent, WorkshopV2CreateRequestDto>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -148,7 +150,8 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImage, opt => opt.Ignore())
             .ForMember(dest => dest.ImageFiles, opt => opt.Ignore())
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
 
         CreateMap<WorkshopDraft, WorkshopV2CreateRequestDto>()
             .IncludeMembers(src => src.WorkshopDraftContent)
@@ -160,7 +163,8 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(t => !t.IsDefaultTeacher)))
             .ForMember(dest => dest.DefaultTeacher, 
                 opt => opt.MapFrom(src => src.Teachers.FirstOrDefault(t => t.IsDefaultTeacher)))
-            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore());
+            .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
 
         CreateMap<DateTimeRangeDto, DateTimeRangeDraft>()
             .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => TimeOnly.FromTimeSpan(src.StartTime)))

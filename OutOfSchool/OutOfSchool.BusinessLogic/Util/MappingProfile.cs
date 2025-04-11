@@ -49,7 +49,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .Apply(this.IgnoreContactsFromDto)
@@ -182,7 +183,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Facebook,
                 opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook).Url))
             .ForMember(dest => dest.Instagram,
-                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url));
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url))
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
   
 
