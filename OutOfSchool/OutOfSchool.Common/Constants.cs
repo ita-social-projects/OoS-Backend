@@ -285,7 +285,6 @@ public static class Constants
         public const string ProviderId = "provider_id";
         public const string IsDeputy = "is_deputy";
         public const string AikomProviderId = "aikom_provider_id";
-        public const string ExternalIdProviderName = "external_id_provider_name";
     }
     public static class OpenIddictScopes
     {

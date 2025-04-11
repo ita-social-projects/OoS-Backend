@@ -403,17 +403,7 @@ public class ExternalAuthController : Controller
             new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString(), ClaimValueTypes.Boolean),
-            new(
-                OpenIddictConstants.Claims.Private.ProviderName,
-                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
         };
-
-        if (!string.IsNullOrEmpty(result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)))
-        {
-            claims.Add(new(
-                OpenIddictConstants.Claims.Private.RegistrationId,
-                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)));
-        }
             
         if (externalProviderId.HasValue)
         {
