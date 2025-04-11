@@ -20,6 +20,9 @@ public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubjec
         builder.Property(x => x.IsLanguageUkrainian)
             .IsRequired();
 
+        builder.Property(x => x.ProviderId)
+            .IsRequired();
+
         builder.HasOne(x => x.Language)
             .WithMany()
             .HasForeignKey(x => x.LanguageId)

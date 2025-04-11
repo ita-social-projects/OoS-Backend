@@ -21,7 +21,6 @@ public class ValidatePaginationAttribute : ActionFilterAttribute
             pageSizeObj is int pageSize && pageSize < 1)
         {
             context.Result = new BadRequestObjectResult("Page size must be greater than 0.");
-            return;
         }
     }
 }

@@ -337,13 +337,17 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
+    // TODO: Review this method after .NET 10 release.
+    // Consider using RIGHT JOIN (if supported by EF Core) 
+    // for more optimal query instead of filtering workshops 
+    // and checking attachment status via Any().
     public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
            Guid studySubjectId,
            Guid providerId,
            int page,
            int pageSize)
     {
-        logger.LogInformation("Getting workshops with attachment status. ProviderId = {ProviderId}, " +
+        logger.LogDebug("Getting workshops with attachment status. ProviderId = {ProviderId}, " +
                               "StudySubjectId = {StudySubjectId}, Page = {Page}, PageSize = {PageSize}",
                                providerId, studySubjectId, page, pageSize);
 
