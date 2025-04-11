@@ -458,7 +458,10 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
     {
         var draft = await GetWorkshopDraftById(id);
 
-        await currentUserService.UserHasRights(new ProviderRights(draft.ProviderId), new EmployeeRights(draft.ProviderId)).ConfigureAwait(false);
+        if (!currentUserService.IsAdmin())
+        {
+            await currentUserService.UserHasRights(new ProviderRights(draft.ProviderId), new EmployeeRights(draft.ProviderId)).ConfigureAwait(false);
+        }        
 
         return await MapWorkshopDraftWithDetails(draft);
     }
