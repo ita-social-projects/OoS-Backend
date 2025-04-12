@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
@@ -24,9 +23,8 @@ public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
     private readonly IProviderService providerService;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<WorkshopController> logger;
-    private readonly IEmployeeService employeeService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IUserService userService;
     private readonly IWorkshopDraftService workshopDraftService;
 
@@ -37,27 +35,24 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="currentUserService">Service for getting current user info.</param>
     /// <param name="userService">Service for operations with users.</param>
     /// <param name="workshopDraftService">Service for operations with workshop drafts.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombinerV2 combinedWorkshopService,
         IProviderService providerService,
-        IStringLocalizer<SharedResource> localizer,
         ILogger<WorkshopController> logger,
-        IEmployeeService employeeService,
+        ICurrentUserService currentUserService,
         IUserService userService,
         IWorkshopDraftService workshopDraftService,
         IOptions<AppDefaultsConfig> options)
     {
-        this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;        
         this.providerService = providerService;
         this.logger = logger;
-        this.employeeService = employeeService;
+        this.currentUserService = currentUserService;
         this.userService = userService;
         this.workshopDraftService = workshopDraftService;
         this.options = options.Value;
@@ -156,7 +151,7 @@ public class WorkshopController : ControllerBase
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopResponseDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -218,7 +213,7 @@ public class WorkshopController : ControllerBase
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopResponseDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopV2Dto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -264,74 +259,10 @@ public class WorkshopController : ControllerBase
             return NoContent();
         }
 
-        var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return new ForbidResult("Forbidden to delete workshops of another providers.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshop.ProviderId), new EmployeeRights(workshop.ProviderId)).ConfigureAwait(false);
 
         await combinedWorkshopService.Delete(id).ConfigureAwait(false);
         return NoContent();
-    }
-
-    private async Task<bool> IsUserProvidersOwner(Guid providerId)
-    {
-        // Provider can create/update/delete a workshop only with it's own ProviderId.
-        // Admin can create a work without checks.
-        if (User.IsInRole("provider"))
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-            if (providerId != provider?.Id)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private WorkshopResponseDto CreateUpdateResponse(WorkshopResultDto updatingResult)
-    {
-        return new WorkshopResponseDto
-        {
-            Workshop = updatingResult.Workshop,
-            UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
-            UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
-        };
-    }
-
-    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
-    {
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
-        {
-            var userId = GettingUserProperties.GetUserId(User);
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-            if (provider != null)
-            {
-                if (provider.Id != providerId)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                var isUserRelatedAdmin = await employeeService
-                    .CheckUserIsRelatedEmployee(userId, providerId, workshopId)
-                    .ConfigureAwait(false);
-
-                if (!isUserRelatedAdmin)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     private async Task<bool> IsCurrentUserBlocked()

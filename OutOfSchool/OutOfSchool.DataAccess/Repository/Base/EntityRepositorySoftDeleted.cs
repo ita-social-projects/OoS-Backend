@@ -31,16 +31,6 @@ public class EntityRepositorySoftDeleted<TKey, TEntity> : EntityRepositoryBase<T
     }
 
     /// <inheritdoc/>
-    public override async Task<IEnumerable<TEntity>> GetAllWithDetails(
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-    {
-        IQueryable<TEntity> query = dbSet.Where(x => !x.IsDeleted);
-        query = query.IncludeProperties(includeExpression, includeProperties);
-        return await query.ToListAsync().ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     public override async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "",

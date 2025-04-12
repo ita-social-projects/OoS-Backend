@@ -4,8 +4,8 @@ using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 
@@ -28,8 +28,8 @@ public class ChatWorkshopController : ControllerBase
     private readonly IValidationService validationService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
-    private readonly IEmployeeService employeeService;
     private readonly IApplicationService applicationService;
+    private readonly ICurrentUserService currentUserService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -39,7 +39,6 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="validationService">Service for validation parameters.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="employeeService">Service for Provider's admins.</param>
     /// <param name="applicationService">Service for Applications.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
@@ -47,16 +46,16 @@ public class ChatWorkshopController : ControllerBase
         IValidationService validationService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
-        IEmployeeService employeeService,
-        IApplicationService applicationService)
+        IApplicationService applicationService,
+        ICurrentUserService currentUserService)
     {
         this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
         this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     /// <summary>
@@ -316,14 +315,8 @@ public class ChatWorkshopController : ControllerBase
             {
                 return NoContent();
             }
-
-            var userHasRights = await IsUserHasRightsForApplicationAsync(application);
-
-            if (!userHasRights)
-            {
-                logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} with no rights");
-                return BadRequest();
-            }
+            
+            await currentUserService.UserHasRights(new ParentRights(application.ParentId), new EmployeeWorkshopRights(application.WorkshopId)).ConfigureAwait(false);
 
             var chatroom = await roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
 
@@ -337,19 +330,6 @@ public class ChatWorkshopController : ControllerBase
         }
 
         return await HandleOperationAsync(Operation);
-    }
-
-    private async Task<bool> IsUserHasRightsForApplicationAsync(ApplicationDto application)
-    {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
-        var userRole = GettingUserProperties.GetUserRole(HttpContext);
-
-        if (userRole == Role.Parent)
-        {
-            return await validationService.UserIsParentOwnerAsync(userId, application.ParentId);
-        }
-
-        return await validationService.UserIsWorkshopOwnerAsync(userId, application.WorkshopId);
     }
 
     private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
@@ -368,13 +348,21 @@ public class ChatWorkshopController : ControllerBase
 
     private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
+        bool result;
 
-        var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
+        try
+        {
+            await currentUserService.UserHasRights(new EmployeeWorkshopRights(chatRoom.WorkshopId)).ConfigureAwait(false);
+            result = true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            result = false;
+        }
 
         if (!result)
         {
-            this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, currentUserService.UserId);
         }
 
         return result;
@@ -535,15 +523,6 @@ public class ChatWorkshopController : ControllerBase
             var userId = GettingUserProperties.GetUserId(HttpContext);
             var userRole = GettingUserProperties.GetUserRole(HttpContext);
 
-            if (userRole is Role.Employee)
-            {
-                var workshopIds = await employeeService.GetRelatedWorkshopIdsForEmployees(userId).ConfigureAwait(false);
-                filter.WorkshopIds = workshopIds;
-                var chatRooms = await roomService.GetChatRoomByFilter(filter, default).ConfigureAwait(false);
-
-                return chatRooms.Entities.Any() ? Ok(chatRooms) : NoContent();
-            }
-
             var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
             if (providerOrParentId != Guid.Empty)
@@ -559,7 +538,7 @@ public class ChatWorkshopController : ControllerBase
                 }
                 else
                 {
-                    bool searchForProvider = userRole == Role.Provider;
+                    bool searchForProvider = userRole is Role.Provider or Role.Employee;
                     var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId, searchForProvider).ConfigureAwait(false);
                     chatRooms = chatroomFiltration.Entities;
                     if (chatRooms.Any())

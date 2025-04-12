@@ -108,11 +108,6 @@
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <!--Code Analysis-->
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
-    <!--GRPC-->
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.46.0" />
-    <PackageVersion Include="Grpc.Core" Version="2.46.3" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.46.0" />
-    <PackageVersion Include="Grpc.Tools" Version="2.47.0" />
     <!--Testing-->
     <PackageVersion Include="coverlet.msbuild" Version="3.1.2" />
     <PackageVersion Include="Moq" Version="4.20.70" />

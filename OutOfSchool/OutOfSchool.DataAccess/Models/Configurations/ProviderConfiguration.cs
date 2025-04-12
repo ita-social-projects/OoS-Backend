@@ -29,9 +29,6 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
         builder.Property(x => x.Ownership)
             .IsRequired();
 
-        builder.Property(x => x.UserId)
-            .IsRequired();
-
         builder.Property(x => x.InstitutionType)
             .IsRequired();
 
@@ -43,7 +40,7 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
             .IsRequired()
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
 
-        builder.HasIndex(x => x.Edrpou);
+        builder.HasIndex(x => x.Edrpou).IsUnique();
 
         builder.Property(x => x.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate();

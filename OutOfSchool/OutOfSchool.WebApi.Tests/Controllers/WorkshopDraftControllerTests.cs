@@ -1,23 +1,23 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Controllers.V2;
-using System.Security.Claims;
-using OutOfSchool.BusinessLogic.Models.Providers;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using System;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using AutoMapper;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Models;
-using System.Collections.Generic;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Controllers.V2;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -88,8 +88,8 @@ public class WorkshopDraftControllerTests
         // Arrange        
         workshopDraftServiceMoq.Setup(x => x.Create(workshopV2Dto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))            
-            .ReturnsAsync(provider).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))            
+            .ReturnsAsync(false).Verifiable(Times.Once);
 
         // Act
         var result = await controller.Create(workshopV2Dto).ConfigureAwait(false) as CreatedAtActionResult;
@@ -115,8 +115,8 @@ public class WorkshopDraftControllerTests
 
         workshopDraftServiceMoq.Setup(x => x.Update(workshopDraftUpdateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(provider).Verifiable(Times.Once);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))
+            .ReturnsAsync(false).Verifiable(Times.Once);
 
         // Act
         var result = await controller.Update(workshopDraftUpdateDto).ConfigureAwait(false) as OkObjectResult;

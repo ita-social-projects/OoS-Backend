@@ -41,7 +41,6 @@ public class ApplicationService : IApplicationService
     private readonly ILogger<ApplicationService> logger;
     private readonly IMapper mapper;
     private readonly INotificationService notificationService;
-    private readonly IEmployeeService employeeService;
     private readonly IChangesLogService changesLogService;
     private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
@@ -54,6 +53,7 @@ public class ApplicationService : IApplicationService
     private readonly IEmailSenderService emailSender;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IOptions<HostsConfig> hostsConfig;
+    private readonly IOfficialRepository officialRepository;
 
     private readonly string errorNullWorkshopMessage = "Operation failed. Workshop in Application dto is null";
     private readonly string errorBlockedWorkshopMessage = "Unable to create a new application for a workshop because workshop is blocked";
@@ -69,7 +69,6 @@ public class ApplicationService : IApplicationService
     /// <param name="mapper">Automapper DI service.</param>
     /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
     /// <param name="notificationService">Notification service.</param>
-    /// <param name="employeeService">Service for getting provider admins and deputies.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="combinedWorkshopService">WorkshopServicesCombiner.</param>
     /// <param name="currentUserService">Service for managing current user rights.</param>
@@ -88,7 +87,6 @@ public class ApplicationService : IApplicationService
         IMapper mapper,
         IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
         INotificationService notificationService,
-        IEmployeeService employeeService,
         IChangesLogService changesLogService,
         IWorkshopServicesCombiner combinedWorkshopService,
         ICurrentUserService currentUserService,
@@ -99,15 +97,14 @@ public class ApplicationService : IApplicationService
         IRazorViewToStringRenderer renderer,
         IEmailSenderService emailSender,
         IStringLocalizer<SharedResource> localizer,
-        IOptions<HostsConfig> hostsConfig)
+        IOptions<HostsConfig> hostsConfig,
+        IOfficialRepository officialRepository)
     {
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        this.employeeService =
-            employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.applicationsConstraintsConfig = (applicationsConstraintsConfig ??
                                               throw new ArgumentNullException(nameof(applicationsConstraintsConfig))).Value;
@@ -122,6 +119,7 @@ public class ApplicationService : IApplicationService
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(emailSender));
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         this.hostsConfig = hostsConfig ?? throw new ArgumentNullException(nameof(hostsConfig));
+        this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
     }
 
     /// <inheritdoc/>
@@ -294,7 +292,7 @@ public class ApplicationService : IApplicationService
         }
         else if (currentUserService.IsInRole(Role.Provider))
         {
-            filter = a => a.ChildId == id && a.Workshop.Provider.UserId == currentUserService.UserId;
+            filter = a => a.ChildId == id && a.Workshop.Provider.Id == currentUserService.ProviderId;
         }
         else if (currentUserService.IsAdmin())
         {
@@ -318,9 +316,7 @@ public class ApplicationService : IApplicationService
 
         if (!currentUserService.IsAdmin())
         {
-            await currentUserService.UserHasRights(
-                new ProviderRights(providerId),
-                new EmployeeWorkshopRights(providerId, id));
+            await currentUserService.UserHasRights(new EmployeeWorkshopRights(id));
         }
 
         filter ??= new ApplicationFilter();
@@ -378,7 +374,7 @@ public class ApplicationService : IApplicationService
             .Include(a => a.Workshop).ThenInclude(w => w.InstitutionHierarchy).ThenInclude(wi => wi.SubDirections).ThenInclude(wis => wis.Direction)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Child)
             .Include(a => a.Workshop).ThenInclude(w => w.Applications).ThenInclude(wa => wa.Parent)
-            .Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
+            .Include(a => a.Workshop).ThenInclude(w => w.Provider)
             .Include(a => a.Child).ThenInclude(c => c.SocialGroups)
             .Include(a => a.Parent).ThenInclude(p => p.User);
 
@@ -396,67 +392,6 @@ public class ApplicationService : IApplicationService
             "There are {Count} applications in the Db with Provider Id = {Id}",
             applications.Count,
             id);
-
-        var searchResult = new SearchResult<ApplicationDto>()
-        {
-            TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ApplicationDto>>(applications),
-        };
-
-        return searchResult;
-    }
-
-    /// <inheritdoc/>
-    public async Task<SearchResult<ApplicationDto>> GetAllByEmployee(
-        string userId,
-        ApplicationFilter filter,
-        Guid providerId = default,
-        bool isDeputy = false)
-    {
-        logger.LogInformation(
-            "Getting Applications by Employee userId started. Looking employee userId = {UserId}", userId);
-
-        if (!currentUserService.IsAdmin())
-        {
-            await currentUserService.UserHasRights(new EmployeeRights(userId));
-        }
-
-        filter ??= new ApplicationFilter();
-
-        if (providerId == Guid.Empty)
-        {
-            this.FillEmployeeInfo(userId, out providerId);
-        }
-
-        List<Guid> workshopIds = new List<Guid>();
-
-        workshopIds =
-            (await employeeService.GetRelatedWorkshopIdsForEmployees(userId).ConfigureAwait(false))
-            .ToList();
-
-        Expression<Func<Workshop, bool>> workshopFilter =
-            w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
-        var workshops = workshopRepository.Get(whereExpression: workshopFilter).Select(w => w.Id);
-
-        var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
-
-        var sortPredicate = SortExpressionBuild(filter);
-
-        var totalAmount = await applicationRepository.Count(whereExpression: predicate).ConfigureAwait(false);
-
-        var applications = await applicationRepository.Get(
-            skip: filter.From,
-            take: filter.Size,
-            whereExpression: predicate,
-            orderBy: sortPredicate)
-            .IncludeProperties(includeFunc)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        logger.LogInformation(
-            "There are {Count} applications in the Db with employee Id = {UserId}",
-            applications.Count,
-            userId);
 
         var searchResult = new SearchResult<ApplicationDto>()
         {
@@ -489,8 +424,7 @@ public class ApplicationService : IApplicationService
 
         await currentUserService.UserHasRights(
             new ParentRights(application.ParentId),
-            new ProviderRights(application.Workshop.ProviderId),
-            new EmployeeWorkshopRights(application.Workshop.ProviderId, application.Workshop.Id));
+            new EmployeeWorkshopRights(application.Workshop.Id));
 
         return mapper.Map<ApplicationDto>(application);
     }
@@ -705,7 +639,7 @@ public class ApplicationService : IApplicationService
     {
         // Create a delegate to include other entities (Workshop, Child, Parent, Parent.User, and Child) in Application entity
         Func<IQueryable<Application>, IQueryable<Application>> localIncludeFunc =
-            a => a.Include(a => a.Workshop).ThenInclude(w => w.Provider).ThenInclude(p => p.User)
+            a => a.Include(a => a.Workshop).ThenInclude(w => w.Provider)
                   .Include(a => a.Parent).ThenInclude(p => p.User)
                   .Include(a => a.Child);
 
@@ -754,20 +688,6 @@ public class ApplicationService : IApplicationService
         }
 
         return (IsCorrect: true, SecondsRetryAfter: 0);
-    }
-
-    private void FillEmployeeInfo(string userId, out Guid providerId)
-    {
-        var employee = employeeService.GetById(userId).GetAwaiter().GetResult();
-
-        if (employee == null)
-        {
-            logger.LogError("employee with userId = {UserId} not exists", userId);
-
-            throw new ArgumentException($"There is no employee with userId = {userId}");
-        }
-
-        providerId = employee.ProviderId;
     }
 
     private async Task ControlWorkshopStatus(
@@ -918,8 +838,7 @@ public class ApplicationService : IApplicationService
 
         await currentUserService.UserHasRights(
             new ParentRights(currentApplication.ParentId),
-            new ProviderRights(currentApplication.Workshop.ProviderId),
-            new EmployeeWorkshopRights(currentApplication.Workshop.ProviderId, currentApplication.WorkshopId));
+            new EmployeeWorkshopRights(currentApplication.WorkshopId));
 
         var previewAppStatus = currentApplication.Status;
 
@@ -1022,11 +941,9 @@ public class ApplicationService : IApplicationService
 
         if (action == NotificationAction.Create)
         {
-            recipientIds.Add(application.Workshop.Provider.UserId);
-            recipientIds.AddRange(await employeeService.GetEmployeesIds(application.Workshop.Id)
-                .ConfigureAwait(false));
-            recipientIds.AddRange(await employeeService.GetEmployeesIds(application.Workshop.Provider.Id)
-                .ConfigureAwait(false));
+            var providerEmployeeUserIds =
+                await officialRepository.GetActiveOfficialUserIdsByProviderId(application.Workshop.ProviderId);
+            recipientIds.AddRange(providerEmployeeUserIds);
         }
         else if (action == NotificationAction.Update)
         {
@@ -1040,11 +957,9 @@ public class ApplicationService : IApplicationService
                 }
                 else if (applicationStatus == ApplicationStatus.Left)
                 {
-                    recipientIds.Add(application.Workshop.Provider.UserId);
-                    recipientIds.AddRange(await employeeService.GetEmployeesIds(application.Workshop.Id)
-                        .ConfigureAwait(false));
-                    recipientIds.AddRange(await employeeService
-                        .GetEmployeesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+                    var providerEmployeeUserIds =
+                        await officialRepository.GetActiveOfficialUserIdsByProviderId(application.Workshop.ProviderId);
+                    recipientIds.AddRange(providerEmployeeUserIds);
                 }
             }
         }

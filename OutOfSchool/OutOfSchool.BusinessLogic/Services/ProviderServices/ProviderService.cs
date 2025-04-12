@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
@@ -8,7 +7,6 @@ using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
@@ -25,17 +23,15 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 public class ProviderService : IProviderService, ISensitiveProviderService
 {
     private readonly IProviderRepository providerRepository;
-    private readonly IEmployeeRepository employeeRepository;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
     private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
     private readonly ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository;
-    private readonly ISensitiveEntityRepositorySoftDeleted<Official> officialRepository;
+    private readonly IOfficialRepository officialRepository;
     private readonly IPositionRepository positionRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
-    private readonly IEmployeeService employeeService;
     private readonly IInstitutionAdminRepository institutionAdminRepository;
     private readonly ICurrentUserService currentUserService;
     private readonly IMinistryAdminService ministryAdminService;
@@ -45,9 +41,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     private readonly IAverageRatingService averageRatingService;
     private readonly IAreaAdminService areaAdminService;
     private readonly IAreaAdminRepository areaAdminRepository;
-    private readonly IUserService userService;
-    private readonly AuthorizationServerConfig authorizationServerConfig;
-    private readonly ICommunicationService communicationService;
     private readonly ILogger<ProviderService> logger;
     private readonly ISearchStringService searchStringService;
     private readonly IContactsService<Provider, IHasContactsDto<Provider>> contactsService;
@@ -69,11 +62,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     /// <param name="officialRepository">OfficialRepository.</param>
     /// <param name="positionRepository">PositionRepository.</param>
     /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
-    /// <param name="employeeRepository">Employee repository.</param>
     /// <param name="providerImagesService">Images service.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
     /// <param name="notificationService">Notification service.</param>
-    /// <param name="employeeService">Service for getting provider admins and deputies.</param>
     /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
     /// <param name="currentUserService">Service for manage current user.</param>
     /// <param name="ministryAdminService">Service for manage ministry admin.</param>
@@ -96,14 +87,12 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         IMapper mapper,
         IEntityRepositorySoftDeleted<long, Address> addressRepository,
         ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
-        ISensitiveEntityRepositorySoftDeleted<Official> officialRepository,
+        IOfficialRepository officialRepository,
         IPositionRepository positionRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
-        IEmployeeRepository employeeRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
         IChangesLogService changesLogService,
         INotificationService notificationService,
-        IEmployeeService employeeService,
         IInstitutionAdminRepository institutionAdminRepository,
         ICurrentUserService currentUserService,
         IMinistryAdminService ministryAdminService,
@@ -128,12 +117,10 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
         this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
-        this.employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
         ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.institutionAdminRepository = institutionAdminRepository;
-        this.employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
@@ -142,9 +129,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
         this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
         this.areaAdminRepository = areaAdminRepository;
-        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        this.authorizationServerConfig = authorizationServerConfig.Value ?? throw new ArgumentNullException(nameof(authorizationServerConfig));
-        this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
         this.contactsService = contactsService ?? throw new ArgumentNullException(nameof(contactsService));
@@ -305,39 +289,21 @@ public class ProviderService : IProviderService, ISensitiveProviderService
     }
 
     /// <inheritdoc/>
-    public async Task<ProviderDto> GetByUserId(string id, bool isEmployee = false)
-    {
-        logger.LogInformation("Getting Provider by UserId started. Looking UserId is {Id}", id);
-        Provider provider = default;
-
-        if (isEmployee)
-        {
-            var employees = await employeeRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
-            var employee = employees.FirstOrDefault();
-            if (employee != null)
-            {
-                provider = employee.Provider;
-            }
-        }
-        else
-        {
-            var providers = await providerRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
-            provider = providers.FirstOrDefault();
-        }
-
-        if (provider != null)
-        {
-            logger.LogInformation("Successfully got a Provider with UserId = {Id}", id);
-        }
-
-        return mapper.Map<ProviderDto>(provider);
-    }
-    /// <inheritdoc/>
     public async Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId)
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token) => await DeleteProviderWithActionBefore(id, token).ConfigureAwait(false);
+    public Task<Either<ErrorResponse, bool>> Delete(Guid id)
+    {
+        return Task.FromResult<Either<ErrorResponse, bool>>(
+            new ErrorResponse()
+            {
+                Message = "Deleting provider is not allowed.",
+                HttpStatusCode = HttpStatusCode.Forbidden,
+            });
+        // TODO: do not allow provider deletion while requirements are updated
+        // await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
     public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
@@ -406,14 +372,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         var notificationAction = providerBlockDto.IsBlocked ? NotificationAction.Block : NotificationAction.Unblock;
 
         await SendNotification(provider, notificationAction, false, false);
-
-        logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider starts.");
-
-        // TODO: It's need to consider how we might use the result of the blocking provider admins and deputies who belong to the provider.
-        _ = await employeeService
-            .BlockEmployeeByProviderAsync(provider.Id, currentUserService.UserId, token, providerBlockDto.IsBlocked);
-
-        logger.LogInformation("Block/Unblock the particular provider admins and deputy providers belonging to the Provider finished.");
 
         var blockedStatus = providerBlockDto.IsBlocked ? "blocked" : "unblocked";
 
@@ -487,18 +445,13 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             result.Edrpous = await providerRepository.CheckExistsByEdrpous(data.Edrpous);
         }
 
-        if (data.Emails.Count > 0)
-        {
-            result.Emails = await providerRepository.CheckExistsByEmails(data.Emails);
-        }
-
         return result;
     }
 
     /// <inheritdoc/>
     public Task<bool> Exists(Guid id)
     {
-        logger.LogInformation($"Checking if Provider exists by Id. Looking Id = {id}.");
+        logger.LogDebug("Checking if Provider exists by Id. Looking Id = {Id}", id);
 
         return providerRepository.Any(x => x.Id == id);
     }
@@ -543,7 +496,13 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         return uploadResponse;
     }
 
-    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    /// <inheritdoc />
+    public async Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId) =>
+        await providerRepository.Get(whereExpression: x => x.Id == providerId)
+            .Select(p => new Tuple<ProviderLicenseStatus, OwnershipType>(p.LicenseStatus, p.Ownership))
+            .SingleOrDefaultAsync();
+
+private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 
@@ -578,8 +537,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 else if (status == ProviderStatus.Editing
                          || status == ProviderStatus.Approved)
                 {
-                    recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await employeeService.GetEmployeesIds(provider.Id).ConfigureAwait(false));
+                    var providerEmployeeUserIds = await officialRepository
+                        .GetActiveOfficialUserIdsByProviderId(provider.Id);
+                    recipientIds.AddRange(providerEmployeeUserIds);
                 }
             }
 
@@ -595,18 +555,27 @@ public class ProviderService : IProviderService, ISensitiveProviderService
                 }
                 else if (licenseStatus == ProviderLicenseStatus.Approved)
                 {
-                    recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await employeeService.GetEmployeesIds(provider.Id).ConfigureAwait(false));
+                    var providerEmployeeUserIds = await officialRepository
+                        .Get(whereExpression: o => !o.IsDeleted && o.Position.ProviderId == provider.Id && o.Individual.UserId != null)
+                        .Include(o => o.Individual)
+                        .Select(o => o.Individual.UserId)
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                    recipientIds.AddRange(providerEmployeeUserIds);
                 }
             }
         }
         else if (action == NotificationAction.Block)
         {
-            recipientIds.Add(provider.UserId);
+            var directorUserId = await officialRepository
+                .GetDirectorOfficialUserIdByProviderIdAsync(provider.Id);
+            recipientIds.Add(directorUserId);
         }
         else if (action == NotificationAction.Unblock)
         {
-            recipientIds.Add(provider.UserId);
+            var directorUserId = await officialRepository
+                .GetDirectorOfficialUserIdByProviderIdAsync(provider.Id);
+            recipientIds.Add(directorUserId);
         }
 
         return recipientIds.Distinct();
@@ -617,11 +586,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
 
         logger.LogDebug("Provider creating was started");
-
-        if (providerRepository.ExistsUserId(providerDto.UserId))
-        {
-            throw new InvalidOperationException(localizer["You can not create more than one account."]);
-        }
 
         var providerDomainModel = mapper.Map<Provider>(providerDto);
 
@@ -634,9 +598,6 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
         }
 
-        var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
-        providerDomainModel.User = users.Single();
-        providerDomainModel.User.IsRegistered = true;
         providerDomainModel.Status = ProviderStatus.Pending;
         providerDomainModel.LicenseStatus = providerDomainModel.License == null
             ? ProviderLicenseStatus.NotProvided
@@ -646,7 +607,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         if (newProvider is not null)
         {
-            await changesLogService.AddCreatingOfEntityToDbContext(newProvider, newProvider.UserId).ConfigureAwait(false);
+            await changesLogService.AddCreatingOfEntityToDbContext(newProvider, currentUserService.UserId).ConfigureAwait(false);
         }
 
         if (actionAfterCreation != null)
@@ -674,12 +635,9 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         try
         {
-            var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);
+            await currentUserService.UserHasRights(new ProviderRights(providerUpdateDto.Id), new DeputyDirectorRights(providerUpdateDto.Id)).ConfigureAwait(false);
 
-            if (checkProvider?.UserId != userId)
-            {
-                return null;
-            }
+            var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);
 
             ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
@@ -742,7 +700,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         }
     }
 
-    private protected async Task<Either<ErrorResponse, ActionResult>> DeleteProviderWithActionBefore(Guid id, string token, Func<Provider, Task> actionBeforeDeleting = null)
+    private protected async Task<Either<ErrorResponse, bool>> DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
     {
         logger.LogInformation("Deleting Provider with Id = {Id} started", id);
 
@@ -759,9 +717,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             };
         }
 
-        if (currentUserService.UserId != entity.UserId && !await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(entity))
+        var currentUserProviderId = currentUserService.ProviderId;
+        
+        if (currentUserProviderId != entity.Id && !await IsCurrentUserIsAdminOfDistrictOrMinistryOfProvider(entity))
         {
-            var message = $"User with userId = {currentUserService.UserId} has no rights to delete user with id = {entity.UserId}";
+            var message = $"User with userId = {currentUserService.UserId} has no rights to delete Provider with id = {entity.Id}";
             logger.LogError(message);
             return new ErrorResponse()
             {
@@ -778,37 +738,11 @@ public class ProviderService : IProviderService, ISensitiveProviderService
         await providerRepository.RunInTransaction(async () =>
         {
             await providerRepository.Delete(entity).ConfigureAwait(false);
-            await userService.Delete(entity.UserId).ConfigureAwait(false);
+            // TODO: if we really add deletion - need to delete everything provider has linked to it (positions, officials, etc.)
         });
 
         logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
-
-        var request = new Request()
-        {
-            HttpMethodType = HttpMethodType.Delete,
-            Url = new Uri(authorizationServerConfig.Authority, "account/deleteuser/" + entity.UserId),
-            Token = token,
-        };
-
-        logger.LogDebug(
-            "{HttpMethodType} Request was sent. User(id): {UserId}. Url: {Url}",
-            request.HttpMethodType,
-            currentUserService.UserId,
-            request.Url);
-
-        var response = await communicationService.SendRequest<ResponseDto, ErrorResponse>(request).ConfigureAwait(false);
-
-        return response
-            .FlatMap<ResponseDto>(r => r.IsSuccess
-            ? r
-            : new ErrorResponse()
-            {
-                HttpStatusCode = r.HttpStatusCode,
-                Message = r.Message,
-            })
-            .Map(r => r.Result is not null
-            ? JsonSerializerHelper.Deserialize<ActionResult>(r.Result.ToString())
-            : null);
+        return true;
     }
 
     private void ChangeProviderStatusIfNeeded(

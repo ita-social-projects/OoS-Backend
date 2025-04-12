@@ -40,7 +40,6 @@ public class ApplicationServiceTests
     private Mock<ILogger<ApplicationService>> logger;
     private Mock<IMapper> mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IEmployeeService> providerAdminService;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -52,6 +51,7 @@ public class ApplicationServiceTests
     private Mock<IEmailSenderService> emailSenderMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
     private Mock<IOptions<HostsConfig>> hostsConfigMock;
+    private Mock<IOfficialRepository> officialRepositoryMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -61,7 +61,6 @@ public class ApplicationServiceTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
         notificationService = new Mock<INotificationService>();
-        providerAdminService = new Mock<IEmployeeService>();
         changesLogService = new Mock<IChangesLogService>();
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -73,6 +72,7 @@ public class ApplicationServiceTests
         emailSenderMock = new Mock<IEmailSenderService>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         hostsConfigMock = new Mock<IOptions<HostsConfig>>();
+        officialRepositoryMock = new Mock<IOfficialRepository>();
 
         logger = new Mock<ILogger<ApplicationService>>();
         mapper = new Mock<IMapper>();
@@ -100,7 +100,6 @@ public class ApplicationServiceTests
             mapper.Object,
             applicationsConstraintsConfig.Object,
             notificationService.Object,
-            providerAdminService.Object,
             changesLogService.Object,
             workshopServiceCombinerMock.Object,
             currentUserServiceMock.Object,
@@ -111,7 +110,8 @@ public class ApplicationServiceTests
             rendererMock.Object,
             emailSenderMock.Object,
             localizerMock.Object,
-            hostsConfigMock.Object);
+            hostsConfigMock.Object,
+            officialRepositoryMock.Object);
     }
 
     [Test]
@@ -184,8 +184,11 @@ public class ApplicationServiceTests
 
         var recipientsIds = new List<string>()
         {
-            newApplication.Workshop.Provider.UserId,
+            Guid.NewGuid().ToString(),
         };
+
+        officialRepositoryMock.Setup(s => s.GetActiveOfficialUserIdsByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(recipientsIds);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
@@ -307,8 +310,7 @@ public class ApplicationServiceTests
         // Assert
         result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
         currentUserServiceMock.Verify(
-            a => a.UserHasRights(
-                It.Is<IUserRights[]>(u => u.First() is ProviderRights && ((ProviderRights)u.First()).providerId == existingApplications.First().Workshop.ProviderId)));
+            a => a.UserHasRights(It.IsAny<IUserRights[]>()), Times.Once);
     }
 
     [Test]
@@ -391,52 +393,6 @@ public class ApplicationServiceTests
 
         // Act and Assert
         service.Invoking(s => s.GetAllByProvider(Guid.NewGuid(), filter)).Should().ThrowAsync<ArgumentException>();
-    }
-
-    [Test]
-    public async Task GetAllByProviderAdmin_WhenIdIsValid_ShouldReturnApplications()
-    {
-        // Arrange
-        var existingApplications = WithApplicationsList();
-        var mappedDtos = existingApplications.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
-        var providerAdmin = new EmployeeProviderRelationDto()
-        {
-            UserId = Guid.NewGuid().ToString(),
-            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-        };
-        providerAdminService.Setup(x => x.GetById(It.IsAny<string>())).ReturnsAsync(providerAdmin);
-        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(false);
-        var applicationFilter = new ApplicationFilter
-        {
-            Statuses = null,
-            OrderByAlphabetically = false,
-            OrderByStatus = false,
-            OrderByDateAscending = false,
-        };
-        var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
-        workshopRepositoryMock.Setup(x => x.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
-            .Returns(workshopsMock)
-            .Verifiable();
-        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-        applicationRepositoryMock.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
-            .Returns(applicationsMock)
-            .Verifiable();
-        mapper.Setup(x => x.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
-
-        // Act
-        var result = await service.GetAllByEmployee(providerAdmin.UserId, applicationFilter)
-            .ConfigureAwait(false);
-
-        // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
     }
 
     [Test]
@@ -623,8 +579,11 @@ public class ApplicationServiceTests
         }
         else if (statusTo == ApplicationStatus.Left)
         {
-            recipientsIds.Add(changedEntity.Workshop.Provider.UserId);
+            recipientsIds.Add(Guid.NewGuid().ToString());
         }
+
+        officialRepositoryMock.Setup(s => s.GetActiveOfficialUserIdsByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(recipientsIds);
 
         // Act
         var response = await service.Update(update).ConfigureAwait(false);

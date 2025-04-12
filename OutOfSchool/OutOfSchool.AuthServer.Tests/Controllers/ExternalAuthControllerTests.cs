@@ -25,6 +25,7 @@ using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services;
@@ -50,7 +51,6 @@ public class ExternalAuthControllerTests
     private Mock<IGovIdentityCommunicationService> communicationService;
     private Mock<IAikomProviderService> aikomProviderService;
     private Mock<OpenIddictClientService> openIddictClientService;
-    private OutOfSchoolDbContext dbContext;
     private HttpContext httpContext;
     private Mock<IAuthenticationService> authenticationService;
     private AuthorizationServerConfig authServerConfig;
@@ -73,7 +73,6 @@ public class ExternalAuthControllerTests
                 }
             }
         };
-        dbContext = GetContext();
     }
 
     [SetUp]
@@ -98,6 +97,8 @@ public class ExternalAuthControllerTests
         authenticationService = new Mock<IAuthenticationService>();
         httpContext = new DefaultHttpContext();
 
+        var dbContext = GetContext();
+
         controller = new ExternalAuthController(
             signInManager.Object,
             userManager.Object,
@@ -117,6 +118,49 @@ public class ExternalAuthControllerTests
             .BuildServiceProvider();
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
+        
+        // Create Individual
+        var individual = new Individual
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Test",
+            LastName = "Test",
+            Rnokpp = TestRnkopp,
+        };
+        dbContext.Individuals.Add(individual);
+        
+        // Create Provider
+        var provider = new Provider 
+        { 
+            Id = Guid.NewGuid(), 
+            Edrpou = TestEdrpou,
+            FullTitle = "Test Provider",
+            IsDeleted = false
+        };
+        dbContext.Providers.Add(provider);
+        
+        // Create Position
+        var position = new Position
+        {
+            Id = Guid.NewGuid(),
+            FullName = "Test Position",
+            ProviderId = provider.Id,
+            PositionType = PositionType.Director,
+            IsDeleted = false
+        };
+        dbContext.Positions.Add(position);
+        
+        // Create Official to link Individual to Position
+        var official = new Official
+        {
+            Id = Guid.NewGuid(),
+            IndividualId = individual.Id,
+            PositionId = position.Id,
+            IsDeleted = false
+        };
+        dbContext.Officials.Add(official);
+        
+        dbContext.SaveChanges();
     }
 
     [Test]
@@ -331,6 +375,7 @@ public class ExternalAuthControllerTests
         return new TestOutOfSchoolDbContext(
             new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+                .UseLazyLoadingProxies()
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options);
     }

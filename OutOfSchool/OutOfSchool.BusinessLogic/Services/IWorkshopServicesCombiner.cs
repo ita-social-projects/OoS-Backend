@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -26,14 +27,6 @@ public interface IWorkshopServicesCombiner
     Task<List<ShortEntityDto>> GetWorkshopListByProviderId(Guid providerId);
 
     /// <summary>
-    /// Get all workshop cards (Id, Title) with the specified provider admin's Id.
-    /// </summary>
-    /// <param name="providerAdminId">Provider admin's key.</param>
-    /// <returns>A <see cref="Task{ShortEntityDto}"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="List{ShortEntityDto}"/> that contains elements from the input sequence.</returns>
-    Task<List<ShortEntityDto>> GetWorkshopListByEmployeeId(string providerAdminId);
-
-    /// <summary>
     /// Check if entity is exists by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
@@ -48,6 +41,24 @@ public interface IWorkshopServicesCombiner
     /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
     /// The task result contains the entity that was found, or null.</returns>
     Task<WorkshopDto> GetById(Guid id, bool asNoTracking = false);
+
+    /// <summary>
+    /// Retrieves a paginated list of workshops along with their attachment status
+    /// for a given provider and study subject.
+    /// </summary>
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a 
+    /// <see cref="PaginatedResult{WorkshopAttachmentStatusDto}"/> with the workshops and pagination metadata.
+    /// </returns>
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
+           Guid studySubjectId,
+           Guid providerId,
+           int page,
+           int pageSize);
 
     /// <summary>
     /// Update existing entity in the database.

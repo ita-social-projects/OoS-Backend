@@ -252,7 +252,6 @@ public static class Startup
 
         services.AddRazorPages();
         services.AddHttpContextAccessor();
-        services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
         services.AddScoped<ISensitiveMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
@@ -426,11 +425,11 @@ public static class Startup
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();
         services.AddTransient<IOfficialService, OfficialService>();
+        services.AddTransient<IOfficialChangesLogService, OfficialChangesLogService>();
 
         services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
         services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
 
-        services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
             var elasticSearchService = sp.GetRequiredService<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
@@ -449,8 +448,7 @@ public static class Startup
 
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
         services.AddTransient(typeof(ISensitiveEntityRepositorySoftDeleted<>), typeof(SensitiveEntityRepositorySoftDeleted<>));
-
-        services.AddTransient<IEmployeeRepository, EmployeeRepository>();
+        services.AddTransient<IOfficialRepository, OfficialRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
         services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
@@ -553,12 +551,6 @@ public static class Startup
 
         // Notification options
         services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.Name));
-
-        // GRPC
-        services.AddOptions<GRPCConfig>()
-            .Bind(configuration.GetSection(GRPCConfig.Name))
-            .ValidateDataAnnotations();
-        services.AddTransient<IEmployeeOperationsService, EmployeeOperationsRESTService>();
 
         // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
         services.AddSingleton(swaggerConfig);

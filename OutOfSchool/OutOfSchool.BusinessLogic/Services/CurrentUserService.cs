@@ -3,7 +3,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -16,8 +15,7 @@ public class CurrentUserService : ICurrentUserService
     private readonly ICurrentUser currentUser;
     private readonly IParentRepository parentRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
-    private readonly IProviderRepository providerRepository;
-    private readonly IEmployeeRepository employeeRepository;
+    private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<CurrentUserService> logger;
     private readonly ICacheService cache;
     private readonly AppDefaultsConfig options;
@@ -25,8 +23,7 @@ public class CurrentUserService : ICurrentUserService
 
     public CurrentUserService(
         ICurrentUser currentUser,
-        IProviderRepository providerRepository,
-        IEmployeeRepository employeeRepository,
+        IWorkshopRepository workshopRepository,
         IParentRepository parentRepository,
         IEntityRepositorySoftDeleted<Guid, Child> childRepository,
         ILogger<CurrentUserService> logger,
@@ -35,14 +32,29 @@ public class CurrentUserService : ICurrentUserService
         IMapper mapper)
     {
         this.currentUser = currentUser;
-        this.providerRepository = providerRepository;
-        this.employeeRepository = employeeRepository;
+        this.workshopRepository = workshopRepository;
         this.parentRepository = parentRepository;
         this.childRepository = childRepository;
         this.logger = logger;
         this.cache = cache;
         this.options = options.Value;
         this.mapper = mapper;
+    }
+
+    public Guid ProviderId
+    {
+        get
+        {
+            if (!IsInRole(Role.Provider) && !IsInRole(Role.Employee))
+            {
+                return Guid.Empty;
+            }
+
+            var id = HasClaim(Constants.ClaimTypes.ProviderId)
+                ? GetClaimValue(Constants.ClaimTypes.ProviderId)
+                : Guid.Empty.ToString();
+            return Guid.Parse(id);
+        }
     }
 
     public string UserId => currentUser.UserId;
@@ -91,16 +103,16 @@ public class CurrentUserService : ICurrentUserService
         {
             var parent = userTypes.OfType<ParentRights>().FirstOrDefault();
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
-            var providerAdmin = userTypes.OfType<EmployeeRights>().FirstOrDefault();
-            var providerAdminWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
+            var employee = userTypes.OfType<EmployeeRights>().FirstOrDefault();
+            var employeeWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
                     {
                         UserHasRights(parent),
                         UserHasRights(provider),
-                        UserHasRights(providerAdmin),
-                        UserHasRights(providerAdminWorkshop),
+                        UserHasRights(employee),
+                        UserHasRights(employeeWorkshop),
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);
@@ -137,10 +149,10 @@ public class CurrentUserService : ICurrentUserService
         => userType switch
         {
             ParentRights parent => ParentHasRights(parent.parentId, parent.childId),
-            EmployeeRights providerAdmin => ProviderAdminHasRights(providerAdmin.employeeId),
-            EmployeeWorkshopRights providerAdminWorkshop => this.EmployeeHasWorkshopRights(
-                providerAdminWorkshop.providerId, providerAdminWorkshop.workshopId),
+            EmployeeRights employee => EmployeeHasRights(employee.providerId),
+            DeputyDirectorRights deputy => DeputyDirectorHasRights(deputy.providerId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
+            EmployeeWorkshopRights employeeWorkshop => EmployeeWorkshopRights(employeeWorkshop.workshopId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type"),
         };
@@ -194,26 +206,15 @@ public class CurrentUserService : ICurrentUserService
         return result;
     }
 
-    private async Task<bool> ProviderHasRights(Guid providerId)
+    // Keep as task for logic consistency
+    private Task<bool> ProviderHasRights(Guid providerId)
     {
         if (!IsInRole(Role.Provider))
         {
-            return false;
+            return Task.FromResult(false);
         }
 
-        var provider = await cache.GetOrAddAsync(
-            $"Rights_{UserId}",
-            async () =>
-            {
-                var providers = await providerRepository
-                    .GetByFilter(p => p.UserId == UserId && p.Id == providerId);
-                return providers?.Select(mapper.Map<ProviderDto>).FirstOrDefault();
-            },
-            TimeSpan.FromMinutes(5.0));
-
-        // providerId == provider?.Id check is done in the filter,
-        // so only need to check if the filter worked
-        var result = provider is not null;
+        var result = HasClaim(Constants.ClaimTypes.ProviderId) && GetClaimValue(Constants.ClaimTypes.ProviderId) == providerId.ToString();
 
         if (!result && options.AccessLogEnabled)
         {
@@ -223,76 +224,61 @@ public class CurrentUserService : ICurrentUserService
                 providerId);
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 
-    // TODO: Need to check which method should stay after ProviderAdmin -> Employee refactoring.
-    private async Task<bool> ProviderAdminHasRights(string providerAdminId)
-    {
-        if (!this.IsInRole(Role.Employee) || UserId != providerAdminId)
-        {
-            return false;
-        }
-
-        var providerAdmin = await cache.GetOrAddAsync(
-            $"Rights_{UserId}",
-            async () =>
-            {
-                var providerAdmins = await employeeRepository
-                    .GetByFilter(p => p.UserId == UserId);
-                return providerAdmins?.Select(mapper.Map<EmployeeProviderRelationDto>).FirstOrDefault();
-            },
-            TimeSpan.FromMinutes(5.0));
-
-        // providerAdminId == providerAdmin?.UserId check is done before the filter,
-        // so only need to check if the filter worked
-        var result = providerAdmin is not null;
-
-        if (!result && options.AccessLogEnabled)
-        {
-            logger.LogWarning(
-                "Unauthorized access: User ({UserId}) tried to access ProviderAdmin ({ProviderAdminId}) data",
-                UserId,
-                providerAdminId);
-        }
-
-        return result;
-    }
-
-    // TODO: Need to check which method should stay after ProviderAdmin -> Employee refactoring.
-    private async Task<bool> EmployeeHasRights(Guid providerId)
+    private Task<bool> EmployeeHasRights(Guid providerId)
     {
         if (!IsInRole(Role.Employee))
         {
-            return false;
+            return Task.FromResult(false);
         }
 
-        var providerDeputy = await cache.GetOrAddAsync(
-            $"Rights_{UserId}",
-            async () =>
-            {
-                var employees = await employeeRepository
-                    .GetByFilter(p => p.UserId == UserId);
-                return employees?.Select(mapper.Map<EmployeeProviderRelationDto>).FirstOrDefault();
-            },
-            TimeSpan.FromMinutes(5.0));
-
-        var result = providerDeputy?.ProviderId == providerId;
+        var result = HasClaim(Constants.ClaimTypes.ProviderId) && GetClaimValue(Constants.ClaimTypes.ProviderId) == providerId.ToString();
 
         if (!result && options.AccessLogEnabled)
         {
             logger.LogWarning(
-                "Unauthorized access: User ({UserId}) tried to access Employee ({providerId}) data",
+                "Unauthorized access: User ({UserId}) tried to access Provider ({ProviderId}) data as employee",
                 UserId,
                 providerId);
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 
-    private async Task<bool> EmployeeHasWorkshopRights(Guid providerId, Guid workshopId)
+    private Task<bool> DeputyDirectorHasRights(Guid providerId)
     {
         if (!IsInRole(Role.Employee))
+        {
+            return Task.FromResult(false);
+        }
+
+        var isProviderEmployee = HasClaim(Constants.ClaimTypes.ProviderId) && GetClaimValue(Constants.ClaimTypes.ProviderId) == providerId.ToString();
+        var isDeputyDirector = HasClaim(Constants.ClaimTypes.IsDeputy) && bool.Parse(GetClaimValue(Constants.ClaimTypes.IsDeputy));
+        var result = isProviderEmployee && isDeputyDirector;
+
+        if (!result && options.AccessLogEnabled)
+        {
+            logger.LogWarning(
+                "Unauthorized access: User ({UserId}) tried to access Provider ({ProviderId}) data as deputy director",
+                UserId,
+                providerId);
+        }
+
+        return Task.FromResult(result);
+    }
+    
+    private async Task<bool> EmployeeWorkshopRights(Guid workshopId)
+    {
+        if (!IsInRole(Role.Employee) && !IsInRole(Role.Provider))
+        {
+            return false;
+        }
+        
+        var providerId = GetClaimValue(Constants.ClaimTypes.ProviderId);
+
+        if (providerId.IsNullOrEmpty())
         {
             return false;
         }
@@ -301,19 +287,13 @@ public class CurrentUserService : ICurrentUserService
             $"Rights_{UserId}_{providerId}_{workshopId}",
             async () =>
             {
-                var employee = await employeeRepository.GetByIdAsync(UserId, providerId);
+                var workshopProviderId = await workshopRepository
+                    .GetByFilterNoTracking(w => w.Id == workshopId)
+                    .Select(w => w.ProviderId)
+                    .SingleOrDefaultAsync()
+                    .ConfigureAwait(false);
 
-                if (employee is null)
-                {
-                    return false;
-                }
-
-                if (workshopId != Guid.Empty)
-                {
-                    return employee.ManagedWorkshops.Any(w => w.Id == workshopId);
-                }
-
-                return true;
+                return workshopProviderId != Guid.Empty && workshopProviderId.ToString() == providerId;
             },
             TimeSpan.FromMinutes(5.0));
 

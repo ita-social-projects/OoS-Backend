@@ -15,184 +15,21 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class ValidationServiceTests
 {
-    private Mock<IProviderRepository> providerRepositoryMock;
     private Mock<IParentRepository> parentRepositoryMock;
-    private Mock<IWorkshopRepository> workshopRepositoryMock;
-    private Mock<IEmployeeRepository> providerAdminRepositoryMock;
+    private Mock<IOfficialRepository> officialRepositoryMock;
 
     private IValidationService validationService;
 
     [SetUp]
     public void SetUp()
     {
-        providerRepositoryMock = new Mock<IProviderRepository>();
         parentRepositoryMock = new Mock<IParentRepository>();
-        workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        providerAdminRepositoryMock = new Mock<IEmployeeRepository>();
-
+        officialRepositoryMock = new Mock<IOfficialRepository>();
+        
         validationService = new ValidationService(
-            providerRepositoryMock.Object,
             parentRepositoryMock.Object,
-            workshopRepositoryMock.Object,
-            providerAdminRepositoryMock.Object);
+            officialRepositoryMock.Object);
     }
-
-    #region UserIsProviderOwner
-    [Test]
-    public async Task UserIsProviderOwnerAsync_WhenTrue_ReturnsTrue()
-    {
-        // Arrange
-        var validUserId = "someUserId";
-        var providerWithValidUserId = new Provider()
-        {
-            Id = Guid.NewGuid(),
-            UserId = validUserId,
-        };
-        providerRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Provider, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
-            .ReturnsAsync(new List<Provider>() { providerWithValidUserId });
-
-        // Act
-        var result = await validationService.UserIsProviderOwnerAsync(validUserId, providerWithValidUserId.Id).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [Test]
-    public async Task UserIsProviderOwnerAsync_WhenFalse_ReturnsFalse()
-    {
-        // Arrange
-        var validUserId = "someUserId";
-        var providerWithAnotherUserId = new Provider()
-        {
-            Id = Guid.NewGuid(),
-            UserId = "anotherUserId",
-        };
-        providerRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Provider, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
-            .ReturnsAsync(new List<Provider>() { providerWithAnotherUserId });
-
-        // Act
-        var result = await validationService.UserIsProviderOwnerAsync(validUserId, providerWithAnotherUserId.Id).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [Test]
-    public async Task UserIsProviderOwnerAsync_WhenEntityWasNotFound_ReturnsFalse()
-    {
-        // Arrange
-        var validUserId = "someUserId";
-        providerRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Provider, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
-            .ReturnsAsync(new List<Provider>() { });
-
-        // Act
-        var result = await validationService.UserIsProviderOwnerAsync(validUserId, Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
-
-    #region UserIsWorkshopOwner
-    [Test]
-    [TestCase("someUserId")]
-    public async Task UserIsWorkshopOwnerAsync_WhenTrue_ReturnsTrue(string validUserId)
-    {
-        // Arrange
-        var workshopWithProviderWithValidUserId = new Workshop
-        {
-            Id = Guid.NewGuid(),
-            Provider = new Provider()
-            {
-                Id = Guid.NewGuid(),
-                UserId = validUserId,
-            },
-        };
-        workshopRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
-            .ReturnsAsync(new List<Workshop> { workshopWithProviderWithValidUserId });
-
-        providerAdminRepositoryMock
-            .Setup(e => e.GetByFilter(
-                It.IsAny<Expression<Func<Employee, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Employee>, IQueryable<Employee>>>()))
-            .ReturnsAsync(new List<Employee> { new Employee() });
-
-        // Act
-        var result = await validationService
-            .UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id)
-            .ConfigureAwait(false);
-
-        // Assert
-        Assert.IsTrue(result);
-    }
-
-    [Test]
-    public async Task UserIsWorkshopOwnerAsync_WhenFalse_ReturnsFalse()
-    {
-        // Arrange
-        var validUserId = "someUserId";
-        var workshopWithProviderWithAnotherUserId = new Workshop()
-        {
-            Id = Guid.NewGuid(),
-            Provider = new Provider()
-            {
-                Id = Guid.NewGuid(),
-                UserId = "anotherUserId",
-            },
-        };
-        workshopRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Workshop, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
-            .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithAnotherUserId });
-
-        // Act
-        var result = await validationService
-            .UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id)
-            .ConfigureAwait(false);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-
-    [Test]
-    public async Task UserIsWorkshopOwnerAsync_WhenEntityWasNotFound_ReturnsFalse()
-    {
-        // Arrange
-        var validUserId = "someUserId";
-        workshopRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Workshop, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
-            .ReturnsAsync(new List<Workshop>());
-
-        // Act
-        var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        Assert.IsFalse(result);
-    }
-    #endregion
 
     #region UserIsParentOwnerAsync
     [Test]
@@ -321,14 +158,10 @@ public class ValidationServiceTests
         var providerWithValidUserId = new Provider()
         {
             Id = Guid.NewGuid(),
-            UserId = validUserId,
         };
-        providerRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Provider, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
-            .ReturnsAsync(new List<Provider>() { providerWithValidUserId });
+        
+        officialRepositoryMock.Setup(s => s.GetProviderIdByOfficialUserIdAsync(validUserId))
+            .ReturnsAsync(providerWithValidUserId.Id);
 
         // Act
         var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
@@ -343,13 +176,8 @@ public class ValidationServiceTests
         // Arrange
         var validUserId = "someUserId";
         var userRole = Role.Provider;
-
-        providerRepositoryMock
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Provider, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
-            .ReturnsAsync(new List<Provider>());
+        officialRepositoryMock.Setup(s => s.GetProviderIdByOfficialUserIdAsync(validUserId))
+            .ReturnsAsync(Guid.Empty);
 
         // Act
         var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);

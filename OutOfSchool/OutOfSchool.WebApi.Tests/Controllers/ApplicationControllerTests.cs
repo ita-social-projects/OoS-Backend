@@ -16,6 +16,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -28,8 +29,8 @@ public class ApplicationControllerTests
     private ApplicationController controller;
     private Mock<IApplicationService> applicationService;
     private Mock<IWorkshopService> workshopService;
+    private Mock<ICurrentUserService> currentUserService;
     private Mock<IProviderService> providerService;
-    private Mock<IEmployeeService> employeeService;
     private Mock<IUserService> userService;
     private Mock<IBlockedProviderParentService> blockedProviderParentService;
 
@@ -51,9 +52,9 @@ public class ApplicationControllerTests
         applicationService = new Mock<IApplicationService>();
         workshopService = new Mock<IWorkshopService>();
         providerService = new Mock<IProviderService>();
-        employeeService = new Mock<IEmployeeService>();
         userService = new Mock<IUserService>();
         blockedProviderParentService = new Mock<IBlockedProviderParentService>();
+        currentUserService = new Mock<ICurrentUserService>();
 
         userId = Guid.NewGuid().ToString();
 
@@ -64,7 +65,7 @@ public class ApplicationControllerTests
         controller = new ApplicationController(
             applicationService.Object,
             providerService.Object,
-            employeeService.Object,
+            currentUserService.Object,
             workshopService.Object,
             userService.Object,
             blockedProviderParentService.Object)
@@ -79,7 +80,6 @@ public class ApplicationControllerTests
 
         parent = ParentDtoGenerator.Generate().WithUserId(userId);
         provider = ProviderDtoGenerator.Generate();
-        provider.UserId = userId;
         provider.Id = providerId;
         applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopCard(workshops.First()).WithParent(parent);
     }
@@ -228,7 +228,6 @@ public class ApplicationControllerTests
         // Arrange
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
         providerService.Setup(s => s.Exists(provider.Id)).ReturnsAsync(true);
-        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         List<ApplicationDto> app = applications.ToList();
         applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
@@ -247,7 +246,6 @@ public class ApplicationControllerTests
         // Arrange
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
         workshopService.Setup(s => s.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshopDto);
-        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
         List<ApplicationDto> app = applications.ToList();
         applicationService.Setup(s => s.GetAllByWorkshop(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
@@ -295,14 +293,12 @@ public class ApplicationControllerTests
         var id = Guid.Parse("f25d1bfc-8ebc-4087-b1c3-8dbb7964222d");
         var filter = new ApplicationFilter();
 
-        var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
+        var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
         workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
-        providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
         applicationService.Setup(s => s.GetAllByProvider(id, filter))
             .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
@@ -321,16 +317,11 @@ public class ApplicationControllerTests
     [Test]
     public async Task GetPendingApplicationsByProviderId_WhenProviderDoesNotHaveAnyApplications_ShouldReturnNoContent()
     {
-        // Arrange
-        var newProviderStandard = new ProviderDto { Id = providerId, UserId = userId };
-
-        providerService.Setup(s => s.GetById(providerId)).ReturnsAsync(newProviderStandard);
-
         // Act
         var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
 
         // Assert
-        providerService.VerifyAll();
+        currentUserService.VerifyAll();
         applicationService.VerifyAll();
 
         result.Should().NotBeNull();
@@ -342,48 +333,14 @@ public class ApplicationControllerTests
     }
 
     [Test]
-    public async Task GetPendingApplicationsByProviderId_WhenProvidersNotExist_ShouldReturnBadRequest()
+    public void GetPendingApplicationsByProviderId_WhenProvidersNotExist_ShouldThrowException()
     {
         // Arrange
-        var filter = new ApplicationFilter();
-        var emptySearchResult = new SearchResult<ApplicationDto> { TotalAmount = 0, Entities = new List<ApplicationDto>() };
-
-        providerService.Setup(s => s.GetById(providerId)).ReturnsAsync((ProviderDto)null);
-        employeeService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync((EmployeeProviderRelationDto)null);
-
-        // Act
-        var result = await controller.GetPendingApplicationsByProviderId(providerId).ConfigureAwait(false);
-
-        // Assert
-        providerService.VerifyAll();
-        employeeService.VerifyAll();
-
-        result.Should().NotBeNull();
-        result.Should()
-             .BeOfType<BadRequestObjectResult>()
-             .Which.StatusCode
-             .Should()
-             .Be(StatusCodes.Status400BadRequest);
-        result.As<BadRequestObjectResult>()
-            .Value
-            .Should()
-            .Be($"There is no any employee or provider with given id - {providerId}.");
-    }
-
-    [Test]
-    public void GetPendingApplicationsByProviderId_WhenProviderHasNoRights_ShouldThrowUnauthorizedAccess()
-    {
-        // Arrange
-        employeeService.Setup(s => s.GetById(providerId.ToString())).ReturnsAsync(new EmployeeProviderRelationDto());
-
-        applicationService.Setup(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()))
+        currentUserService.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
             .ThrowsAsync(new UnauthorizedAccessException());
 
-        // Act & Assert
-        employeeService.Verify(s => s.GetById(providerId.ToString()), Times.Never);
-        applicationService.Verify(s => s.GetAllByEmployee(It.IsAny<string>(), It.IsAny<ApplicationFilter>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
-
-        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await controller.GetPendingApplicationsByProviderId(providerId));
+        // Act &Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.GetPendingApplicationsByProviderId(providerId));
     }
 
     [Test]
@@ -393,12 +350,11 @@ public class ApplicationControllerTests
         var id = Guid.Parse("83caa2e6-902a-43b5-9744-8a9d66604666");
         var filter = new ApplicationFilter();
 
-        var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
+        var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), };
         var newWorkshop = new WorkshopDto { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
         httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
         workshopService.Setup(s => s.GetById(id, It.IsAny<bool>())).ReturnsAsync(newWorkshop);
         providerService.Setup(s => s.Exists(id)).ReturnsAsync(true);
         List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
@@ -899,8 +855,8 @@ public class ApplicationControllerTests
             Title = w.Title,
             PayRate = (PayRateType)w.PayRate,
             CoverImageId = w.CoverImageId,
-            MinAge = w.MinAge,
-            MaxAge = w.MaxAge,
+            MinAge = (int)w.MinAge,
+            MaxAge = (int)w.MaxAge,
             Price = (decimal)w.Price,
             DirectionIds = w.DirectionIds,
             ProviderId = w.ProviderId,

@@ -156,7 +156,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of provider full title.
     /// </summary>
-    public const int MaxProviderFullTitleLength = 60;
+    public const int MaxProviderFullTitleLength = 256;
 
     /// <summary>
     /// Minimum length of provider short title.
@@ -282,8 +282,9 @@ public static class Constants
         public const string UserId = "user_id";
         public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
+        public const string ProviderId = "provider_id";
+        public const string IsDeputy = "is_deputy";
         public const string AikomProviderId = "aikom_provider_id";
-        public const string ExternalIdProviderName = "external_id_provider_name";
     }
     public static class OpenIddictScopes
     {

@@ -29,8 +29,8 @@ public class ChatWorkshopControllerTests
     private Mock<IValidationService> validationServiceMoq;
     private Mock<IStringLocalizer<SharedResource>> localizerMoq;
     private Mock<ILogger<ChatWorkshopController>> loggerMoq;
-    private Mock<IEmployeeService> providerAdminServiceMoq;
     private Mock<IApplicationService> applicationServiceMoq;
+    private Mock<ICurrentUserService> currentUserServiceMoq;
 
     private string userId;
     private Mock<HttpContext> httpContextMoq;
@@ -55,8 +55,8 @@ public class ChatWorkshopControllerTests
         validationServiceMoq = new Mock<IValidationService>();
         localizerMoq = new Mock<IStringLocalizer<SharedResource>>();
         loggerMoq = new Mock<ILogger<ChatWorkshopController>>();
-        providerAdminServiceMoq = new Mock<IEmployeeService>();
         applicationServiceMoq = new Mock<IApplicationService>();
+        currentUserServiceMoq = new Mock<ICurrentUserService>();
 
         userId = "someUserId";
         httpContextMoq = new Mock<HttpContext>();
@@ -73,8 +73,8 @@ public class ChatWorkshopControllerTests
             validationServiceMoq.Object,
             localizerMoq.Object,
             loggerMoq.Object,
-            providerAdminServiceMoq.Object,
-            applicationServiceMoq.Object)
+            applicationServiceMoq.Object,
+            currentUserServiceMoq.Object)
         {
             ControllerContext = new ControllerContext()
             { HttpContext = httpContextMoq.Object },
@@ -151,17 +151,15 @@ public class ChatWorkshopControllerTests
             Guid.NewGuid(),
         };
 
-        providerAdminServiceMoq
-            .Setup(x => x.GetRelatedWorkshopIdsForEmployees(It.IsAny<string>()))
-            .ReturnsAsync(workShopIds);
-
         var expectedSearchResult = new SearchResult<ChatRoomWorkshopDtoWithLastMessage>
         {
             Entities = chatRoomWorkshopDtoWithLastMessageList,
         };
 
+        validationServiceMoq.Setup(s => s.GetParentOrProviderIdByUserRoleAsync(It.IsAny<string>(), Role.Employee))
+            .ReturnsAsync(Guid.NewGuid());
         roomServiceMoq
-            .Setup(x => x.GetChatRoomByFilter(It.IsAny<ChatWorkshopFilter>(), Guid.Empty, true))
+            .Setup(x => x.GetChatRoomByFilter(It.IsAny<ChatWorkshopFilter>(), It.IsAny<Guid>(), true))
             .Returns(Task.FromResult(expectedSearchResult));
 
         // Act
@@ -182,10 +180,6 @@ public class ChatWorkshopControllerTests
         httpContextMoq
             .Setup(x => x.User.FindFirst("role"))
             .Returns(new Claim(ClaimTypes.Role, "employee"));
-
-        providerAdminServiceMoq
-            .Setup(x => x.GetRelatedWorkshopIdsForEmployees(It.IsAny<string>()))
-            .ReturnsAsync(new List<Guid>());
 
         roomServiceMoq
             .Setup(x => x.GetChatRoomByFilter(It.IsAny<ChatWorkshopFilter>(), Guid.Empty, true))

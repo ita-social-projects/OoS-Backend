@@ -23,7 +23,6 @@ public static class ProvidersGenerator
         .RuleFor(x => x.TypeId, _ => 1)
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
-        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
         .RuleFor(x => x.IsBlocked, _ => false)
         .RuleFor(x => x.UpdatedAt, _ => DateTime.Now);
@@ -89,14 +88,4 @@ public static class ProvidersGenerator
         }
         return providers;
     }
-
-    public static Provider WithUser(this Provider provider)
-    {
-        provider.User = UserGenerator.Generate();
-        provider.UserId = provider.User.Id;
-        return provider;
-    }
-
-    public static List<Provider> WithUser(this List<Provider> providers)
-        => providers.Select(x => x.WithUser()).ToList();
 }

@@ -74,7 +74,6 @@ public class SensitiveWorkshopsServiceTests
                 new Mock<ILogger<WorkshopService>>().Object,
                 mapperMock.Object,
                 new Mock<IImageDependentEntityImagesInteractionService<Workshop>>().Object,
-                new Mock<IEmployeeRepository>().Object,
                 new Mock<IAverageRatingService>().Object,
                 new Mock<IProviderRepository>().Object,
                 currentUserServiceMock.Object,

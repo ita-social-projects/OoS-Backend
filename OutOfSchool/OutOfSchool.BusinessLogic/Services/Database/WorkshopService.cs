@@ -13,6 +13,7 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
@@ -43,7 +44,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ILogger<WorkshopService> logger;
     private readonly IMapper mapper;
     private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
-    private readonly IEmployeeRepository employeeRepository;
     private readonly IAverageRatingService averageRatingService;
     private readonly IProviderRepository providerRepository;
     private readonly ICurrentUserService currentUserService;
@@ -76,7 +76,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     /// <param name="regionAdminService">Service for region admin.</param>
     /// <param name="codeficatorService">Srvice for CATOTTG.</param>
     /// <param name="searchStringService">Service for handling the search string.</param>
-    /// <param name="codeficatorService">Service for CATOTTG.</param>
     /// <param name="tagService">Service for Tag entity.</param>
     public WorkshopService(
         IWorkshopRepository workshopRepository,
@@ -87,7 +86,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ILogger<WorkshopService> logger,
         IMapper mapper,
         IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
-        IEmployeeRepository employeeRepository,
         IAverageRatingService averageRatingService,
         IProviderRepository providerRepository,
         ICurrentUserService currentUserService,
@@ -108,7 +106,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.logger = logger;
         this.mapper = mapper;
         this.workshopImagesService = workshopImagesService;
-        this.employeeRepository = employeeRepository;
         this.averageRatingService = averageRatingService;
         this.providerRepository = providerRepository;
         this.currentUserService = currentUserService;
@@ -281,21 +278,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     }
 
     /// <inheritdoc/>
-    public async Task<List<ShortEntityDto>> GetWorkshopListByEmployeeId(string employeeId)
-    {
-        logger.LogDebug(
-            "Getting Workshop (Id, Title) by organization started. Looking EmployeeId = {employeeId}",
-            employeeId);
-
-        var employee = (await employeeRepository.GetByFilter(pa => pa.UserId == employeeId)).FirstOrDefault();
-        return (await workshopRepository
-                .GetByFilter(w => employee.Provider.Workshops.Contains(w)))
-            .Select(workshop => mapper.Map<ShortEntityDto>(workshop))
-            .OrderBy(workshop => workshop.Title)
-            .ToList();
-    }
-
-    /// <inheritdoc/>
     public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, WorkshopFilterTitle filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
@@ -357,6 +339,34 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         };
 
         return result;
+    }
+
+    /// <inheritdoc/>
+    // TODO: Review this method after .NET 10 release.
+    // Consider using RIGHT JOIN (if supported by EF Core) 
+    // for more optimal query instead of filtering workshops 
+    // and checking attachment status via Any().
+    public Task<PaginatedResult<WorkshopAttachmentStatusDto>> GetAttachedWorkshops(
+           Guid studySubjectId,
+           Guid providerId,
+           int page,
+           int pageSize)
+    {
+        logger.LogDebug("Getting workshops with attachment status. ProviderId = {ProviderId}, " +
+                              "StudySubjectId = {StudySubjectId}, Page = {Page}, PageSize = {PageSize}",
+                               providerId, studySubjectId, page, pageSize);
+
+        var query = workshopRepository
+            .GetByFilterNoTracking(whereExpression: w => w.ProviderId == providerId)
+            .Select(w => new WorkshopAttachmentStatusDto
+            {
+                Id = w.Id,
+                Title = w.Title,
+                IsAttached = w.StudySubjects.Any(ss => ss.Id == studySubjectId)
+            })
+            .OrderBy(w => w.Title);
+
+        return query.ToPaginatedResultAsync(page, pageSize);
     }
 
     /// <inheritdoc/>

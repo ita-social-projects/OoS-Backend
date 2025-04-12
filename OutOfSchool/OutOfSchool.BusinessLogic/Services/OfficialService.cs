@@ -3,12 +3,13 @@ using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class OfficialService : IOfficialService
 {
-    private readonly ISensitiveEntityRepositorySoftDeleted<Official> officialRepository;
+    private readonly IOfficialRepository officialRepository;
+    private readonly IOfficialChangesLogService officialChangesLogService;
     private readonly ICurrentUserService currentUserService;
     private readonly ILogger<OfficialService> logger;
     private readonly IMapper mapper;
@@ -21,13 +22,15 @@ public class OfficialService : IOfficialService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Mapper.</param>
     public OfficialService(
-        ISensitiveEntityRepositorySoftDeleted<Official> officialRepository,
+        IOfficialRepository officialRepository,
+        IOfficialChangesLogService officialChangesLogService,
         ICurrentUserService currentUserService,
         ILogger<OfficialService> logger,
         IMapper mapper
         )
     {
         this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
+        this.officialChangesLogService = officialChangesLogService;
         this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

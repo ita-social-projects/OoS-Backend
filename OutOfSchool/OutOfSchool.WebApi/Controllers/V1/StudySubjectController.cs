@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -18,8 +19,7 @@ public class StudySubjectController : ControllerBase
     /// Initializes a new instance of the <see cref="StudySubjectController"/> class.
     /// </summary>
     /// <param name="studySubjectService">Service for StudySubject model.</param>
-    public StudySubjectController(
-        IStudySubjectService studySubjectService)
+    public StudySubjectController(IStudySubjectService studySubjectService)
     {
         _studySubjectService = studySubjectService;
     }
@@ -208,6 +208,71 @@ public class StudySubjectController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Updates the list of workshops attached to a given study subject by toggling their attachment status.
+    /// </summary>
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider performing the operation.</param>
+    /// <param name="workshops">A collection of workshops with their attachment status. 
+    /// If <c>IsAttached</c> is <c>true</c>, the workshop will be detached; otherwise, it will be attached.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains an <see cref="IActionResult"/> indicating 
+    /// the success or failure of the operation, along with the updated study subject data if successful.
+    /// </returns>
+    [Authorize]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudySubjectDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{studySubjectId}/workshops")]
+    public async Task<IActionResult> UpdateWorkshopsForStudySubject(
+        Guid studySubjectId, 
+        Guid providerId, 
+        [FromBody] IEnumerable<WorkshopAttachmentStatusDto> workshops)
+    {
+        if (workshops == null)
+        {
+            return BadRequest("Request body cannot be null.");
+        }
+
+        var result = await _studySubjectService.UpdateWorkshopsForStudySubject(
+            studySubjectId,
+            providerId,
+            workshops
+        );
+
+        return HandleServiceRespone(result);
+    }
+
+    /// <summary>
+    /// Detaches all workshops from a specified study subject.
+    /// </summary>
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider performing the operation.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a <see cref="Result{StudySubjectDto}"/> 
+    /// indicating the success or failure of the operation, along with the updated study subject data.
+    /// </returns>
+    [Authorize]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpDelete("{studySubjectId}/workshops")]
+    public async Task<IActionResult> DetachAllWorkshops(Guid studySubjectId, Guid providerId)
+    {
+        var result = await _studySubjectService.DetachAllWorkshops(studySubjectId, providerId);
+
+        return result.Succeeded
+        ? NoContent() 
+        : HandleServiceRespone(result);
     }
 
     private IActionResult HandleServiceRespone<T>(Result<T> response)

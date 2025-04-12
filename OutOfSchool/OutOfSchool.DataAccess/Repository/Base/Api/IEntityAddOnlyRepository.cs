@@ -78,17 +78,6 @@ public interface IEntityAddOnlyRepository<TKey, TEntity>
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
 
     /// <summary>
-    /// Get all elements with details.
-    /// </summary>
-    /// <param name="includeProperties">Name of properties which should be included.</param>
-    /// <param name="includeExpression">Expression for Properties we want to include to objects that we will receive.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-    Task<IEnumerable<TEntity>> GetAllWithDetails(
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null);
-
-    /// <summary>
     /// Get elements by a specific filter.
     /// </summary>
     /// <param name="whereExpression">Filter with key.</param>

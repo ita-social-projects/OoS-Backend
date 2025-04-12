@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -48,12 +46,11 @@ public class WorkshopControllerV2Tests
     private WorkshopController controller;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceMoq;
     private Mock<IProviderServiceV2> providerServiceMoq;
-    private Mock<IEmployeeService> employeeService;
-    private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<IUserService> userServiceMoq;
     private Mock<ILogger<WorkshopController>> loggerMoq;
     private Mock<HttpContext> httpContextMoq;
     private Mock<IWorkshopDraftService> workshopDraftServiceMoq;
+    private Mock<ICurrentUserService> currentUserServiceMoq;
     private IMapper mapper;
 
     private string userId;
@@ -107,8 +104,7 @@ public class WorkshopControllerV2Tests
     {
         workshopServiceMoq = new Mock<IWorkshopServicesCombinerV2>();
         providerServiceMoq = new Mock<IProviderServiceV2>();
-        employeeService = new Mock<IEmployeeService>();
-        localizer = new Mock<IStringLocalizer<SharedResource>>();
+        currentUserServiceMoq = new Mock<ICurrentUserService>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
         workshopDraftServiceMoq = new Mock<IWorkshopDraftService>();
@@ -116,9 +112,8 @@ public class WorkshopControllerV2Tests
         controller = new WorkshopController(
             workshopServiceMoq.Object,
             providerServiceMoq.Object,
-            localizer.Object,
             loggerMoq.Object,
-            employeeService.Object,
+            currentUserServiceMoq.Object,
             userServiceMoq.Object,
             workshopDraftServiceMoq.Object,
             options.Object)
@@ -164,8 +159,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Never);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -190,8 +183,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(true).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -216,8 +207,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(true).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
@@ -244,8 +233,6 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>()))
-            .ReturnsAsync(provider).Verifiable(Times.Never);
         workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 

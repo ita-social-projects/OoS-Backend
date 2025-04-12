@@ -4,7 +4,6 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
@@ -25,9 +24,7 @@ public class CompetitiveEventController : ControllerBase
 
     public CompetitiveEventController(
         ICompetitiveEventServiceV2 competitiveEventService,
-        IProviderService providerService,
         IUserService userService,
-        IEmployeeService employeeService,
         ILogger<CompetitiveEventController> logger)
     {
         this.competitiveEventService = competitiveEventService ?? throw new ArgumentNullException(nameof(competitiveEventService));

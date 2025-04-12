@@ -52,21 +52,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("ChildSocialGroup");
                 });
 
-            modelBuilder.Entity("EmployeeWorkshop", b =>
-                {
-                    b.Property<string>("EmployeesUserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<Guid>("ManagedWorkshopsId")
-                        .HasColumnType("UUID(16)");
-
-                    b.HasKey("EmployeesUserId", "ManagedWorkshopsId");
-
-                    b.HasIndex("ManagedWorkshopsId");
-
-                    b.ToTable("EmployeeWorkshop");
-                });
-
             modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
                 {
                     b.Property<Guid>("InstitutionHierarchiesId")
@@ -949,6 +934,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid?>("OrganizerOfTheEventId")
+                        .IsRequired()
                         .HasColumnType("UUID(16)");
 
                     b.Property<Guid?>("ParentId")
@@ -1352,31 +1338,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.ToTable("ElasticsearchSyncRecords");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Employee", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("BlockingType")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("UUID(16)");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.HasIndex("ProviderId");
-
-                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.EmployeeChangesLog", b =>
@@ -2194,9 +2155,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<Guid?>("CompetitiveEventId")
-                        .HasColumnType("UUID(16)");
-
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -2231,14 +2189,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("FullTitle")
                         .IsRequired()
-                        .HasMaxLength(60)
+                        .HasMaxLength(256)
                         .IsUnicode(true)
-                        .HasColumnType("varchar(60)");
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("FullTitleEn")
-                        .HasMaxLength(60)
+                        .HasMaxLength(256)
                         .IsUnicode(true)
-                        .HasColumnType("varchar(60)");
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("GeneralWorkSchedule")
                         .HasMaxLength(500)
@@ -2329,18 +2287,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime?>("UpdatedAt"));
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
                     b.Property<bool>("UsesOutsourcingServices")
                         .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompetitiveEventId");
-
-                    b.HasIndex("Edrpou");
+                    b.HasIndex("Edrpou")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionId");
 
@@ -2349,8 +2302,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("IsDeleted");
 
                     b.HasIndex("TypeId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Providers");
                 });
@@ -2827,6 +2778,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -2835,6 +2789,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("IsDeleted");
 
                     b.HasIndex("LanguageId");
+
+                    b.HasIndex("ProviderId");
 
                     b.ToTable("StudySubjects");
                 });
@@ -3900,12 +3856,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("ProviderTitleEn")
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("ShortTitle")
                         .IsRequired()
@@ -4086,6 +4042,21 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("WorkshopDrafts");
                 });
 
+            modelBuilder.Entity("StudySubjectWorkshop", b =>
+                {
+                    b.Property<Guid>("StudySubjectsId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<Guid>("WorkshopsId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("StudySubjectsId", "WorkshopsId");
+
+                    b.HasIndex("WorkshopsId");
+
+                    b.ToTable("StudySubjectWorkshop");
+                });
+
             modelBuilder.Entity("TagWorkshop", b =>
                 {
                     b.Property<long>("TagsId")
@@ -4127,21 +4098,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.SocialGroup", null)
                         .WithMany()
                         .HasForeignKey("SocialGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EmployeeWorkshop", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeesUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
-                        .WithMany()
-                        .HasForeignKey("ManagedWorkshopsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -4417,7 +4373,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "OrganizerOfTheEvent")
                         .WithMany()
-                        .HasForeignKey("OrganizerOfTheEventId");
+                        .HasForeignKey("OrganizerOfTheEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "Parent")
                         .WithMany()
@@ -4638,17 +4596,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Employee", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
-                        .WithMany("Employees")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Provider");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.EmployeeChangesLog", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "EmployeeUser")
@@ -4829,10 +4776,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
-                        .WithMany("ParticipantsOfTheEvent")
-                        .HasForeignKey("CompetitiveEventId");
-
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
                         .WithMany("RelatedProviders")
                         .HasForeignKey("InstitutionId");
@@ -4844,12 +4787,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.ProviderType", "Type")
                         .WithMany("Providers")
                         .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5033,8 +4970,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("InstitutionStatus");
 
                     b.Navigation("Type");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
@@ -5094,7 +5029,15 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Language");
+
+                    b.Navigation("Provider");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
@@ -5389,6 +5332,21 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
+            modelBuilder.Entity("StudySubjectWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.StudySubject", null)
+                        .WithMany()
+                        .HasForeignKey("StudySubjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("WorkshopsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TagWorkshop", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Tag", null)
@@ -5426,8 +5384,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Images");
 
                     b.Navigation("Judges");
-
-                    b.Navigation("ParticipantsOfTheEvent");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
@@ -5459,8 +5415,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Navigation("Employees");
-
                     b.Navigation("Images");
 
                     b.Navigation("Positions");

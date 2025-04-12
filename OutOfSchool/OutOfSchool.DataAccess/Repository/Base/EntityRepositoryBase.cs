@@ -113,14 +113,6 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return await dbSet.ToListAsync().ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-        => await dbSet
-        .IncludeProperties(includeExpression, includeProperties)
-        .ToListAsync();
-
     public virtual async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "",
