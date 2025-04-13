@@ -87,14 +87,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
                 yield return new ValidationResult(
                     "Workdays contain duplications");
             }
-
-            // Validate StudyPeriodStartDate <= StudyPeriodEndDate
-            if (StudyPeriodStartDate.ToStudyPeriodDate() > StudyPeriodEndDate.ToStudyPeriodDate())
-            {
-                yield return new ValidationResult(
-                    "StudyPeriodStartDate must be less than or equal to StudyPeriodEndDate",
-                    [nameof(StudyPeriodStartDate), nameof(StudyPeriodEndDate)]);
-            }
         }
         if (NoAgeRestrictions)
         {
@@ -104,6 +96,14 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
         else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
         {
             yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+        }
+
+        // Validate StudyPeriodStartDate <= StudyPeriodEndDate
+        if (StudyPeriodStartDate > StudyPeriodEndDate)
+        {
+            yield return new ValidationResult(
+                "StudyPeriodStartDate must be less than or equal to StudyPeriodEndDate",
+                [nameof(StudyPeriodStartDate), nameof(StudyPeriodEndDate)]);
         }
     }
 }

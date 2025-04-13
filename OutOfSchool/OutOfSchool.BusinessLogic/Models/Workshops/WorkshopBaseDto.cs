@@ -186,7 +186,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         }
 
         // Validate StudyPeriodStartDate <= StudyPeriodEndDate
-        if (StudyPeriodStartDate.ToStudyPeriodDate() > StudyPeriodEndDate.ToStudyPeriodDate())
+        if (StudyPeriodStartDate > StudyPeriodEndDate)
         {
             yield return new ValidationResult(
                 "StudyPeriodStartDate must be less than or equal to StudyPeriodEndDate",
