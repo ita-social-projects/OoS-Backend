@@ -15,14 +15,20 @@
   </PropertyGroup>
   <ItemGroup>
     <!--Basic Microsoft Packages-->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DIAbstractions)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
+    <PackageVersion Include="Quartz" Version="3.14.0" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.8.31" />
     <!-- Needed for EUSign Library -->
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <!--MVC-->
@@ -77,8 +83,8 @@
     <PackageVersion Include="AutoMapper" Version="$(AutoMapVersion)" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="$(AutoMapVersion)" />
     <!--Quartz-->
-    <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)" />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)" />
+    <PackageVersion Include="Quartz.AspNetCore" Version="3.14.0" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="3.14.0" />
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Serialization.SystemTextJson" Version="$(QuartzVersion)" />
     <!--Image processing-->
