@@ -18,6 +18,7 @@ using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
+using OutOfSchool.QuartzJobs.Api.Extensions;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace OutOfSchool.AuthorizationServer;
@@ -47,7 +48,13 @@ public static class Startup
         services.AddDefaultQuartz(
             config,
             quartzConfig.ConnectionStringKey,
-            t => t.AddEmailSender(quartzConfig));
+            quartz =>
+            {
+                quartz.AddQuartzMonitoringListener();
+                quartz.AddEmailSender(quartzConfig);
+            });
+
+        services.AddQuartzMonitoring(config);
 
         var connectionString = config.GetMySqlConnectionString<AuthorizationConnectionOptions>(
             "DefaultConnection",

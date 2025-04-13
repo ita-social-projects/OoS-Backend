@@ -17,7 +17,10 @@ public class SwaggerFeatureGateFilter : IDocumentFilter {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context) {
 
         foreach (var apiDescription in context.ApiDescriptions) {
-            var actionDescriptor = (ControllerActionDescriptor)apiDescription.ActionDescriptor;
+            if (apiDescription.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
+            {
+                continue;
+            }
 
             var attrForController = actionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(FeatureGateAttribute), true).Select(a => (FeatureGateAttribute)a).ToList();
             var attrForEndpoint = actionDescriptor.MethodInfo.GetCustomAttributes(typeof(FeatureGateAttribute), true).Select(a => (FeatureGateAttribute)a).ToList();
