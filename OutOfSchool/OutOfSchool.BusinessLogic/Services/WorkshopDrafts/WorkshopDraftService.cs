@@ -170,6 +170,12 @@ public class WorkshopDraftService(
 
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
+            workshopDraft.WorkshopDraftContent.StudyPeriodStartDate = 
+                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodStartDate.ToStudyPeriodDate();
+
+            workshopDraft.WorkshopDraftContent.StudyPeriodEndDate = 
+                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodEndDate.ToStudyPeriodDate();
+
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
                 workshopDraft,
                 workshopDraftUpdateDto.WorkshopV2Dto.CoverImageId,
@@ -504,6 +510,9 @@ public class WorkshopDraftService(
         workshopDraft.WorkshopDraftContent.OwnershipType = licenseStatusAndOwnership.Item2;
         workshopDraft.WorkshopDraftContent.WorkshopStatus = WorkshopStatus.Open;
 
+        workshopDraft.WorkshopDraftContent.StudyPeriodStartDate = workshopV2Dto.StudyPeriodStartDate.ToStudyPeriodDate();
+        workshopDraft.WorkshopDraftContent.StudyPeriodEndDate = workshopV2Dto.StudyPeriodEndDate.ToStudyPeriodDate();
+
         var createdDraft = await workshopDraftRepository.Create(workshopDraft)
             .ConfigureAwait(false);
 
@@ -725,6 +734,9 @@ public class WorkshopDraftService(
     private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
     {
         var workshopDraftResponseDto = draft.ToResponseDto();
+
+        workshopDraftResponseDto.WorkshopDetails.StudyPeriodStartDate = draft.WorkshopDraftContent.StudyPeriodStartDate;
+        workshopDraftResponseDto.WorkshopDetails.StudyPeriodEndDate = draft.WorkshopDraftContent.StudyPeriodEndDate;
 
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 

@@ -354,6 +354,8 @@ public class WorkshopService(
 
             dto.SetToModel(currentWorkshop);
 
+            NormalizeStudyPeriodDates(dto, currentWorkshop);
+
             await UpdateWorkshop().ConfigureAwait(false);
 
             return currentWorkshop;
@@ -461,6 +463,8 @@ public class WorkshopService(
                 (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             dto.SetToModel(currentWorkshop);
+
+            NormalizeStudyPeriodDates(dto, currentWorkshop);
 
             var changingCoverImageResult = await workshopImagesService
                 .ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
@@ -1224,6 +1228,9 @@ public class WorkshopService(
             createdWorkshop = dto.ToModel();
         }
 
+        createdWorkshop.StudyPeriodStartDate = dto.StudyPeriodStartDate.ToStudyPeriodDate();
+        createdWorkshop.StudyPeriodEndDate = dto.StudyPeriodEndDate.ToStudyPeriodDate();
+
         createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
         createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
         createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
@@ -1271,5 +1278,11 @@ public class WorkshopService(
             var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.Id)?.PendingApplications;
             card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
+    }
+
+    private void NormalizeStudyPeriodDates(WorkshopBaseDto dto, Workshop workshop)
+    {
+        workshop.StudyPeriodStartDate = dto.StudyPeriodStartDate.ToStudyPeriodDate();
+        workshop.StudyPeriodEndDate = dto.StudyPeriodEndDate.ToStudyPeriodDate();
     }
 }

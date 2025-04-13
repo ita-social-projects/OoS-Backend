@@ -33,6 +33,10 @@ public class WorkshopDraftContent :
 
     public DateOnly ActiveTo { get; set; }
 
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    public DateOnly StudyPeriodEndDate { get; set; }
+
     public List<long> TagIds { get; set; } = new();
 
     public string Title { get; set; }

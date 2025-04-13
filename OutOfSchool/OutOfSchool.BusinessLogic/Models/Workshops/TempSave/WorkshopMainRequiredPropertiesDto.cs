@@ -42,6 +42,12 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
+    [Required(ErrorMessage = "Study period start date is required")]
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    [Required(ErrorMessage = "Study period end date is required")]
+    public DateOnly StudyPeriodEndDate { get; set; }
+
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; } = FormOfLearning.Offline;
@@ -80,6 +86,14 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
             {
                 yield return new ValidationResult(
                     "Workdays contain duplications");
+            }
+
+            // Validate StudyPeriodStartDate <= StudyPeriodEndDate
+            if (StudyPeriodStartDate.ToStudyPeriodDate() > StudyPeriodEndDate.ToStudyPeriodDate())
+            {
+                yield return new ValidationResult(
+                    "StudyPeriodStartDate must be less than or equal to StudyPeriodEndDate",
+                    [nameof(StudyPeriodStartDate), nameof(StudyPeriodEndDate)]);
             }
         }
         if (NoAgeRestrictions)

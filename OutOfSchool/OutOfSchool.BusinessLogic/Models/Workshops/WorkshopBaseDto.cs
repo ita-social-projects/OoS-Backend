@@ -51,6 +51,12 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; }
 
+    [Required(ErrorMessage = "Study period start date is required")]
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    [Required(ErrorMessage = "Study period end date is required")]
+    public DateOnly StudyPeriodEndDate { get; set; }
+
     [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
@@ -177,6 +183,14 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
         {
             yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+        }
+
+        // Validate StudyPeriodStartDate <= StudyPeriodEndDate
+        if (StudyPeriodStartDate.ToStudyPeriodDate() > StudyPeriodEndDate.ToStudyPeriodDate())
+        {
+            yield return new ValidationResult(
+                "StudyPeriodStartDate must be less than or equal to StudyPeriodEndDate",
+                [nameof(StudyPeriodStartDate), nameof(StudyPeriodEndDate)]);
         }
     }
 }
