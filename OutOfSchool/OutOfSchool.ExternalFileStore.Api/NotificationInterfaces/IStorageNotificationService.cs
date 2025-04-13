@@ -4,7 +4,7 @@
 /// </summary>
 public interface IStorageNotificationService
 {
-    // <summary>
+    /// <summary>
     /// Starts listening for incoming storage notifications from MinIO.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation.</returns>
