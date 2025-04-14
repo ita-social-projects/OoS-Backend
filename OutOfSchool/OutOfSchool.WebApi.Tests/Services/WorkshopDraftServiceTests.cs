@@ -549,4 +549,58 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
     }
     #endregion
+
+    #region GetWorkshopDraftIdByWorkshopId
+    [Test]
+    public async Task GetWorkshopDraftIdByWorkshopId_WhenWorkshopDraftExists_ShouldReturnId()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var workshopDrafts = new List<WorkshopDraft>()
+        {
+            mapper.Map<WorkshopDraft>(workshopV2Dto)
+        };
+
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.GetWorkshopDraftIdByWorkshopId(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftIdByWorkshopId_WhenWorkshopDraftDoesntExist_ShouldReturnNull()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        var workshopDrafts = new List<WorkshopDraft>();
+
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.GetWorkshopDraftIdByWorkshopId(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().BeNull();
+    }
+    #endregion
 }
