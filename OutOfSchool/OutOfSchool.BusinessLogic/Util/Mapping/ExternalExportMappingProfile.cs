@@ -96,15 +96,10 @@ public class ExternalExportMappingProfile : Profile
         CreateMap<CompetitiveEventDescriptionItem, CompetitiveEventDescriptionItemInfoDto>();
         CreateMap<CompetitiveEvent, CompetitiveEventInfoDto>()
             .ForMember(dest => dest.ParentEventId, opt => opt.MapFrom(src => src.ParentId))
-            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(
-                dest => dest.DirectionIds,
-                opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId)))
+            .ForMember(dest => dest.SubDirections,
+                opt => opt.MapFrom(src => string.Join(',', src.SubDirections.Select(s => s.Title))))
             .ForMember(dest => dest.SubDirectionIds,
-                opt => opt.MapFrom(
-                    src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id)))
-            .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
+                opt => opt.MapFrom(src => src.SubDirections.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.CompetitiveSelectionDescription, opt => opt.MapFrom(src => src.AdditionalDescription))
             .ForMember(dest => dest.AccountingType, opt => opt.MapFrom(src => src.CompetitiveEventAccountingType))
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())

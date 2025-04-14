@@ -40,6 +40,8 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     
     public List<long> SubDirectionIds { get; set; }
 
+    public string SubDirections { get; set; }
+
     public CoverageInfoDto Coverage { get; set; }
 
     public DateTimeOffset? RegistrationStartTime { get; set; }

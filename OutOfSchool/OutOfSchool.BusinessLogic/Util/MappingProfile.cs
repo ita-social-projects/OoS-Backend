@@ -770,18 +770,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => new List<AgeComposition>()));
 
         CreateMap<CompetitiveEvent, CompetitiveEventDto>()
-            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-            .ForMember(
-                dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
+            .ForMember(dest => dest.SubDirections,
+                opt => opt.MapFrom(src => string.Join(',', src.SubDirections.Select(s => s.Title))))
+            .ForMember(dest => dest.SubDirectionIds,
+                opt => opt.MapFrom(src => src.SubDirections.Where(x => !x.IsDeleted).Select(d => d.Id)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
 
-
         CreateSoftDeletedMap<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
-            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventAccountingType, opt => opt.Ignore())
             .ForMember(dest => dest.Parent, opt => opt.Ignore())
@@ -801,8 +799,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverageId))
-            .ForMember(dest => dest.Images, opt => opt.Ignore()); ;
+            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+            .ForMember(dest => dest.Images, opt => opt.Ignore());
 
         CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 
