@@ -32,11 +32,11 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     public float Rating { get; set; } = 0;
     public int NumberOfRatings { get; set; } = 0;
     
-    public string Institution { get; set; }
+    //public string Institution { get; set; }
 
-    public string InstitutionHierarchy { get; set; }
+    //public string InstitutionHierarchy { get; set; }
 
-    public List<long> DirectionIds { get; set; }
+    //public List<long> DirectionIds { get; set; }
     
     public List<long> SubDirectionIds { get; set; }
 

@@ -98,8 +98,6 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventCreateUpdateDto dto)
     {
-        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
-
         var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
         var updatedCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
@@ -342,6 +340,8 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId));
 
+        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
+
         // TODO: Use this code when the CompetitiveEvent entity will have hierarchy.
         //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
         //{
@@ -454,8 +454,6 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
     public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto)
     {
-        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
-
         var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
         async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,

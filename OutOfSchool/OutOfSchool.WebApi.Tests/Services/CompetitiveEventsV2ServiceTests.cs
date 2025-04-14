@@ -20,6 +20,7 @@ using System.Linq;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -33,6 +34,7 @@ public class CompetitiveEventsV2ServiceTests
     private Mock<ICurrentUserService> currentUserMock;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> imageServiceMock;
+    private Mock<IEntityRepository<long, SubDirection>> mockSubDirectionRepository;
 
     private CompetitiveEventService service;
 
@@ -46,11 +48,12 @@ public class CompetitiveEventsV2ServiceTests
         currentUserMock = new Mock<ICurrentUserService>();
         contactsServiceMock = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
         imageServiceMock = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
+        mockSubDirectionRepository = new Mock<IEntityRepository<long, SubDirection>>();
 
         service = new CompetitiveEventService(
             repoMock.Object,
             Mock.Of<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>(),
-            Mock.Of<IEntityRepository<long, SubDirection>>(),
+            mockSubDirectionRepository.Object,
             loggerMock.Object,
             localizerMock.Object,
             mapperMock.Object,
@@ -64,14 +67,28 @@ public class CompetitiveEventsV2ServiceTests
     {
         // Arrange
         var entity = new CompetitiveEvent { Id = Guid.NewGuid() };
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1] };
         var expectedDto = new CompetitiveEventV2Dto { Id = entity.Id };
 
-        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto)).Returns(entity);
-        repoMock.Setup(r => r.Create(entity)).ReturnsAsync(entity);
+        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto))
+            .Returns(entity)
+            .Verifiable(Times.Once);
+        repoMock.Setup(r => r.Create(entity))
+            .ReturnsAsync(entity)
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
-            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
-        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity)).Returns(expectedDto);
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity))
+            .Returns(expectedDto)
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.CreateV2(dto);
@@ -79,32 +96,51 @@ public class CompetitiveEventsV2ServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(entity.Id, result.CompetitiveEventV2.Id);
+        Mock.VerifyAll();
     }
 
     [Test]
     public async Task CreateV2_HandlesNullImagesCorrectly()
     {
+        // Arrange
         var id = Guid.NewGuid();
         var dto = new CompetitiveEventV2CreateRequestDto
         {
             ImageFiles = null,
-            CoverImage = null
+            CoverImage = null,
+            SubDirectionIds = [1]
         };
         var entity = new CompetitiveEvent { Id = id };
         var resultDto = new CompetitiveEventV2Dto { Id = id };
 
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
-            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f())
+            .Verifiable(Times.Once);
+        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity))
+            .Returns(resultDto)
+            .Verifiable(Times.Once);
+        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
+            .ReturnsAsync(entity)
+            .Verifiable(Times.Once);
+        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto))
+            .Returns(entity)
+            .Verifiable(Times.Once);
 
-        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity)).Returns(resultDto);
-        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>())).ReturnsAsync(entity);
-        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto)).Returns(entity);
-
+        // Act
         var result = await service.CreateV2(dto);
 
+        // Assert
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.CompetitiveEventV2);
         Assert.That(result.CompetitiveEventV2.Id, Is.EqualTo(id));
+        Mock.VerifyAll();
     }
 
     [Test]

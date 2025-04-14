@@ -430,7 +430,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DirectionId, opt => opt.Ignore())
             .ForMember(dest => dest.Direction, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
+            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetitiveEvents, opt => opt.Ignore());
 
         CreateMap<SubDirection, SubDirectionDto>();
 
@@ -800,7 +801,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-            .ForMember(dest => dest.Images, opt => opt.Ignore());
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.SubDirections, opt => opt.Ignore());
 
         CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 
