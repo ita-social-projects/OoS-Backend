@@ -126,5 +126,5 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public virtual Provider OrganizerOfTheEvent { get; set; }
     public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
     public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
-    public virtual List<SubDirection> SubDirections { get; set; }
+    public virtual List<SubDirection> SubDirections { get; set; }= [];
 }

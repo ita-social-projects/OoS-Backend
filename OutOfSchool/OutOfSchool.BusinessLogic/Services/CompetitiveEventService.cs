@@ -50,8 +50,8 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService)
     {
         this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
-        this.subDirectionRepository = subDirectionRepository ?? throw new ArgumentException(nameof(subDirectionRepository));
+        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentNullException(nameof(descriptionItemRepository));
+        this.subDirectionRepository = subDirectionRepository ?? throw new ArgumentNullException(nameof(subDirectionRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -282,7 +282,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
     /// <returns>A prepared <see cref="CompetitiveEvent"/> entity ready to be saved</returns>
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown if the User has no rights to perform operation</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the the created CompetitiveEvent does not contain any existing SubDirection.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the created CompetitiveEvent does not contain any existing SubDirection.</exception>
     private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForCreating(CompetitiveEventCreateUpdateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -387,7 +387,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Updating a competitive event failed. Exception: {exeptionMessage}", ex.Message);
+            logger.LogError(ex, "Updating a competitive event failed. Exception: {exceptionMessage}", ex.Message);
             throw;
         }
     }
@@ -472,8 +472,6 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
                 .ConfigureAwait(false);
 
             contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
-
-            mapper.Map(dto, competitiveEvent);
 
             var changingCoverImageResult = await competitiveImagesService
                 .ChangeCoverImageAsync(competitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);

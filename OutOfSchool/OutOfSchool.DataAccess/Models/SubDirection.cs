@@ -27,5 +27,5 @@ public class SubDirection : IKeyedEntity<long>, ISoftDeleted
 
     public virtual ICollection<InstitutionHierarchy> InstitutionHierarchies { get; set; }
 
-    public virtual List<CompetitiveEvent> CompetitiveEvents { get; set; }
+    public virtual List<CompetitiveEvent> CompetitiveEvents { get; set; } = [];
 }

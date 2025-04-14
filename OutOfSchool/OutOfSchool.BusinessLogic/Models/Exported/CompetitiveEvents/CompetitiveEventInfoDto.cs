@@ -30,14 +30,12 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     public Guid OrganizerOfTheEventId { get; set; }
 
     public float Rating { get; set; } = 0;
+
     public int NumberOfRatings { get; set; } = 0;
-    
-    //public string Institution { get; set; }
 
-    //public string InstitutionHierarchy { get; set; }
-
-    //public List<long> DirectionIds { get; set; }
-    
+    /// <summary>
+    /// Gets or sets a comma-separated list of SubDirection titles.
+    /// </summary>
     public List<long> SubDirectionIds { get; set; }
 
     public string SubDirections { get; set; }
