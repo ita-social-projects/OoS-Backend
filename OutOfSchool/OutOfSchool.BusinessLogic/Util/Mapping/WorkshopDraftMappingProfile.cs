@@ -138,7 +138,7 @@ public class WorkshopDraftMappingProfile : Profile
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.Tags, opt => opt.Ignore())
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
-            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.Ignore());
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.WorkshopDraftContent.NoAgeRestrictions));
 
         CreateMap<WorkshopDraftContent, WorkshopV2CreateRequestDto>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
