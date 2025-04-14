@@ -169,16 +169,16 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 yield return new ValidationResult(
                     "Workdays contain duplications");
             }
+        }
 
-            if (NoAgeRestrictions)
-            {
-                MinAge = 0;
-                MaxAge = 120;
-            }
-            else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
-            {
-                yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
-            }
+        if (NoAgeRestrictions)
+        {
+            MinAge = 0;
+            MaxAge = 120;
+        }
+        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
+        {
+            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
     }
 }
