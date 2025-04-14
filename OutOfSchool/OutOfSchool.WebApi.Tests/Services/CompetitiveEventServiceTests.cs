@@ -17,8 +17,8 @@ using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
-using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
@@ -36,6 +36,7 @@ public class CompetitiveEventServiceTests
     private ICompetitiveEventRepository repo;
     private IEntityRepositorySoftDeleted<int, CompetitiveEventAccountingType> accountingTypeOfEventRepository;
     private IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
+    private IEntityRepository<long, SubDirection> subDirectionRepository;
 
     private Mock<ILogger<CompetitiveEventService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -63,6 +64,7 @@ public class CompetitiveEventServiceTests
         repo = new CompetitiveEventRepository(context);
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
         descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
+        subDirectionRepository = new EntityRepository<long, SubDirection>(context);
 
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -74,6 +76,7 @@ public class CompetitiveEventServiceTests
         service = new CompetitiveEventService(
             repo,
             descriptionItemRepository,
+            subDirectionRepository,
             logger.Object,
             localizer.Object,
             mapper,
@@ -380,16 +383,24 @@ public class CompetitiveEventServiceTests
                 OrganizerOfTheEventId = firstProviderId,
                 CompetitiveEventAccountingTypeId = 1,
                 CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
-                CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>
-                {
+                CompetitiveEventDescriptionItems =
+                [
                     new CompetitiveEventDescriptionItem
                     {
                         Id = Guid.NewGuid(),
                         Description = "Description 1",
                         SectionName = "Section 1"
                     }
-                },
-                InstitutionHierarchy = new InstitutionHierarchy { Id = new Guid(), Title = "Institution 1" },
+                ],
+                //InstitutionHierarchy = new InstitutionHierarchy { Id = new Guid(), Title = "Institution 1" },
+                SubDirections =
+                [
+                    new SubDirection
+                    {
+                        Id = 1,
+                        Title = "Фортепіано"
+                    }
+                ],
                 CoverageId = 1,
             },
             new CompetitiveEvent

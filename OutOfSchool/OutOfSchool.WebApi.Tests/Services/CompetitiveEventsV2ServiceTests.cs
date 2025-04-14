@@ -50,6 +50,7 @@ public class CompetitiveEventsV2ServiceTests
         service = new CompetitiveEventService(
             repoMock.Object,
             Mock.Of<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>(),
+            Mock.Of<IEntityRepository<long, SubDirection>>(),
             loggerMock.Object,
             localizerMock.Object,
             mapperMock.Object,

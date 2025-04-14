@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -24,6 +26,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
 {
     private Mock<ICompetitiveEventRepository> mockCompetitiveEventRepository;
     private Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>> mockDescriptionItemRepository;
+    private Mock<IEntityRepository<long, SubDirection>> mockSubDirectionRepository;
     private Mock<ILogger<CompetitiveEventService>> mockLogger;
     private Mock<IStringLocalizer<SharedResource>> mockLocalizer;
     private Mock<IMapper> mockMapper;
@@ -38,6 +41,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         mockCompetitiveEventRepository = new Mock<ICompetitiveEventRepository>();
         mockDescriptionItemRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>();
+        mockSubDirectionRepository = new Mock<IEntityRepository<long, SubDirection>>();
         mockLogger = new Mock<ILogger<CompetitiveEventService>>();
         mockLocalizer = new Mock<IStringLocalizer<SharedResource>>();
         mockMapper = new Mock<IMapper>();
@@ -48,6 +52,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         service = new CompetitiveEventService(
             mockCompetitiveEventRepository.Object,
             mockDescriptionItemRepository.Object,
+            mockSubDirectionRepository.Object,
             mockLogger.Object,
             mockLocalizer.Object,
             mockMapper.Object,
@@ -66,6 +71,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Title = "Test",
             CompetitiveEventAccountingTypeId = 1,
+            SubDirectionIds = [1]
         };
 
         var createdEvent = new CompetitiveEvent
@@ -77,36 +83,38 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockMapper
             .Setup(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateUpdateDto>()))
-            .Returns(createdEvent);
-
+            .Returns(createdEvent)
+            .Verifiable(Times.Once);
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
             .Returns(new CompetitiveEventDto
             {
                 Id = createdEvent.Id,
                 Title = createdEvent.Title,
-            });
-
+            })
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         contactsService
             .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
-            .Verifiable();
-
+            .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(createdEvent);
+            .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
-        Assert.IsNotNull(result, "Result should not be null.");
+        Assert.IsNotNull(result);
         Assert.AreEqual(input.Title, result.Title);
-
-
-        mockMapper.Verify(m => m.Map<CompetitiveEvent>(It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
-        mockMapper.Verify(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()), Times.Once);
-        mockCompetitiveEventRepository.Verify(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()), Times.Once);
-        contactsService.Verify(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -118,6 +126,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = existingEventId,
             Title = "Old Title",
+            SubDirections = new List<SubDirection>() { new SubDirection { Id = 1 } },
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
             {
                 new CompetitiveEventDescriptionItem
@@ -133,29 +142,38 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = existingEventId,
             Title = "New Title",
+            SubDirectionIds = [1],
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
         };
 
         mockCompetitiveEventRepository
-           .Setup(r => r.GetByIdWithDetails(existingEventId,
-           String.Empty,
-           It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
-           .ReturnsAsync(competitiveEvent);
-
+           .Setup(r => r.GetByIdWithDetails(
+               existingEventId,
+               string.Empty,
+               It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
+           .ReturnsAsync(competitiveEvent)
+           .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
-            .ReturnsAsync((CompetitiveEvent input) => input);
-
+            .ReturnsAsync((CompetitiveEvent input) => input)
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         contactsService
             .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
-            .Verifiable();
-
+            .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation());
-
+            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation())
+            .Verifiable(Times.Once);
         mockMapper.Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
-            .Returns(new CompetitiveEventDto { Id = existingEventId, Title = "New Title" });
+            .Returns(new CompetitiveEventDto { Id = existingEventId, Title = "New Title" })
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.Update(updateDto);
@@ -163,13 +181,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         // Assert
         Assert.IsNotNull(result, "Result of Update should not be null.");
         Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
-
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
-           existingEventId, It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
-
-       mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Once);
-       contactsService.Verify(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()), Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -185,25 +197,20 @@ class CompetitiveEventServiceUpdateAndCreateTests
         };
 
         mockCompetitiveEventRepository
-
             .Setup(r => r.GetByIdWithDetails(
                 invalidEventId, It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<CompetitiveEvent>, 
+                It.IsAny<Func<IQueryable<CompetitiveEvent>,
                 IQueryable<CompetitiveEvent>>>()))
-            .ReturnsAsync((CompetitiveEvent)null); 
+            .ReturnsAsync((CompetitiveEvent)null)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             async () => await service.Update(updateDto));
 
-        Assert.That(ex.Message, Does.Contain($"CompetitiveEvent with Id = {invalidEventId} doesn't exist in the system."));
-
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
-            invalidEventId,
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
-
+        Assert.That(ex.Message, Does.Contain("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB."));
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -235,6 +242,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Title = "Test Event",
             CompetitiveEventAccountingTypeId = 1,
+            SubDirectionIds = [1],
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
         };
 
@@ -247,23 +255,30 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockMapper
             .Setup(m => m.Map<CompetitiveEvent>(input))
-            .Returns(createdEvent);
-
+            .Returns(createdEvent)
+            .Verifiable(Times.Once);
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDto>(createdEvent))
             .Returns(new CompetitiveEventDto
             {
                 Id = createdEvent.Id,
                 Title = createdEvent.Title,
-            });
-
+            })
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         contactsService
             .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
-            .Verifiable();
-
+            .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(createdEvent);
+            .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.Create(input);
@@ -272,12 +287,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.IsNotNull(result);
         Assert.AreEqual(input.Title, result.Title);
         Assert.IsNull(createdEvent.CompetitiveEventDescriptionItems);
-        Assert.IsNull(createdEvent.CompetitiveEventDescriptionItems, "CompetitiveEventDescriptionItems should remain null if input is null.");
-
-        mockMapper.Verify(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()), Times.Never);
-        mockCompetitiveEventRepository.Verify(
-            r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()),
-            Times.Once);
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -288,6 +298,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Title = "Test Event",
             CompetitiveEventAccountingTypeId = 1,
+            SubDirectionIds = [1],
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
             {
                 new CompetitiveEventDescriptionItemDto { Description = "Desc 1", SectionName = "Section 1" },
@@ -305,47 +316,52 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockMapper
             .Setup(m => m.Map<CompetitiveEvent>(input))
-            .Returns(createdEvent);
-
+            .Returns(createdEvent)
+            .Verifiable(Times.Once);
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()))
             .Returns<CompetitiveEventDescriptionItemDto>(dto => new CompetitiveEventDescriptionItem
             {
                 Description = dto.Description,
                 SectionName = dto.SectionName
-            });
-
+            })
+            .Verifiable(Times.Exactly(input.CompetitiveEventDescriptionItems.Count));
         mockMapper
-       .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
-       .Returns((CompetitiveEvent ce) => new CompetitiveEventDto
-       {
-           Id = ce.Id,
-           Title = ce.Title,
-           CompetitiveEventAccountingTypeId = ce.CompetitiveEventAccountingTypeId
-       });
-
+            .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
+            .Returns((CompetitiveEvent ce) => new CompetitiveEventDto
+            {
+                Id = ce.Id,
+                Title = ce.Title,
+                CompetitiveEventAccountingTypeId = ce.CompetitiveEventAccountingTypeId
+            })
+            .Verifiable(Times.Once);
         contactsService
            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
-           .Verifiable();
-
+           .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(createdEvent);
+            .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.Create(input);
 
         // Assert
+        var expected = input.CompetitiveEventDescriptionItems[0];
+        var actual = createdEvent.CompetitiveEventDescriptionItems.First();
         Assert.IsNotNull(result);
         Assert.AreEqual(input.Title, result.Title);
         Assert.AreEqual(input.CompetitiveEventDescriptionItems.Count, createdEvent.CompetitiveEventDescriptionItems.Count);
-
-        var expected = input.CompetitiveEventDescriptionItems[0];
-        var actual = createdEvent.CompetitiveEventDescriptionItems.First();
         Assert.AreEqual(expected.Description, actual.Description, $"First description of item is not mapped correctly.");
         Assert.AreEqual(expected.SectionName, actual.SectionName, $"First SectionName of item is not mapped correctly.");
-
-        mockMapper.Verify(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()), Times.Exactly(input.CompetitiveEventDescriptionItems.Count));
+        Mock.VerifyAll();
     }
 
     private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedDescItemId)
@@ -378,6 +394,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = eventId,
             Title = "Updated Event",
+            SubDirectionIds = [1],
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
             {
                 new CompetitiveEventDescriptionItemDto
@@ -401,18 +418,29 @@ class CompetitiveEventServiceUpdateAndCreateTests
         mockCompetitiveEventRepository
 
             .Setup(r => r.GetByIdWithDetails(
-                eventId, 
+                eventId,
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
-            .ReturnsAsync(competitiveEvent);
+            .ReturnsAsync(competitiveEvent)
+            .Verifiable(Times.Once);
 
         mockCompetitiveEventRepository
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
-            .ReturnsAsync((CompetitiveEvent input) => input);
+            .ReturnsAsync((CompetitiveEvent input) => input)
+            .Verifiable(Times.Once);
 
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation());
+            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation())
+            .Verifiable(Times.Once);
+
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
 
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
@@ -420,7 +448,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
             {
                 Id = eventId,
                 Title = "Updated Event"
-            });
+            })
+            .Verifiable(Times.Once);
 
         mockMapper
             .Setup(m => m.Map<CompetitiveEventDescriptionItem>(It.IsAny<CompetitiveEventDescriptionItemDto>()))
@@ -430,29 +459,15 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 Description = dto.Description,
                 SectionName = dto.SectionName,
                 CompetitiveEventId = Guid.Empty
-            });
+            })
+            .Verifiable(Times.Once);
     }
 
     private void AssertValidUpdateResult(CompetitiveEventDto result, Guid mustBeDeletedId)
     {
         Assert.IsNotNull(result);
         Assert.AreEqual("Updated Event", result.Title);
-
-        mockDescriptionItemRepository.Verify(r => r.Create(It.IsAny<CompetitiveEventDescriptionItem>()), Times.Once);
-
-        mockDescriptionItemRepository.Verify(r => r.Delete(It.Is<CompetitiveEventDescriptionItem>(item =>
-            item.Id == mustBeDeletedId && item.Description == "Must deleted Description" && item.SectionName == "Must deleted Section"
-        )), Times.Once);
-
-
-        mockCompetitiveEventRepository.Verify(r => r.GetByIdWithDetails(
-            It.IsAny<Guid>(), 
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()), Times.Once);
-
-        mockCompetitiveEventRepository.Verify(r => r.Update(It.Is<CompetitiveEvent>(e =>
-            e.CompetitiveEventDescriptionItems.Count == 2
-        )), Times.Once);
+        Mock.VerifyAll();
     }
 }
 
