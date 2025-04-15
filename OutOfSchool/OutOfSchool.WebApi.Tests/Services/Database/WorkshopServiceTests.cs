@@ -60,6 +60,7 @@ public class WorkshopServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
+    private Mock<IFeatureManager> featureManager;
     private Guid providerId;
     private Guid studySubjectId;
 
@@ -87,9 +88,9 @@ public class WorkshopServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
+        featureManager = new Mock<IFeatureManager>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
-
 
     workshopService =
                 new WorkshopService(
@@ -111,7 +112,8 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureManagerMock.Object
+                    featureManager.Object);
+                    applicationRepository.Object
                     );
     }
 
