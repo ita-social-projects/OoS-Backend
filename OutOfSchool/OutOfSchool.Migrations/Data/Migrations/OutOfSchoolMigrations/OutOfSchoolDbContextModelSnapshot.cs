@@ -34,7 +34,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ChildrenId");
 
-                    b.ToTable("AchievementChild");
+                    b.ToTable("AchievementChild", (string)null);
                 });
 
             modelBuilder.Entity("ChildSocialGroup", b =>
@@ -49,22 +49,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("SocialGroupsId");
 
-                    b.ToTable("ChildSocialGroup");
-                });
-
-            modelBuilder.Entity("CompetitiveEventSubDirection", b =>
-                {
-                    b.Property<Guid>("CompetitiveEventsId")
-                        .HasColumnType("UUID(16)");
-
-                    b.Property<long>("SubDirectionsId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("CompetitiveEventsId", "SubDirectionsId");
-
-                    b.HasIndex("SubDirectionsId");
-
-                    b.ToTable("CompetitiveEventSubDirection");
+                    b.ToTable("ChildSocialGroup", (string)null);
                 });
 
             modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
@@ -79,7 +64,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("SubDirectionsId");
 
-                    b.ToTable("InstitutionHierarchySubDirection");
+                    b.ToTable("InstitutionHierarchySubDirection", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -98,7 +83,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("DataProtectionKeys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -266,7 +251,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Achievements");
+                    b.ToTable("Achievements", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementTeacher", b =>
@@ -296,7 +281,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTeachers");
+                    b.ToTable("AchievementTeachers", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AchievementType", b =>
@@ -325,7 +310,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AchievementTypes");
+                    b.ToTable("AchievementTypes", (string)null);
 
                     b.HasData(
                         new
@@ -420,7 +405,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -471,7 +456,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AreaAdmin", b =>
@@ -498,7 +483,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AreaAdmins");
+                    b.ToTable("AreaAdmins", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.AverageRating", b =>
@@ -530,7 +515,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("AverageRatings");
+                    b.ToTable("AverageRatings", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.BlockedProviderParent", b =>
@@ -576,7 +561,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("BlockedProviderParents");
+                    b.ToTable("BlockedProviderParents", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CATOTTG", b =>
@@ -631,7 +616,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("CATOTTGs");
+                    b.ToTable("CATOTTGs", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
@@ -676,7 +661,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChangesLog");
+                    b.ToTable("ChangesLog", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatMessageWorkshop", b =>
@@ -713,7 +698,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("ChatMessageWorkshops");
+                    b.ToTable("ChatMessageWorkshops", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
@@ -744,7 +729,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("ChatRoomWorkshops");
+                    b.ToTable("ChatRoomWorkshops", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
@@ -798,7 +783,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Children");
+                    b.ToTable("Children", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
@@ -816,7 +801,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyInformation");
+                    b.ToTable("CompanyInformation", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
@@ -840,7 +825,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompanyInformationId");
 
-                    b.ToTable("CompanyInformationItems");
+                    b.ToTable("CompanyInformationItems", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
@@ -914,6 +899,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("File")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid?>("InstitutionHierarchyId")
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsBlocked")
                         .HasColumnType("tinyint(1)");
@@ -1007,13 +995,15 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CoverageId");
 
+                    b.HasIndex("InstitutionHierarchyId");
+
                     b.HasIndex("IsDeleted");
 
                     b.HasIndex("OrganizerOfTheEventId");
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("CompetitiveEvents");
+                    b.ToTable("CompetitiveEvents", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventAccountingType", b =>
@@ -1041,7 +1031,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("CompetitiveEventAccountingTypes");
+                    b.ToTable("CompetitiveEventAccountingTypes", (string)null);
 
                     b.HasData(
                         new
@@ -1099,7 +1089,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("CompetitiveEventCoverages");
+                    b.ToTable("CompetitiveEventCoverages", (string)null);
 
                     b.HasData(
                         new
@@ -1169,7 +1159,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompetitiveEventId");
 
-                    b.ToTable("CompetitiveEventDescriptionItems");
+                    b.ToTable("CompetitiveEventDescriptionItems", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventRegistrationDeadline", b =>
@@ -1197,7 +1187,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("CompetitiveEventRegistrationDeadlines");
+                    b.ToTable("CompetitiveEventRegistrationDeadlines", (string)null);
 
                     b.HasData(
                         new
@@ -1253,7 +1243,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompetitiveEventId");
 
-                    b.ToTable("Judges");
+                    b.ToTable("Judges", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
@@ -1287,7 +1277,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("DateTimeRanges", t =>
+                    b.ToTable("DateTimeRanges", null, t =>
                         {
                             t.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
                         });
@@ -1324,7 +1314,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Directions");
+                    b.ToTable("Directions", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ElasticsearchSyncRecord", b =>
@@ -1347,7 +1337,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ElasticsearchSyncRecords");
+                    b.ToTable("ElasticsearchSyncRecords", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.EmployeeChangesLog", b =>
@@ -1396,7 +1386,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EmployeeChangesLog");
+                    b.ToTable("EmployeeChangesLog", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
@@ -1427,7 +1417,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Favorites");
+                    b.ToTable("Favorites", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.FileInDb", b =>
@@ -1443,7 +1433,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FilesInDb");
+                    b.ToTable("FilesInDb", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>", b =>
@@ -1456,7 +1446,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("CompetitiveEventsImages");
+                    b.ToTable("CompetitiveEventsImages", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
@@ -1469,7 +1459,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("ProviderImages");
+                    b.ToTable("ProviderImages", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
@@ -1482,7 +1472,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("WorkshopImages");
+                    b.ToTable("WorkshopImages", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft>", b =>
@@ -1495,7 +1485,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
-                    b.ToTable("WorkshopDraftImages");
+                    b.ToTable("WorkshopDraftImages", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Individual", b =>
@@ -1590,7 +1580,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Individuals");
+                    b.ToTable("Individuals", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
@@ -1612,7 +1602,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionAdmins");
+                    b.ToTable("InstitutionAdmins", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -1640,7 +1630,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionStatuses");
+                    b.ToTable("InstitutionStatuses", (string)null);
 
                     b.HasData(
                         new
@@ -1696,7 +1686,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Languages");
+                    b.ToTable("Languages", (string)null);
 
                     b.HasData(
                         new
@@ -1748,7 +1738,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Official", b =>
@@ -1835,7 +1825,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("Officials");
+                    b.ToTable("Officials", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.OperationWithObject", b =>
@@ -1872,7 +1862,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("RowSeparator");
 
-                    b.ToTable("OperationsWithObjects");
+                    b.ToTable("OperationsWithObjects", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -1903,7 +1893,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Parents");
+                    b.ToTable("Parents", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
@@ -1937,7 +1927,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ParentBlockedByAdminLog");
+                    b.ToTable("ParentBlockedByAdminLog", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.PermissionsForRole", b =>
@@ -1963,7 +1953,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PermissionsForRoles");
+                    b.ToTable("PermissionsForRoles", (string)null);
 
                     b.HasData(
                         new
@@ -2139,7 +2129,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Positions");
+                    b.ToTable("Positions", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
@@ -2313,7 +2303,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("TypeId");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
@@ -2344,7 +2334,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("ProviderSectionItems");
+                    b.ToTable("ProviderSectionItems", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderType", b =>
@@ -2361,7 +2351,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProviderTypes");
+                    b.ToTable("ProviderTypes", (string)null);
 
                     b.HasData(
                         new
@@ -2447,7 +2437,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("QuartzJobs");
+                    b.ToTable("QuartzJobs", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
@@ -2483,7 +2473,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Ratings");
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.RegionAdmin", b =>
@@ -2510,7 +2500,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("RegionAdmins");
+                    b.ToTable("RegionAdmins", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
@@ -2539,7 +2529,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("SocialGroups");
+                    b.ToTable("SocialGroups", (string)null);
 
                     b.HasData(
                         new
@@ -2605,7 +2595,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReports");
+                    b.ToTable("StatisticReports", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.StatisticReportCSV", b =>
@@ -2720,7 +2710,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatisticReportsCSV");
+                    b.ToTable("StatisticReportsCSV", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.StudySubject", b =>
@@ -2802,7 +2792,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("StudySubjects");
+                    b.ToTable("StudySubjects", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
@@ -2839,7 +2829,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("SubDirections");
+                    b.ToTable("SubDirections", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
@@ -2872,7 +2862,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("Institutions");
+                    b.ToTable("Institutions", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
@@ -2902,7 +2892,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("InstitutionFieldDescriptions");
+                    b.ToTable("InstitutionFieldDescriptions", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", b =>
@@ -2942,7 +2932,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("InstitutionHierarchies");
+                    b.ToTable("InstitutionHierarchies", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Tag", b =>
@@ -2961,7 +2951,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
 
                     b.HasData(
                         new
@@ -3615,7 +3605,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("Teachers");
+                    b.ToTable("Teachers", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -3908,7 +3898,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Workshops");
+                    b.ToTable("Workshops", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDescriptionItem", b =>
@@ -3941,7 +3931,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("WorkshopDescriptionItems");
+                    b.ToTable("WorkshopDescriptionItems", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.TeacherDraft", b =>
@@ -3994,7 +3984,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopDraftId");
 
-                    b.ToTable("TeacherDraft");
+                    b.ToTable("TeacherDraft", (string)null);
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", b =>
@@ -4049,7 +4039,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("WorkshopId")
                         .IsUnique();
 
-                    b.ToTable("WorkshopDrafts");
+                    b.ToTable("WorkshopDrafts", (string)null);
                 });
 
             modelBuilder.Entity("StudySubjectWorkshop", b =>
@@ -4064,7 +4054,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopsId");
 
-                    b.ToTable("StudySubjectWorkshop");
+                    b.ToTable("StudySubjectWorkshop", (string)null);
                 });
 
             modelBuilder.Entity("TagWorkshop", b =>
@@ -4079,7 +4069,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopsId");
 
-                    b.ToTable("TagWorkshop");
+                    b.ToTable("TagWorkshop", (string)null);
                 });
 
             modelBuilder.Entity("AchievementChild", b =>
@@ -4108,21 +4098,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.SocialGroup", null)
                         .WithMany()
                         .HasForeignKey("SocialGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("CompetitiveEventSubDirection", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
-                        .WithMany()
-                        .HasForeignKey("CompetitiveEventsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.SubDirection", null)
-                        .WithMany()
-                        .HasForeignKey("SubDirectionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -4391,6 +4366,11 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", "InstitutionHierarchy")
+                        .WithMany()
+                        .HasForeignKey("InstitutionHierarchyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("OutOfSchool.Services.Models.Provider", "OrganizerOfTheEvent")
                         .WithMany()
                         .HasForeignKey("OrganizerOfTheEventId")
@@ -4401,7 +4381,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .WithMany()
                         .HasForeignKey("ParentId");
 
-                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                    b.OwnsMany("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
@@ -4424,12 +4404,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                             b1.HasIndex("OwnerId");
 
-                            b1.ToTable("CompetitiveEvents_Contacts");
+                            b1.ToTable("CompetitiveEvents_Contacts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OwnerId");
 
-                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                            b1.OwnsOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Address#OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
                                 {
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -4460,7 +4440,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("CATOTTGId");
 
-                                    b2.ToTable("CompetitiveEvents_Contacts");
+                                    b2.ToTable("CompetitiveEvents_Contacts", (string)null);
 
                                     b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
                                         .WithMany()
@@ -4474,7 +4454,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     b2.Navigation("CATOTTG");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Emails#OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4499,13 +4479,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("CompetitiveEvents_Contacts_Emails");
+                                    b2.ToTable("CompetitiveEvents_Contacts_Emails", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Phones#OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4531,13 +4511,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("Number");
 
-                                    b2.ToTable("CompetitiveEvents_Contacts_Phones");
+                                    b2.ToTable("CompetitiveEvents_Contacts_Phones", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.SocialNetworks#OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4559,7 +4539,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("CompetitiveEvents_Contacts_SocialNetworks");
+                                    b2.ToTable("CompetitiveEvents_Contacts_SocialNetworks", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
@@ -4579,6 +4559,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Contacts");
 
                     b.Navigation("Coverage");
+
+                    b.Navigation("InstitutionHierarchy");
 
                     b.Navigation("OrganizerOfTheEvent");
 
@@ -4808,7 +4790,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                    b.OwnsMany("OutOfSchool.Services.Models.Provider.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
@@ -4831,12 +4813,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                             b1.HasIndex("OwnerId");
 
-                            b1.ToTable("Providers_Contacts");
+                            b1.ToTable("Providers_Contacts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OwnerId");
 
-                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                            b1.OwnsOne("OutOfSchool.Services.Models.Provider.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Address#OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
                                 {
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -4867,7 +4849,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("CATOTTGId");
 
-                                    b2.ToTable("Providers_Contacts");
+                                    b2.ToTable("Providers_Contacts", (string)null);
 
                                     b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
                                         .WithMany()
@@ -4881,7 +4863,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     b2.Navigation("CATOTTG");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Provider.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Emails#OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4906,13 +4888,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("Providers_Contacts_Emails");
+                                    b2.ToTable("Providers_Contacts_Emails", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Provider.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Phones#OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4938,13 +4920,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("Number");
 
-                                    b2.ToTable("Providers_Contacts_Phones");
+                                    b2.ToTable("Providers_Contacts_Phones", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Provider.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.SocialNetworks#OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -4966,7 +4948,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("Providers_Contacts_SocialNetworks");
+                                    b2.ToTable("Providers_Contacts_SocialNetworks", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
@@ -5127,7 +5109,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                    b.OwnsMany("OutOfSchool.Services.Models.Workshop.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
                         {
                             b1.Property<long>("Id")
                                 .ValueGeneratedOnAdd()
@@ -5150,12 +5132,12 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                             b1.HasIndex("OwnerId");
 
-                            b1.ToTable("Workshops_Contacts");
+                            b1.ToTable("Workshops_Contacts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OwnerId");
 
-                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                            b1.OwnsOne("OutOfSchool.Services.Models.Workshop.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Address#OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
                                 {
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -5186,7 +5168,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("CATOTTGId");
 
-                                    b2.ToTable("Workshops_Contacts");
+                                    b2.ToTable("Workshops_Contacts", (string)null);
 
                                     b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
                                         .WithMany()
@@ -5200,7 +5182,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     b2.Navigation("CATOTTG");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Workshop.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Emails#OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -5225,13 +5207,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("Workshops_Contacts_Emails");
+                                    b2.ToTable("Workshops_Contacts_Emails", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Workshop.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.Phones#OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -5257,13 +5239,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("Number");
 
-                                    b2.ToTable("Workshops_Contacts_Phones");
+                                    b2.ToTable("Workshops_Contacts_Phones", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
                                 });
 
-                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                            b1.OwnsMany("OutOfSchool.Services.Models.Workshop.Contacts#OutOfSchool.Services.Models.ContactInfo.Contacts.SocialNetworks#OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
                                 {
                                     b2.Property<long>("Id")
                                         .ValueGeneratedOnAdd()
@@ -5285,7 +5267,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                                     b2.HasIndex("ContactsId");
 
-                                    b2.ToTable("Workshops_Contacts_SocialNetworks");
+                                    b2.ToTable("Workshops_Contacts_SocialNetworks", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("ContactsId");
