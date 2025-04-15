@@ -378,7 +378,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var ex = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
             async () => await service.Update(updateDto));
 
-        Assert.That(ex.Message, Does.Contain("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB."));
+        Assert.That(ex.Message, Does.Contain($"Updating failed. CompetitiveEvent with Id = {invalidEventId} doesn't exist in the DB."));
         mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
         Mock.VerifyAll();
     }

@@ -354,8 +354,8 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         if (competitiveEvent is null)
         {
-            var message = "Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB.";
-            logger.LogError(message, dto.Id);
+            var message = $"Updating failed. CompetitiveEvent with Id = {dto.Id} doesn't exist in the DB.";
+            logger.LogError("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB.", dto.Id);
             throw new DbUpdateConcurrencyException(message);
         }
 
@@ -470,8 +470,6 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
             var multipleImageChangingResult = await competitiveImagesService
                 .ChangeImagesAsync(competitiveEvent, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
-
-            contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
 
             var changingCoverImageResult = await competitiveImagesService
                 .ChangeCoverImageAsync(competitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
