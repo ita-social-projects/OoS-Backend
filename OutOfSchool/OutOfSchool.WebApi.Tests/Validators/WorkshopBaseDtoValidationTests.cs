@@ -75,7 +75,7 @@ public class WorkshopBaseDtoTests
             EducationalShift = EducationalShift.First,
             LanguageOfEducationId = 1,
             AgeComposition = AgeComposition.SameAge,
-            WorkshopType = WorkshopType.None,
+            WorkshopType = WorkshopType.Workshop,
             AvailableSeats = 10
         };
     }
