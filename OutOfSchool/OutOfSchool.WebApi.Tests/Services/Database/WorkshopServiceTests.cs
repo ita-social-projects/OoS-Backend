@@ -112,7 +112,7 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureManager.Object);
+                    featureManager.Object,
                     applicationRepository.Object
                     );
     }
