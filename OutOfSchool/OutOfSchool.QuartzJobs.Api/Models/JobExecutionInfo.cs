@@ -1,5 +1,8 @@
 ﻿namespace OutOfSchool.QuartzJobs.Api.Models;
 
+/// <summary>
+/// Represents information about a job execution, including runtime, result, and parameters.
+/// </summary>
 public class JobExecutionInfo
 {
     public string JobName { get; set; } = string.Empty;
@@ -15,13 +18,9 @@ public class JobExecutionInfo
 
     public bool WasSuccessful { get; set; }
 
-    public string TriggerType { get; set; }
-    public string? CronExpression { get; set; }
-    public string? RepeatInterval { get; set; }
+    public string? TriggerType { get; set; }
 
     public string? ErrorMessage { get; set; }
     public string? StackTrace { get; set; }
     public Dictionary<string, string>? Parameters { get; set; }
-
-    public int? TotalRuns { get; set; }
 }
