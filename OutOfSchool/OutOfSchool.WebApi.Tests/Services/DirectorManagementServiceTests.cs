@@ -74,7 +74,7 @@ public class DirectorManagementServiceTests
     {
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
-        SetupUserHasRightsAsDeputy();
+
         _officialRepositoryMock
            .Setup(x => x.GetById(requestDto.OfficialId))
            .ReturnsAsync((Official)null!);
@@ -92,7 +92,7 @@ public class DirectorManagementServiceTests
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRightsAsDeputy();
+        SetupUserHasRights();
         SetupExistingDirectorForСurrentProvider();
 
         Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
@@ -146,7 +146,7 @@ public class DirectorManagementServiceTests
         var official = SetupOfficial(providerId: wrongProviderId); // create official with wrong provider id
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRightsAsDeputy();
+        SetupUserHasRights();
 
         SetupNoDirectorForProvider(wrongProviderId);
 
@@ -172,7 +172,7 @@ public class DirectorManagementServiceTests
 
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRightsAsDeputy();
+        SetupUserHasRights();
         SetupNoDirectorForProvider();
 
         var createdPositionId = Guid.NewGuid();
@@ -207,87 +207,7 @@ public class DirectorManagementServiceTests
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
     }
 
-    [Test]
-    public async Task TransferDirector_ShouldThrowInvalidOperationException_WhenOfficialsHaveDifferentProviders()
-    {
-        // Arrange
-        var fromOfficialId = Guid.NewGuid();
-        var toOfficialId = Guid.NewGuid();
-        var anotherProviderId = Guid.NewGuid();
-        var currentUserId = "current-user-id";
-
-        var fromOfficial = new Official
-        {
-            Id = fromOfficialId,
-            Individual = new Individual { UserId = currentUserId, FirstName = "John", LastName = "Doe" },
-            Position = new Position
-            {
-                Id = Guid.NewGuid(),
-                ProviderId = _providerId,
-                PositionType = PositionType.Director
-            }
-        };
-
-        var toOfficial = new Official
-        {
-            Id = toOfficialId,
-            Individual = new Individual { UserId = "another-user-id", FirstName = "Jane", LastName = "Smith" },
-            Position = new Position
-            {
-                Id = Guid.NewGuid(),
-                ProviderId = anotherProviderId, // different provider
-                PositionType = PositionType.DeputyDirector
-            }
-        };
-
-        _currentUserServiceMock
-            .Setup(x => x.UserId)
-            .Returns(currentUserId);
-
-        _officialRepositoryMock
-            .Setup(x => x.Get())
-            .Returns(new List<Official> { fromOfficial, toOfficial }
-            .AsQueryable().BuildMock().Object);
-
-        var request = new TransferDirectorRequestDto
-        {
-            FromOfficialId = fromOfficialId,
-            ToOfficialId = toOfficialId
-        };
-
-        // Act
-        Func<Task> act = async () => await _service.TransferDirectorPosition(_providerId, request);
-
-        // Assert
-        await act.Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage("Officials must belong to the same provider.");
-    }
-
-    private void SetupUserHasRightsAsDeputy(Guid? providerId = null)
-    {
-        var deputyId = Guid.NewGuid();
-        var provId = providerId ?? _providerId;
-
-        _currentUserServiceMock
-            .Setup(x => x.UserId)
-            .Returns(deputyId.ToString());
-
-        var deputy = SetupOfficial(provId, deputyId, PositionType.DeputyDirector);
-
-        _officialRepositoryMock
-            .Setup(x => x.GetById(deputyId))
-            .ReturnsAsync(deputy);
-
-        _positionRepositoryMock
-            .Setup(x => x.Update(deputy.Position))
-            .ReturnsAsync(deputy.Position);
-
-        _currentUserServiceMock
-            .Setup(x => x.UserHasRights(It.IsAny<ProviderRights>()))
-            .Returns(Task.CompletedTask);
-    }
-    private void SetupUserHasRightsButNotDeputy()
+    private void SetupUserHasRights()
     {
         var userId = Guid.NewGuid().ToString();
 

@@ -96,6 +96,16 @@ public class DirectorManagementService : IDirectorManagementService
             official.PositionId = newDirectorPosition.Id;
             await _officialRepository.Update(official);
 
+            // Deactivate the deputy director position (for the initiator)
+            var userId = Guid.Parse(_currentUserService.UserId);
+            var initiator = await _officialRepository.GetById(userId);
+            if (initiator?.Position?.PositionType == PositionType.DeputyDirector &&
+                initiator.Position.ProviderId == providerId)
+            {
+                initiator.Position.ActiveTo = now;
+                await _positionRepository.Update(initiator.Position);
+                _logger.LogInformation("Initiator (ID: {InitiatorId}) was a deputy and had their position deactivated.", userId);
+            }
             await transaction.CommitAsync();
             _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
                     official.Id, providerId, newDirectorPosition.Id);
