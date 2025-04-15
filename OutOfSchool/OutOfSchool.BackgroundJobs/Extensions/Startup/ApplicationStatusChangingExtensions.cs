@@ -21,11 +21,15 @@ public static class ApplicationStatusChangingExtensions
 
         var applicationStatusChangingJobKey = new JobKey(JobConstants.ApplicationStatusChanging, GroupConstants.ApplicationStatusChange);
 
-        quartz.AddJob<ApplicationStatusChangingJob>(j => j.WithIdentity(applicationStatusChangingJobKey));
+        quartz.AddJob<ApplicationStatusChangingJob>(j => j
+            .WithIdentity(applicationStatusChangingJobKey)
+            .WithDescription("Changes all Approved applications to StudyingForYears status automatically by schedule."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.ApplicationStatusChanging, GroupConstants.ApplicationStatusChange)
             .ForJob(applicationStatusChangingJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.ApplicationStatusChangingCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.ApplicationStatusChangingCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.ApplicationStatusChangingCronScheduleString}"));
     }
 }

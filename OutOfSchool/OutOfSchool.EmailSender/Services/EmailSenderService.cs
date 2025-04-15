@@ -36,13 +36,15 @@ public class EmailSenderService : IEmailSenderService
 
         var job = JobBuilder
             .Create<EmailSenderJob>()
-            .WithIdentity($"emailSenderJob_{Guid.NewGuid()}", "emails")
+            .WithIdentity($"sendEmailTo_{email}_{Guid.NewGuid()}", "emails")
+            .WithDescription($"Send email to {email} with subject '{subject}'")
             .UsingJobData(jobData)
             .Build();
 
         var trigger = TriggerBuilder
             .Create()
             .StartAt(sendGridAccessibilityService.GetAccessibilityTime(DateTimeOffset.Now))
+            .WithDescription($"Send email to {email}")
             .Build();
 
         await scheduler.ScheduleJob(job, trigger);

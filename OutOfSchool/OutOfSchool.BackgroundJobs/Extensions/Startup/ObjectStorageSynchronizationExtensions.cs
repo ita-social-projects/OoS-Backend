@@ -45,11 +45,15 @@ public static class ObjectStorageSynchronizationExtensions
 
         var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
 
-        quartz.AddJob<ObjectStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+        quartz.AddJob<ObjectStorageSynchronizationQuartzJob>(j => j
+            .WithIdentity(gcpImagesJobKey)
+            .WithDescription("Synchronizes object storage files with database records."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
             .ForJob(gcpImagesJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString}"));
     }
 }

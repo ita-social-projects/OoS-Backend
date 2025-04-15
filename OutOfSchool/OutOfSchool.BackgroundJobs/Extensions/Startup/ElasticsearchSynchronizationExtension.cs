@@ -49,26 +49,32 @@ public static class ElasticsearchSynchronizationExtension
 
         var workshopSyncJobKey = new JobKey(JobConstants.ElasticSearchWorkshopSynchronization, GroupConstants.ElasticSearch);
 
-        quartz.AddJob<ElasticsearchWorkshopSynchronizationQuartzJob>(j => j.WithIdentity(workshopSyncJobKey));
+        quartz.AddJob<ElasticsearchWorkshopSynchronizationQuartzJob>(j => j
+            .WithIdentity(workshopSyncJobKey)
+            .WithDescription("Synchronizes workshop data to Elasticsearch index."));
         // TODO: rewrite as a cron trigger
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.ElasticSearchWorkshopSynchronization, GroupConstants.ElasticSearch)
             .ForJob(workshopSyncJobKey)
             .StartNow()
             .WithSimpleSchedule(x =>
-                x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig
-                    .DelayBetweenTasksInMilliseconds)).RepeatForever()));
+                x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds))
+                 .RepeatForever())
+            .WithDescription($"Runs repeatedly every {elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds} ms."));
 
         var competitiveEventSyncJobKey = new JobKey(JobConstants.ElasticSearchCompetitiveEventSynchronization, GroupConstants.ElasticSearch);
 
-        quartz.AddJob<ElasticsearchCompetitiveEventSynchronizationQuartzJob>(j => j.WithIdentity(competitiveEventSyncJobKey));
+        quartz.AddJob<ElasticsearchCompetitiveEventSynchronizationQuartzJob>(j => j
+            .WithIdentity(competitiveEventSyncJobKey)
+            .WithDescription("Synchronizes competitive event data to Elasticsearch index."));
         // TODO: rewrite as a cron trigger
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.ElasticSearchCompetitiveEventSynchronization, GroupConstants.ElasticSearch)
             .ForJob(competitiveEventSyncJobKey)
             .StartNow()
             .WithSimpleSchedule(x =>
-                x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig
-                    .DelayBetweenTasksInMilliseconds)).RepeatForever()));
+                x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds))
+                 .RepeatForever())
+            .WithDescription($"Runs repeatedly every {elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds} ms."));
     }
 }

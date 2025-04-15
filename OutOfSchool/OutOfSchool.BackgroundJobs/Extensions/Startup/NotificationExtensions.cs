@@ -29,12 +29,16 @@ public static class NotificationExtensions
 
         var notificationsClearingJobKey = new JobKey(JobConstants.NotificationsClearing, GroupConstants.Notifications);
 
-        quartz.AddJob<NotificationsClearingQuartsJob>(j => j.WithIdentity(notificationsClearingJobKey));
+        quartz.AddJob<NotificationsClearingQuartsJob>(j => j
+            .WithIdentity(notificationsClearingJobKey)
+            .WithDescription("Clears old notifications from the system."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.NotificationsClearing, GroupConstants.Notifications)
             .ForJob(notificationsClearingJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.NotificationsClearingCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.NotificationsClearingCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.NotificationsClearingCronScheduleString}"));
     }
 
     /// <summary>
@@ -56,12 +60,16 @@ public static class NotificationExtensions
 
         var licenseApprovalNotificationJobKey = new JobKey(JobConstants.LicenseApprovalNotification, GroupConstants.Notifications);
 
-        quartz.AddJob<LicenseApprovalNotificationQuartzJob>(j => j.WithIdentity(licenseApprovalNotificationJobKey));
+        quartz.AddJob<LicenseApprovalNotificationQuartzJob>(j => j
+            .WithIdentity(licenseApprovalNotificationJobKey)
+            .WithDescription("Generates license approval notifications for providers."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.LicenseApprovalNotification, GroupConstants.Notifications)
             .ForJob(licenseApprovalNotificationJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.LicenseApprovalNotificationCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.LicenseApprovalNotificationCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.LicenseApprovalNotificationCronScheduleString}"));
     }
 
 }
