@@ -15,6 +15,10 @@ public class JobMonitoringListener : IJobListener
 
     public string Name => nameof(JobMonitoringListener);
 
+    /// <summary>
+    /// Called before the job is executed.
+    /// Saves the current UTC time to the job context for later duration calculation.
+    /// </summary>
     public Task JobToBeExecuted(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         // Save start time to context
@@ -22,23 +26,27 @@ public class JobMonitoringListener : IJobListener
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Called if the job execution was vetoed and did not run.
+    /// No logging is performed in this case.
+    /// </summary>
     public Task JobExecutionVetoed(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         // If the job was blocked — do not log anything
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Called after the job has been executed (successfully or not).
+    /// Logs the job execution details to the configured logger.
+    /// </summary>
     public Task JobWasExecuted(
-        IJobExecutionContext context,
-        JobExecutionException? jobException,
-        CancellationToken cancellationToken = default)
+    IJobExecutionContext context,
+    JobExecutionException? jobException,
+    CancellationToken cancellationToken = default)
     {
         var startTime = context.MergedJobDataMap.Get("__StartTime") as DateTime? ?? DateTime.UtcNow;
         var endTime = DateTime.UtcNow;
-
-        var triggerType = context.Trigger.GetType().Name;
-        var cronTrigger = context.Trigger as ICronTrigger;
-        var simpleTrigger = context.Trigger as ISimpleTrigger;
 
         var info = new JobExecutionInfo
         {
@@ -46,19 +54,17 @@ public class JobMonitoringListener : IJobListener
             JobGroup = context.JobDetail.Key.Group,
             TriggerName = context.Trigger.Key.Name,
             TriggerGroup = context.Trigger.Key.Group,
-            StartTime = startTime,
-            EndTime = endTime,
+            StartTime = startTime.ToLocalTime(),
+            EndTime = endTime.ToLocalTime(),
             Duration = context.JobRunTime,
-            WasSuccessful = jobException == null,
+            WasSuccessful = jobException is null,
             RetryCount = context.RefireCount,
-            TriggerType = triggerType,
-            CronExpression = cronTrigger?.CronExpressionString,
-            RepeatInterval = simpleTrigger?.RepeatInterval.ToString(),
+            TriggerType = context.Trigger.GetType().Name,
             ErrorMessage = jobException?.Message,
             StackTrace = jobException?.InnerException?.ToString(),
             Parameters = context.MergedJobDataMap
-        .Where(kv => kv.Key != "__StartTime")
-        .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString() ?? "null")
+                .Where(kv => kv.Key != "__StartTime")
+                .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString() ?? "null")
         };
 
         return logger.LogAsync(info);

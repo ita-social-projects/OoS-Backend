@@ -17,6 +17,12 @@ public class RedisJobExecutionLogger : IJobExecutionLogger
         historyLength = options.Value.Redis?.HistoryLength ?? 10;
     }
 
+    /// <summary>
+    /// Logs job execution information into Redis.
+    /// Keeps only the latest N records for each job.
+    /// </summary>
+    /// <param name="info">Job execution information to log.</param>
+    /// <returns>A completed task.</returns>
     public async Task LogAsync(JobExecutionInfo info)
     {
         var key = GetKey(info.JobName);
@@ -26,6 +32,11 @@ public class RedisJobExecutionLogger : IJobExecutionLogger
         await redis.ListTrimAsync(key, 0, historyLength - 1);
     }
 
+    /// <summary>
+    /// Retrieves the execution history of a specific job from Redis.
+    /// </summary>
+    /// <param name="jobName">The name of the job.</param>
+    /// <returns>A list of job execution records (both successful and failed).</returns>
     public async Task<IReadOnlyList<JobExecutionInfo>> GetHistoryAsync(string jobName)
     {
         var key = GetKey(jobName);
@@ -37,6 +48,11 @@ public class RedisJobExecutionLogger : IJobExecutionLogger
             .ToList();
     }
 
+    /// <summary>
+    /// Retrieves only failed execution records of a specific job from Redis.
+    /// </summary>
+    /// <param name="jobName">The name of the job.</param>
+    /// <returns>A list of failed job execution records.</returns>
     public async Task<IReadOnlyList<JobExecutionInfo>> GetFailedAsync(string jobName)
     {
         var all = await GetHistoryAsync(jobName);
