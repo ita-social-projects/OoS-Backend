@@ -1,8 +1,10 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -64,6 +66,7 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<ActionResult> Delete(Guid id)
     {
         await serviceParent.Delete(id).ConfigureAwait(false);
@@ -100,6 +103,7 @@ public class ParentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.AdminsChildrenParentsManagement))]
     public async Task<ActionResult> BlockUnblockParent([FromBody] BlockUnblockParentDto parentBlockUnblock)
     {
         var result = await serviceParent.BlockUnblockParent(parentBlockUnblock).ConfigureAwait(false);

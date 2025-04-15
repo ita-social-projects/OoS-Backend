@@ -62,7 +62,8 @@ public class RatingService : IRatingService
     {
         logger.LogInformation("Getting part of Ratings started.");
 
-        var ratings = ratingRepository.Get(filter.From, filter.Size, "Parent");
+        var ratings = ratingRepository.Get(filter.From, filter.Size)
+                                      .Include(r => r.Parent);
 
         logger.LogInformation(!ratings.Any()
             ? "Rating table is empty."

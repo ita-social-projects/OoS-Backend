@@ -199,14 +199,19 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             { x => x.User.LastName, SortDirection.Ascending },
         };
 
+        Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>> includeFunc =
+            ra => ra.Include(ra => ra.Institution)
+                    .Include(ra => ra.User)
+                    .Include(ra => ra.CATOTTG);
+
         var regionAdmins = await regionAdminRepository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
-                includeProperties: "Institution,User,CATOTTG",
                 whereExpression: filterPredicate,
-                orderBy: sortExpression,
-                asNoTracking: true)
+                orderBy: sortExpression)
+            .IncludeProperties(includeFunc)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
 
@@ -233,7 +238,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, RegionAdminDto>> UpdateRegionAdminAsync(
         string userId,
-        BaseUserDto updateRegionAdminDto,
+        BaseUpdateUserDto updateRegionAdminDto,
         string token)
     {
         _ = updateRegionAdminDto ?? throw new ArgumentNullException(nameof(updateRegionAdminDto));
@@ -258,7 +263,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
-            Data = mapper.Map<RegionAdminBaseDto>(updateRegionAdminDto),
+            Data = mapper.Map<RegionAdminBaseUpdateDto>(updateRegionAdminDto),
         };
 
         Logger.LogDebug(

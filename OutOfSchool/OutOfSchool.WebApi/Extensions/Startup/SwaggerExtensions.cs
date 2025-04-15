@@ -1,7 +1,5 @@
 using System.Reflection;
 using Asp.Versioning.ApiExplorer;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -35,20 +33,8 @@ public static class SwaggerExtensions
                 c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
                 {
                     Description = config.SecurityDefinitions.Description,
-                    Type = SecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        AuthorizationCode = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize?prompt=login",
-                                UriKind.Absolute),
-                            TokenUrl = new Uri($"{identityBaseUrl}/connect/token", UriKind.Absolute),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                {string.Join(" ", config.SecurityDefinitions.AccessScopes), "Scopes"},
-                            },
-                        },
-                    },
+                    Type = SecuritySchemeType.OpenIdConnect,
+                    OpenIdConnectUrl = new Uri($"{identityBaseUrl}/.well-known/openid-configuration")
                 });
                 c.UseOneOfForPolymorphism();
                 c.UseAllOfForInheritance();
@@ -60,7 +46,8 @@ public static class SwaggerExtensions
     public static IApplicationBuilder UseSwaggerWithVersioning(
         this IApplicationBuilder app,
         IApiVersionDescriptionProvider provider,
-        ReverseProxyOptions options)
+        ReverseProxyOptions options,
+        SwaggerConfig config)
     {
         // Enable middleware to serve generated Swagger as a JSON endpoint.
         app.UseSwagger();
@@ -82,6 +69,11 @@ public static class SwaggerExtensions
 
             c.OAuthClientId("Swagger");
             c.OAuthUsePkce();
+            c.OAuthAdditionalQueryStringParams(new Dictionary<string, string>
+            {
+                {"prompt", "login"},
+            });
+            c.OAuthScopes(config.SecurityDefinitions.AccessScopes.ToArray());
         });
 
         return app;

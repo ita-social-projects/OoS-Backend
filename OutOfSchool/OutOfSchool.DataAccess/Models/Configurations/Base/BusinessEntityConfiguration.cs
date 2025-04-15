@@ -10,11 +10,7 @@ public abstract class BusinessEntityConfiguration<TBase> : IEntityTypeConfigurat
     public virtual void Configure(EntityTypeBuilder<TBase> entityTypeBuilder)
     {
         entityTypeBuilder.Property(x => x.Id).HasColumnType("UUID");
-        entityTypeBuilder.HasKey(x => x.Id);
-
-        entityTypeBuilder.HasIndex(x => x.IsDeleted);
-
-        entityTypeBuilder.Property(x => x.IsDeleted).HasDefaultValue(false);
+        entityTypeBuilder.ConfigureKeyedSoftDeleted<Guid, TBase>();
 
         entityTypeBuilder.Property(e => e.CreatedBy)
             .HasField("_createdBy");

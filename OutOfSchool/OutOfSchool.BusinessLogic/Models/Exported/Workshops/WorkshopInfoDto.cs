@@ -64,11 +64,6 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
     public IEnumerable<WorkshopDescriptionItemInfo> WorkshopDescriptionItems { get; set; }
 
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
-
     public string Institution { get; set; }
 
     public string InstitutionHierarchy { get; set; }
@@ -77,7 +72,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public List<long> DirectionIds { get; set; }
     
-    public Guid SubDirectionId { get; set; }
+    public List<long> SubDirectionIds { get; set; }
 
     public IEnumerable<string> Keywords { get; set; } = default;
 
@@ -87,11 +82,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = false;
-
     public bool IsSelfFinanced { get; set; } = false;
-
-    public bool IsSpecial { get; set; } = false;
 
     public bool IsInclusive { get; set; } = false;
     

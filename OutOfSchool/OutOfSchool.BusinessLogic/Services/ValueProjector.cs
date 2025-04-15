@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Services;
+﻿using OutOfSchool.Services.Models.ContactInfo;
+
+namespace OutOfSchool.BusinessLogic.Services;
 
 public class ValueProjector : IValueProjector
 {
@@ -8,7 +10,7 @@ public class ValueProjector : IValueProjector
     {
         projectors = new Dictionary<Type, Func<object, string>>
         {
-            { typeof(Address), ProjectAddress },
+            { typeof(ContactsAddress), ProjectAddress },
             { typeof(Institution), ProjectInstitution },
         };
     }
@@ -39,9 +41,22 @@ public class ValueProjector : IValueProjector
         return null;
     }
 
-    private string ProjectAddress(object obj) => obj is Address address
-        ? $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}"
-        : null;
+    private string ProjectAddress(object obj)
+    {
+        if (obj is ContactsAddress address)
+        {
+            return $"{address.CATOTTGId}, {address.Street}, {address.BuildingNumber}";
+        }
+        else if (obj is List<Contacts> contacts)
+        {
+            var defaultContact = contacts.FirstOrDefault(c => c.IsDefault);
+            return defaultContact?.Address != null 
+                ? ProjectAddress(defaultContact.Address)
+                : null;
+        }
+        
+        return null;
+    }
 
     private string ProjectInstitution(object obj) => obj is Institution institution
         ? institution.Title

@@ -31,7 +31,5 @@ public class ChildBaseDto
     [MaxLength(500)]
     public string PlaceOfStudy { get; set; } = string.Empty;
 
-    public Guid ParentId { get; set; } = default;
-
     public bool IsParent { get; set; }
 }

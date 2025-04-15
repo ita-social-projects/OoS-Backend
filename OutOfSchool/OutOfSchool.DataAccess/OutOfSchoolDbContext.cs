@@ -28,8 +28,6 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<Provider> Providers { get; set; }
 
-    public DbSet<Employee> Employees { get; set; }
-
     public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
     public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
@@ -143,7 +141,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
 
     public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
-    
+
+    public DbSet<Image<CompetitiveEvent>> CompetitiveEventsImages { get; set; }
+
+    public DbSet<SubDirection> SubDirections { get; set; }
 
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
@@ -175,9 +176,9 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new CompetitiveEventRegistrationDeadlineConfiguration());
         builder.ApplyConfiguration(new DateTimeRangeConfiguration());
         builder.ApplyConfiguration(new DirectionConfiguration());
-        builder.ApplyConfiguration(new EmployeeConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEvent>());
         builder.ApplyConfiguration(new FavoriteConfiguration());
         builder.ApplyConfiguration(new IndividualConfiguration());
         builder.ApplyConfiguration(new InstitutionAdminConfiguration());
@@ -198,6 +199,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new RegionAdminConfiguration());
         builder.ApplyConfiguration(new SocialGroupConfiguration());
         builder.ApplyConfiguration(new StudySubjectConfiguration());
+        builder.ApplyConfiguration(new SubDirectionConfiguration());
         builder.ApplyConfiguration(new TagConfiguration());
         builder.ApplyConfiguration(new TeacherConfiguration());
         builder.ApplyConfiguration(new UserConfiguration());

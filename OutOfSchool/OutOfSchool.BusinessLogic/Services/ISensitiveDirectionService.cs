@@ -11,7 +11,7 @@ public interface ISensitiveDirectionService
     /// <param name="dto">Direction with new properties.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="DirectionDto"/> that was updated.</returns>
-    Task<DirectionDto> Update(DirectionDto dto);
+    Task<Result<DirectionDto>> Update(DirectionDto dto);
 
     /// <summary>
     /// To delete the object from DB.

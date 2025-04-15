@@ -196,11 +196,8 @@ public class RegionAdminServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>(),
                 It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>()))
             .Returns(regionAdminsMock);
 
         // Act
@@ -226,7 +223,7 @@ public class RegionAdminServiceTests
         // Act
         regionAdminService
             .Invoking(x => x
-                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
@@ -238,7 +235,7 @@ public class RegionAdminServiceTests
         regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdmin);
 
         // Act
-        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUpdateUserDto(), It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
@@ -375,11 +372,8 @@ public class RegionAdminServiceTests
                 r.Get(
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
-                    It.Is<string>(x => x == includeProperties),
-                    It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>(),
                     It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
-                    It.Is<bool>(x => x)))
+                    It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>()))
             .Returns(filteredRegionAdmins.AsQueryable()
             .BuildMock());
     }

@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
@@ -64,15 +62,9 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProfile()
     {
-        // TODO: localize messages from the conrollers.
-        var userId = currentUserService.UserId;
-        var isEmployee = currentUserService.IsInRole(Role.Employee);
-        if (string.IsNullOrEmpty(userId))
-        {
-            return BadRequest("Invalid user information.");
-        }
+        var providerId = currentUserService.ProviderId;
 
-        var provider = await providerService.GetByUserId(userId, isEmployee).ConfigureAwait(false);
+        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
         if (provider == null)
         {
             return NoContent();
@@ -82,7 +74,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Method for creating new Provider.
+    /// Method for creating new Provider. For now, it is impossible to create providers until requirements change.
     /// </summary>
     /// <param name="providerModel">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -92,18 +84,11 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
     [Consumes("multipart/form-data")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
     public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
         providerModel.Id = Guid.Empty;
-        providerModel.LegalAddress.Id = default;
-
-        if (providerModel.ActualAddress != null)
-        {
-            providerModel.ActualAddress.Id = default;
-        }
-
-        // TODO: find out if we need this field in the model
-        providerModel.UserId = currentUserService.UserId;
 
         try
         {
@@ -156,7 +141,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a specific Provider from the database.
+    /// Delete a specific Provider from the database. For now, it is impossible to delete providers until requirements change.
     /// </summary>
     /// <param name="uid">Provider's key.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -165,16 +150,17 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{uid:guid}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
     public async Task<IActionResult> Delete(Guid uid)
     {
         var result = await providerService.Delete(
-            uid,
-            await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+            uid)
             .ConfigureAwait(false);
 
         return result.Match<ActionResult>(
             error => StatusCode((int)error.HttpStatusCode, error.Message),
-            result =>
+            _ =>
             {
                 logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
                 return Ok();

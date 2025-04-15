@@ -22,15 +22,6 @@ public static class ApiErrorsTypes
                 $"{entityName} with id - {id} does not exist.");
     }
 
-    public static class Employee
-    {
-        public static ApiError UserDontHavePermissionToCreate(string userId) =>
-            new ApiError(
-                $"{nameof(Employee)}",
-                $"{nameof(UserDontHavePermissionToCreate)}",
-                $"User(id): {userId} doesn't have permission to create employee");
-    }
-
     public static class Application
     {
         public static ApiError AcceptRejectedWorkshopIsFull() =>

@@ -66,7 +66,7 @@ public class PersonalInfoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdatePersonalInfo([FromBody] ShortUserDto dto)
+    public async Task<IActionResult> UpdatePersonalInfo([FromBody] BaseUpdateUserDto dto)
     {
         ShortUserDto result;
         if (currentUserService.IsInRole(Role.Parent))

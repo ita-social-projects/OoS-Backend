@@ -1,37 +1,38 @@
-﻿using AutoMapper;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MockQueryable.Moq;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
+using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using System;
-using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.BusinessLogic.Models.Providers;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using System.Linq.Expressions;
-using System.Linq;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Common.Extensions;
-using FluentAssertions;
-using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
-using System.Collections.Generic;
-using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.BusinessLogic.Util;
+using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Tests.Common;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -47,6 +48,7 @@ public class WorkshopDraftServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMoq;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Moq;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
+    private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
 
     private string userId;
 
@@ -57,6 +59,7 @@ public class WorkshopDraftServiceTests
 
         var config = new MapperConfiguration(cfg =>
             cfg.UseProfile<CommonProfile>()
+                .UseProfile<ContactsProfile>()
                .UseProfile<MappingProfile>()
                .UseProfile<WorkshopDraftMappingProfile>());
 
@@ -67,6 +70,7 @@ public class WorkshopDraftServiceTests
         tagRepositoryMoq = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
+        codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -75,12 +79,10 @@ public class WorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();   
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();       
-        var employeeService = new Mock<IEmployeeService>();
         var regionAdminService = new Mock<IRegionAdminService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
-        var searchStringService = new Mock<ISearchStringService>();
-        var codeficatorRepository = new Mock<ICodeficatorRepository>();        
+        var searchStringService = new Mock<ISearchStringService>();              
 
         userId = "someUserId";
 
@@ -94,14 +96,13 @@ public class WorkshopDraftServiceTests
                    teacherDraftImagesService.Object,
                    tagRepositoryMoq.Object,
                    options.Object,
-                   employeeService.Object,
                    workshopServiceCombinerV2Moq.Object,
                    regionAdminService.Object,
                    ministryAdminService.Object,
                    codeficatorService.Object,
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
-                   codeficatorRepository.Object);
+                   codeficatorRepositoryMoq.Object);
     }
 
     #region Create
@@ -124,15 +125,7 @@ public class WorkshopDraftServiceTests
 
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
         var workshopResponse= mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
-        //workshopResponse.Tags = [];
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
         tagRepositoryMoq
@@ -141,13 +134,17 @@ public class WorkshopDraftServiceTests
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
             .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
-        
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
+
         // Act 
         var result = await service.Create(workshopV2Dto).ConfigureAwait(false);
 
         //Assert 
         currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         workshopDraftRepoMoq.VerifyAll();
         tagRepositoryMoq.VerifyAll();
 
@@ -182,13 +179,6 @@ public class WorkshopDraftServiceTests
             WorkshopV2Dto = workshopV2Dto
         };
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;        
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Exactly(3));
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Exactly(3));
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopV2Dto);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -204,14 +194,18 @@ public class WorkshopDraftServiceTests
                 MultipleImageChangingResult,
                 List<TeacherCreateUpdateResultDto>)>> f) => f.Invoke())
             .Verifiable(Times.Once);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
 
         //Act
         var result = await service.Update(workshopUpdateDto).ConfigureAwait(false);
 
         //Assert
         workshopDraftRepoMoq.VerifyAll();
-        currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();           
+        currentUserServiceMoq.VerifyAll();          
 
         result.Should().NotBeNull();
         result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
@@ -227,13 +221,6 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
@@ -245,7 +232,6 @@ public class WorkshopDraftServiceTests
         // Assert
         workshopDraftRepoMoq.VerifyAll();
         currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
     }
     #endregion
 
@@ -258,13 +244,6 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
         var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
 
-        var providerDto = mapper.Map<ProviderDto>(workshop.Provider);
-        providerDto.UserId = userId;
-
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Update(It.IsAny<WorkshopDraft>()))
@@ -276,7 +255,6 @@ public class WorkshopDraftServiceTests
         // Assert
         workshopDraftRepoMoq.VerifyAll();
         currentUserServiceMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
     }
     #endregion
 
@@ -383,37 +361,22 @@ public class WorkshopDraftServiceTests
     public async Task GetByProviderId_WhenProviderHasNoDrafts_ShouldReturnEmptyList()
     {
         // Arrange
-        var providerDto = new ProviderDto
-        {
-            UserId = userId
-        };
-
         var emptyList = new List<WorkshopDraft>();
 
         institutionHierarchyRepositoryMoq.Setup(
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Count(It.IsAny<Expression<Func<WorkshopDraft, bool>>>()))
             .ReturnsAsync(0).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(emptyList.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
@@ -421,7 +384,6 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         currentUserServiceMoq.VerifyAll();
         result.Entities.Should().BeEmpty();
     }
@@ -437,35 +399,20 @@ public class WorkshopDraftServiceTests
         var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshopV2Dtos);
         var workshopDraftResponses = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
 
-        var providerDto = new ProviderDto
-        {
-            UserId = userId
-        };
-
         institutionHierarchyRepositoryMoq.Setup(
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
-        currentUserServiceMoq.Setup(x => x.UserId)
-            .Returns(userId).Verifiable(Times.Once);
-        providerServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(providerDto).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Count(It.IsAny<Expression<Func<WorkshopDraft, bool>>>()))
             .ReturnsAsync(numberOfWorkshops).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(),
-                    It.IsAny<bool>()))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDrafts.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
 
         // Act
@@ -473,9 +420,187 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-        providerServiceMoq.VerifyAll();
         currentUserServiceMoq.VerifyAll();
         result.Entities.Should().BeEquivalentTo(workshopDraftResponses);
     }
-    #endregion    
+    #endregion
+
+    #region UpdateWorkshop
+    [Test]
+    public async Task UpdateWorkshop_WhenModeratedFieldsWasNotChanged_ShouldCallWorkshopUpdate()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var workshopResultDto = new WorkshopResultDto
+        {
+            Workshop = workshopV2Dto
+        };
+
+        var workshopDrafts = new List<WorkshopDraft>();
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>()))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(workshopResultDto)).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
+
+        // Assert
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+
+    [Test]
+    public void UpdateWorkshop_WhenDraftExists_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var workshopDrafts = new List<WorkshopDraft>()
+        {
+            new WorkshopDraft()
+        };
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x =>
+           x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        //Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateWorkshop(workshopV2Dto));
+
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();        
+    }
+
+    [Test]
+    public void UpdateWorkshop_WhenWorkshopIsNotFound_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = (WorkshopDto)null;
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+
+        //Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateWorkshop(workshopV2Dto));
+
+        workshopServiceCombinerV2Moq.VerifyAll();
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenModeratedFieldsWasChanged_ShouldCallCreateDraft()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        workshopDto.Title = "Changed title";
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var workshopDrafts = new List<WorkshopDraft>();
+        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Exactly(2));
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
+            .ReturnsAsync(workshopDraft);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
+
+        // Assert
+        currentUserServiceMoq.VerifyAll();
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+    #endregion
+
+    #region GetWorkshopDraftIdByWorkshopId
+    [Test]
+    public async Task GetWorkshopDraftIdByWorkshopId_WhenWorkshopDraftExists_ShouldReturnId()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+
+        var workshopDrafts = new List<WorkshopDraft>()
+        {
+            mapper.Map<WorkshopDraft>(workshopV2Dto)
+        };
+
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.GetWorkshopDraftIdByWorkshopId(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftIdByWorkshopId_WhenWorkshopDraftDoesntExist_ShouldReturnNull()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        var workshopDrafts = new List<WorkshopDraft>();
+
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+
+        // Act
+        var result = await service.GetWorkshopDraftIdByWorkshopId(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+
+        result.Should().BeNull();
+    }
+    #endregion
 }

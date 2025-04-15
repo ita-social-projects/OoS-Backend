@@ -10,6 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/export")]
+[Authorize(Policy = "ExternalClientPolicy")]
 public class ExternalExportController : ControllerBase
 {
     private readonly IExternalExportService externalProviderService;
@@ -30,7 +31,8 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("providers")]
-    public async Task<IActionResult> GetProvidersByFilter([FromQuery] DateTime updatedAfter,
+    public async Task<IActionResult> GetProvidersByFilter(
+        [FromQuery] DateTime updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
         await externalProviderService.GetProviders(updatedAfter, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
@@ -46,7 +48,8 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("workshops")]
-    public async Task<IActionResult> GetWorkshopsByFilter([FromQuery] DateTime updatedAfter,
+    public async Task<IActionResult> GetWorkshopsByFilter(
+        [FromQuery] DateTime updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
         await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);

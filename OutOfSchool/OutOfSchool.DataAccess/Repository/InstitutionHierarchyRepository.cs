@@ -24,11 +24,11 @@ public class InstitutionHierarchyRepository : EntityRepositorySoftDeleted<Guid, 
     /// Add new element.
     /// </summary>
     /// <param name="entity">Entity to create.</param>
-    /// <param name="directionsIds">IDs List of directions.</param>
+    /// <param name="subDirectionsIds">IDs List of subDirections.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    public async Task<InstitutionHierarchy> Create(InstitutionHierarchy entity, List<long> directionsIds)
+    public async Task<InstitutionHierarchy> Create(InstitutionHierarchy entity, List<long> subDirectionsIds)
     {
-        entity.Directions = dbContext.Directions.Where(w => directionsIds.Contains(w.Id)).ToList();
+        entity.SubDirections = dbContext.SubDirections.Where(s => subDirectionsIds.Contains(s.Id)).ToList();
 
         await dbSet.AddAsync(entity);
         await dbContext.SaveChangesAsync();
@@ -40,17 +40,17 @@ public class InstitutionHierarchyRepository : EntityRepositorySoftDeleted<Guid, 
     /// Update information about element.
     /// </summary>
     /// <param name="entity">Entity to update.</param>
-    /// <param name="directionsIds">Long list of directions.</param>
+    /// <param name="subDirectionsIds">Long list of subDirections.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    public async Task<InstitutionHierarchy> Update(InstitutionHierarchy entity, List<long> directionsIds)
+    public async Task<InstitutionHierarchy> Update(InstitutionHierarchy entity, List<long> subDirectionsIds)
     {
         var newEntity = await GetById(entity.Id);
 
         dbContext.Entry(newEntity).CurrentValues.SetValues(entity);
 
-        newEntity.Directions.RemoveAll(x => !directionsIds.Contains(x.Id));
-        var exceptDirectionsIds = directionsIds.Where(p => newEntity.Directions.TrueForAll(x => x.Id != p));
-        newEntity.Directions.AddRange(dbContext.Directions.Where(w => exceptDirectionsIds.Contains(w.Id)).ToList());
+        newEntity.SubDirections.RemoveAll(x => !subDirectionsIds.Contains(x.Id));
+        var exceptSubDirectionsIds = subDirectionsIds.Where(p => newEntity.SubDirections.TrueForAll(x => x.Id != p));
+        newEntity.SubDirections.AddRange(dbContext.SubDirections.Where(w => exceptSubDirectionsIds.Contains(w.Id)).ToList());
 
         dbContext.Entry(newEntity).State = EntityState.Modified;
 

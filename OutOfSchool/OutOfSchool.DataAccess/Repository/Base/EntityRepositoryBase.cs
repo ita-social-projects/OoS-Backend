@@ -113,21 +113,13 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         return await dbSet.ToListAsync().ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-        => await dbSet
-        .IncludeProperties(includeProperties, includeExpression)
-        .ToListAsync();
-
     public virtual async Task<IEnumerable<TEntity>> GetByFilter(
         Expression<Func<TEntity, bool>> whereExpression,
         string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => await this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties, includeExpression)
+        .IncludeProperties(includeExpression, includeProperties)
         .ToListAsync()
         .ConfigureAwait(false);
 
@@ -138,7 +130,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
         => this.dbSet
         .Where(whereExpression)
-        .IncludeProperties(includeProperties, includeExpression)
+        .IncludeProperties(includeExpression, includeProperties)
         .AsNoTracking();
 
     /// <inheritdoc/>
@@ -146,10 +138,10 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
 
     /// <inheritdoc/>
     public virtual Task<TEntity> GetByIdWithDetails(
-        TKey id, 
-        string includeProperties = "", 
+        TKey id,
+        string includeProperties = "",
         Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null)
-        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeProperties, includeExpression)
+        => dbSet.Where(x => x.Id.Equals(id)).IncludeProperties(includeExpression, includeProperties)
                 .FirstOrDefaultAsync();
 
     /// <inheritdoc/>
@@ -198,15 +190,10 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
     public virtual IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
-        string includeProperties = "",
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> includeExpression = null,
         Expression<Func<TEntity, bool>> whereExpression = null,
-        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
-        bool asNoTracking = false)
+        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null)
     {
         IQueryable<TEntity> query = dbSet;
-
-        query = query.IncludeProperties(includeProperties, includeExpression);
 
         if (whereExpression != null)
         {
@@ -239,7 +226,7 @@ public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBas
             query = query.Take(take);
         }
 
-        return query.If(asNoTracking, q => q.AsNoTracking());
+        return query;
     }
 
     public Task<int> SaveChangesAsync(

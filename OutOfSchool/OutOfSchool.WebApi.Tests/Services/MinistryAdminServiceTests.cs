@@ -78,8 +78,8 @@ public class MinistryAdminServiceTests
         httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(new HttpClient()
             {
-                  Timeout = new TimeSpan(2),
-                  BaseAddress = It.IsAny<Uri>(),
+                Timeout = new TimeSpan(2),
+                BaseAddress = It.IsAny<Uri>(),
             });
 
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
@@ -152,11 +152,8 @@ public class MinistryAdminServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, dynamic>>, SortDirection>>()))
             .Returns(institutionAdminsMock);
 
         // Act
@@ -182,7 +179,7 @@ public class MinistryAdminServiceTests
         // Act
         ministryAdminService
             .Invoking(x => x
-                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUserDto>(), It.IsAny<string>()))
+                .UpdateMinistryAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
     }
@@ -194,7 +191,7 @@ public class MinistryAdminServiceTests
         institutionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as InstitutionAdmin);
 
         // Act
-        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUserDto(), It.IsAny<string>());
+        var result = await ministryAdminService.UpdateMinistryAdminAsync(It.IsAny<string>(), new BaseUpdateUserDto(), It.IsAny<string>());
 
         // Assert
         Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
@@ -209,7 +206,7 @@ public class MinistryAdminServiceTests
             .ApiErrors
             .First();
         apiErrorServiceUserRepositoryMock.Setup(r => r.GetByFilter(
-            It.IsAny<Expression<Func<User, bool>>>(), 
+            It.IsAny<Expression<Func<User, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
             .ReturnsAsync(new List<User> { new User() });
@@ -284,12 +281,8 @@ public class MinistryAdminServiceTests
             r.Get(
                 It.Is<int>(x => x == filter.From),
                 It.Is<int>(x => x == filter.Size),
-                It.Is<string>(x => x == includeProperties),
-                It.IsAny<Func<IQueryable<InstitutionAdmin>, IQueryable<InstitutionAdmin>>>(),
                 It.IsAny<Expression<Func<InstitutionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>(),
-                It.Is<bool>(x => x)
-            ))
+                It.IsAny<Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>>()))
             .Returns(filteredMinistryAdmins.AsQueryable()
             .BuildMock());
 

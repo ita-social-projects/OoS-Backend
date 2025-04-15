@@ -12,5 +12,14 @@ public enum Feature
     ShowForProduction,
     TechAdminImport,
     TechAdminExport,
-    EnableWorkshopGroupTypeField
+    DirectionManagement,
+    AchievementManagement,
+    AdminsChildrenParentsManagement,
+    MessagingFeature,
+    PasswordLogin,
+    PasswordRegistration,
+    EmailConfirmation,
+    EmailManagement,
+    PasswordManagement,
+    OnlyUkrainianLanguage
 }

@@ -1,6 +1,7 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.Individual;
-using System.Collections.Generic;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -16,7 +17,8 @@ public static class UploadEmployeeDtoGenerator
         .RuleFor(x => x.FirstName, f => f.Name.FirstName())
         .RuleFor(x => x.LastName, f => f.Name.LastName())
         .RuleFor(x => x.Rnokpp, f => f.Phone.PhoneNumber(RnokppFormat))
-        .RuleFor(x => x.AssignedRole, f => f.Music.Genre());
+        .RuleFor(x => x.AssignedRole, f => f.Music.Genre())
+        .RuleFor(x => x.PositionType, f => f.PickRandom<PositionType>());
 
 
     /// <summary>

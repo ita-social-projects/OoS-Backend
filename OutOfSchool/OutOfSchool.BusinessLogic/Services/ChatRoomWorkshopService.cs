@@ -94,8 +94,10 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", whereExpression: x => x.Id == id);
-            var chatRooms = await query.ToListAsync().ConfigureAwait(false);
+            var chatRooms = await roomRepository.Get(whereExpression: x => x.Id == id)
+                    .Include(crw => crw.ChatMessages)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
             var chatRoom = chatRooms.Single();
 
             await roomRepository.Delete(chatRoom).ConfigureAwait(false);
@@ -123,7 +125,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         {
             var chatRooms = await roomRepository.GetByFilter(
                     whereExpression: x => x.Id == id,
-                    includeProperties: $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}")
+                    includeExpression: crw => crw.Include(crw => crw.Parent).Include(crw => crw.Workshop))
                 .ConfigureAwait(false);
 
             var chatRoom = chatRooms.SingleOrDefault();
@@ -551,15 +553,13 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
         {
             var tempPredicate = PredicateBuilder.False<ChatRoomWorkshop>()
-                .Or(x => x.Workshop.Provider.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.LastName.ToLower().StartsWith(filter.SearchText.ToLower()))
-                .Or(x => x.Workshop.Provider.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.FirstName.ToLower().StartsWith(filter.SearchText.ToLower()))
-                .Or(x => x.Workshop.Provider.User.Email.StartsWith(filter.SearchText))
                 .Or(x => x.Parent.User.Email.StartsWith(filter.SearchText))
                 .Or(x => x.Workshop.Title.ToLower().Contains(filter.SearchText.ToLower()))
                 .Or(x => x.Parent.User.PhoneNumber.StartsWith(filter.SearchText))
-                .Or(x => x.Workshop.Provider.PhoneNumber.StartsWith(filter.SearchText));
+                .Or(x => x.Workshop.Provider.Contacts.Any(c => c.Phones.Any(p =>
+                    p.Number.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase))));
 
             predicate = predicate.And(tempPredicate);
         }

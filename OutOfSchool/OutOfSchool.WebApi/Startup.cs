@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
@@ -35,6 +36,7 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Api.Files;
@@ -42,6 +44,7 @@ using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
+using OutOfSchool.WebApi.Enums;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -99,7 +102,7 @@ public static class Startup
 
         app.UseMiddleware<ExceptionMiddlewareExtension>();
 
-        app.UseSwaggerWithVersioning(provider, proxyOptions);
+        app.UseSwaggerWithVersioning(provider, proxyOptions, app.Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>());
 
         if (!app.Environment.IsDevelopment())
         {
@@ -125,22 +128,29 @@ public static class Startup
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapHealthChecks("/healthz/active", new HealthCheckOptions
+        {
+            Predicate = healthCheck => healthCheck.Name == "Liveness",
+            ResponseWriter = async (context, _) =>
             {
-                Predicate = healthCheck => healthCheck.Name == "Liveness",
-                ResponseWriter = async (context, _) =>
-                {
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync("{\"status\":\"Healthy\"}");
-                },
-            })
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{\"status\":\"Healthy\"}");
+            },
+        })
             .WithMetadata(new AllowAnonymousAttribute());
 
         app.MapControllers();
-        app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+
+        var featureManager = app.Services.GetRequiredService<IFeatureManager>();
+
+        if (featureManager.IsEnabledAsync(nameof(Feature.MessagingFeature)).GetAwaiter().GetResult())
+        {
+            app.MapHub<ChatWorkshopHub>(Constants.PathToChatHub);
+        }
+
         app.MapHub<NotificationHub>(Constants.PathToNotificationHub);
     }
 
-    public static async Task AddApplicationServices(this WebApplicationBuilder builder)
+    public static void AddApplicationServices(this WebApplicationBuilder builder)
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
@@ -242,7 +252,6 @@ public static class Startup
 
         services.AddRazorPages();
         services.AddHttpContextAccessor();
-        services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
         services.AddScoped<ISensitiveMinistryAdminService, MinistryAdminService>();
         services.AddScoped<IRegionAdminService, RegionAdminService>();
@@ -256,11 +265,13 @@ public static class Startup
         services.Configure<UploadConcurrencySettings>(configuration.GetSection(nameof(UploadConcurrencySettings)));
 
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+        services.Configure<ImagesLimits<CompetitiveEvent>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Limits"));
         services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
         services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
 
         // Image options
         services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+        services.Configure<ImageOptions<CompetitiveEvent>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Specs"));
         services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
 
@@ -318,7 +329,7 @@ public static class Startup
         // ElasticPinger must precede ElasticIndexEnsureCreatedHostedService
         services.AddSingleton<ElasticPinger>();
         services.AddSingleton<IElasticsearchHealthService>(provider => provider.GetService<ElasticPinger>());
-        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
+        services.AddHostedService(provider => provider.GetService<ElasticPinger>());
 
         if (elasticConfig.EnsureIndex)
         {
@@ -338,7 +349,6 @@ public static class Startup
 
         // entities services
         services.AddTransient<IApplicationService, ApplicationService>();
-        services.AddTransient<ISensitiveApplicationService, ApplicationService>();
         services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
         services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
         services.AddTransient<IChildService, ChildService>();
@@ -368,10 +378,12 @@ public static class Startup
         services.AddTransient<IChangesLogService, ChangesLogService>();
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportService, ExternalExportService>();
+        services.AddTransient<ISubDirectionService, SubDirectionService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
         services.AddTransient<ICompetitiveEventAccountingTypeService, CompetitiveEventAccountingTypeService>();
+        services.AddTransient<ICompetitiveEventServiceV2, CompetitiveEventService>();
 
         services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
         services.AddTransient<IInstitutionService, InstitutionService>();
@@ -384,6 +396,7 @@ public static class Startup
         services.AddScoped<IImageValidator<Workshop>, ImageValidator<Workshop>>();
         services.AddScoped<IImageValidator<Teacher>, ImageValidator<Teacher>>();
         services.AddScoped<IImageValidator<Provider>, ImageValidator<Provider>>();
+        services.AddScoped<IImageValidator<CompetitiveEvent>, ImageValidator<CompetitiveEvent>>();
 
         //Image validator drafts
         services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
@@ -392,6 +405,7 @@ public static class Startup
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
         services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
+        services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEvent>, ImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
 
@@ -411,11 +425,11 @@ public static class Startup
         services.AddTransient<IStudySubjectService, StudySubjectService>();
         services.AddTransient<ILanguageService, LanguageService>();
         services.AddTransient<IOfficialService, OfficialService>();
+        services.AddTransient<IOfficialChangesLogService, OfficialChangesLogService>();
 
         services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
         services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
 
-        services.AddTransient<IGRPCCommonService, GRPCCommonService>();
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
             var elasticSearchService = sp.GetRequiredService<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
@@ -434,8 +448,7 @@ public static class Startup
 
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
         services.AddTransient(typeof(ISensitiveEntityRepositorySoftDeleted<>), typeof(SensitiveEntityRepositorySoftDeleted<>));
-
-        services.AddTransient<IEmployeeRepository, EmployeeRepository>();
+        services.AddTransient<IOfficialRepository, OfficialRepository>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
         services.AddTransient<IAreaAdminRepository, AreaAdminRepository>();
@@ -448,6 +461,7 @@ public static class Startup
         services.AddTransient<IProviderRepository, ProviderRepository>();
         services.AddTransient<IWorkshopRepository, WorkshopRepository>();
         services.AddTransient<IWorkshopDraftRepository, WorkshopDraftRepository>();
+        services.AddTransient<IPositionRepository, PositionRepository>();
 
         services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
 
@@ -537,12 +551,6 @@ public static class Startup
 
         // Notification options
         services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.Name));
-
-        // GRPC
-        services.AddOptions<GRPCConfig>()
-            .Bind(configuration.GetSection(GRPCConfig.Name))
-            .ValidateDataAnnotations();
-        services.AddTransient<IEmployeeOperationsService, EmployeeOperationsRESTService>();
 
         // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
         services.AddSingleton(swaggerConfig);
@@ -640,9 +648,18 @@ public static class Startup
             .Get<EmailOptions>();
 
         services.AddEmailSender(builder.Environment.IsDevelopment(), mailConfig.SendGridKey);
-        services.AddEmailSenderService(builder => builder.Bind(configuration.GetSection(EmailOptions.SectionName)));
+        services.AddEmailSenderService(b => b.Bind(configuration.GetSection(EmailOptions.SectionName)));
 
         // Hosts options
         services.Configure<HostsConfig>(configuration.GetSection(HostsConfig.Name));
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("ExternalClientPolicy", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim(OpenIddictConstants.Claims.Scope, Constants.OpenIddictScopes.ExternalExportRead);
+            });
+        });
     }
 }

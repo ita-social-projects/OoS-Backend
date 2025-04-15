@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Google.Protobuf.WellKnownTypes;
-using GrpcService;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.AuthCommon.Util;
@@ -9,22 +7,6 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<CreateEmployeeDto, User>()
-            .Apply(MapEmailAndPhone);
-
-        CreateMap<CreateEmployeeDto, Employee>()
-            .ForMember(dest => dest.ManagedWorkshops, opt => opt.Ignore());
-
-        CreateMap<CreateEmployeeDto, CreateProviderAdminReply>()
-            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
-            .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
-            .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()));
-
-        CreateMap<CreateProviderAdminRequest, CreateEmployeeDto>()
-            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
-            .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
-            .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
-
         CreateMap<MinistryAdminBaseDto, User>()
             .Apply(MapEmailAndPhone);
 

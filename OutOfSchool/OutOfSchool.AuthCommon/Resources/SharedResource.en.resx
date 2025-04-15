@@ -124,7 +124,7 @@
     <value>consent to the processing of personal data</value>
   </data>
   <data name="By registering I agree with" xml:space="preserve">
-    <value>By registering I agree with</value>
+    <value>I agree with</value>
   </data>
   <data name="Confirm password" xml:space="preserve">
     <value>Confirm password</value>
@@ -169,7 +169,7 @@
     <value>Registration for Extracurricular activities</value>
   </data>
   <data name="Service provider" xml:space="preserve">
-    <value>Service provider</value>
+    <value>Director of EI</value>
   </data>
   <data name="Sign In" xml:space="preserve">
     <value>Sign In</value>
@@ -382,7 +382,7 @@
     <value>and </value>
   </data>
   <data name="Consent Title" xml:space="preserve">
-    <value>Consent</value>
+    <value>Consent to data processing</value>
   </data>
   <data name="Terms of use Title" xml:space="preserve">
     <value>Terms of use</value>
@@ -440,5 +440,20 @@
   </data>
   <data name="NotAProviderDirector" xml:space="preserve">
     <value>You are not registered as a director of this organization. Only organization directors can sign in with the Provider role.</value>
+  </data>
+  <data name="Employee" xml:space="preserve">
+    <value>Employee of EI</value>
+  </data>
+  <data name="For directors of state and municipal institutions" xml:space="preserve">
+    <value>For directors of state and municipal institutions</value>
+  </data>
+  <data name="IndividualOrProviderNotFound" xml:space="preserve">
+    <value>Your information or educational institution was not found. Please contact the director of the EI or the system administrator.</value>
+  </data>
+  <data name="IndividualIsNotProviderDirector" xml:space="preserve">
+    <value>You are not listed as the director of the "{0}" organization. If this is an error, please contact your system administrator.</value>
+  </data>
+  <data name="IndividualIsNotProviderEmployee" xml:space="preserve">
+    <value>You are not listed as an employee of the "{0}" organization. Please contact the organization's director.</value>
   </data>
 </root>

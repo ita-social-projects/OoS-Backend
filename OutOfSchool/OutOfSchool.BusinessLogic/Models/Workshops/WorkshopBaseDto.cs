@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
@@ -23,14 +24,16 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
+    public bool NoAgeRestrictions { get; set; } = false;
 
-    [Required(ErrorMessage = "Children's min age is required")]
-    [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
-    public int MinAge { get; set; }
+    [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]
+    [Range(0, 120, ErrorMessage = "Min age should be between 0 and 120")]
+    public int? MinAge { get; set; }
 
-    [Required(ErrorMessage = "Children's max age is required")]
-    [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
-    public int MaxAge { get; set; }
+    [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Max age is required when there are age restrictions")]
+    [Range(0, 120, ErrorMessage = "Max age should be between 0 and 120")]
+    public int? MaxAge { get; set; }
+
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
@@ -60,11 +63,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
-
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
     public Guid? InstitutionId { get; set; }
 
@@ -102,11 +100,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public DateOnly ActiveTo { get; set; }
 
-    public bool ShortStay { get; set; } = false;
-
     public bool IsSelfFinanced { get; set; } = false;
-
-    public bool IsSpecial { get; set; } = false;
 
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
@@ -174,6 +168,16 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 yield return new ValidationResult(
                     "Workdays contain duplications");
             }
+        }
+
+        if (NoAgeRestrictions)
+        {
+            MinAge = 0;
+            MaxAge = 120;
+        }
+        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
+        {
+            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
     }
 }

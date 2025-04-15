@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
@@ -23,10 +23,10 @@ public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
     private readonly IProviderService providerService;
-    private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<WorkshopController> logger;
-    private readonly IEmployeeService employeeService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IUserService userService;
+    private readonly IWorkshopDraftService workshopDraftService;
 
     private readonly AppDefaultsConfig options;
 
@@ -35,26 +35,26 @@ public class WorkshopController : ControllerBase
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="localizer">Localizer.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-    /// <param name="employeeService">Service for ProviderAdmin model.</param>
+    /// <param name="currentUserService">Service for getting current user info.</param>
     /// <param name="userService">Service for operations with users.</param>
+    /// <param name="workshopDraftService">Service for operations with workshop drafts.</param>
     /// <param name="options">Application default values.</param>
     public WorkshopController(
         IWorkshopServicesCombinerV2 combinedWorkshopService,
         IProviderService providerService,
-        IStringLocalizer<SharedResource> localizer,
         ILogger<WorkshopController> logger,
-        IEmployeeService employeeService,
+        ICurrentUserService currentUserService,
         IUserService userService,
+        IWorkshopDraftService workshopDraftService,
         IOptions<AppDefaultsConfig> options)
     {
-        this.localizer = localizer;
-        this.combinedWorkshopService = combinedWorkshopService;
+        this.combinedWorkshopService = combinedWorkshopService;        
         this.providerService = providerService;
         this.logger = logger;
-        this.employeeService = employeeService;
+        this.currentUserService = currentUserService;
         this.userService = userService;
+        this.workshopDraftService = workshopDraftService;
         this.options = options.Value;
     }
 
@@ -151,7 +151,7 @@ public class WorkshopController : ControllerBase
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopResponseDto))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -159,7 +159,7 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] WorkshopV2CreateRequestDto dto)
+    public async Task<IActionResult> Create([FromForm] WorkshopV2Dto dto)
     {
         if (dto == null)
         {
@@ -180,43 +180,25 @@ public class WorkshopController : ControllerBase
         {
             return BadRequest(ModelState);
         }
+        
+        var creationResult = await workshopDraftService.Create(dto).ConfigureAwait(false);
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to create workshops for another providers.");
-        }
+        // TODO: We don`t need it right now.
+        // here we will get "false" if workshop was created by assistant provider admin
+        // because user is not currently associated with new workshop
+        // so we can update information to allow assistant manage created workshop
+        //if (!await IsUserProvidersOwnerOrAdmin(creationResult.WorkshopDraft.WorkshopDetails.ProviderId, creationResult.WorkshopDraft.WorkshopDetails.Id)
+        //        .ConfigureAwait(false))
+        //{
+        //    var userId = User.FindFirst("sub")?.Value;
+        //    await employeeService.GiveEmployeeAccessToWorkshop(userId, creationResult.Workshop.Id).ConfigureAwait(false);
+        //}
 
-        try
-        {
-            var creationResult = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-            // here we will get "false" if workshop was created by assistant provider admin
-            // because user is not currently associated with new workshop
-            // so we can update information to allow assistant manage created workshop
-            if (!await IsUserProvidersOwnerOrAdmin(creationResult.Workshop.ProviderId, creationResult.Workshop.Id).ConfigureAwait(false))
-            {
-                var userId = User.FindFirst("sub")?.Value;
-                await employeeService.GiveEmployeeAccessToWorkshop(userId, creationResult.Workshop.Id).ConfigureAwait(false);
-            }
-
-            return CreatedAtAction(
-            nameof(GetById),
-            new { id = creationResult.Workshop.Id, },
-            new WorkshopResponseDto
-            {
-                Workshop = creationResult.Workshop,
-                UploadingCoverImageResult = creationResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
-                UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
-            });
-        }
-        catch (InvalidOperationException ex)
-        {
-            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
-            logger.LogError(ex, errorMessage);
-
-            return BadRequest(errorMessage);
-        }
+        return CreatedAtAction(
+                nameof(WorkshopDraftController.Get),
+                nameof(WorkshopDraftController).Replace("Controller", ""),
+                new { id = creationResult.WorkshopDraft.WorkshopDraftId },
+                creationResult);
     }
 
     /// <summary>
@@ -231,7 +213,7 @@ public class WorkshopController : ControllerBase
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopResponseDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopV2Dto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -241,25 +223,13 @@ public class WorkshopController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update([FromForm] WorkshopV2Dto dto)
     {
-        var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
-        }
-
         try
         {
-            var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+            var updatingResult = await workshopDraftService.UpdateWorkshop(dto).ConfigureAwait(false);
 
-            if (!updatingResult.Succeeded)
-            {
-                return BadRequest(updatingResult.OperationResult.Errors.FirstOrDefault()?.Description
-                    ?? Constants.UnknownErrorDuringUpdateMessage);
-            }
-
-            return Ok(CreateUpdateResponse(updatingResult.Value));
+            return Ok(updatingResult);
         }
-        catch (ArgumentException e)
+        catch (InvalidOperationException e)
         {
             return BadRequest(e.Message);
         }
@@ -289,74 +259,10 @@ public class WorkshopController : ControllerBase
             return NoContent();
         }
 
-        var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return new ForbidResult("Forbidden to delete workshops of another providers.");
-        }
+        await currentUserService.UserHasRights(new ProviderRights(workshop.ProviderId), new EmployeeRights(workshop.ProviderId)).ConfigureAwait(false);
 
         await combinedWorkshopService.Delete(id).ConfigureAwait(false);
         return NoContent();
-    }
-
-    private async Task<bool> IsUserProvidersOwner(Guid providerId)
-    {
-        // Provider can create/update/delete a workshop only with it's own ProviderId.
-        // Admin can create a work without checks.
-        if (User.IsInRole("provider"))
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-            if (providerId != provider?.Id)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private WorkshopResponseDto CreateUpdateResponse(WorkshopResultDto updatingResult)
-    {
-        return new WorkshopResponseDto
-        {
-            Workshop = updatingResult.Workshop,
-            UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
-            UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
-        };
-    }
-
-    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
-    {
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
-        {
-            var userId = GettingUserProperties.GetUserId(User);
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-            if (provider != null)
-            {
-                if (provider.Id != providerId)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                var isUserRelatedAdmin = await employeeService
-                    .CheckUserIsRelatedEmployee(userId, providerId, workshopId)
-                    .ConfigureAwait(false);
-
-                if (!isUserRelatedAdmin)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     private async Task<bool> IsCurrentUserBlocked()

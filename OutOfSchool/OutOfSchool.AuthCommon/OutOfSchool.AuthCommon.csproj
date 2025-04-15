@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
       <TargetFramework>net8.0</TargetFramework>
@@ -17,12 +17,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Server" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="OpenIddict.Client.AspNetCore" />
         <PackageReference Include="IdentityModel" />
-        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="OpenIddict.Validation.AspNetCore" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="Microsoft.FeatureManagement" />
@@ -35,16 +34,9 @@
         <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
         <ProjectReference Include="..\OutOfSchool.AikomApiClient\OutOfSchool.AikomApiClient.csproj" />
-        <ProjectReference Include="..\OutOfSchool.GRPC\OutOfSchool.GRPC.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Watch Include="wwwroot\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="..\OutOfSchool.GRPC\Protos\">
-        <Link>OutOfSchool\OutOfSchool.GRPC\Protos</Link>
-      </Folder>
     </ItemGroup>
 </Project>

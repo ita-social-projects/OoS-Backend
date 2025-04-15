@@ -6,7 +6,7 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
- public class WorkshopES : IHasRating
+ public class WorkshopES : IHasRating, IHasHiddenFields
 {
     public const string KeywordSuffix = "keyword";
     public const string SortSuffix = "sort";
@@ -56,8 +56,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public string Institution { get; set; }
 
-    public bool WithDisabilityOptions { get; set; }
-
     public string Keywords { get; set; }
 
     public List<long> DirectionIds { get; set; }
@@ -80,17 +78,11 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public EducationalShift EducationalShift { get; set; }
 
-    public bool ShortStay { get; set; }
-
     public bool IsSelfFinanced { get; set; }
 
     public bool IsPaid { get; set; }
 
     public string CompetitiveSelectionDescription { get; set; }
-
-    public string DisabilityOptionsDesc { get; set; }
-
-    public bool IsSpecial { get; set; }
 
     public SpecialNeedsType SpecialNeedsType { get; set; }
 

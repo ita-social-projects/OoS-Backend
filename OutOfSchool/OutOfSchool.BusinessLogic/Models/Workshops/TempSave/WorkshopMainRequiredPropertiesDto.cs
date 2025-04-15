@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 
@@ -28,14 +28,15 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
+    public bool NoAgeRestrictions { get; set; } = false;
 
-    [Required(ErrorMessage = "Children's min age is required")]
-    [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
-    public int MinAge { get; set; }
+    [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]
+    [Range(0, 120, ErrorMessage = "Min age should be between 0 and 120")]
+    public int? MinAge { get; set; }
 
-    [Required(ErrorMessage = "Children's max age is required")]
-    [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
-    public int MaxAge { get; set; }
+    [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Max age is required when there are age restrictions")]
+    [Range(0, 120, ErrorMessage = "Max age should be between 0 and 120")]
+    public int? MaxAge { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
@@ -44,16 +45,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; } = FormOfLearning.Offline;
-
-    [Required(ErrorMessage = "Property IsPaid is required")]
-    public bool IsPaid { get; set; } = false;
-
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public decimal? Price { get; set; } = default;
-
-    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
 
     [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
@@ -90,6 +81,15 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
                 yield return new ValidationResult(
                     "Workdays contain duplications");
             }
+        }
+        if (NoAgeRestrictions)
+        {
+            MinAge = 0;
+            MaxAge = 120;
+        }
+        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
+        {
+            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
     }
 }

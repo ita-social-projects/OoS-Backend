@@ -5,11 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
-public class CompetitiveEvent : BusinessEntity, IHasContacts
+public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEntity<CompetitiveEvent>, IHasEntityImages<CompetitiveEvent>
 {
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
@@ -50,8 +51,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
     //[ForeignKey(nameof(ChiefJudgeId))]
     //public virtual Individual ChiefJudgeId { get; set; }
 
-    public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
-
     [MaxLength(2000)]
     public string AdditionalDescription { get; set; }
 
@@ -66,21 +65,18 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
 
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set;}
-
-    public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
     
     [Required]
     public int CoverageId { get; set; }
-    
-    public virtual CompetitiveEventCoverage Coverage { get; set; }
+
+    [MaxLength(256)]
+    public string CoverImageId { get; set; } = string.Empty;
+
 
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public Guid? OrganizerOfTheEventId { get; set; }
-
-    [ForeignKey(nameof(OrganizerOfTheEventId))]
-    public virtual Provider OrganizerOfTheEvent { get; set; }
 
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
@@ -96,10 +92,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
 
     [MaxLength(2000)]
     public string PreferentialTermsOfParticipation { get; set; }
-
-    public virtual ICollection<Judge> Judges { get; set; }
-
-    public virtual ICollection<Provider> ParticipantsOfTheEvent { get; set; }
     
     public bool AreThereBenefits { get; set; }
 
@@ -112,7 +104,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }
-    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
@@ -129,4 +120,15 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts
 
     // owned entities
     public List<Contacts> Contacts { get; set; } = [];
+
+    //nav props
+    public virtual List<Image<CompetitiveEvent>> Images { get; set; }
+    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
+    public virtual ICollection<Judge> Judges { get; set; }
+    public virtual CompetitiveEventCoverage Coverage { get; set; }
+
+    public virtual Provider OrganizerOfTheEvent { get; set; }
+    public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
+    public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
+
 }

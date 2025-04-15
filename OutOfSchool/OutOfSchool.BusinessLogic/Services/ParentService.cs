@@ -90,9 +90,10 @@ public class ParentService : IParentService
 
         newParent.User = user;
 
-        var parent = await repositoryParent.Create(newParent).ConfigureAwait(false);
+        Func<Task<Parent>> operation = async () =>
+            await repositoryParent.Create(newParent).ConfigureAwait(false);
 
-        await repositoryParent.SaveChangesAsync();
+        var parent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
 
         logger.LogInformation("Successfully created Parent with Id = {Id} for UserId = {UserId}", parent.Id, userId);
 
@@ -127,17 +128,15 @@ public class ParentService : IParentService
     /// <inheritdoc/>
     public async Task<ParentDTO> GetByUserId(string id)
     {
-        logger.LogInformation("Getting Parent by UserId started. Looking UserId is {Id}", id);
+        logger.LogDebug("Getting Parent by UserId started. Looking UserId is {Id}", id);
 
         Expression<Func<Parent, bool>> filter = p => p.UserId == id;
 
-        var parents = await repositoryParent.GetByFilter(filter);
-
-        var parent = parents.FirstOrDefault();
+        var parent = (await repositoryParent.GetByFilter(filter)).FirstOrDefault();
 
         await currentUserService.UserHasRights(new ParentRights(parent?.Id ?? Guid.Empty));
 
-        logger.LogInformation("Successfully got a Parent with UserId = {Id}", id);
+        logger.LogDebug("Successfully got a Parent with UserId = {Id}", id);
 
         return mapper.Map<ParentDTO>(parent);
     }
@@ -150,57 +149,30 @@ public class ParentService : IParentService
             throw new ArgumentException(@"User Id must be non empty value", nameof(userId));
         }
 
+        var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
         var info = (await repositoryParent.GetByFilter(
-            x => x.UserId == userId,
-            $"{nameof(Parent.User)}")).FirstOrDefault();
+                        whereExpression: x => x.UserId == userId,
+                        includeExpression: includeFunc))
+                        .SingleOrDefault();
 
         return mapper.Map<ShortUserDto>(info);
     }
 
     /// <inheritdoc/>
-    public Task<ShortUserDto> Update(ShortUserDto dto)
+    public async Task<ShortUserDto> Update(BaseUpdateUserDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Gender is null || dto.DateOfBirth is null)
-        {
-            throw new ArgumentException($"{nameof(dto.Gender)} and/or {nameof(dto.DateOfBirth)} are required but were not provided.");
-        }
-
-        return ExecuteUpdate(dto);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
-    {
-        ArgumentNullException.ThrowIfNull(parentBlockUnblock);
-        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
-        var parent = await repositoryParent.GetByIdWithDetails(parentBlockUnblock.ParentId, "User").ConfigureAwait(false);
-        if (parent is null || parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
-        {
-            logger.LogInformation($"Changing Block status of Parent aborted. " +
-                $"{(parent == null ? "Parent not found." : "Parent already blocked/unblocked.")}");
-            return Result<bool>.Success(true);
-        }
-
-        parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
-        await repositoryParent.SaveChangesAsync();
-        await parentBlockedByAdminLogService.SaveChangesLogAsync(
-            parent.Id,
-            currentUserService.UserId,
-            parentBlockUnblock.Reason,
-            parentBlockUnblock.IsBlocked).ConfigureAwait(false);
-        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockUnblock.ParentId);
-        return Result<bool>.Success(true);
-    }
-
-    private async Task<ShortUserDto> ExecuteUpdate(ShortUserDto dto)
-    {
         logger.LogDebug("Updating Parent with User Id = {UserId} started", dto.Id);
 
         try
         {
-            var parent = (await repositoryParent.GetByFilter(x => x.UserId == dto.Id))
-                .FirstOrDefault();
+            var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
+            var parent = (await repositoryParent.GetByFilter(
+                            whereExpression: x => x.UserId == dto.Id,
+                            includeExpression: includeFunc))
+                            .FirstOrDefault();
 
             if (parent is null)
             {
@@ -210,22 +182,8 @@ public class ParentService : IParentService
             await currentUserService.UserHasRights(new ParentRights(parent.Id));
 
             mapper.Map(dto, parent.User);
-            parent.Gender = dto.Gender;
-            parent.DateOfBirth = dto.DateOfBirth;
 
             logger.LogInformation("Parent with UserId = {ParentId} updated successfully", parent.Id);
-
-            var child = (await repositoryChild.GetByFilter(c => c.Parent.UserId == dto.Id && c.IsParent))
-                .SingleOrDefault();
-
-            if (child is not null)
-            {
-                child.FirstName = dto.FirstName;
-                child.MiddleName = dto.MiddleName;
-                child.LastName = dto.LastName;
-                child.Gender = dto.Gender;
-                child.DateOfBirth = dto.DateOfBirth;
-            }
 
             await repositoryParent.SaveChangesAsync();
 
@@ -236,5 +194,52 @@ public class ParentService : IParentService
             logger.LogError(ex, "Updating Parent with UserId = {ParentId} failed", dto.Id);
             throw;
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<bool>> BlockUnblockParent(BlockUnblockParentDto parentBlockUnblock)
+    {
+        ArgumentNullException.ThrowIfNull(parentBlockUnblock);
+        logger.LogInformation("Changing Block status of Parent by ParentId started. Looking ParentId is {Id}", parentBlockUnblock.ParentId);
+
+        var includeFunc = (IQueryable<Parent> p) => p.Include(p => p.User);
+
+        var parent = await repositoryParent.GetByIdWithDetails(
+            id: parentBlockUnblock.ParentId,
+            includeExpression: includeFunc)
+            .ConfigureAwait(false);
+
+        if (parent is null || parent.User.IsBlocked == parentBlockUnblock.IsBlocked)
+        {
+            logger.LogInformation($"Changing Block status of Parent aborted. " +
+                $"{(parent == null ? "Parent not found." : "Parent already blocked/unblocked.")}");
+            return Result<bool>.Success(true);
+        }
+
+        parent.User.IsBlocked = parentBlockUnblock.IsBlocked;
+
+        async Task operation()
+        {
+            try
+            {
+                await repositoryParent.SaveChangesAsync();
+                await parentBlockedByAdminLogService.SaveChangesLogAsync(
+                    parent.Id,
+                    currentUserService.UserId,
+                    parentBlockUnblock.Reason,
+                    parentBlockUnblock.IsBlocked).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to update block status or save log for parent {ParentId}", parent.Id);
+                throw new InvalidOperationException($"Failed to update block status or save log for parent {parent.Id}");
+            }
+        }
+
+        await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
+
+        logger.LogInformation("Successfully changed Block status of Parent with ParentId = {Id}", parentBlockUnblock.ParentId);
+
+        return Result<bool>.Success(true);
     }
 }

@@ -1,15 +1,17 @@
-﻿using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.WebApi.Controllers.V1;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using System.Threading.Tasks;
-using System;
-using OutOfSchool.BusinessLogic.Models.Position;
+﻿using System;
 using System.Collections.Generic;
-using OutOfSchool.BusinessLogic.Models.Providers;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Position;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.WebApi.Controllers.V1;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 [TestFixture]
@@ -34,7 +36,8 @@ public class PositionControllerTests
         providerService = new Mock<IProviderService>();        
 
         controller = new PositionController(
-            positionService.Object   
+            positionService.Object,
+            new Mock<ILogger<PositionController>>().Object
         );
         
         providerId = Guid.NewGuid();
@@ -118,7 +121,7 @@ public class PositionControllerTests
     }
 
     [Test]
-    public async Task GetPositionByFilter_WithWrongSearchString_ShouldReturnMessage()
+    public async Task GetPositionByFilter_WithWrongSearchString_ShouldReturnNoContent()
     {
         // Arrange        
         string searchString = "hello";
@@ -138,14 +141,11 @@ public class PositionControllerTests
         var result = await controller.GetByFilter(providerId, filter);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>(), "Result should be OkObjectResult.");
-        var okResult = result as OkObjectResult;
-
-        Assert.That(okResult.Value, Is.EqualTo("There is no records for given provider"));
+        Assert.That(result, Is.InstanceOf<NoContentResult>(), "Result should be NoContentResult.");
     }
 
     [Test]
-    public async Task GetPositionsByFilter_WhenNoRecords_ReturnsMessage()
+    public async Task GetPositionsByFilter_WhenNoRecords_ReturnsNoContent()
     {
         // Arrange
         Guid providerWithNoRecordId = new Guid();
@@ -155,16 +155,14 @@ public class PositionControllerTests
             .ReturnsAsync(new SearchResult<PositionDto> { TotalAmount = 0, Entities = new List<PositionDto>() });
 
         // Act
-        var result = await controller.GetByFilter(providerWithNoRecordId, It.IsAny<PositionsFilter>()).ConfigureAwait(false) as OkObjectResult; ;
-        var resultValue = result.Value as SearchResult<PositionDto>;
+        var result = await controller.GetByFilter(providerWithNoRecordId, It.IsAny<PositionsFilter>()).ConfigureAwait(false) as NoContentResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual("There is no records for given provider", result.Value);
     }
 
     [Test]
-    public async Task GetPositionById_WithDeletedPositionId_ReturnsMessage()
+    public async Task GetPositionById_WithDeletedPositionId_ReturnsNotFound()
     {  
         // Arrange        
         var deletedPosition = positionDto;
@@ -172,16 +170,15 @@ public class PositionControllerTests
 
         currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
         positionService.Setup(a => a.GetByIdAsync(deletedPosition.Id, providerId))
-            .ThrowsAsync(new KeyNotFoundException($"Position with positionId {deletedPosition.Id} not found or it was deleted."));;
+            .ReturnsAsync((PositionDto) null);
 
         // Act
         var result = await controller.GetById(providerId, deletedPosition.Id);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        var notFoundResult = result as NotFoundObjectResult;
-        Assert.That(notFoundResult, Is.Not.Null);
-        Assert.AreEqual($"Position with positionId {deletedPosition.Id} not found or it was deleted.", notFoundResult.Value);
+        var noContentResult = result as NotFoundResult;
+        Assert.That(noContentResult, Is.Not.Null);
     }
     
     [Test]
@@ -213,7 +210,7 @@ public class PositionControllerTests
     }
 
     [Test]
-    public async Task DeletePosition_WhichDeleted_ShouldReturnBadRequest()
+    public async Task DeletePosition_WhichDeleted_ShouldReturnNoContent()
     {
         // Arrange
         currentUserService.Setup(s => s.UserId).Returns(providerId.ToString());
@@ -223,15 +220,14 @@ public class PositionControllerTests
 
         positionService
             .Setup(s => s.DeleteAsync(deletedPosition.Id, providerId))
-            .ThrowsAsync(new KeyNotFoundException($"Position with ID {deletedPosition.Id} not found or it was deleted."));
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await controller.Delete(providerId, deletedPosition.Id);
 
         // Assert
-        var notFoundResult = result as NotFoundObjectResult;
-        Assert.IsNotNull(notFoundResult, "Expected NotFoundObjectResult.");
-        Assert.AreEqual($"Position with ID {deletedPosition.Id} not found or it was deleted.", notFoundResult.Value);
+        var noContentResult = result as NoContentResult;
+        Assert.IsNotNull(noContentResult, "Expected NoContentResult.");
     }
 
     [Test]
@@ -275,7 +271,8 @@ public class PositionControllerTests
             Rate = oldPosition.Rate,
             Tariff = oldPosition.Tariff,
             ClassifierType = oldPosition.ClassifierType,
-            IsForRuralAreas = oldPosition.IsForRuralAreas            
+            IsForRuralAreas = oldPosition.IsForRuralAreas,
+            PositionType = PositionType.Employee,
         };
     }
 

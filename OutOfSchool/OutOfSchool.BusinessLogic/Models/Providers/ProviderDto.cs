@@ -7,6 +7,9 @@ namespace OutOfSchool.BusinessLogic.Models.Providers;
 public class ProviderDto : ProviderBaseDto, IHasRating
 {
     [Required]
+    public string Edrpou { get; set; }
+
+    [Required]
     [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
 

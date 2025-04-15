@@ -9,6 +9,7 @@ using OpenIddict.Client.AspNetCore;
 using OutOfSchool.AikomApiClient;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.ViewModels;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services.Enums;
 
@@ -96,14 +97,7 @@ public class ExternalAuthController : Controller
 
         if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty,
-                localizer["ExternalAuthorizationDataInvalid"]);
-
-            return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
-            {
-                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
-            });
+            return await GetErrorMessageResult(result, localizer["ExternalAuthorizationDataInvalid"]);
         }
 
         var remoteUserId = result.Principal.GetClaim(AuthServerConstants.ExternalAuthUserIdKey);
@@ -116,13 +110,7 @@ public class ExternalAuthController : Controller
             async error =>
             {
                 logger.LogError("Unexpected error occurred: {Message} - {Content}", error.Message, error.Content);
-                ModelState.AddModelError(string.Empty, localizer["ExternalAuthenticationError"]);
-
-                return View("~/Views/Auth/Login.cshtml", new LoginViewModel
-                {
-                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                    ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
-                });
+                return await GetErrorMessageResult(result, localizer["ExternalAuthenticationError"]);
             },
             async userInfo =>
             {
@@ -134,13 +122,7 @@ public class ExternalAuthController : Controller
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Unexpected error occurred while retrieving login information");
-                    ModelState.AddModelError(string.Empty, "Unexpected error occurred while retrieving login information");
-
-                    return View("~/Views/Auth/Login.cshtml", new LoginViewModel
-                    {
-                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                        ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
-                    });
+                    return await GetErrorMessageResult(result, "Unexpected error occurred while retrieving login information");
                 }
             });
     }
@@ -159,15 +141,61 @@ public class ExternalAuthController : Controller
         try
         {
             var selectedRole = result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
-            
-            // For provider role, verify director access before proceeding to database operations.
-            long? externalProviderId = null;
-            // TODO: while AIKOM is not operational, do not check anything.
-            // TODO: usage is in VerifyProviderAccessAsync docs.
 
+            // We can create User as it is tied to log in attempt
             var user = await GetOrCreateUserAsync(userInfo, selectedRole);
-            var individual = await GetOrCreateIndividualAsync(userInfo, user);
-            var claims = BuildClaims(individual, userInfo, result, externalProviderId);
+            
+            // TODO: while AIKOM is not operational, we forbid new registrations.
+            // Only people who are in DB are allowed to log in.
+            var individual = await GetIndividualAsync(userInfo, user);
+
+            if (individual == null)
+            {
+                return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
+            }
+
+            List<Claim> claims = [];
+            
+            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) || 
+                Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                // For provider role, verify director access before proceeding to database operations.
+                long? externalProviderId = null;
+                // TODO: while AIKOM is not operational, do not check anything.
+                // usage is in VerifyProviderAccessAsync docs.
+
+                var positions = await GetPositionsForProviderAndIndividual(userInfo, individual.Id);
+                
+                if (positions.Count == 0)
+                {
+                    return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
+                }
+                
+                // Process provider-specific logic
+                if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                {
+                    var directorPosition = positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
+                    if (directorPosition == null)
+                    {
+                        return await GetErrorMessageResult(result, localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
+                    }
+                }
+                // Process employee-specific logic
+                else if (Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                {
+                    
+                    var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
+                    if (employeePosition == null)
+                    {
+                        return await GetErrorMessageResult(result, localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
+                    }
+                }
+                var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
+                var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
+                
+                claims = BuildProviderClaims(individual, userInfo, result, providerId, isDeputy, externalProviderId);
+            }
+
             var properties = await SignInWithClaimsAsync(result, claims);
 
             await dbContext.SaveChangesAsync();
@@ -180,13 +208,7 @@ public class ExternalAuthController : Controller
             logger.LogError(ex, "Unexpected error occurred while processing sign-in information");
             await transaction.RollbackAsync();
 
-            ModelState.AddModelError(string.Empty, "Server error occurred while processing sign-in information");
-
-            return View("~/Views/Auth/Login.cshtml", new LoginViewModel
-            {
-                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
-            });
+            return await GetErrorMessageResult(result, "Server error occurred while processing sign-in information");
         }
     }
 
@@ -270,6 +292,10 @@ public class ExternalAuthController : Controller
         var user = await userManager.FindByNameAsync(userInfo.DrfoCode);
         if (user != null)
         {
+            if (!await userManager.IsInRoleAsync(user, selectedRole))
+            {
+                await userManager.AddToRoleAsync(user, selectedRole);
+            }
             return user;
         }
 
@@ -281,7 +307,7 @@ public class ExternalAuthController : Controller
             MiddleName = userInfo.MiddleName,
             Email = userInfo.Email,
             CreatingTime = DateTimeOffset.UtcNow,
-            IsRegistered = false,
+            IsRegistered = true,
             IsBlocked = false,
             MustChangePassword = false,
         };
@@ -298,30 +324,22 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Gets existing individual or creates new one based on user info.
+    /// Gets existing individual based on user info.
     /// </summary>
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="user">Associated user entity.</param>
     /// <returns><see cref="Individual"/> entity.</returns>
-    private async Task<Individual> GetOrCreateIndividualAsync(UserInfoResponse userInfo, User user)
+    private async Task<Individual?> GetIndividualAsync(UserInfoResponse userInfo, User user)
     {
         var individual = await dbContext.Individuals
-            .FirstOrDefaultAsync(i => i.Rnokpp == userInfo.DrfoCode);
+            .FirstOrDefaultAsync(i => !i.IsDeleted && i.Rnokpp == userInfo.DrfoCode);
 
         if (individual == null)
         {
-            individual = new Individual
-            {
-                Id = Guid.NewGuid(),
-                FirstName = userInfo.GivenName,
-                LastName = userInfo.LastName,
-                MiddleName = userInfo.MiddleName,
-                Rnokpp = userInfo.DrfoCode,
-            };
-            dbContext.Individuals.Add(individual);
+            return null;
         }
 
-        // Individual was created by admin or other user.
+        // It is first login attempt
         // Linking it to User
         if (string.IsNullOrEmpty(individual.UserId))
         {
@@ -332,49 +350,65 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
+    /// Gets existing Positions for given Individual DRFO and Provider EDRPOU.
+    /// </summary>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <param name="individualId">Existing Individual id.</param>
+    /// <returns><see cref="List{T}"/> of short Positions or empty list if combination was not found.</returns>
+    private async Task<List<PositionProjection>> GetPositionsForProviderAndIndividual(UserInfoResponse userInfo, Guid individualId)
+    {
+        // Provider does not exist, no need to do big JOIN
+        var providerExists = dbContext.Providers.Any(p => !p.IsDeleted && p.Edrpou == userInfo.EdrpouCode);
+
+        if (!providerExists)
+        {
+            return [];
+        }
+        
+        // Get the Positions for the given provider, that have officials linked to the individual
+        var positions = await dbContext.Positions
+            .Include(p => p.Provider)
+            .Where(x => !x.IsDeleted && (!x.Provider.IsDeleted && x.Provider.Edrpou == userInfo.EdrpouCode) && x.Officials.Any(o => o.IndividualId == individualId && !o.IsDeleted))
+            .Select(p => new PositionProjection(p.Provider.FullTitle, p.ProviderId, p.PositionType))
+            .ToListAsync();
+            
+        return positions;
+    }
+
+    /// <summary>
     /// Builds claims list for the user based on authentication result and user info.
     /// </summary>
     /// <param name="individual">Individual entity.</param>
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="result">Authentication result.</param>
+    /// <param name="providerId">Internal provider ID.</param>
+    /// <param name="isDeputy">Boolean flag to show if individual has deputy director position</param>
     /// <param name="externalProviderId">Optional external provider ID for provider role.</param>
     /// <returns>List of <see cref="Claim"/> for the user.</returns>
-    private List<Claim> BuildClaims(
+    private List<Claim> BuildProviderClaims(
         Individual individual,
         UserInfoResponse userInfo,
         AuthenticateResult result,
+        Guid providerId,
+        bool isDeputy,
         long? externalProviderId = null)
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
-            new(ClaimTypes.GivenName, individual.FirstName),
-            new(ClaimTypes.Surname, individual.LastName),
-            new(ClaimTypes.Email, userInfo.Email),
+            new(OpenIddictConstants.Claims.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, userInfo.Email),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
-            new(
-                OpenIddictConstants.Claims.Private.ProviderName,
-                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.ProviderName)),
+            new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
+            new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
+            new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString(), ClaimValueTypes.Boolean),
         };
-
-        if (!string.IsNullOrEmpty(result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)))
-        {
-            claims.Add(new(
-                OpenIddictConstants.Claims.Private.RegistrationId,
-                result.Principal.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId)));
-        }
-
-        if (Role.Provider.ToString()
-            .Equals(result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey],
-                StringComparison.CurrentCultureIgnoreCase))
-        {
-            claims.Add(new Claim(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode));
             
-            if (externalProviderId.HasValue)
-            {
-                claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId, 
-                    externalProviderId.Value.ToString()));
-            }
+        if (externalProviderId.HasValue)
+        {
+            claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId, 
+                externalProviderId.Value.ToString()));
         }
 
         return claims;
@@ -396,7 +430,27 @@ public class ExternalAuthController : Controller
 
         var user = await userManager.FindByNameAsync(claims
             .First(c => c.Type == Constants.ClaimTypes.Rnokpp).Value);
-        await signInManager.SignInWithClaimsAsync(user, properties, claims);
+        await signInManager.SignInWithClaimsAsync(user, properties, claims.Where(c => c.Type != OpenIddictConstants.Claims.Role));
+        User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
         return properties;
     }
+    
+    /// <summary>
+    /// Creates an error result with a custom message and returns the login view.
+    /// </summary>
+    /// <param name="result">The authentication result containing redirect URI information.</param>
+    /// <param name="message">The error message to display to the user.</param>
+    /// <returns>A view result with the login page and error message.</returns>
+    private async Task<IActionResult> GetErrorMessageResult(AuthenticateResult result, string message)
+    {
+        ModelState.AddModelError(string.Empty, message);
+
+        return this.View("~/Views/Auth/Login.cshtml", new LoginViewModel
+        {
+            ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+            ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
+        });
+    }
+    
+    private record PositionProjection(string ProviderTitle, Guid ProviderId, PositionType PositionType);
 }

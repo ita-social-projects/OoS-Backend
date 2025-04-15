@@ -65,4 +65,19 @@
     <data name="NotAProviderDirector" xml:space="preserve">
         <value />
     </data>
+    <data name="Employee" xml:space="preserve">
+        <value />
+    </data>
+    <data name="For directors of state and municipal institutions" xml:space="preserve">
+        <value />
+    </data>
+    <data name="IndividualOrProviderNotFound" xml:space="preserve">
+        <value />
+    </data>
+    <data name="IndividualIsNotProviderDirector" xml:space="preserve">
+        <value />
+    </data>
+    <data name="IndividualIsNotProviderEmployee" xml:space="preserve">
+        <value />
+    </data>
 </root>

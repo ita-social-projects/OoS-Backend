@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Models.Individual;
+﻿using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
@@ -27,14 +26,6 @@ public interface IProviderService
     Task<ProviderDto> GetById(Guid id);
 
     /// <summary>
-    /// Get entity by User id.
-    /// </summary>
-    /// <param name="id">Key of the User entity in the table.</param>
-    /// <param name="isEmployee">Is user a deputy or delegated provider admin.</param>
-    /// <returns>Provider.</returns>
-    Task<ProviderDto> GetByUserId(string id, bool isEmployee = false);
-
-    /// <summary>
     /// Get provider's status.
     /// </summary>
     /// <param name="providerId">Key of the Provider entity in the table.</param>
@@ -53,9 +44,8 @@ public interface IProviderService
     ///  Delete entity.
     /// </summary>
     /// <param name="id">Provider's key.</param>
-    /// <param name="token">Current user's token.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task<Either<ErrorResponse, ActionResult>> Delete(Guid id, string token);
+    Task<Either<ErrorResponse, bool>> Delete(Guid id);
 
     /// <summary>
     ///  Gets Id of Provider, which owns a Workshop with specified Id.
@@ -93,20 +83,21 @@ public interface IProviderService
     /// Check if entity is exists by it's key.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<bool> Exists(Guid id);
 
     /// <summary>
     /// Upload employees for provider.
     /// </summary>
     /// <param name="id">Id of provider that requests upload.</param>
-    /// <param name="uploadEployees">List of employees to upload.</param>
+    /// <param name="data">List of employees to upload.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data);
-
-    /// Checks whether the current user has Provider rights for the specified provider.
+    
+    /// <summary>
+    /// Gets the license status and ownership type for a provider.
     /// </summary>
-    /// <param name="providerId">The unique identifier of the provider.</param>    
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task HasProviderRights(Guid providerId);
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>A <see cref="Tuple{T1,T2}"/> containing the provider's license status and ownership type.</returns>
+    Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId);
 }

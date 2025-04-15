@@ -1,33 +1,33 @@
-﻿using AutoMapper;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.Tests.Common.TestDataGenerators;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System;
+using AutoMapper;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config.Images;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
+using OutOfSchool.Common.Extensions;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Common.Extensions;
-using OutOfSchool.BusinessLogic.Models;
-using System.Linq;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.Services.Enums;
-using System.Linq.Expressions;
-using FluentAssertions;
-using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -42,7 +42,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
-    private Mock<ICodeficatorService> codeficatorServiceMock; 
+    private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -81,8 +81,7 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
-        var employeeService = new Mock<IEmployeeService>();
-        
+
         userId = "someUserId";
 
         service = new WorkshopDraftService(
@@ -95,7 +94,6 @@ public class SensitiveWorkshopDraftServiceTests
                    teacherDraftImagesService.Object,
                    tagRepositoryMock.Object,
                    options.Object,
-                   employeeService.Object,
                    workshopServiceCombinerV2Mock.Object,
                    regionAdminServiceMock.Object,
                    ministryAdminServiceMock.Object,
@@ -199,22 +197,16 @@ public class SensitiveWorkshopDraftServiceTests
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
             .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
 
         codeficatorRepository.Setup(
             x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<CATOTTG>, IQueryable<CATOTTG>>>(),
                 It.IsAny<Expression<Func<CATOTTG, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(new List<CATOTTG>().AsTestAsyncEnumerableQuery());
 
         return new SearchResult<WorkshopDraftResponseDto>()
@@ -241,11 +233,8 @@ public class SensitiveWorkshopDraftServiceTests
                 w => w.Get(
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
-                    It.IsAny<string>(),
-                    It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>(),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null),
-                    It.Is<bool>(x => x.Equals(true))))
+                    It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null)))
             .Returns(workshopDraftsReturned.AsTestAsyncEnumerableQuery());
     }
 }

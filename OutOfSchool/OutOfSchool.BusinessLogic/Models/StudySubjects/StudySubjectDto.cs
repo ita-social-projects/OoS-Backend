@@ -7,7 +7,8 @@ public class StudySubjectDto
     public bool IsLanguageUkrainian { get; set; }
     public long LanguageId { get; set; }
     public LanguageDto Language { get; set; }
-    public Guid WorkshopId { get; set; }
+    public Guid ProviderId { get; set; }
+    public List<ShortEntityDto> Workshops { get; set; }
     public DateOnly ActiveFrom { get; set; }
     public DateOnly ActiveTo { get; set; }
 }

@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models.Configurations.Base;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -40,5 +42,8 @@ public class PositionConfiguration: BusinessEntityConfiguration<Position>
         builder.Property(p => p.ClassifierType)
             .IsRequired()
             .HasMaxLength(60);
+
+        builder.Property(p => p.PositionType)
+            .HasDefaultValue(PositionType.Employee);
     }
 }

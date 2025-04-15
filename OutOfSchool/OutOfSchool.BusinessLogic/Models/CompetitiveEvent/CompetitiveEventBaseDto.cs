@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -8,7 +7,7 @@ using OutOfSchool.Common.Enums.CompetitiveEvent;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
-public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDto<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>
+public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>
 {
     public Guid Id { get; set; }
 
@@ -101,18 +100,6 @@ public class CompetitiveEventBaseDto: IHasCoverImage, IHasImages, IHasContactsDt
     public bool? CompetitiveSelection { get; set; }
 
     public uint? NumberOfOccupiedSeats { get; set; }
-
-    public List<Guid> ParticipantsOfTheEvent { get; set; } = [];
-
-    public string CoverImageId { get; set; } = string.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IFormFile CoverImage { get; set; }
-
-    public IList<string> ImageIds { get; set; } = new List<string>();
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<IFormFile> ImageFiles { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bogus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -11,7 +12,7 @@ public static class InstitutionHierarchyGenerator
         .RuleFor(x => x.Id, _ => Guid.NewGuid())
         .RuleFor(x => x.Title, f => f.Company.CompanyName())
         .RuleFor(x => x.InstitutionId, _ => Guid.NewGuid())
-        .RuleFor(x => x.Directions, _ => []);
+        .RuleFor(x => x.SubDirections, _ => []);
 
     public static InstitutionHierarchy Generate() => faker.Generate();
     
@@ -37,7 +38,7 @@ public static class InstitutionHierarchyGenerator
     
     public static InstitutionHierarchy WithDirections(this InstitutionHierarchy hierarchy, List<Direction> directions)
     {
-        hierarchy.Directions = directions;
+        hierarchy.SubDirections = directions.SelectMany(d => d.SubDirections).ToList();
         return hierarchy;
     }
     

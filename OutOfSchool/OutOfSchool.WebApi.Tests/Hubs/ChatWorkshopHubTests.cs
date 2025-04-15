@@ -16,10 +16,10 @@ using OutOfSchool.BusinessLogic.Hubs;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Hubs;
 
@@ -34,7 +34,6 @@ public class ChatWorkshopHubTests
     private Mock<IValidationService> validationServiceMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<IParentRepository> parentRepositoryMock;
-    private Mock<IEmployeeRepository> employeeRepositoryMock;
     private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
 
     private ChatWorkshopHub chatHub;
@@ -44,7 +43,8 @@ public class ChatWorkshopHubTests
     private Mock<HubCallerContext> hubCallerContextMock;
     private Mock<IGroupManager> groupsMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
-    private Mock<ICurrentUser> currentUserMock;
+    private Mock<ICurrentUserService> currentUserMock;
+    private Mock<IOfficialRepository> officialRepositoryMock;
 
     [SetUp]
     public void SetUp()
@@ -62,8 +62,8 @@ public class ChatWorkshopHubTests
         hubCallerContextMock = new Mock<HubCallerContext>();
         groupsMock = new Mock<IGroupManager>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
-        employeeRepositoryMock = new Mock<IEmployeeRepository>();
-        currentUserMock = new Mock<ICurrentUser>();
+        currentUserMock = new Mock<ICurrentUserService>();
+        officialRepositoryMock = new Mock<IOfficialRepository>();
 
         chatHub = new ChatWorkshopHub(
             loggerMock.Object,
@@ -73,9 +73,9 @@ public class ChatWorkshopHubTests
             workshopRepositoryMock.Object,
             parentRepositoryMock.Object,
             localizerMock.Object,
-            employeeRepositoryMock.Object,
             blockedProviderParentServiceMock.Object,
-            currentUserMock.Object)
+            currentUserMock.Object,
+            officialRepositoryMock.Object)
         {
             Clients = clientsMock.Object,
             Context = hubCallerContextMock.Object,
@@ -199,8 +199,6 @@ public class ChatWorkshopHubTests
         var validChatRoomId = Guid.NewGuid();
         var validNewMessage = $"{{'workshopId':'{validWorkshopId}', 'parentId':'{validParentId}', 'chatRoomId':'{validChatRoomId}', 'text':'hi', 'senderRoleIsProvider':true}}";
 
-        validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
-
         roomServiceMock.Setup(x => x.GetByIdAsync(validChatRoomId)).ReturnsAsync(new ChatRoomWorkshopDto());
 
         var validCreatedMessage = new ChatMessageWorkshopDto()
@@ -218,25 +216,23 @@ public class ChatWorkshopHubTests
         var validParent = new Parent() { Id = validParentId, UserId = UserId };
         parentRepositoryMock.Setup(x => x.GetById(validParent.Id)).ReturnsAsync(validParent);
 
-        var validWorkshops = new List<Workshop>() { new Workshop() { Id = validWorkshopId, Provider = new Provider() { UserId = "someId" } } };
+        var validWorkshop = new Workshop() { Id = validWorkshopId, Provider = new Provider() { Id = Guid.NewGuid()} };
 
-        workshopRepositoryMock.Setup(x => x.GetByFilter(
-            It.IsAny<Expression<Func<Workshop, bool>>>(), 
-            It.IsAny<string>(), 
-            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
-            .ReturnsAsync(validWorkshops);
+        workshopRepositoryMock.Setup(x => x.GetByIdWithDetails(
+                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Workshop>,IQueryable<Workshop>>>()))
+            .ReturnsAsync(validWorkshop);
 
         groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         clientsMock.Setup(clients => clients.Group(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
-        var validProviderAdmins = new List<Employee>();
-        employeeRepositoryMock.Setup(x => x.GetByFilter(
-            It.IsAny<Expression<Func<Employee, bool>>>(),
-            It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<Employee>, IQueryable<Employee>>>()))
-            .ReturnsAsync(validProviderAdmins);
+        var validProviderAdmins = new List<Official>();
+
+        officialRepositoryMock.Setup(x => x.Get(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<Official, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Official, object>>, SortDirection>>()))
+            .Returns(validProviderAdmins.AsTestAsyncEnumerableQuery());
 
         workshopRepositoryMock
             .Setup(x => x.GetById(validWorkshopId))

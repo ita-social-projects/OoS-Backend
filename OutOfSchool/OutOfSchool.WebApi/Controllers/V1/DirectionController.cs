@@ -1,7 +1,10 @@
 ﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -10,7 +13,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// </summary>
 [ApiController]
 [AspApiVersion(1)]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[Route("api/v{version:apiVersion}/directions/")]
 [HasPermission(Permissions.SystemManagement)]
 public class DirectionController : ControllerBase
 {
@@ -37,7 +40,7 @@ public class DirectionController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [Obsolete("Use paged method")]
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("Get")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -53,17 +56,23 @@ public class DirectionController : ControllerBase
         return Ok(directions);
     }
 
+    /// <summary>
+    /// To get filtered directions from DB.
+    /// </summary>
+    /// <param name="filter">Filter for directions.</param>
+    /// <param name="isAdmins">To filter directions by admin role.</param>
+    /// <returns>List of filtered directions, or no content.</returns>
+    /// <response code="200">One or more directions were found.</response>
+    /// <response code="204">No direction was found.</response>
+    /// <response code="500">If any server error occures.</response>
     [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false)
-    {
-        var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
-
-        return this.SearchResultToOkOrNoContent(directions);
-    }
+    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false) =>
+        await service.GetByFilter(filter, isAdmins)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// To recieve the direction with the defined id.
@@ -71,16 +80,25 @@ public class DirectionController : ControllerBase
     /// <param name="id">Key of the direction in the table.</param>
     /// <returns><see cref="DirectionDto"/>.</returns>
     /// <response code="200">The entity was found by given Id.</response>
+    /// <response code="404">If the entity was not found by given Id.</response>
     /// <response code="500">If any server error occures. For example: Id was wrong.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetById(long id)
     {
         this.ValidateId(id, localizer);
 
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        var direction = await service.GetById(id).ConfigureAwait(false);
+
+        if (direction == null)
+        {
+            return NotFound("Direction with such Id does not exist in the database.");
+        }
+
+        return Ok(direction);
     }
 
     /// <summary>
@@ -100,6 +118,7 @@ public class DirectionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.DirectionManagement))]
     public async Task<IActionResult> Create([FromBody] DirectionDto directionDto)
     {
         if (!ModelState.IsValid)
@@ -111,14 +130,41 @@ public class DirectionController : ControllerBase
         {
             directionDto.Id = default;
 
-            var direction = await service.Create(directionDto).ConfigureAwait(false);
+            var response = await service.Create(directionDto).ConfigureAwait(false);
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = direction.Id, },
-                direction);
+            if (response != null)
+            {
+                if (response.Succeeded)
+                {
+
+                    return CreatedAtAction(
+                        nameof(GetById),
+                        new { id = response.Value.Id, },
+                        response.Value);
+                }
+                else
+                {
+                    var error = response.OperationResult.Errors.FirstOrDefault();
+
+                    if (error != null)
+                    {
+                        return error.Code switch
+                        {
+                            "400" => BadRequest(error.Description),
+                            _ => StatusCode(500, "An unexpected error occurred.")
+                        };
+                    }
+
+                    return StatusCode(500, "An unexpected error occurred.");
+                }
+            }
+            return StatusCode(500, "An unexpected error occurred.");
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }

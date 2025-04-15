@@ -128,7 +128,7 @@ public class ChangesLogService : IChangesLogService
 
                 foreach (var item in subSettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -143,7 +143,7 @@ public class ChangesLogService : IChangesLogService
             var subSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
 
-            predicate = predicate.And(x => subSettlementsIds.Contains(x.LegalAddress.CATOTTGId));
+            predicate = predicate.And(x => x.Contacts.Any(c => c.IsDefault && subSettlementsIds.Contains(c.Address.CATOTTGId)));
         }
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
@@ -164,7 +164,7 @@ public class ChangesLogService : IChangesLogService
                         User = mapper.Map<ShortUserDto>(l.User),
                         ProviderId = l.EntityIdGuid.Value,
                         ProviderTitle = provider.FullTitle,
-                        ProviderCity = provider.LegalAddress.CATOTTG.Name,
+                        ProviderCity = provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
                         InstitutionTitle = provider.Institution.Title,
                     })
                 .IgnoreQueryFilters();
@@ -204,7 +204,7 @@ public class ChangesLogService : IChangesLogService
 
                 foreach (var item in subSettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(a => a.Workshop.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(a => a.Workshop.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -219,7 +219,7 @@ public class ChangesLogService : IChangesLogService
             var subSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
 
-            predicate = predicate.And(a => subSettlementsIds.Contains(a.Workshop.Provider.LegalAddress.CATOTTGId));
+            predicate = predicate.And(a => a.Workshop.Provider.Contacts.Any(c => c.IsDefault && subSettlementsIds.Contains(c.Address.CATOTTGId)));
         }
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
@@ -240,7 +240,7 @@ public class ChangesLogService : IChangesLogService
                         User = mapper.Map<ShortUserDto>(l.User),
                         ApplicationId = l.EntityIdGuid.Value,
                         WorkshopTitle = app.Workshop.Title,
-                        WorkshopCity = app.Workshop.Contacts.FirstOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
+                        WorkshopCity = app.Workshop.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
                         ProviderTitle = app.Workshop.ProviderTitle,
                         InstitutionTitle = app.Workshop.Provider.Institution.Title,
                     })
@@ -282,7 +282,7 @@ public class ChangesLogService : IChangesLogService
 
                 foreach (var item in subSettlementsIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Provider.LegalAddress.CATOTTGId == item);
+                    tempPredicate = tempPredicate.Or(x => x.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == item));
                 }
 
                 where = where.And(tempPredicate);
@@ -297,18 +297,19 @@ public class ChangesLogService : IChangesLogService
             var subSettlementsIds = await codeficatorService
                 .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
 
-            where = where.And(a => subSettlementsIds.Contains(a.Provider.LegalAddress.CATOTTGId));
+            where = where.And(a => a.Provider.Contacts.Any(c => c.IsDefault && subSettlementsIds.Contains(c.Address.CATOTTGId)));
         }
 
         var count = await employeeChangesLogRepository.Count(where).ConfigureAwait(false);
         var query = employeeChangesLogRepository
-            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true)
+            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
+            .AsNoTracking()
             .Select(x => new EmployeeChangesLogDto()
             {
                 EmployeeId = x.EmployeeUserId,
                 EmployeeFullName = $"{x.EmployeeUser.LastName} {x.EmployeeUser.FirstName} {x.EmployeeUser.MiddleName}".TrimEnd(),
                 ProviderTitle = x.Provider.FullTitle,
-                WorkshopCity = x.Provider.LegalAddress.CATOTTG.Name,
+                WorkshopCity = x.Provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
                 OperationType = x.OperationType,
                 OperationDate = DateTime.SpecifyKind(x.OperationDate, DateTimeKind.Utc),
                 User = mapper.Map<ShortUserDto>(x.User),
@@ -337,7 +338,8 @@ public class ChangesLogService : IChangesLogService
         var sortExpression = GetParentBlockedByAdminChangesOrderParams();
         var count = await parentBlockedByAdminLogRepository.Count(where).ConfigureAwait(false);
         var query = parentBlockedByAdminLogRepository
-            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true)
+            .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
+            .AsNoTracking()
             .Select(x => new ParentBlockedByAdminChangesLogDto()
             {
                 ParentId = x.ParentId,
@@ -364,7 +366,12 @@ public class ChangesLogService : IChangesLogService
         var where = GetQueryFilter(filter);
         var sortExpression = GetOrderParams();
 
-        var query = changesLogRepository.Get(skip: filter.From, take: filter.Size, whereExpression: where, orderBy: sortExpression, asNoTracking: true);
+        var query = changesLogRepository.Get(
+                skip: filter.From, 
+                take: filter.Size, 
+                whereExpression: where, 
+                orderBy: sortExpression)
+            .AsNoTracking();
 
         return query;
     }
@@ -456,7 +463,7 @@ public class ChangesLogService : IChangesLogService
                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                         || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Provider.LegalAddress.CATOTTG.Name.Contains(word, StringComparison.InvariantCulture));
+                        || x.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name.Contains(word, StringComparison.InvariantCulture)));
             }
 
             expr = expr.And(tempExpr);

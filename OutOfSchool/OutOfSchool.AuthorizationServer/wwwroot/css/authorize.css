@@ -1,0 +1,108 @@
+.wrapper_body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.wrapper {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.consent_title {
+    font-family: Innerspace, sans-serif;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 1.5rem;
+    line-height: 1.8rem;
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+.consent_wrapper {
+    margin-top: 20px;
+}
+
+.consent_wrapper hr {
+    border: none;
+    border-top: 1px solid #e3e3e3;
+    margin: 20px 0;
+}
+
+.consent_text {
+    font-family: "Open Sans", sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+.consent_text strong {
+    font-weight: bold;
+}
+
+.link {
+    color: #3849f9;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.consent_buttons {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.consent_buttons input {
+    width: 120px;
+    height: 34px;
+    border-radius: 20px;
+    padding: 10px 30px;
+    margin: 16px auto;
+    font-family: "Open Sans", sans-serif;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.consent_buttons input:hover {
+    transform: scale(1.05);
+}
+
+.authorize_button {
+    background-color: #3849f9;
+    color: white;
+    border: none;
+}
+
+.authorize_button:hover {
+    background-color: #2a38c0;
+}
+
+.deny_button {
+    background-color: #f5f5f5;
+    color: #333333;
+    border: 1px solid #e3e3e3;
+}
+
+.deny_button:hover {
+    background-color: #e3e3e3;
+} 

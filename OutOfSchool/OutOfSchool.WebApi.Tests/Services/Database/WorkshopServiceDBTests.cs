@@ -42,7 +42,6 @@ public class WorkshopServiceDBTests
     private Mock<ILogger<WorkshopService>> logger;
     private IMapper mapper;
     private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
-    private Mock<IEmployeeRepository> providerAdminRepository;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -74,7 +73,6 @@ public class WorkshopServiceDBTests
         logger = new Mock<ILogger<WorkshopService>>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        providerAdminRepository = new Mock<IEmployeeRepository>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -98,7 +96,6 @@ public class WorkshopServiceDBTests
                     logger.Object,
                     mapper,
                     workshopImagesMediator.Object,
-                    providerAdminRepository.Object,
                     averageRatingServiceMock.Object,
                     providerRepositoryMock.Object,
                     currentUserServiceMock.Object,

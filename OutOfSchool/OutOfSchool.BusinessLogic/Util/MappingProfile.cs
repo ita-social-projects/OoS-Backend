@@ -1,6 +1,4 @@
 using AutoMapper;
-using Google.Protobuf.WellKnownTypes;
-using GrpcService;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Models.Application;
@@ -9,6 +7,7 @@ using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Notifications;
@@ -23,6 +22,7 @@ using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -42,17 +42,19 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
             .ForMember(dest => dest.ProviderLicenseStatus, opt => opt.MapFrom(src => src.Provider.LicenseStatus))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src => src.Teachers.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom(src => src.DateTimeRanges.Where(x => !x.IsDeleted)))
             .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.MapFrom(src => src.WorkshopDescriptionItems.Where(x => !x.IsDeleted)))
-            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore());
+            .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
         CreateSoftDeletedMap<WorkshopBaseDto, Workshop>()
             .Apply(this.IgnoreContactsFromDto)
+            .ApplyDefaultsForHiddenFields()
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -79,7 +81,6 @@ public class MappingProfile : Profile
 
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
@@ -101,9 +102,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ParentWorkshop, opt => opt.Ignore())
             .ForMember(dest => dest.IncludedStudyGroups, opt => opt.Ignore())
             .ForMember(dest => dest.ProviderTitle, opt => opt.Ignore())
-            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore());
+            .ForMember(dest => dest.ProviderTitleEn, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
         CreateSoftDeletedMap<WorkshopCreateRequestDto, Workshop>()
+            .ApplyDefaultsForHiddenFields()
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.IsPaid ? src.Price : 0))
             .ForMember(
                 dest => dest.Keywords,
                 opt => opt.MapFrom(src => string.Join(Constants.MappingSeparator, src.Keywords.Distinct())))
@@ -130,7 +134,6 @@ public class MappingProfile : Profile
 
             .ForMember(dest => dest.Teachers, opt => opt.Ignore())
             .ForMember(dest => dest.Provider, opt => opt.Ignore())
-            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.Applications, opt => opt.Ignore())
             .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
             .ForMember(dest => dest.Document, opt => opt.Ignore())
@@ -154,12 +157,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore());
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.StudySubjects, opt => opt.Ignore());
 
-        CreateMap<WorkshopV2CreateRequestDto, Workshop>()
-            .IncludeBase<WorkshopCreateRequestDto, Workshop>()
-            .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+       
 
         CreateMap<Workshop, WorkshopDto>()
             .IncludeBase<Workshop, WorkshopBaseDto>()
@@ -184,11 +185,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Facebook,
                 opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook).Url))
             .ForMember(dest => dest.Instagram,
-                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url));
+                opt => opt.MapFrom(src => src.Contacts.FirstOrDefault(c => c.IsDefault).SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url))
+            .ForMember(dest => dest.NoAgeRestrictions, opt => opt.MapFrom(src => src.MinAge == 0 && src.MaxAge == 120));
 
-        CreateMap<Workshop, WorkshopV2Dto>()
-            .IncludeBase<Workshop, WorkshopDto>()
-            .Apply(IgnoreAllImages);
+  
 
         CreateMap<WorkshopCreateUpdateDto, Workshop>()
             .IncludeBase<WorkshopBaseDto, Workshop>()
@@ -275,36 +275,20 @@ public class MappingProfile : Profile
             .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Ownership, opt => opt.Ignore())
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
-            .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Positions, opt => opt.Ignore())
-            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore()); 
-
-        CreateMap<Provider, ProviderCsvDto>()
-            .ForMember(dest => dest.Ownership, opt => opt.MapFrom((dest, src) => dest.Ownership switch
-            {
-                OwnershipType.State => "Державна",
-                OwnershipType.Common => "Комунальна",
-                OwnershipType.Private => "Приватна",
-                _ => string.Empty,
-            }))
-            .ForMember(dest => dest.License, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.License) ? "не вказано" : src.License))
-            .ForMember(dest => dest.Settlement, opt => opt.MapFrom(src => CatottgAddressExtensions.GetSettlementName(src.LegalAddress.CATOTTG)))
-            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => $"{src.LegalAddress.Street}, {src.LegalAddress.BuildingNumber}"));
+            .ForMember(dest => dest.WorkshopDrafts, opt => opt.Ignore());
 
         CreateSoftDeletedMap<ProviderCreateDto, Provider>()
             .Apply(IgnoreCommonProviderBaseDto2Provider)
             .ForMember(dest => dest.Workshops, opt => opt.Ignore())
-            .ForMember(dest => dest.User, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
-            .ForMember(dest => dest.Employees, opt => opt.Ignore())
             .ForMember(dest => dest.BlockPhoneNumber, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.BlockReason, opt => opt.Ignore())
@@ -352,7 +336,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(x => x.Id)))
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.DirectionId)))
             .IncludeBase<object, IHasRating>()
             .ForMember(dest => dest.ProviderLicenseStatus, opt =>
                 opt.MapFrom(src => src.Provider.LicenseStatus))
@@ -378,13 +362,15 @@ public class MappingProfile : Profile
             .ForMember(c => c.Id, m => m.Ignore())
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
-            .ForMember(c => c.SocialGroups, m => m.Ignore());
+            .ForMember(c => c.SocialGroups, m => m.Ignore())
+            .ForMember(c => c.ParentId, m => m.Ignore());
 
         CreateSoftDeletedMap<ChildUpdateDto, Child>()
             .ForMember(c => c.Id, m => m.Ignore())
             .ForMember(c => c.Parent, m => m.Ignore())
             .ForMember(c => c.Achievements, m => m.Ignore())
-            .ForMember(c => c.SocialGroups, m => m.Ignore());
+            .ForMember(c => c.SocialGroups, m => m.Ignore())
+            .ForMember(c => c.ParentId, m => m.Ignore());
 
         // TODO: Check this mapping
         CreateMap<Parent, ParentDTO>().ReverseMap();
@@ -412,7 +398,7 @@ public class MappingProfile : Profile
         CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>();
         CreateSoftDeletedMap<InstitutionHierarchyDto, InstitutionHierarchy>()
             .ForMember(c => c.Parent, m => m.Ignore())
-            .ForMember(c => c.Directions, m => m.Ignore())
+            .ForMember(c => c.SubDirections, m => m.Ignore())
             .ForMember(c => c.Institution, m => m.Ignore())
             .ForMember(c => c.UpdatedAt, m => m.Ignore());
 
@@ -433,40 +419,52 @@ public class MappingProfile : Profile
 #warning The next mapping is here to test UI Admin features. Will be removed or refactored
         CreateMap<ShortUserDto, AdminDto>();
 
-        CreateMap<User, EmployeeDto>()
-            .ForMember(dest => dest.AccountStatus, m => m.Ignore())
-            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
-
-        CreateMap<User, FullEmployeeDto>()
-            .IncludeBase<User, EmployeeDto>()
-            .ForMember(dest => dest.WorkshopTitles, opt => opt.Ignore())
-            .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
-
         CreateSoftDeletedMap<DirectionDto, Direction>()
-            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore())
+            .ForMember(dest => dest.SubDirections, opt => opt.Ignore())
             .ForMember(c => c.UpdatedAt, m => m.Ignore());
 
         CreateMap<Direction, DirectionDto>()
             .ForMember(dest => dest.WorkshopsCount, opt => opt.Ignore());
 
-        // TODO: Check this mapping
-        CreateMap<CreateEmployeeDto, CreateProviderAdminRequest>()
-            .ForMember(dest => dest.RequestId, opt => opt.Ignore())
-            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
-            .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
-            .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom(src => src.ManagedWorkshopIds.Select(id => id.ToString()).ToList()))
-            .ForMember(c => c.IsDeputy, m => m.Ignore()); // TODO: remove this property from CreateProviderAdminRequest (generated by GRPC)
+        CreateSoftDeletedMap<SubDirectionDto, SubDirection>()
+            .ForMember(dest => dest.DirectionId, opt => opt.Ignore())
+            .ForMember(dest => dest.Direction, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchies, opt => opt.Ignore());
 
-        // TODO: Check this mapping
-        CreateMap<CreateProviderAdminReply, CreateEmployeeDto>()
-            .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
-            .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
-            .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom(src => src.ManagedWorkshopIds.Select(Guid.Parse).ToList()));
+        CreateMap<SubDirection, SubDirectionDto>();
 
         CreateMap<User, ShortUserDto>()
             .ForMember(dest => dest.Gender, opt => opt.Ignore())
             .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName ?? string.Empty));
+
+        CreateMap<BaseUpdateUserDto, User>()
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.LastLogin, opt => opt.Ignore())
+            .ForMember(dest => dest.Role, opt => opt.Ignore())
+            .ForMember(dest => dest.IsRegistered, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDerived, opt => opt.Ignore())
+            .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore())
+            .ForMember(dest => dest.Individual, opt => opt.Ignore())
+            .ForMember(dest => dest.UserName, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())
+            .ForMember(dest => dest.NormalizedEmail, opt => opt.Ignore())
+            .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
+            .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
+            .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
+            .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
+            .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore());
+
 
         // TODO: Check this mapping
         CreateSoftDeletedMap<ShortUserDto, User>()
@@ -488,6 +486,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.User.IsRegistered))
             .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => src.User.EmailConfirmed))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+
+        CreateMap<BaseUpdateUserDto, Parent>()
+          .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+          .ForMember(dest => dest.Gender, opt => opt.Ignore())
+          .ForMember(dest => dest.DateOfBirth, opt => opt.Ignore())
+          .ForMember(dest => dest.Children, opt => opt.Ignore())
+          .ForMember(dest => dest.User, opt => opt.Ignore())
+          .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+          .ForMember(dest => dest.ChatRooms, opt => opt.Ignore());
 
         CreateSoftDeletedMap<BaseUserDto, User>()
             .ForMember(dest => dest.CreatingTime, m => m.Ignore())
@@ -525,6 +532,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AccountStatus, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionTitle, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, MinistryAdminBaseUpdateDto>()
+           .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Email,opt => opt.MapFrom(src => src.Email))
+           .ForMember(dest => dest.PhoneNumber,opt => opt.MapFrom(src => src.PhoneNumber))
+           .ForMember(dest => dest.FirstName,opt => opt.Ignore())
+           .ForMember(dest => dest.LastName,opt => opt.Ignore())
+           .ForMember(dest => dest.MiddleName,opt => opt.Ignore())
+           .ForMember(dest => dest.CreatingTime,opt => opt.Ignore())
+           .ForMember(dest => dest.InstitutionId,opt => opt.Ignore());
+
         CreateMap<RegionAdmin, RegionAdminDto>()
             .IncludeBase<IHasUser, BaseUserDto>()
             .ForMember(dest => dest.InstitutionTitle, opt => opt.MapFrom(src => src.Institution.Title))
@@ -535,6 +552,18 @@ public class MappingProfile : Profile
         CreateMap<RegionAdminDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, AdminBaseDto>()
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, RegionAdminBaseDto>()
+            .IncludeBase<BaseUpdateUserDto, AdminBaseDto>() 
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore()) 
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
         CreateMap<RegionAdminBaseDto, RegionAdminDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
@@ -566,17 +595,47 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RegionId, opt => opt.Ignore())
             .ForMember(dest => dest.RegionName, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseUpdateDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
+
         CreateMap<BaseUserDto, AreaAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
 
+        CreateMap<BaseUpdateUserDto, AreaAdminBaseDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+
         CreateMap<BaseUserDto, RegionAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CreatingTime, opt => opt.Ignore())
             .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore());
+
+        CreateMap<BaseUpdateUserDto, RegionAdminBaseUpdateDto>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(dest => dest.FirstName, opt => opt.Ignore())
+            .ForMember(dest => dest.LastName, opt => opt.Ignore())
+            .ForMember(dest => dest.MiddleName, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
+            .ForMember(dest => dest.CATOTTGId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatingTime, opt => opt.Ignore());
 
         CreateMap<BaseUserDto, MinistryAdminBaseDto>()
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
@@ -614,8 +673,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AchievementType, opt => opt.Ignore())
             .ForMember(dest => dest.Teachers, opt => opt.Ignore());
 
-        CreateMap<Employee, EmployeeProviderRelationDto>();
-
         CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>().ReverseMap();
         CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
         CreateMap<Workshop, WorkshopInfoForChatListDto>();
@@ -651,7 +708,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InstitutionId, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.DirectionIds, opt => opt.Ignore())
-            .ForMember(dest => dest.WithDisabilityOptions, opt => opt.Ignore())
             .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore())
             .ForMember(dest => dest.TakenSeats, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveSelection, opt => opt.Ignore())
@@ -706,25 +762,28 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.StatusReason, opt => opt.MapFrom(src => string.Empty));
 
         CreateMap<WorkshopFilter, WorkshopFilterWithSettlements>()
-            .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore());
+            .ForMember(dest => dest.SettlementsIds, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSelfFinanced, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.IsInclusive, opt => opt.MapFrom(_ => false))
+            .ForMember(dest => dest.SpecialNeedsType, opt => opt.MapFrom(_ => new List<SpecialNeedsType>()))
+            .ForMember(dest => dest.EducationalShift, opt => opt.MapFrom(_ => new List<EducationalShift>()))
+            .ForMember(dest => dest.AgeComposition, opt => opt.MapFrom(_ => new List<AgeComposition>()));
 
         CreateMap<CompetitiveEvent, CompetitiveEventDto>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
             .ForMember(
                 dest => dest.DirectionIds,
-                opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Where(x => !x.IsDeleted).Select(d => d.Id)))
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
+                opt => opt.MapFrom(src => src.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId)))
             .ForMember(dest => dest.Rating, opt => opt.Ignore())
             .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
-            .Apply(IgnoreAllImages)
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.ImageIds, opt => opt.Ignore());
+
 
         CreateSoftDeletedMap<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
             .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CompetitiveEventAccountingType, opt => opt.Ignore())
-            .ForMember(dest => dest.ParticipantsOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Parent, opt => opt.Ignore())
             .ForMember(dest => dest.OrganizerOfTheEvent, opt => opt.Ignore())
             .ForMember(dest => dest.Coverage, opt => opt.Ignore())
@@ -741,7 +800,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.Judges, opt => opt.Ignore())
-            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore());
+            .ForMember(dest => dest.CompetitiveEventDescriptionItems, opt => opt.Ignore())
+            .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(src => src.CoverageId))
+            .ForMember(dest => dest.Images, opt => opt.Ignore()); ;
 
         CreateMap<CompetitiveEvent, CompetitiveEventViewCardDto>();
 
@@ -778,24 +839,24 @@ public class MappingProfile : Profile
                     .ForMember(dest => dest.DeleteDate, opt => opt.Ignore());
 
         CreateMap<PositionCreateUpdateDto, Position>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
-                .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
-                .ForMember(dest => dest.Document, opt => opt.Ignore())
-                .ForMember(dest => dest.File, opt => opt.Ignore())
-                .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
-                .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
-                .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
-                .ForMember(dest => dest.Officials, opt => opt.Ignore())
-                .ForMember(dest => dest.Provider, opt => opt.Ignore())
-                .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
-                .ForMember(dest => dest.ContactId, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());        
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
+            .ForMember(dest => dest.Officials, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
+            .ForMember(dest => dest.ContactId, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());        
         
         CreateMap<Position, PositionDto>();
 
@@ -814,10 +875,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
             .ForMember(dest => dest.IsBlocked, opt => opt.Ignore())
             .ForMember(dest => dest.LanguageId,
-                opt => opt.MapFrom(src => src.Language.Id));
+                opt => opt.MapFrom(src => src.Language.Id))
+            .ForMember(dest => dest.ProviderId, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.Workshops, opt => opt.Ignore());
+
 
         CreateMap<StudySubject, StudySubjectDto>()
-            .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
+            .ForMember(dest => dest.Workshops, opt => opt.MapFrom(src => src.Workshops));
 
         CreateMap<Language, LanguageDto>().ReverseMap();
 
@@ -831,7 +896,30 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Individual.MiddleName))
             .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Individual.LastName))
             .ForMember(dest => dest.Rnokpp, opt => opt.MapFrom(src => src.Individual.Rnokpp));
+
+#region V2 mapping
+
+        CreateMap<WorkshopV2CreateRequestDto, Workshop>()
+           .IncludeBase<WorkshopCreateRequestDto, Workshop>()
+           .ForMember(dest => dest.Images, opt => opt.Ignore())
+           .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
+        CreateMap<CompetitiveEventV2CreateRequestDto, CompetitiveEvent>()
+          .IncludeBase<CompetitiveEventCreateUpdateDto, CompetitiveEvent>()
+          .ForMember(dest => dest.Images, opt => opt.Ignore())
+          .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
+        CreateMap<Workshop, WorkshopV2Dto>()
+          .IncludeBase<Workshop, WorkshopDto>()
+          .Apply(IgnoreAllImages);
+
+        CreateMap<CompetitiveEvent, CompetitiveEventV2Dto>()
+         .IncludeBase<CompetitiveEvent, CompetitiveEventDto>()
+         .Apply(IgnoreAllImages);
+
+#endregion
     }
+
 
     public IMappingExpression<TSource, TDestination> CreateSoftDeletedMap<TSource, TDestination>()
         where TSource : class
@@ -842,8 +930,7 @@ public class MappingProfile : Profile
     private IMappingExpression<Provider, T> AddCommonProvider2ProviderBaseDto<T>(IMappingExpression<Provider, T> mappings)
         where T : ProviderBaseDto
         => mappings
-            .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
-            .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+            .ForMember(dest => dest.Contacts, opt => opt.MapFrom(src => src.Contacts))
             .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
             .Apply(IgnoreAllImages)
             .Apply(MapImageIds)
@@ -852,6 +939,24 @@ public class MappingProfile : Profile
     private IMappingExpression<T, Provider> IgnoreCommonProviderBaseDto2Provider<T>(IMappingExpression<T, Provider> mappings)
         where T : ProviderBaseDto
         => mappings
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ModifiedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.DeleteDate, opt => opt.Ignore())
+            .ForMember(dest => dest.IsSystemProtected, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForMember(dest => dest.Document, opt => opt.Ignore())
+            .ForMember(dest => dest.File, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveFrom, opt => opt.Ignore())
+            .ForMember(dest => dest.ActiveTo, opt => opt.Ignore())
+            .ForMember(dest => dest.Edrpou, opt => opt.Ignore())
+            .ForMember(dest => dest.ExternalId, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseLimits, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseIssuanceDate, opt => opt.Ignore())
+            .ForMember(dest => dest.LicenseExpirationDate, opt => opt.Ignore())
+            .ForMember(dest => dest.Contacts, opt => opt.Ignore())
             .ForMember(dest => dest.Institution, opt => opt.Ignore())
             .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())

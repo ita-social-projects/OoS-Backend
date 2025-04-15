@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,20 +10,15 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Base;
-using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -29,8 +28,8 @@ public class OfficialServiceTests
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private OfficialService service;
-    private IEntityRepositorySoftDeleted<Guid, Official> repository;
-    private Mock<IProviderService> providerService;
+    private IOfficialRepository repository;
+    private Mock<ICurrentUserService> currentUserService;
     private Mock<ILogger<OfficialService>> logger;
     private IMapper mapper;
     private Guid providerId;
@@ -44,14 +43,14 @@ public class OfficialServiceTests
         options = builder.Options;
         context = new TestOutOfSchoolDbContext(options);
 
-        repository = new EntityRepositorySoftDeleted<Guid, Official>(context);
+        repository = new OfficialRepository(context);
         providerId = Guid.NewGuid();
 
-        providerService = new Mock<IProviderService>();
+        currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<OfficialService>>();
         mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        service = new OfficialService(repository, providerService.Object, logger.Object, mapper);
+        service = new OfficialService(repository, new Mock<IOfficialChangesLogService>().Object, currentUserService.Object, logger.Object, mapper);
 
         SeedDatabase();
     }

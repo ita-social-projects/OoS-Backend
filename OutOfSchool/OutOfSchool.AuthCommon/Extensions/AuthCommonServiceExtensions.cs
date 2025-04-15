@@ -25,9 +25,6 @@ public static class AuthCommonServiceExtensions
 
         services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-        // GRPC options
-        services.Configure<GrpcConfig>(config.GetSection(GrpcConfig.Name));
-
         var mailConfig = config
             .GetSection(EmailOptions.SectionName)
             .Get<EmailOptions>();
@@ -57,8 +54,6 @@ public static class AuthCommonServiceExtensions
         services.AddSingleton<IReadWriteCacheService>(s => s.GetRequiredService<CacheService>());
 
         services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IEmployeeRepository, EmployeeRepository>();
-        services.AddTransient<IEmployeeService, EmployeeService>();
         services.AddTransient<IUserManagerAdditionalService, UserManagerAdditionalService>();
         services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<IRegionAdminRepository, RegionAdminRepository>();
@@ -70,14 +65,11 @@ public static class AuthCommonServiceExtensions
         services.AddTransient<ICommonMinistryAdminService<AreaAdminBaseDto>,
             CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, IAreaAdminRepository>>();
 
-        services.AddTransient<IEmployeeChangesLogService, EmployeeChangesLogService>();
-
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-        services.AddGrpc();
         
         // Using default FeatureManagement key
         services.AddFeatureManagement();

@@ -78,16 +78,16 @@ public class StatisticService : IStatisticService
         {
             workshops = workshops
                 .Where(w =>
-                    w.Contacts.Any(c => c.IsDefault && 
-                        (c.Address.CATOTTGId == catottgId || 
-                        (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                    w.Contacts.Any(c => c.IsDefault &&
+                        (c.Address.CATOTTGId == catottgId ||
+                        (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name &&
                          c.Address.CATOTTG.ParentId == catottgId))));
         }
 
         var directionsWithWorkshops = workshops
-            .SelectMany(w => w.InstitutionHierarchy.Directions)
+            .SelectMany(w => w.InstitutionHierarchy.SubDirections)
             .Where(d => !d.IsDeleted)
-            .GroupBy(d => d.Id)
+            .GroupBy(d => d.DirectionId)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -95,9 +95,9 @@ public class StatisticService : IStatisticService
             });
 
         var directionsWithApplications = applications
-            .SelectMany(a => a.Workshop.InstitutionHierarchy.Directions)
+            .SelectMany(a => a.Workshop.InstitutionHierarchy.SubDirections)
             .Where(d => !d.IsDeleted)
-            .GroupBy(d => d.Id)
+            .GroupBy(d => d.DirectionId)
             .Select(g => new
             {
                 DirectionId = g.Key,
@@ -167,16 +167,16 @@ public class StatisticService : IStatisticService
     public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, long catottgId)
     {
         var workshops = workshopRepository
-            .Get(
-                includeProperties: $"{nameof(InstitutionHierarchy)}",
-                whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted);
+            .Get(whereExpression: w => !w.IsBlocked && Provider.ValidProviderStatuses.Contains(w.Provider.Status) && !w.InstitutionHierarchy.IsDeleted)
+            .Include(w => w.InstitutionHierarchy)
+            .AsQueryable();
 
         if (catottgId > 0)
         {
             workshops = workshops
-                .Where(w => w.Contacts.Any(c => c.IsDefault && 
-                    (c.Address.CATOTTGId == catottgId || 
-                    (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name && 
+                .Where(w => w.Contacts.Any(c => c.IsDefault &&
+                    (c.Address.CATOTTGId == catottgId ||
+                    (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name &&
                      c.Address.CATOTTG.ParentId == catottgId))));
         }
 
@@ -193,7 +193,7 @@ public class StatisticService : IStatisticService
             .Include(w => w.Applications).ThenInclude(a => a.Parent)
             .Include(w => w.Provider)
             .Include(w => w.Contacts).ThenInclude(c => c.Address.CATOTTG)
-            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Directions)
+            .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.SubDirections).ThenInclude(s => s.Direction)
             .Include(w => w.InstitutionHierarchy).ThenInclude(i => i.Institution)
             .Take(limit)
             .AsNoTracking();

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
@@ -15,7 +16,7 @@ namespace OutOfSchool.Services.Models;
 // TODO:
 // - Add educational disciplines (many ED to 1 workshop)
 // - Add language
-public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts
+public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts, IHasHiddenFields
 {
     #region Required fields
 
@@ -50,9 +51,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     
     [Required(ErrorMessage = "Educational shift is required")]
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
-    
-    [Required(ErrorMessage = "Short stay is required")]
-    public bool ShortStay { get; set; } = false;
     
     [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
     public bool IsSelfFinanced { get; set; } = false;
@@ -92,15 +90,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     [Required(ErrorMessage = "Type of pay rate is required")]
     public PayRateType PayRate { get; set; }
-
-    public bool WithDisabilityOptions { get; set; } = default;
-
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Property IsSpecial is required")]
-    public bool IsSpecial { get; set; } = false;
-
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required(ErrorMessage = "Property IsInclusive is required")]
@@ -143,8 +132,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual ICollection<Workshop>
         IncludedStudyGroups { get; set; } // Navigation property to included study groups
 
-    public virtual List<Employee> Employees { get; set; }
-
     public virtual List<Teacher> Teachers { get; set; }
 
     public virtual List<Application> Applications { get; set; }
@@ -156,8 +143,10 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual List<Image<Workshop>> Images { get; set; }
 
     public virtual List<Tag> Tags { get; set; }
+
+    public virtual List<StudySubject> StudySubjects { get; set; }
     #endregion
-    
+
     #region Owned entities
 
     public List<Contacts> Contacts { get; set; } = [];

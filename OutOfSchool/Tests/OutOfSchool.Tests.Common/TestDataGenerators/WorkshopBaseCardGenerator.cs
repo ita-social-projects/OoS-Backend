@@ -13,7 +13,6 @@ public static class WorkshopBaseCardGenerator
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.MaxAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal(0, 10000))
-        .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())

@@ -130,7 +130,7 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// To update MinistryAdmin entity that already exists.
     /// </summary>
-    /// <param name="updateMinistryAdminDto">BaseUserDto object with new properties.</param>
+    /// <param name="updateMinistryAdminDto">BaseUserUpdateDto object with new properties.</param>
     /// <returns>MinistryAdmin's key.</returns>
     [HasPermission(Permissions.MinistryAdminEdit)]
     [HttpPut]
@@ -139,7 +139,7 @@ public class MinistryAdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update([FromBody] BaseUserDto updateMinistryAdminDto)
+    public async Task<ActionResult> Update([FromBody] BaseUpdateUserDto updateMinistryAdminDto)
     {
         if (updateMinistryAdminDto == null)
         {

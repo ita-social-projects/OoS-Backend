@@ -9,6 +9,12 @@ namespace OutOfSchool.BusinessLogic.Services;
 public interface ICurrentUserService : ICurrentUser
 {
     /// <summary>
+    /// Gets current logged in ProviderId if user's role is provider or employee.
+    /// </summary>
+    /// <returns><see cref="Guid"/> id of current logged-in user Provider or <see cref="Guid.Empty"/>.</returns>
+    public Guid ProviderId { get; }
+
+    /// <summary>
     /// Check if user's role is the same as provided.
     /// </summary>
     /// <param name="role">A <see cref="Role"/> to check.</param>
