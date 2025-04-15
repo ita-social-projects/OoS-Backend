@@ -20,7 +20,9 @@ public class PositionService(
 
         var position = createDto.ToModel();
         position.ProviderId = providerId;
-
+        var now = DateOnly.FromDateTime(DateTime.UtcNow);
+        position.ActiveFrom = now;
+        position.ActiveTo = new DateOnly(2999, 12, 31);
         var createdPosition = await positionRepository.Create(position);
         logger.LogDebug("Created position with id: {PositionId}", position.Id);
         return createdPosition.ToDto();
