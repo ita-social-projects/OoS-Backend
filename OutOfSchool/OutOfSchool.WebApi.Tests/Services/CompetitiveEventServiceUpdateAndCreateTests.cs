@@ -61,6 +61,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
             competitiveImagesService.Object);
     }
 
+    #region Create
     [Test]
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
@@ -115,123 +116,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.IsNotNull(result);
         Assert.AreEqual(input.Title, result.Title);
         Mock.VerifyAll();
-    }
-
-    [Test]
-    public async Task Update_WhenCompetitiveEventExists_UpdatesEntity()
-    {
-        // Arrange
-        var existingEventId = Guid.NewGuid();
-        var competitiveEvent = new CompetitiveEvent
-        {
-            Id = existingEventId,
-            Title = "Old Title",
-            SubDirections = new List<SubDirection>() { new SubDirection { Id = 1 } },
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
-            {
-                new CompetitiveEventDescriptionItem
-                {
-                    Id = Guid.NewGuid(),
-                    Description = "Description 1",
-                    SectionName = "Section 1"
-                }
-            }
-        };
-
-        var updateDto = new CompetitiveEventCreateUpdateDto
-        {
-            Id = existingEventId,
-            Title = "New Title",
-            SubDirectionIds = [1],
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
-        };
-
-        mockCompetitiveEventRepository
-           .Setup(r => r.GetByIdWithDetails(
-               existingEventId,
-               string.Empty,
-               It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
-           .ReturnsAsync(competitiveEvent)
-           .Verifiable(Times.Once);
-        mockCompetitiveEventRepository
-            .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
-            .ReturnsAsync((CompetitiveEvent input) => input)
-            .Verifiable(Times.Once);
-        mockSubDirectionRepository
-            .Setup(m => m.GetByFilter(
-                It.IsAny<Expression<Func<SubDirection, bool>>>(),
-                string.Empty,
-                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
-            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
-            .Verifiable(Times.Once);
-        contactsService
-            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
-            .Verifiable(Times.Once);
-        mockCompetitiveEventRepository
-            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation())
-            .Verifiable(Times.Once);
-        mockMapper.Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
-            .Returns(new CompetitiveEventDto { Id = existingEventId, Title = "New Title" })
-            .Verifiable(Times.Once);
-
-        // Act
-        var result = await service.Update(updateDto);
-
-        // Assert
-        Assert.IsNotNull(result, "Result of Update should not be null.");
-        Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
-        Mock.VerifyAll();
-    }
-
-    [Test]
-    public async Task Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
-    {
-        // Arrange
-        var invalidEventId = Guid.NewGuid();
-        var updateDto = new CompetitiveEventCreateUpdateDto
-        {
-            Id = invalidEventId,
-            Title = "Invalid Event",
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
-        };
-
-        mockCompetitiveEventRepository
-            .Setup(r => r.GetByIdWithDetails(
-                invalidEventId, It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<CompetitiveEvent>,
-                IQueryable<CompetitiveEvent>>>()))
-            .ReturnsAsync((CompetitiveEvent)null)
-            .Verifiable(Times.Once);
-
-        // Act & Assert
-        var ex = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Update(updateDto));
-
-        Assert.That(ex.Message, Does.Contain("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB."));
-        mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
-        Mock.VerifyAll();
-    }
-
-    [Test]
-    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
-    {
-        // Arrange
-        var eventId = Guid.NewGuid();
-        var existingDescriptionItemId = Guid.NewGuid();
-        var newDescriptionItemId = Guid.NewGuid();
-        var mustBeDeletedDescItemId = Guid.NewGuid();
-
-        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedDescItemId);
-        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId);
-
-        SetupMocksForUpdateTest(competitiveEvent, eventId);
-
-        // Act
-        var result = await service.Update(updateDto);
-
-        // Assert
-        AssertValidUpdateResult(result, mustBeDeletedDescItemId);
     }
 
     [Test]
@@ -363,6 +247,206 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual(expected.SectionName, actual.SectionName, $"First SectionName of item is not mapped correctly.");
         Mock.VerifyAll();
     }
+
+    [Test]
+    public void Create_WhenEntityIsInvalidAndHasNoSubDirections_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var input = new CompetitiveEventCreateUpdateDto
+        {
+            Title = "Title",
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>(),
+            SubDirectionIds = []
+        };
+        var competitiveEvent = new CompetitiveEvent
+        {
+            Title = "Title",
+            SubDirections = new List<SubDirection>(),
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
+            {
+                new CompetitiveEventDescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Description 1",
+                    SectionName = "Section 1"
+                }
+            }
+        };
+
+        mockMapper
+            .Setup(m => m.Map<CompetitiveEvent>(input))
+            .Returns(competitiveEvent)
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await service.Create(input));
+        Assert.That(ex.Message, Does.Contain("Failed to create CompetitiveEvent. The created CompetitiveEvent does not contain any existing SubDirection."));
+        Mock.VerifyAll();
+    }
+    #endregion
+
+    #region Update
+    [Test]
+    public async Task Update_WhenCompetitiveEventExists_UpdatesEntity()
+    {
+        // Arrange
+        var existingEventId = Guid.NewGuid();
+        var competitiveEvent = new CompetitiveEvent
+        {
+            Id = existingEventId,
+            Title = "Old Title",
+            SubDirections = new List<SubDirection>() { new SubDirection { Id = 1 } },
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
+            {
+                new CompetitiveEventDescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Description 1",
+                    SectionName = "Section 1"
+                }
+            }
+        };
+
+        var updateDto = new CompetitiveEventCreateUpdateDto
+        {
+            Id = existingEventId,
+            Title = "New Title",
+            SubDirectionIds = [1],
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
+        };
+
+        mockCompetitiveEventRepository
+           .Setup(r => r.GetByIdWithDetails(
+               existingEventId,
+               string.Empty,
+               It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
+           .ReturnsAsync(competitiveEvent)
+           .Verifiable(Times.Once);
+        mockCompetitiveEventRepository
+            .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
+            .ReturnsAsync((CompetitiveEvent input) => input)
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
+        contactsService
+            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
+            .Verifiable(Times.Once);
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation())
+            .Verifiable(Times.Once);
+        mockMapper.Setup(m => m.Map<CompetitiveEventDto>(It.IsAny<CompetitiveEvent>()))
+            .Returns(new CompetitiveEventDto { Id = existingEventId, Title = "New Title" })
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await service.Update(updateDto);
+
+        // Assert
+        Assert.IsNotNull(result, "Result of Update should not be null.");
+        Assert.AreEqual("New Title", result.Title, "Title was not updated correctly.");
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var invalidEventId = Guid.NewGuid();
+        var updateDto = new CompetitiveEventCreateUpdateDto
+        {
+            Id = invalidEventId,
+            Title = "Invalid Event",
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
+        };
+
+        mockCompetitiveEventRepository
+            .Setup(r => r.GetByIdWithDetails(
+                invalidEventId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<CompetitiveEvent>,
+                IQueryable<CompetitiveEvent>>>()))
+            .ReturnsAsync((CompetitiveEvent)null)
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            async () => await service.Update(updateDto));
+
+        Assert.That(ex.Message, Does.Contain("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB."));
+        mockCompetitiveEventRepository.Verify(r => r.Update(It.IsAny<CompetitiveEvent>()), Times.Never);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task Update_WhenDescriptionItemsAreUpdated_UpdatesCorrectly()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var existingDescriptionItemId = Guid.NewGuid();
+        var newDescriptionItemId = Guid.NewGuid();
+        var mustBeDeletedDescItemId = Guid.NewGuid();
+
+        var competitiveEvent = CreateCompetitiveEvent(eventId, existingDescriptionItemId, mustBeDeletedDescItemId);
+        var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId);
+
+        SetupMocksForUpdateTest(competitiveEvent, eventId);
+
+        // Act
+        var result = await service.Update(updateDto);
+
+        // Assert
+        AssertValidUpdateResult(result, mustBeDeletedDescItemId);
+    }
+
+    [Test]
+    public void Update_WhenEntityIsInvalidAndHasNoSubDirections_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var competitiveEventId = Guid.NewGuid();
+        var updateDto = new CompetitiveEventCreateUpdateDto
+        {
+            Id = competitiveEventId,
+            Title = "New Title",
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>(),
+            SubDirectionIds = []
+        };
+        var competitiveEvent = new CompetitiveEvent
+        {
+            Id = competitiveEventId,
+            Title = "Old Title",
+            SubDirections = new List<SubDirection>(),
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
+            {
+                new CompetitiveEventDescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Description 1",
+                    SectionName = "Section 1"
+                }
+            }
+        };
+
+        mockCompetitiveEventRepository
+            .Setup(r => r.GetByIdWithDetails(
+                competitiveEventId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<CompetitiveEvent>,
+                IQueryable<CompetitiveEvent>>>()))
+            .ReturnsAsync(competitiveEvent)
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await service.Update(updateDto));
+        Assert.That(ex.Message, Does.Contain("Failed to update CompetitiveEvent. The passed CompetitiveEvent dto does not contain any existing SubDirection."));
+        Mock.VerifyAll();
+    }
+    #endregion
 
     private CompetitiveEvent CreateCompetitiveEvent(Guid eventId, Guid existingDescriptionItemId, Guid mustBeDeletedDescItemId)
     {

@@ -247,7 +247,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
                 else
                 {
                     var newDescItem = mapper.Map<CompetitiveEventDescriptionItem>(descItemDto);
-                    newDescItem.Id = default;
+                    newDescItem.Id = Guid.Empty;
                     newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
                     await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
                 }
