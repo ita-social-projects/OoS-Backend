@@ -33,8 +33,10 @@ public class PositionService : IPositionService
         await currentUserService.UserHasRights(new ProviderRights(providerId));
 
         var position = mapper.Map<Position>(createDto);
+        var now = DateOnly.FromDateTime(DateTime.UtcNow);
         position.ProviderId = providerId;
-
+        position.ActiveFrom = now;
+        position.ActiveTo = new DateOnly(2999, 12, 31);
         var createdPosition = await positionRepository.Create(position);
         logger.LogDebug("Created position with id: {PositionId}", position.Id);
         return mapper.Map<PositionDto>(createdPosition);
