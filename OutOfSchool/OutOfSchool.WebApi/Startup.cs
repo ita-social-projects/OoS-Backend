@@ -10,9 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Minio;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AikomApiClient.Extensions;
@@ -38,6 +36,7 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
+using OutOfSchool.ExternalFileStore.Extensions.Startup;
 using OutOfSchool.ExternalFileStore.NotificationImplementations;
 using OutOfSchool.ExternalFileStore.NotificationInterfaces;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -697,30 +696,8 @@ public static class Startup
         });
 
         // Register minio
-        builder.Services.Configure<StorageOptions>(
-        builder.Configuration.GetSection(StorageOptions.SectionName));
-        builder.Services.AddSingleton<IMinioClient>(sp => {
-
-            var storageOptions = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
-            var amazonS3 = storageOptions.Providers.AmazonS3;
-
-            var uri = new Uri($"https://{amazonS3.ServiceUrl}");
-
-            var minioClient = new MinioClient()
-                .WithEndpoint(uri.Host)
-                .WithCredentials(amazonS3.AccessKey, amazonS3.SecretKey)
-                .WithSSL(uri.Scheme == "https")
-                .Build();
-            return minioClient;
-        });
-        
-        builder.Services.AddSingleton(provider => {
-            var client = provider.GetRequiredService<IMinioClient>();
-            if (client is MinioClient minioClient)
-                return minioClient;
-        
-            throw new InvalidOperationException("IMinioClient is not of type MinioClient");
-        });
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        builder.Services.AddMinioClient();
 
         // Background service
         builder.Services.AddMinioNotification();
