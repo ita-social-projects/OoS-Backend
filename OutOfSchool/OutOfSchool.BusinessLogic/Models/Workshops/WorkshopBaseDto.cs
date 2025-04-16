@@ -129,9 +129,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
     
-    [Required(ErrorMessage = "Workshop type is required")]
     [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
-    public WorkshopType WorkshopType { get; set; } = WorkshopType.None;
+    public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
 
     public Guid? DefaultTeacherId { get; set; }
 

@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
@@ -53,6 +54,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
     private readonly ITagService tagService;
     private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
     private readonly IApplicationRepository applicationRepository;
+    private readonly IFeatureManager featureManager;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -92,7 +95,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         ITagService tagService,
         ISearchStringService searchStringService,
         IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository)
+        IApplicationRepository applicationRepository,
+        IFeatureManager featureManager)
     {
         this.workshopRepository = workshopRepository;
         this.tagRepository = tagRepository;
@@ -112,6 +116,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         this.tagService = tagService;
         this.contactsService = contactsService;
         this.applicationRepository = applicationRepository;
+        this.featureManager = featureManager;
     }
 
     /// <inheritdoc/>
@@ -1244,6 +1249,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
+        if(!await featureManager.IsEnabledAsync("EnableWorkshopGroupTypeField"))
+        {
+            dto.WorkshopType = WorkshopType.Workshop;
+        }
+
         if (dto.ParentWorkshopId.HasValue && !await Exists((Guid)dto.ParentWorkshopId).ConfigureAwait(false))
         {
             var errorMessage = $"The main workshop (with id = {dto.ParentWorkshopId}) for the workshop being created was not found.";

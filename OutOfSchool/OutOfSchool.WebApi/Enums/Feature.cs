@@ -12,6 +12,7 @@ public enum Feature
     ShowForProduction,
     TechAdminImport,
     TechAdminExport,
+    EnableWorkshopGroupTypeField,
     DirectionManagement,
     AchievementManagement,
     AdminsChildrenParentsManagement,

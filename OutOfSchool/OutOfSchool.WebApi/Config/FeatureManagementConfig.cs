@@ -18,6 +18,8 @@ public class FeatureManagementConfig
 
     public bool TechAdminExport { get; set; }
 
+    public bool EnableWorkshopGroupTypeField { get; set; }
+
     public bool DirectionManagement { get; set; }
 
     public bool AchievementManagement { get; set; }

@@ -44,8 +44,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Property CompetitiveSelection is required")]
     public bool CompetitiveSelection { get; set; } = default;
     
-    [Required(ErrorMessage = "WorkshopType is required")]
-    public WorkshopType WorkshopType { get; set; } = WorkshopType.None;
+    public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
     
     [Required(ErrorMessage = "Type of age composition is required")]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;

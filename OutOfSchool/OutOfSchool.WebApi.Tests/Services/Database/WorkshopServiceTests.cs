@@ -8,6 +8,7 @@ using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -55,11 +56,14 @@ public class WorkshopServiceTests
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
+    private Mock<IFeatureManager> featureManagerMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
+    private Mock<IFeatureManager> featureManager;
     private Guid providerId;
     private Guid studySubjectId;
+
 
     [SetUp]
     public void SetUp()
@@ -79,33 +83,36 @@ public class WorkshopServiceTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         tagServiceMock = new Mock<ITagService>();
+        featureManagerMock = new Mock<IFeatureManager>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
+        featureManager = new Mock<IFeatureManager>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
 
-        workshopService =
+    workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
-                    roomRepository.Object,
-                    teacherService.Object,
-                    logger.Object,
-                    mapperMock.Object,
-                    workshopImagesMediator.Object,
-                    averageRatingServiceMock.Object,
-                    providerRepositoryMock.Object,
-                    currentUserServiceMock.Object,
-                    ministryAdminServiceMock.Object,
-                    regionAdminServiceMock.Object,
-                    codeficatorServiceMock.Object,
-                    tagServiceMock.Object,
-                    searchStringServiceMock.Object,
-                    contactsServiceMock.Object,
-                    applicationRepository.Object
+                    roomRepository.Object, 
+                    teacherService.Object, 
+                    logger.Object, 
+                    mapperMock.Object,  
+                    workshopImagesMediator.Object,  
+                    averageRatingServiceMock.Object, 
+                    providerRepositoryMock.Object,  
+                    currentUserServiceMock.Object,  
+                    ministryAdminServiceMock.Object,  
+                    regionAdminServiceMock.Object,  
+                    codeficatorServiceMock.Object,  
+                    tagServiceMock.Object,  
+                    searchStringServiceMock.Object,  
+                    contactsServiceMock.Object,  
+                    applicationRepository.Object, 
+                    featureManager.Object
                     );
     }
 
