@@ -25,7 +25,7 @@ public interface IDirectorManagementService
     /// <param name="providerId">The ID of the provider where the transfer is being performed. Extracted from the route.</param>
     /// <param name="request">A DTO containing the IDs of the current director and the employee who will become the new director.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request);
+    Task<TransferDirectorResponseDto> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request);
 
     /// <summary>
     /// Validates that the provider has either an active director or at least one deputy.

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Official;
@@ -203,6 +205,63 @@ public class DirectorManagementServiceTests
 
         _positionServiceMock.Verify(x => x.CreateAsync(It.IsAny<PositionCreateUpdateDto>(), _providerId), Times.Once);
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
+    }
+
+    [Test]
+    public async Task TransferDirector_ShouldThrowInvalidOperationException_WhenOfficialsHaveDifferentProviders()
+    {
+        // Arrange
+        var fromOfficialId = Guid.NewGuid();
+        var toOfficialId = Guid.NewGuid();
+        var anotherProviderId = Guid.NewGuid();
+        var currentUserId = "current-user-id";
+
+        var fromOfficial = new Official
+        {
+            Id = fromOfficialId,
+            Individual = new Individual { UserId = currentUserId, FirstName = "John", LastName = "Doe" },
+            Position = new Position
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = _providerId,
+                PositionType = PositionType.Director
+            }
+        };
+
+        var toOfficial = new Official
+        {
+            Id = toOfficialId,
+            Individual = new Individual { UserId = "another-user-id", FirstName = "Jane", LastName = "Smith" },
+            Position = new Position
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = anotherProviderId, // different provider
+                PositionType = PositionType.DeputyDirector
+            }
+        };
+
+        _currentUserServiceMock
+            .Setup(x => x.UserId)
+            .Returns(currentUserId);
+
+        _officialRepositoryMock
+            .Setup(x => x.Get())
+            .Returns(new List<Official> { fromOfficial, toOfficial }
+            .AsQueryable().BuildMock().Object);
+
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = fromOfficialId,
+            ToOfficialId = toOfficialId
+        };
+
+        // Act
+        Func<Task> act = async () => await _service.TransferDirectorPosition(_providerId, request);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("Officials must belong to the same provider.");
     }
 
     private void SetupUserHasRightsAsDeputy(Guid? providerId = null)
