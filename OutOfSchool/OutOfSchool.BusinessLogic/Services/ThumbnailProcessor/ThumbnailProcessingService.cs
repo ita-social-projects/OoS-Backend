@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Models;
+using System.Net.Mime;
 using SkiaSharp;
 
 namespace OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
@@ -23,31 +24,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
         this.options = options.Value;
     }
     public async Task<bool> HasThumbnail(string imageId)
-    {
-        var thumbnailId = GetThumbnailId(imageId);
-        var thumbnail = await imageService.GetByIdAsync(thumbnailId);
-
-        if (thumbnail.Succeeded)
-        {
-            return thumbnail.Value != null;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private string GetThumbnailId(string imageId)
-    {
-        var decoded = Uri.UnescapeDataString(imageId);
-        return decoded + $"-thumbnail.{options.Format}";
-    }
-
-    private (int width, int height) GetNewResizedParametres(int basicWidth, int basicHeight)
-    {
-        double min = Math.Min((double)options.MaxWidth / basicWidth, (double)options.MaxHeight / basicHeight);
-        return ((int)(basicWidth * min), (int)(basicHeight * min));
-    }
+        => imageStorage.ExistsAsync(GetThumbnailId(imageId)).Result;
 
     public async Task<bool> ProcessImage(string imageId)
     {
@@ -91,19 +68,19 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             var metadataThumbnail = new Dictionary<string, string>
             { 
-                { "customFileName", thumbnailId }
+                { MetadataKeys.ExternalImages.CustomFileName , thumbnailId }
             };
 
             var metadataImage = new Dictionary<string, string>
             {
-                { "is-processed", "true" }
+                { MetadataKeys.ExternalImages.IsProcessed , "true" }
             };
 
             var uploadedThumbnailId = await imageStorage.UploadAsync(
                 new ImageFileModel
                 {
                     ContentStream = thumbnailStream,
-                    ContentType = "image/jpeg"
+                    ContentType = MediaTypeNames.Image.Jpeg
                 },
                 cacheControl: Constants.PublicImageCacheControl,
                 metadata: metadataThumbnail);
@@ -122,5 +99,14 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
             logger.LogError(ex, "Thumbnail generation failed for {ImageId}", imageId);
             return false;
         }
+    }
+
+    private string GetThumbnailId(string imageId)
+       => Uri.UnescapeDataString(imageId) + $"-thumbnail";
+
+    private (int width, int height) GetNewResizedParametres(int basicWidth, int basicHeight)
+    {
+        double min = Math.Min((double)options.MaxWidth / basicWidth, (double)options.MaxHeight / basicHeight);
+        return ((int)(basicWidth * min), (int)(basicHeight * min));
     }
 }

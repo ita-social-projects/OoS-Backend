@@ -101,4 +101,9 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
     {
         await StorageClient.DeleteObjectAsync(BucketName, fileId, cancellationToken: cancellationToken);
     }
+
+    protected override async Task<bool> ExistsOperationAsync(string imageId, CancellationToken cancellationToken = default)
+    {
+        return (await StorageClient.GetObjectAsync(BucketName, imageId, cancellationToken: cancellationToken) is null);
+    }
 }

@@ -71,6 +71,22 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         await StorageClient.RemoveObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    protected sealed override async Task<bool> ExistsOperationAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await StorageClient.StatObjectAsync(new StatObjectArgs()
+                .WithBucket(BucketName)
+                .WithObject(fileId),
+                cancellationToken: cancellationToken);
+            return true;
+        }
+        catch (MinioException)
+        {
+            return false;
+        }
+    }
+
     protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         if (options is ListObjectsArgs args)
@@ -112,21 +128,15 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
             existingMetadata[kvp.Key] = kvp.Value;
         }
 
-        using var stream = new MemoryStream();
-        await StorageClient.GetObjectAsync(new GetObjectArgs()
+        var source = new CopySourceObjectArgs().WithBucket(BucketName).WithObject(objectId);
+
+        var args = new CopyObjectArgs()
             .WithBucket(BucketName)
             .WithObject(objectId)
-            .WithCallbackStream(s => s.CopyTo(stream)),
-            cancellationToken);
+            .WithCopyObjectSource(source)
+            .WithReplaceMetadataDirective(true)
+            .WithHeaders(existingMetadata);
 
-        stream.Position = 0;
-
-        await StorageClient.PutObjectAsync(new PutObjectArgs()
-            .WithBucket(BucketName)
-            .WithObject(objectId)
-            .WithStreamData(stream)
-            .WithObjectSize(stream.Length)
-            .WithHeaders(existingMetadata),
-            cancellationToken);
+        await StorageClient.CopyObjectAsync(args, cancellationToken);
     }
 }

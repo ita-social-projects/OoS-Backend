@@ -41,4 +41,9 @@ where TFile : FileModel, new()
     {
         return AsyncEnumerable.Empty<StorageObject>();
     }
+
+    protected override async Task<bool> ExistsOperationAsync(string imageId, CancellationToken cancellationToken = default)
+    {
+        return (await StorageClient.GetByIdAsync(imageId) is null);
+    }
 }

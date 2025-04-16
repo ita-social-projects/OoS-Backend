@@ -79,4 +79,9 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
     {
         return Guid.NewGuid().ToString();
     }
+
+    public async Task<bool> ExistsAsync(string imageId, CancellationToken cancellationToken = default)
+    {
+        return false;
+    }
 }
