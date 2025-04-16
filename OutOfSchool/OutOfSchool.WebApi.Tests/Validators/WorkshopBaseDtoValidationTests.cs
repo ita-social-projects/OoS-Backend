@@ -67,6 +67,8 @@ public class WorkshopBaseDtoTests
             NoAgeRestrictions = true,
             MinAge = null,
             MaxAge = null,
+            StudyPeriodStartDate = new DateOnly(2025, 9, 1),
+            StudyPeriodEndDate = new DateOnly(2026, 5, 31),
             DateTimeRanges = [new() { StartTime = TimeSpan.Parse("10:00"), EndTime = TimeSpan.Parse("11:00"), Workdays = [DaysBitMask.Monday] }],
             WorkshopDescriptionItems = [new() { SectionName = "Section", Description = "Description" }],
             FormOfLearning = FormOfLearning.Offline,
