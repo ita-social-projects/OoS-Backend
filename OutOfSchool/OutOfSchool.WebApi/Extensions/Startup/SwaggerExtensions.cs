@@ -29,7 +29,7 @@ public static class SwaggerExtensions
 
                 c.SchemaFilter<ExcludeClrTypesFilter>(new List<Assembly> {typeof(OutOfSchoolDbContext).Assembly});
                 c.DocumentFilter<SwaggerFeatureGateFilter>();
-                c.OperationFilter<AuthorizeCheckOperationFilter>();
+                c.OperationFilter<AuthorizeCheckOperationFilter>(config.SecurityDefinitions.Title);
                 c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
                 {
                     Description = config.SecurityDefinitions.Description,
