@@ -1249,7 +1249,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task<Workshop> CheckDtoAndPrepareCreatedWorkshop(WorkshopCreateRequestDto dto)
     {
-        if(await featureManager.IsEnabledAsync("EnableWorkshopGroupTypeField"))
+        if(!await featureManager.IsEnabledAsync("EnableWorkshopGroupTypeField"))
         {
             dto.WorkshopType = WorkshopType.Workshop;
         }
