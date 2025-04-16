@@ -72,7 +72,7 @@ public class DirectorManagementServiceTests
     {
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
-
+        SetupUserHasRightsAsDeputy();
         _officialRepositoryMock
            .Setup(x => x.GetById(requestDto.OfficialId))
            .ReturnsAsync((Official)null!);
@@ -90,7 +90,7 @@ public class DirectorManagementServiceTests
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRights();
+        SetupUserHasRightsAsDeputy();
         SetupExistingDirectorForСurrentProvider();
 
         Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
@@ -119,6 +119,24 @@ public class DirectorManagementServiceTests
     }
 
     [Test]
+    public async Task Promote_Should_Throw_UnauthorizedAccessException_When_Initiator_Is_Not_Deputy()
+    {
+        // Arrange
+        var official = SetupOfficial(); // canditate for promotion
+        var requestDto = CreatePromoteRequestDto(official.Id);
+        SetupNoDirectorForProvider();
+        SetupUserHasRightsButNotDeputy();
+
+        // Act
+        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage("Only Director or Deputy of this provider can promote.");
+    }
+
+    [Test]
     public async Task Promote_Should_Throw_InvalidOperationException_When_Official_Not_From_This_Provider()
     {
         // Arrange
@@ -126,7 +144,7 @@ public class DirectorManagementServiceTests
         var official = SetupOfficial(providerId: wrongProviderId); // create official with wrong provider id
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRights();
+        SetupUserHasRightsAsDeputy();
 
         SetupNoDirectorForProvider(wrongProviderId);
 
@@ -152,7 +170,7 @@ public class DirectorManagementServiceTests
 
         var requestDto = CreatePromoteRequestDto(official.Id);
 
-        SetupUserHasRights();
+        SetupUserHasRightsAsDeputy();
         SetupNoDirectorForProvider();
 
         var createdPositionId = Guid.NewGuid();
@@ -187,11 +205,49 @@ public class DirectorManagementServiceTests
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
     }
 
-    private void SetupUserHasRights()
+    private void SetupUserHasRightsAsDeputy(Guid? providerId = null)
     {
+        var deputyId = Guid.NewGuid();
+        var provId = providerId ?? _providerId;
+
+        _currentUserServiceMock
+            .Setup(x => x.UserId)
+            .Returns(deputyId.ToString());
+
+        var deputy = SetupOfficial(provId, deputyId, PositionType.DeputyDirector);
+
+        _officialRepositoryMock
+            .Setup(x => x.GetById(deputyId))
+            .ReturnsAsync(deputy);
+
+        _positionRepositoryMock
+            .Setup(x => x.Update(deputy.Position))
+            .ReturnsAsync(deputy.Position);
+
         _currentUserServiceMock
             .Setup(x => x.UserHasRights(It.IsAny<ProviderRights>()))
             .Returns(Task.CompletedTask);
+    }
+    private void SetupUserHasRightsButNotDeputy()
+    {
+        var userId = Guid.NewGuid().ToString();
+
+        // mock userid
+        _currentUserServiceMock
+            .Setup(x => x.UserId)
+            .Returns(userId);
+
+        // user have provider rights
+        _currentUserServiceMock
+            .Setup(x => x.UserHasRights(It.IsAny<ProviderRights>()))
+            .Returns(Task.CompletedTask);
+
+        // create of official with the same id as userId which is not deputy
+        var initiator = SetupOfficial(providerId: _providerId, officialId: Guid.Parse(userId), positionType: PositionType.Employee);
+
+        _officialRepositoryMock
+            .Setup(x => x.GetById(Guid.Parse(userId)))
+            .ReturnsAsync(initiator);
     }
     private void SetupUserHasNoRights()
     {

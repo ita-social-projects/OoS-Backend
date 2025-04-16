@@ -41,6 +41,15 @@ public class DirectorManagementService : IDirectorManagementService
             _logger.LogWarning("Attempted to promote new director for provider {ProviderId}, but one already exists.", providerId);
             throw new InvalidOperationException($"Director already exists for provider with ID: {providerId}");
         }
+        // Check if the current user is a deputy director of the provider
+        var userId = Guid.Parse(_currentUserService.UserId);
+        var initiator = await _officialRepository.GetById(userId);
+        if (initiator?.Position?.ProviderId != providerId ||
+            (initiator.Position.PositionType != PositionType.DeputyDirector))
+        {
+            _logger.LogWarning("User {UserId} attempted unauthorized promotion. Not Deputy or wrong provider.", userId);
+            throw new UnauthorizedAccessException("Only Director or Deputy of this provider can promote.");
+        }
 
         // Get the official to be promoted
         var official = await _officialRepository.GetById(request.OfficialId);
@@ -70,9 +79,9 @@ public class DirectorManagementService : IDirectorManagementService
             // 2. Create a new position for the director
             var createDto = new PositionCreateUpdateDto
             {
-                FullName = official.Position.FullName,
-                ShortName = official.Position.ShortName,
-                GenitiveName = official.Position.GenitiveName,
+                FullName = "Директор ЗО",
+                ShortName = "Директор",
+                GenitiveName = "Директору",
                 Rate = official.Position.Rate,
                 Tariff = official.Position.Tariff,
                 ClassifierType = official.Position.ClassifierType,
@@ -87,16 +96,6 @@ public class DirectorManagementService : IDirectorManagementService
             official.PositionId = newDirectorPosition.Id;
             await _officialRepository.Update(official);
 
-            // Deactivate the deputy director position (for the initiator)
-            var userId = Guid.Parse(_currentUserService.UserId);
-            var initiator = await _officialRepository.GetById(userId);
-            if (initiator?.Position?.PositionType == PositionType.DeputyDirector &&
-                initiator.Position.ProviderId == providerId)
-            {
-                initiator.Position.ActiveTo = now;
-                await _positionRepository.Update(initiator.Position);
-                _logger.LogInformation("Initiator (ID: {InitiatorId}) was a deputy and had their position deactivated.", userId);
-            }
             await transaction.CommitAsync();
             _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
                     official.Id, providerId, newDirectorPosition.Id);
@@ -106,7 +105,7 @@ public class DirectorManagementService : IDirectorManagementService
                 PositionId = newDirectorPosition.Id,
                 ActiveFrom = newDirectorPosition.ActiveFrom,
                 PositionType = newDirectorPosition.PositionType,
-                FullName = "Директор"
+                FullName = newDirectorPosition.FullName,
             };
         });
     }
