@@ -150,10 +150,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         // TODO: Validate DateTimeRanges are not empty when frontend is ready
         foreach (var dateTimeRange in DateTimeRanges)
         {
-            if (dateTimeRange.StartTime > dateTimeRange.EndTime)
+            if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
             {
                 yield return new ValidationResult(
-                    "End date can't be earlier that start date");
+                     "The end date cannot be equal to or earlier than the start date");
             }
 
             if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
