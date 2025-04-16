@@ -13,6 +13,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models.Images;
+using System.Threading;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
@@ -52,8 +53,11 @@ public class ThumbnailProcessingServiceTests
     public async Task HasThumbnail_ReturnsTrue_WhenThumbnailExists()
     {
         var imageId = "image-id-test53748857";
-        imageServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(Result<ImageDto>.Success(new ImageDto { ContentStream = new MemoryStream(), ContentType = "image/jpeg" }));
+        var thumbnailId = imageId + "-thumbnail";
+
+        imageStorageMock
+            .Setup(x => x.ExistsAsync(thumbnailId, CancellationToken.None))
+            .ReturnsAsync(true);
 
         var result = await service.HasThumbnail(imageId);
 

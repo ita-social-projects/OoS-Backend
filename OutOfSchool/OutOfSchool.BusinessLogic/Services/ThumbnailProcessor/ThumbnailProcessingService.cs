@@ -24,7 +24,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
         this.options = options.Value;
     }
     public async Task<bool> HasThumbnail(string imageId)
-        => imageStorage.ExistsAsync(GetThumbnailId(imageId)).Result;
+        => await imageStorage.ExistsAsync(GetThumbnailId(imageId));
 
     public async Task<bool> ProcessImage(string imageId)
     {
