@@ -138,8 +138,7 @@ public static class Startup
         })
             .WithMetadata(new AllowAnonymousAttribute());
 
-        app.MapQuartzMonitoringApi()
-           .RequireTechAdmin();
+        app.MapQuartzMonitoringApi().RequireTechAdmin();
 
         app.MapControllers();
 
