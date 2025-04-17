@@ -24,12 +24,12 @@
     <ItemGroup>
         <PackageReference Include="Google.Cloud.Storage.V1" />        
         <PackageReference Include="Minio" />
-        <PackageReference Include="StackExchange.Redis" />
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Api\OutOfSchool.ExternalFileStore.Api.csproj" />
+      <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
     </ItemGroup>
 
 </Project>

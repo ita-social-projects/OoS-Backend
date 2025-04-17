@@ -694,6 +694,7 @@ public static class Startup
         builder.Services.AddSingleton<RedisStorageNotificationHandler>();
         builder.Services.AddSingleton<MinioRedisNotificationBridge>();
         builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
+        builder.Services.AddSingleton<IRedisSubscriptionService, RedisSubscriptionService>();
 
         // Register minio    
         var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();

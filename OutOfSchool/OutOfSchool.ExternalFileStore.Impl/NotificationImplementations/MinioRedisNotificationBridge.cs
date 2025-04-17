@@ -4,33 +4,35 @@ using Minio.DataModel.Args;
 using Minio.DataModel.Notification;
 using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.ExternalFileStore.NotificationInterfaces;
-using StackExchange.Redis;
+using OutOfSchool.Redis;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace OutOfSchool.ExternalFileStore.NotificationImplementations;
 public class MinioRedisNotificationBridge : IDisposable
 {    
     private readonly IMinioClient _minioClient;
-    private readonly IConnectionMultiplexer _redisConnection;
-    private readonly ILogger<MinioRedisNotificationBridge> _logger;
-    private readonly Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
+    private readonly IRedisSubscriptionService _redisSubscriptionService;
+    private readonly ILogger<MinioRedisNotificationBridge> _logger;    
     private readonly IProcessNotificationService _processNotificationService;
+
+    private readonly ConcurrentDictionary<string, IDisposable> _subscriptions = new();
 
     public MinioRedisNotificationBridge(
             IStorageContext<IMinioClient> storageContext,
-            IConnectionMultiplexer redisConnection,
+            IRedisSubscriptionService redisConnection,
             ILogger<MinioRedisNotificationBridge> logger,
             IProcessNotificationService processNotificationService)
     {
         _minioClient = storageContext?.StorageClient ?? throw new ArgumentNullException(nameof(storageContext));
-        _redisConnection = redisConnection ?? throw new ArgumentNullException(nameof(redisConnection));
+        _redisSubscriptionService = redisConnection ?? throw new ArgumentNullException(nameof(redisConnection));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _processNotificationService = processNotificationService ?? throw new ArgumentNullException(nameof(processNotificationService));
     }
 
     public async Task StartBridgeAsync(string bucket, NotificationFilter filter)
     {
-        string subscriptionKey = $"{bucket}:{filter.Prefix}:{filter.Suffix}";
+        string subscriptionKey = GetSubscriptionKey(bucket, filter);
 
         if (_subscriptions.ContainsKey(subscriptionKey))
         {
@@ -54,10 +56,8 @@ public class MinioRedisNotificationBridge : IDisposable
                 .WithPrefix(filter.Prefix)
                 .WithSuffix(filter.Suffix);
 
-            // Get Redis publisher
-            var publisher = _redisConnection.GetDatabase();
-            string channelName = $"minio-notifications:{bucket}:{filter.Prefix}:{filter.Suffix}";
-
+            // Get Redis publisher            
+            string channelName = GetChannelName(bucket, filter);
            
             // Subscribe to MinIO notifications
             var observable = _minioClient.ListenBucketNotificationsAsync(args);
@@ -71,8 +71,7 @@ public class MinioRedisNotificationBridge : IDisposable
                         {
                             // Publish the event to Redis
                             string json = JsonSerializer.Serialize(storageEvent);
-                            publisher.Publish(channelName, json);
-                            _logger.LogDebug("Published event to Redis channel {Channel}", channelName);
+                            _redisSubscriptionService.PublishNotification(channelName, json);                           
                         }
                     }
                     catch (Exception ex)
@@ -96,14 +95,12 @@ public class MinioRedisNotificationBridge : IDisposable
 
     public void StopBridge(string bucket, NotificationFilter filter)
     {
-        string subscriptionKey = $"{bucket}:{filter.Prefix}:{filter.Suffix}";
+        string subscriptionKey = GetSubscriptionKey(bucket, filter);
 
-        if (_subscriptions.TryGetValue(subscriptionKey, out var subscription))
+        if (_subscriptions.TryRemove(subscriptionKey, out var subscription))
         {
-            _logger.LogInformation("Stopping MinIO to Redis notification bridge for bucket {Bucket}", bucket);
             subscription.Dispose();
-            _subscriptions.Remove(subscriptionKey);
-            _logger.LogInformation("Successfully stopped MinIO to Redis notification bridge for bucket {Bucket}", bucket);
+            _logger.LogInformation("Stopped MinIO to Redis bridge for bucket {Bucket}", bucket);
         }
         else
         {
@@ -128,4 +125,10 @@ public class MinioRedisNotificationBridge : IDisposable
 
         _subscriptions.Clear();
     }
+
+    private static string GetSubscriptionKey(string bucket, NotificationFilter filter)
+        => $"{bucket}:{filter.Prefix}:{filter.Suffix}";
+
+    private static string GetChannelName(string bucket, NotificationFilter filter)
+        => $"minio-notifications:{bucket}:{filter.Prefix}:{filter.Suffix}";
 }
