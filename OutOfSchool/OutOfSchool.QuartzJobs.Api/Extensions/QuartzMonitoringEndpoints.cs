@@ -67,7 +67,7 @@ public static class QuartzMonitoringEndpoints
         .WithDescription("Returns only failed execution logs for a specific job.");
 
 
-        group.MapGet("/jobs/next", async (IQuartzMonitoringService service) =>
+        group.MapGet("/jobs/scheduled", async (IQuartzMonitoringService service) =>
         {
             var result = await service.GetNextExecutionsForAllJobsAsync();
             return Results.Ok(result);
@@ -76,7 +76,7 @@ public static class QuartzMonitoringEndpoints
         .WithDescription("Returns the next planned execution times for all jobs and their triggers.");
 
 
-        group.MapGet("/jobs/{jobName}/next", async (string jobName, IQuartzMonitoringService service) =>
+        group.MapGet("/jobs/{jobName}/scheduled", async (string jobName, IQuartzMonitoringService service) =>
         {
             var result = await service.GetNextExecutionsForJobAsync(jobName);
             return result.Any() 

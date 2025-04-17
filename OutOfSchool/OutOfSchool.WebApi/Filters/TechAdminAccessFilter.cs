@@ -13,7 +13,9 @@ public class TechAdminAccessFilter : IEndpointFilter
 
         if (!currentUserService.IsTechAdmin())
         {
-            return Results.Forbid();
+            return Results.Json(
+                new { message = "Access denied. Only TechAdmins are allowed." },
+                statusCode: StatusCodes.Status403Forbidden);
         }
 
         return await next(context);

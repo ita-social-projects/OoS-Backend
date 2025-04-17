@@ -4,8 +4,10 @@ namespace OutOfSchool.WebApi.Extensions;
 
 public static class EndpointFilterExtensions
 {
-    public static RouteGroupBuilder RequireTechAdmin(this RouteGroupBuilder group)
+    public static RouteGroupBuilder RequireTechAdmin(this RouteGroupBuilder builder)
     {
-        return group.AddEndpointFilter<TechAdminAccessFilter>();
+        return builder
+            .RequireAuthorization()
+            .AddEndpointFilter<TechAdminAccessFilter>();
     }
 }
