@@ -22,7 +22,6 @@ public static class MinioNotificationExtension
                 logger,
                 bridge,
                 amazonS3.AccessKey
-
             );
         });
 

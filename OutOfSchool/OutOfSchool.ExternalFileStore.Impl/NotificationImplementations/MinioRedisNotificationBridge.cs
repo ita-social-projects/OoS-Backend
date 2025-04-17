@@ -9,20 +9,20 @@ using System.Text.Json;
 
 namespace OutOfSchool.ExternalFileStore.NotificationImplementations;
 public class MinioRedisNotificationBridge : IDisposable
-{
-    private readonly MinioClient _minioClient;
+{    
+    private readonly IMinioClient _minioClient;
     private readonly IConnectionMultiplexer _redisConnection;
     private readonly ILogger<MinioRedisNotificationBridge> _logger;
     private readonly Dictionary<string, IDisposable> _subscriptions = new Dictionary<string, IDisposable>();
     private readonly IProcessNotificationService _processNotificationService;
 
     public MinioRedisNotificationBridge(
-            MinioClient minioClient,
+            IStorageContext<IMinioClient> storageContext,
             IConnectionMultiplexer redisConnection,
             ILogger<MinioRedisNotificationBridge> logger,
             IProcessNotificationService processNotificationService)
     {
-        _minioClient = minioClient ?? throw new ArgumentNullException(nameof(minioClient));
+        _minioClient = storageContext?.StorageClient ?? throw new ArgumentNullException(nameof(storageContext));
         _redisConnection = redisConnection ?? throw new ArgumentNullException(nameof(redisConnection));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _processNotificationService = processNotificationService ?? throw new ArgumentNullException(nameof(processNotificationService));
@@ -58,6 +58,7 @@ public class MinioRedisNotificationBridge : IDisposable
             var publisher = _redisConnection.GetDatabase();
             string channelName = $"minio-notifications:{bucket}:{filter.Prefix}:{filter.Suffix}";
 
+           
             // Subscribe to MinIO notifications
             var observable = _minioClient.ListenBucketNotificationsAsync(args);
             var subscription = observable.Subscribe(

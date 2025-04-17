@@ -36,7 +36,6 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
-using OutOfSchool.ExternalFileStore.Extensions.Startup;
 using OutOfSchool.ExternalFileStore.NotificationImplementations;
 using OutOfSchool.ExternalFileStore.NotificationInterfaces;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -674,11 +673,7 @@ public static class Startup
             });
         });
 
-        // MinIO - Redis notifications
-        builder.Services.AddSingleton<RedisStorageNotificationHandler>();
-        builder.Services.AddSingleton<MinioRedisNotificationBridge>();
-        builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
-
+        
         // Register redis
         builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
         {
@@ -695,11 +690,17 @@ public static class Startup
             return ConnectionMultiplexer.Connect(config);
         });
 
-        // Register minio
-        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
-        builder.Services.AddMinioClient();
+        // MinIO - Redis notifications
+        builder.Services.AddSingleton<RedisStorageNotificationHandler>();
+        builder.Services.AddSingleton<MinioRedisNotificationBridge>();
+        builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
+
+        // Register minio    
+        var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();
+        services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
+        services.AddImagesStorage(storageOptions, isImagesFeatureEnabled: true);
 
         // Background service
-        builder.Services.AddMinioNotification();
+        builder.Services.AddMinioNotification();       
     }
 }
