@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Google.Cloud.Storage.V1;
 using Minio;
 using OutOfSchool.ExternalFileStore;
@@ -55,12 +57,32 @@ public static class FileStorageExtensions
             }
             case StorageProviderType.AmazonS3:
             {
-                var storageClient = new MinioClient()
+                var minioBuilder = new MinioClient()
                     .WithEndpoint(options.Providers.AmazonS3.ServiceUrl)
                     .WithCredentials(options.Providers.AmazonS3.AccessKey, options.Providers.AmazonS3.SecretKey)
                     .WithRegion(options.Providers.AmazonS3.Region)
-                    .WithSSL()
-                    .Build();
+                    .WithSSL();
+
+                if (!options.Providers.AmazonS3.SslCertPath.IsNullOrEmpty())
+                {
+                    var caCert = new X509Certificate2(options.Providers.AmazonS3.SslCertPath);
+                    
+                    var handler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, serverCert, chain, errors) =>
+                        {
+                            if ((errors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                return false;
+                            
+                            chain.ChainPolicy.CustomTrustStore.Add(caCert);
+                            chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                            return chain.Build(serverCert);
+                        }
+                    };
+                    minioBuilder.WithHttpClient(new HttpClient(handler), true);
+                }
+                
+                var storageClient = minioBuilder.Build();
 
                 services.AddSingleton<IStorageContext<IMinioClient>, S3StorageContext>(_ =>
                     new S3StorageContext(storageClient, options.Containers.Images.BucketName));
