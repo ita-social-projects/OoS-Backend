@@ -22,8 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Cloud.Storage.V1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+        <PackageReference Include="Google.Cloud.Storage.V1" />        
         <PackageReference Include="Minio" />
         <PackageReference Include="StackExchange.Redis" />
         <PackageReference Include="System.Linq.Async" />
