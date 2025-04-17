@@ -171,6 +171,11 @@ public class AmazonS3Config
     /// Gets or sets the S3 service URL endpoint.
     /// </summary>
     public string ServiceUrl { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the self-signed certificate path.
+    /// </summary>
+    public string SslCertPath { get; set; }
 }
 
 /// <summary>
