@@ -138,7 +138,11 @@ public static class Startup
         })
             .WithMetadata(new AllowAnonymousAttribute());
 
-        app.MapQuartzMonitoringApi().RequireTechAdmin();
+        app.UseRateLimiter();
+
+        app.MapQuartzMonitoringApi()
+             .RequireRateLimiting("QuartzMonitoringLimiter")
+             .RequireTechAdmin();
 
         app.MapControllers();
 
@@ -580,6 +584,13 @@ public static class Startup
             q.AddEmailSender(quartzConfig);
         });
 
+        // Rate limiter options
+        services.Configure<RateLimiterOptions>(configuration.GetSection("QuartzMonitoring:RateLimiter"));
+
+        // Rate limiter for Quartz monitoring
+        services.AddQuartzMonitoringRateLimiter();
+
+        // Add Quartz monitoring
         services.AddQuartzMonitoring(configuration);
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
