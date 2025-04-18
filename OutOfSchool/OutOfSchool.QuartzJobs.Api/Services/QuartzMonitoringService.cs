@@ -193,7 +193,7 @@ public class QuartzMonitoringService : IQuartzMonitoringService
             1 => states[0] switch
             {
                 TriggerState.Paused => QuartzJobStatus.Paused,
-                TriggerState.Normal => QuartzJobStatus.Active,
+                TriggerState.Normal => QuartzJobStatus.Scheduled,
                 _ => QuartzJobStatus.Unknown,
             },
             > 1 => QuartzJobStatus.Mixed,

@@ -22,7 +22,7 @@ public static class QuartzMonitoringEndpoints
             return Results.Ok(jobs);
         })
         .WithSummary("Get all jobs with their current status.")
-        .WithDescription("Returns a list of all jobs with their details and calculated status: Active, Paused, Running, Mixed or Unknown.");
+        .WithDescription("Returns a list of all jobs with their details and calculated status: Scheduled, Paused, Running, Mixed or Unknown.");
 
 
         group.MapGet("/jobs/running", async (IQuartzMonitoringService service) =>

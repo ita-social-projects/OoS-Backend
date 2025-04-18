@@ -5,7 +5,7 @@
 /// </summary>
 public enum QuartzJobStatus
 {
-    Active,  // The job is active (at least one trigger is active and not paused).
+    Scheduled,  // The job has active triggers and is waiting for execution.
     Paused,  // The job is paused (all triggers associated with the job are paused).
     Running, // The job is currently running (at least one trigger is firing).
     Mixed,   // The job has mixed states (some triggers are active, some are paused).
