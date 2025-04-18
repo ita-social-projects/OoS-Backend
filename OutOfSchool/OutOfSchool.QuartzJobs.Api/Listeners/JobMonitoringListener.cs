@@ -60,8 +60,8 @@ public class JobMonitoringListener : IJobListener
             WasSuccessful = jobException is null,
             RetryCount = context.RefireCount,
             TriggerType = context.Trigger.GetType().Name,
-            ErrorMessage = jobException?.Message,
-            StackTrace = jobException?.InnerException?.ToString(),
+            ErrorMessage = jobException?.Message ?? "No error message available",
+            StackTrace = jobException?.ToString() ?? "No exception details available",
             Parameters = context.MergedJobDataMap
                 .Where(kv => kv.Key != "__StartTime")
                 .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString() ?? "null")
