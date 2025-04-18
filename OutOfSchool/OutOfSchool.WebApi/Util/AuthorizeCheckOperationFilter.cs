@@ -7,9 +7,8 @@ public class AuthorizeCheckOperationFilter(string authorizationName) : IOperatio
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var hasAuthorize = 
-            context.MethodInfo.DeclaringType!.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any()
-            || context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any();
+        var hasAuthorize = context.ApiDescription.ActionDescriptor.EndpointMetadata
+            .OfType<AuthorizeAttribute>().Any();
 
         if (hasAuthorize)
         {
@@ -18,7 +17,8 @@ public class AuthorizeCheckOperationFilter(string authorizationName) : IOperatio
                 new()
                 {
                     [
-                        new OpenApiSecurityScheme {
+                        new OpenApiSecurityScheme
+                        {
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
@@ -29,7 +29,6 @@ public class AuthorizeCheckOperationFilter(string authorizationName) : IOperatio
                     ] = new List<string>(),
                 },
             };
-
         }
     }
 }
