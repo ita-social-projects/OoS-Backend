@@ -105,6 +105,7 @@ public class CurrentUserService : ICurrentUserService
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
             var employee = userTypes.OfType<EmployeeRights>().FirstOrDefault();
             var employeeWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
+            var deputyDirector = userTypes.OfType<DeputyDirectorRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
@@ -113,6 +114,7 @@ public class CurrentUserService : ICurrentUserService
                         UserHasRights(provider),
                         UserHasRights(employee),
                         UserHasRights(employeeWorkshop),
+                        UserHasRights(deputyDirector)
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);

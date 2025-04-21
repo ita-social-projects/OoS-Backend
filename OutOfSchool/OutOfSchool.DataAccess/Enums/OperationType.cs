@@ -10,4 +10,6 @@ public enum OperationType
     Block,
     Update,
     Reinvite,
+    PromotedToDirector,
+    TranserredToDirector,
 }

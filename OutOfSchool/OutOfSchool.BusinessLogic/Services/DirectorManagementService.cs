@@ -3,12 +3,14 @@ using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 public class DirectorManagementService : IDirectorManagementService
 {
     private readonly IOfficialRepository _officialRepository;
+    private readonly IOfficialChangesLogService _officialChangesLogService;
     private readonly IPositionRepository _positionRepository;
     private readonly IPositionService _positionService;
     private readonly ICurrentUserService _currentUserService;
@@ -17,13 +19,15 @@ public class DirectorManagementService : IDirectorManagementService
 
     public DirectorManagementService(
        IOfficialRepository officialRepository,
-       IPositionRepository positionRepository,
+       IOfficialChangesLogService officialChangesLogService,
+    IPositionRepository positionRepository,
        IPositionService positionService,
        ICurrentUserService currentUserService,
        ILogger<DirectorManagementService> logger,
        OutOfSchoolDbContext dbContext)
     {
         this._officialRepository = officialRepository;
+        this._officialChangesLogService = officialChangesLogService;
         this._positionRepository = positionRepository;
         this._positionService = positionService;
         this._currentUserService = currentUserService;
@@ -34,7 +38,7 @@ public class DirectorManagementService : IDirectorManagementService
     public async Task<PromoteToDirectorResponseDto> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request)
     {
         // check if the current user is a deputy director of the provider
-        await _currentUserService.UserHasRights(new ProviderRights(providerId));
+        await _currentUserService.UserHasRights(new DeputyDirectorRights(providerId));
 
         if (await _positionRepository.DirectorExistsAsync(providerId))
         {
@@ -42,8 +46,8 @@ public class DirectorManagementService : IDirectorManagementService
             throw new InvalidOperationException($"Director already exists for provider with ID: {providerId}");
         }
         // Check if the current user is a deputy director of the provider
-        var userId = Guid.Parse(_currentUserService.UserId);
-        var initiator = await _officialRepository.GetById(userId);
+        var userId = _currentUserService.UserId;
+        var initiator = await _officialRepository.GetByUserIdAsync(userId);
         if (initiator?.Position?.ProviderId != providerId ||
             (initiator.Position.PositionType != PositionType.DeputyDirector))
         {
@@ -66,47 +70,66 @@ public class DirectorManagementService : IDirectorManagementService
 
 
         var now = DateOnly.FromDateTime(DateTime.UtcNow);
+        var oldPositionType = official.Position.PositionType; // Save the old position type for logging
 
         var strategy = _dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
-            // Close the old position
-            official.Position.ActiveTo = now;
-            await _positionRepository.Update(official.Position);
-
-            // 2. Create a new position for the director
-            var createDto = new PositionCreateUpdateDto
+            try
             {
-                FullName = "Директор ЗО",
-                ShortName = "Директор",
-                GenitiveName = "Директору",
-                Rate = official.Position.Rate,
-                Tariff = official.Position.Tariff,
-                ClassifierType = official.Position.ClassifierType,
-                Department = official.Position.Department,
-                IsForRuralAreas = official.Position.IsForRuralAreas,
-                IsTeachingPosition = false,
-                PositionType = PositionType.Director,
-            };
-            var newDirectorPosition = await _positionService.CreateAsync(createDto, providerId);
+                // Close the old position
+                official.Position.ActiveTo = now;
+                await _positionRepository.Update(official.Position);
 
-            // Connect new position to the official
-            official.PositionId = newDirectorPosition.Id;
-            await _officialRepository.Update(official);
+                // 2. Create a new position for the director
+                var createDto = new PositionCreateUpdateDto
+                {
+                    FullName = "Директор ЗО",
+                    ShortName = "Директор",
+                    GenitiveName = "Директору",
+                    Rate = official.Position.Rate,
+                    Tariff = official.Position.Tariff,
+                    ClassifierType = official.Position.ClassifierType,
+                    Department = official.Position.Department,
+                    IsForRuralAreas = official.Position.IsForRuralAreas,
+                    IsTeachingPosition = false,
+                    PositionType = PositionType.Director,
+                };
+                var newDirectorPosition = await _positionService.CreateAsync(createDto, providerId);
 
-            await transaction.CommitAsync();
-            _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
-                    official.Id, providerId, newDirectorPosition.Id);
-            return new PromoteToDirectorResponseDto
+                // Connect new position to the official
+                official.PositionId = newDirectorPosition.Id;
+                await _officialRepository.Update(official);
+
+
+
+                await _officialChangesLogService.SaveChangesLogAsync(
+                  official,
+                  _currentUserService.UserId,
+                  OperationType.PromotedToDirector,
+                  nameof(Position.PositionType),
+                  oldPositionType.ToString(),
+                  PositionType.Director.ToString());
+
+                await transaction.CommitAsync();
+                _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
+                        official.Id, providerId, newDirectorPosition.Id);
+                return new PromoteToDirectorResponseDto
+                {
+                    OfficialId = official.Id,
+                    PositionId = newDirectorPosition.Id,
+                    ActiveFrom = newDirectorPosition.ActiveFrom,
+                    PositionType = newDirectorPosition.PositionType,
+                    FullName = newDirectorPosition.FullName,
+                };
+            }
+            catch (Exception ex)
             {
-                OfficialId = official.Id,
-                PositionId = newDirectorPosition.Id,
-                ActiveFrom = newDirectorPosition.ActiveFrom,
-                PositionType = newDirectorPosition.PositionType,
-                FullName = newDirectorPosition.FullName,
-            };
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to promote employee to Director for provider {ProviderId}.", providerId);
+                throw; 
+            }
         });
     }
 
