@@ -36,9 +36,9 @@ public class QuartzMonitoringService : IQuartzMonitoringService
             {
                 Name = jobKey.Name,
                 Group = jobKey.Group,
-                JobType = detail.JobType.FullName,
+                JobType = detail?.JobType?.FullName ?? "Unknown",
                 Status = status.ToString(),
-                Description = detail.Description
+                Description = detail?.Description
             });
         }
 
@@ -78,15 +78,15 @@ public class QuartzMonitoringService : IQuartzMonitoringService
         {
             Name = jobKey.Name,
             Group = jobKey.Group,
-            Description = detail.Description,
-            JobType = detail.JobType.FullName,
+            Description = detail?.Description,
+            JobType = detail?.JobType?.FullName ?? "Unknown",
             Status = status.ToString(),
             Triggers = triggers.Select(t => new JobTriggerDto
             {
                 TriggerKey = t.Key.ToString(),
                 NextExecutions = t is ICronTrigger cronTrigger
-                ? CronHelper.GetUpcomingExecutions(cronTrigger.CronExpressionString, DefaultExecutionCount)
-                : new List<DateTimeOffset> { t.GetNextFireTimeUtc()?.ToLocalTime() ?? DateTimeOffset.MinValue }
+                    ? CronHelper.GetUpcomingExecutions(cronTrigger.CronExpressionString, DefaultExecutionCount)
+                    : new List<DateTimeOffset> { t.GetNextFireTimeUtc()?.ToLocalTime() ?? DateTimeOffset.MinValue }
             }).ToList()
         };
     }

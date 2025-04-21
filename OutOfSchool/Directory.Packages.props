@@ -6,7 +6,7 @@
     <EFCoreVersion>8.0.13</EFCoreVersion>
     <OpenIdDictVersion>6.1.1</OpenIdDictVersion>
     <SwaggerVersion>6.9.0</SwaggerVersion>
-    <QuartzVersion>3.13.1</QuartzVersion>
+    <QuartzVersion>3.14.0</QuartzVersion>
     <RedisVersion>6.0.21</RedisVersion>
     <AutoMapVersion>12.0.1</AutoMapVersion>
     <ElasticApmVersion>1.28.6</ElasticApmVersion>
@@ -15,11 +15,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!--Basic Microsoft Packages-->
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.3.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="8.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(BaseVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(BaseVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(DIAbstractions)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
@@ -81,12 +79,12 @@
     <PackageVersion Include="AutoMapper" Version="$(AutoMapVersion)" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="$(AutoMapVersion)" />
     <!--Quartz-->
-    <PackageVersion Include="Quartz.AspNetCore" Version="3.14.0" />
-    <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="3.14.0" />
+    <PackageVersion Include="Quartz.AspNetCore" Version="$(QuartzVersion)" />
+    <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="$(QuartzVersion)" />
     <PackageVersion Include="Quartz.Serialization.SystemTextJson" Version="$(QuartzVersion)" />
-    <PackageVersion Include="Quartz" Version="3.14.0" />
-    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0" />
+    <PackageVersion Include="Quartz" Version="$(QuartzVersion)" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="$(QuartzVersion)" />
     <!--Image processing-->
     <PackageVersion Include="SkiaSharp" Version="2.88.6" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
