@@ -42,11 +42,7 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
-    [Required(ErrorMessage = "Study period start date is required")]
-    public DateOnly StudyPeriodStartDate { get; set; }
-
-    [Required(ErrorMessage = "Study period end date is required")]
-    public DateOnly StudyPeriodEndDate { get; set; }
+    public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
@@ -98,12 +94,11 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
             yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
 
-        // Validate StudyPeriodStartDate < StudyPeriodEndDate
-        if (StudyPeriodStartDate >= StudyPeriodEndDate)
+        if (StudyPeriodDates != null && StudyPeriodDates.StartDate > StudyPeriodDates.EndDate)
         {
             yield return new ValidationResult(
                 "StudyPeriodStartDate must be earlier than StudyPeriodEndDate.",
-                [nameof(StudyPeriodStartDate), nameof(StudyPeriodEndDate)]);
+                [nameof(StudyPeriodDates)]);
         }
     }
 }

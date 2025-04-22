@@ -1228,8 +1228,8 @@ public class WorkshopService(
             createdWorkshop = dto.ToModel();
         }
 
-        createdWorkshop.StudyPeriodStartDate = dto.StudyPeriodStartDate.ToStudyPeriodDate();
-        createdWorkshop.StudyPeriodEndDate = dto.StudyPeriodEndDate.ToStudyPeriodDate();
+        createdWorkshop.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
+        createdWorkshop.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
 
         createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
         createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
@@ -1280,9 +1280,9 @@ public class WorkshopService(
         }
     }
 
-    private void NormalizeStudyPeriodDates(WorkshopBaseDto dto, Workshop workshop)
+    private static void NormalizeStudyPeriodDates(WorkshopBaseDto dto, Workshop workshop)
     {
-        workshop.StudyPeriodStartDate = dto.StudyPeriodStartDate.ToStudyPeriodDate();
-        workshop.StudyPeriodEndDate = dto.StudyPeriodEndDate.ToStudyPeriodDate();
+        workshop.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
+        workshop.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
     }
 }

@@ -171,10 +171,10 @@ public class WorkshopDraftService(
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             workshopDraft.WorkshopDraftContent.StudyPeriodStartDate = 
-                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodStartDate.ToStudyPeriodDate();
+                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
 
             workshopDraft.WorkshopDraftContent.StudyPeriodEndDate = 
-                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodEndDate.ToStudyPeriodDate();
+                workshopDraftUpdateDto.WorkshopV2Dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
                 workshopDraft,
@@ -510,8 +510,8 @@ public class WorkshopDraftService(
         workshopDraft.WorkshopDraftContent.OwnershipType = licenseStatusAndOwnership.Item2;
         workshopDraft.WorkshopDraftContent.WorkshopStatus = WorkshopStatus.Open;
 
-        workshopDraft.WorkshopDraftContent.StudyPeriodStartDate = workshopV2Dto.StudyPeriodStartDate.ToStudyPeriodDate();
-        workshopDraft.WorkshopDraftContent.StudyPeriodEndDate = workshopV2Dto.StudyPeriodEndDate.ToStudyPeriodDate();
+        workshopDraft.WorkshopDraftContent.StudyPeriodStartDate = workshopV2Dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
+        workshopDraft.WorkshopDraftContent.StudyPeriodEndDate = workshopV2Dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
 
         var createdDraft = await workshopDraftRepository.Create(workshopDraft)
             .ConfigureAwait(false);
@@ -735,8 +735,8 @@ public class WorkshopDraftService(
     {
         var workshopDraftResponseDto = draft.ToResponseDto();
 
-        workshopDraftResponseDto.WorkshopDetails.StudyPeriodStartDate = draft.WorkshopDraftContent.StudyPeriodStartDate;
-        workshopDraftResponseDto.WorkshopDetails.StudyPeriodEndDate = draft.WorkshopDraftContent.StudyPeriodEndDate;
+        workshopDraftResponseDto.WorkshopDetails.StudyPeriodDates.StartDate = draft.WorkshopDraftContent.StudyPeriodStartDate;
+        workshopDraftResponseDto.WorkshopDetails.StudyPeriodDates.EndDate = draft.WorkshopDraftContent.StudyPeriodEndDate;
 
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 
