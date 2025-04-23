@@ -16,7 +16,7 @@ public class PositionService(
 {
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
-        await currentUserService.UserHasRights(new ProviderRights(providerId));
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new DeputyDirectorRights(providerId));
 
         var position = createDto.ToModel();
         position.ProviderId = providerId;
