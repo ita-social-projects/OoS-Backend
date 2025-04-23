@@ -30,7 +30,7 @@ public class PositionService : IPositionService
 
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
-        await currentUserService.UserHasRights(new ProviderRights(providerId));
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new DeputyDirectorRights(providerId));
 
         var position = mapper.Map<Position>(createDto);
         var now = DateOnly.FromDateTime(DateTime.UtcNow);

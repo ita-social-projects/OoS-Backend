@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -12,26 +10,22 @@ using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
-
-using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class DirectorManagementServiceTests
 {
-    private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
-
     private Mock<IOfficialRepository> _officialRepositoryMock;
     private Mock<IPositionRepository> _positionRepositoryMock;
     private Mock<IPositionService> _positionServiceMock;
     private Mock<ICurrentUserService> _currentUserServiceMock;
+    private Mock<IOfficialChangesLogService> _officialChangesLogServiceMock;
     private Mock<ILogger<DirectorManagementService>> _loggerMock;
+    private Mock<ITransactionManagerService> _transactionManagerServiceMock;
 
     private DirectorManagementService _service;
 
@@ -40,31 +34,25 @@ public class DirectorManagementServiceTests
     [SetUp]
     public void SetUp()
     {
-        // Setup in-memory EF DbContext
-        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-
-        options = builder.Options;
-        context = new TestOutOfSchoolDbContext(options);
-
-        // Create mocks
         _officialRepositoryMock = new Mock<IOfficialRepository>();
         _positionRepositoryMock = new Mock<IPositionRepository>();
         _positionServiceMock = new Mock<IPositionService>();
         _currentUserServiceMock = new Mock<ICurrentUserService>();
         _loggerMock = new Mock<ILogger<DirectorManagementService>>();
+        _transactionManagerServiceMock = new Mock<ITransactionManagerService>();
 
         _providerId = Guid.NewGuid();
-
-        // Create instance of service
+        SetupTransactionManagerMock();
+        SetupOfficialChangesLogServiceMock();
         _service = new DirectorManagementService(
             _officialRepositoryMock.Object,
+            _officialChangesLogServiceMock.Object,
             _positionRepositoryMock.Object,
             _positionServiceMock.Object,
             _currentUserServiceMock.Object,
-            _loggerMock.Object,
-            context);
+            _transactionManagerServiceMock.Object,
+            _loggerMock.Object
+            );
     }
 
     [Test]
@@ -158,6 +146,44 @@ public class DirectorManagementServiceTests
     }
 
     [Test]
+    public async Task Promote_Should_Call_ExecuteInTransactionAsync()
+    {
+        // Arrange
+        var official = SetupOfficial();
+        var requestDto = CreatePromoteRequestDto(official.Id);
+
+        SetupUserHasRightsAsDeputy();
+        SetupNoDirectorForProvider();
+        SetupInitiatorAsDeputy(_currentUserServiceMock.Object.UserId, _providerId);
+
+        var createdPositionId = Guid.NewGuid();
+        var newPositionDto = new PositionDto
+        {
+            Id = createdPositionId,
+            ProviderId = _providerId,
+            PositionType = PositionType.Director,
+            FullName = "Director",
+            ActiveFrom = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+
+        _positionServiceMock
+            .Setup(x => x.CreateAsync(It.IsAny<PositionCreateUpdateDto>(), _providerId))
+            .ReturnsAsync(newPositionDto);
+
+        _officialRepositoryMock
+            .Setup(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)))
+            .ReturnsAsync((Official o) => o);
+
+        // Act
+        await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+
+        // Assert
+        _transactionManagerServiceMock.Verify(x =>
+            x.ExecuteInTransactionAsync(It.IsAny<Func<Task<PromoteToDirectorResponseDto>>>()),
+            Times.Once);
+    }
+
+    [Test]
     public async Task Promote_Should_Succeed_When_All_Valid()
     {
         // Arrange
@@ -205,6 +231,91 @@ public class DirectorManagementServiceTests
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
     }
 
+    [Test]
+    public async Task Promote_Should_Still_Call_ExecuteInTransactionAsync_When_Exception_Occurs()
+    {
+        // Arrange
+        var official = SetupOfficial();
+        var requestDto = CreatePromoteRequestDto(official.Id);
+
+        SetupUserHasRightsAsDeputy();
+        SetupNoDirectorForProvider();
+        SetupInitiatorAsDeputy(_currentUserServiceMock.Object.UserId, _providerId);
+
+        _positionServiceMock
+            .Setup(x => x.CreateAsync(It.IsAny<PositionCreateUpdateDto>(), _providerId))
+            .ThrowsAsync(new Exception("Something went wrong"));
+
+        // Act
+        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("Something went wrong");
+
+        _transactionManagerServiceMock.Verify(x =>
+            x.ExecuteInTransactionAsync(It.IsAny<Func<Task<PromoteToDirectorResponseDto>>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task Promote_Should_LogError_When_Exception_Occurs_In_Transaction()
+    {
+        // Arrange
+        var official = SetupOfficial();
+        var requestDto = CreatePromoteRequestDto(official.Id);
+
+        SetupUserHasRightsAsDeputy();
+        SetupNoDirectorForProvider();
+        SetupInitiatorAsDeputy(_currentUserServiceMock.Object.UserId, _providerId);
+
+        _positionServiceMock
+            .Setup(x => x.CreateAsync(It.IsAny<PositionCreateUpdateDto>(), _providerId))
+            .ThrowsAsync(new Exception("Transaction failed"));
+
+        // Act
+        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("Transaction failed");
+
+        // Assert
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Failed to promote employee to Director")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    private void SetupTransactionManagerMock()
+    {
+        _transactionManagerServiceMock = new Mock<ITransactionManagerService>();
+
+        _transactionManagerServiceMock
+            .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
+            .Returns<Func<Task>>(async func => await func());
+
+        _transactionManagerServiceMock
+            .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<PromoteToDirectorResponseDto>>>()))
+            .Returns<Func<Task<PromoteToDirectorResponseDto>>>(async func => await func());
+    }
+    private void SetupOfficialChangesLogServiceMock()
+    {
+        _officialChangesLogServiceMock = new Mock<IOfficialChangesLogService>();
+
+        _officialChangesLogServiceMock
+            .Setup(x => x.SaveChangesLogAsync(
+                It.IsAny<Official>(),
+                It.IsAny<string>(),
+                It.IsAny<OperationType>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
+            .Returns(Task.FromResult(1));
+    }
     private void SetupUserHasRightsAsDeputy(Guid? providerId = null)
     {
         var deputyId = Guid.NewGuid();
@@ -217,7 +328,7 @@ public class DirectorManagementServiceTests
         var deputy = SetupOfficial(provId, deputyId, PositionType.DeputyDirector);
 
         _officialRepositoryMock
-            .Setup(x => x.GetById(deputyId))
+            .Setup(x => x.GetByUserIdAsync(deputyId.ToString()))
             .ReturnsAsync(deputy);
 
         _positionRepositoryMock
@@ -225,7 +336,7 @@ public class DirectorManagementServiceTests
             .ReturnsAsync(deputy.Position);
 
         _currentUserServiceMock
-            .Setup(x => x.UserHasRights(It.IsAny<ProviderRights>()))
+            .Setup(x => x.UserHasRights(It.IsAny<DeputyDirectorRights>()))
             .Returns(Task.CompletedTask);
     }
     private void SetupUserHasRightsButNotDeputy()
@@ -252,7 +363,7 @@ public class DirectorManagementServiceTests
     private void SetupUserHasNoRights()
     {
         _currentUserServiceMock
-            .Setup(x => x.UserHasRights(It.IsAny<ProviderRights>()))
+            .Setup(x => x.UserHasRights(It.IsAny<DeputyDirectorRights>()))
             .ThrowsAsync(new UnauthorizedAccessException("User has no rights to perform operation"));
     }
     private void SetupExistingDirectorForСurrentProvider()

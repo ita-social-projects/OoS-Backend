@@ -15,7 +15,7 @@ public class DirectorManagementService : IDirectorManagementService
     private readonly IPositionService _positionService;
     private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<DirectorManagementService> _logger;
-    private readonly OutOfSchoolDbContext _dbContext;
+    private readonly ITransactionManagerService _transactionManagerService;
 
     public DirectorManagementService(
        IOfficialRepository officialRepository,
@@ -23,16 +23,16 @@ public class DirectorManagementService : IDirectorManagementService
     IPositionRepository positionRepository,
        IPositionService positionService,
        ICurrentUserService currentUserService,
-       ILogger<DirectorManagementService> logger,
-       OutOfSchoolDbContext dbContext)
+       ITransactionManagerService transactionManagerService,
+       ILogger<DirectorManagementService> logger)
     {
         this._officialRepository = officialRepository;
         this._officialChangesLogService = officialChangesLogService;
         this._positionRepository = positionRepository;
         this._positionService = positionService;
         this._currentUserService = currentUserService;
+        this._transactionManagerService = transactionManagerService;
         this._logger = logger;
-        this._dbContext = dbContext;
     }
 
     public async Task<PromoteToDirectorResponseDto> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request)
@@ -72,12 +72,8 @@ public class DirectorManagementService : IDirectorManagementService
         var now = DateOnly.FromDateTime(DateTime.UtcNow);
         var oldPositionType = official.Position.PositionType; // Save the old position type for logging
 
-        var strategy = _dbContext.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(async () =>
+        return await _transactionManagerService.ExecuteInTransactionAsync(async () =>
         {
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
-            try
-            {
                 // Close the old position
                 official.Position.ActiveTo = now;
                 await _positionRepository.Update(official.Position);
@@ -102,18 +98,15 @@ public class DirectorManagementService : IDirectorManagementService
                 official.PositionId = newDirectorPosition.Id;
                 await _officialRepository.Update(official);
 
+            await _officialChangesLogService.SaveChangesLogAsync(
+              official,
+              _currentUserService.UserId,
+              OperationType.PromotedToDirector,
+              nameof(Position.PositionType),
+              oldPositionType.ToString(),
+              PositionType.Director.ToString());
 
-
-                await _officialChangesLogService.SaveChangesLogAsync(
-                  official,
-                  _currentUserService.UserId,
-                  OperationType.PromotedToDirector,
-                  nameof(Position.PositionType),
-                  oldPositionType.ToString(),
-                  PositionType.Director.ToString());
-
-                await transaction.CommitAsync();
-                _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
+            _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
                         official.Id, providerId, newDirectorPosition.Id);
                 return new PromoteToDirectorResponseDto
                 {
@@ -123,13 +116,6 @@ public class DirectorManagementService : IDirectorManagementService
                     PositionType = newDirectorPosition.PositionType,
                     FullName = newDirectorPosition.FullName,
                 };
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to promote employee to Director for provider {ProviderId}.", providerId);
-                throw; 
-            }
         });
     }
 
