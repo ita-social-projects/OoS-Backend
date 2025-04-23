@@ -231,8 +231,9 @@ public class PositionServiceTests
         };
 
         _mockCurrentUserService
-            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
+            .Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
             .ThrowsAsync(new UnauthorizedAccessException("User does not have the necessary rights"));
+
 
         // Act & Assert
         var exception = Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
@@ -241,7 +242,7 @@ public class PositionServiceTests
         });
 
         Assert.AreEqual("User does not have the necessary rights", exception.Message);
-        _mockCurrentUserService.Verify(s => s.UserHasRights(It.IsAny<ProviderRights>()), Times.Once);
+        _mockCurrentUserService.Verify(s => s.UserHasRights(It.IsAny<IUserRights[]>()), Times.Once);
     }
     #endregion
 

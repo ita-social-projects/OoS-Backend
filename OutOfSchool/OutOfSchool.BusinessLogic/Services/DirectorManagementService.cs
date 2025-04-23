@@ -72,8 +72,10 @@ public class DirectorManagementService : IDirectorManagementService
         var now = DateOnly.FromDateTime(DateTime.UtcNow);
         var oldPositionType = official.Position.PositionType; // Save the old position type for logging
 
-        return await _transactionManagerService.ExecuteInTransactionAsync(async () =>
+        try
         {
+            return await _transactionManagerService.ExecuteInTransactionAsync(async () =>
+            {
                 // Close the old position
                 official.Position.ActiveTo = now;
                 await _positionRepository.Update(official.Position);
@@ -98,16 +100,16 @@ public class DirectorManagementService : IDirectorManagementService
                 official.PositionId = newDirectorPosition.Id;
                 await _officialRepository.Update(official);
 
-            await _officialChangesLogService.SaveChangesLogAsync(
-              official,
-              _currentUserService.UserId,
-              OperationType.PromotedToDirector,
-              nameof(Position.PositionType),
-              oldPositionType.ToString(),
-              PositionType.Director.ToString());
+                await _officialChangesLogService.SaveChangesLogAsync(
+                  official,
+                  _currentUserService.UserId,
+                  OperationType.PromotedToDirector,
+                  nameof(Position.PositionType),
+                  oldPositionType.ToString(),
+                  PositionType.Director.ToString());
 
-            _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
-                        official.Id, providerId, newDirectorPosition.Id);
+                _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
+                            official.Id, providerId, newDirectorPosition.Id);
                 return new PromoteToDirectorResponseDto
                 {
                     OfficialId = official.Id,
@@ -116,7 +118,13 @@ public class DirectorManagementService : IDirectorManagementService
                     PositionType = newDirectorPosition.PositionType,
                     FullName = newDirectorPosition.FullName,
                 };
-        });
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to promote employee to Director. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.OfficialId);
+            throw;
+        }
     }
 
     public Task TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
