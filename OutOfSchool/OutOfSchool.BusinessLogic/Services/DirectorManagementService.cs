@@ -86,6 +86,8 @@ public class DirectorManagementService : IDirectorManagementService
                     FullName = "Директор ЗО",
                     ShortName = "Директор",
                     GenitiveName = "Директору",
+                    SeatsAmount = official.Position.SeatsAmount,
+                    Language = official.Position.Language,
                     Rate = official.Position.Rate,
                     Tariff = official.Position.Tariff,
                     ClassifierType = official.Position.ClassifierType,
