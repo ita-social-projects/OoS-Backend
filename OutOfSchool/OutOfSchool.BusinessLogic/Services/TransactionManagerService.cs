@@ -15,7 +15,7 @@ public class TransactionManagerService : ITransactionManagerService
     {
         await ExecuteInTransactionAsync<object>(async () =>
         {
-            await action();
+            await action().ConfigureAwait(false);
             return null;
         });
     }
@@ -25,17 +25,20 @@ public class TransactionManagerService : ITransactionManagerService
         var strategy = _dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
+            _logger.LogDebug("Transaction started.");
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                var result = await action();
-                await transaction.CommitAsync();
+                var result = await action().ConfigureAwait(false); ;
+                await transaction.CommitAsync().ConfigureAwait(false);
+
+                _logger.LogDebug("Transaction committed successfully.");
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Transaction failed and will be rolled back.");
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync().ConfigureAwait(false);
                 throw;
             }
         });
