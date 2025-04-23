@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +10,6 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
@@ -27,7 +23,6 @@ public class RegionAdminControllerTests
 {
     private RegionAdminController regionAdminController;
     private Mock<IRegionAdminService> regionAdminServiceMock;
-    private IMapper mapper;
     private RegionAdmin regionAdmin;
     private List<RegionAdmin> regionAdmins;
     private RegionAdminDto regionAdminDto;
@@ -37,7 +32,6 @@ public class RegionAdminControllerTests
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         regionAdminController =
             new RegionAdminController(regionAdminServiceMock.Object, new Mock<ILogger<RegionAdminController>>().Object);
@@ -86,7 +80,7 @@ public class RegionAdminControllerTests
         var expected = new SearchResult<RegionAdminDto>
         {
             TotalAmount = 10,
-            Entities = regionAdmins.Select(x => mapper.Map<RegionAdminDto>(x)).ToList(),
+            Entities = regionAdmins.ToDto(),
         };
 
         regionAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<RegionAdminFilter>()))

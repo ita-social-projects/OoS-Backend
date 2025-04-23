@@ -3,21 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,7 +22,6 @@ public class PositionServiceTests
 {
     private Mock<IPositionRepository> _mockRepository;
     private Mock<ICurrentUserService> _mockCurrentUserService;
-    private IMapper _mapper;
     private Mock<ILogger<PositionService>> _mockLogger;
     private PositionService _service;
 
@@ -36,8 +31,6 @@ public class PositionServiceTests
     [SetUp]
     public void SetUp()
     {
-        _mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-
         _mockRepository = new Mock<IPositionRepository>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
         _mockLogger = new Mock<ILogger<PositionService>>();
@@ -45,7 +38,6 @@ public class PositionServiceTests
         _service = new PositionService(
             _mockRepository.Object,
             _mockCurrentUserService.Object,
-            _mapper,
             _mockLogger.Object);
     }
     #region GetByFilter

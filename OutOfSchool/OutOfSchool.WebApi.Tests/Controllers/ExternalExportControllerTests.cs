@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -10,9 +9,6 @@ using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
@@ -23,12 +19,10 @@ public class ExternalExportControllerTests
 {
     private ExternalExportController controller;
     private Mock<IExternalExportService> mockExternalExportService;
-    private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile, ExternalExportMappingProfile>();
         mockExternalExportService = new Mock<IExternalExportService>();
         controller = new ExternalExportController(mockExternalExportService.Object);
     }
@@ -42,7 +36,7 @@ public class ExternalExportControllerTests
         _ = mockExternalExportService
             .Setup(x => x.GetProviders(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<ProviderInfoBaseDto>
-                {TotalAmount = fakeProviders.Count, Entities = mapper.Map<List<ProviderInfoBaseDto>>(fakeProviders)});
+                {TotalAmount = fakeProviders.Count, Entities = fakeProviders.ToBaseOrInfoDto()});
 
         // Act
         var actionResult = await controller.GetProvidersByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});
@@ -95,7 +89,7 @@ public class ExternalExportControllerTests
         _ = mockExternalExportService
             .Setup(x => x.GetWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))
             .ReturnsAsync(new SearchResult<WorkshopInfoBaseDto>
-                {TotalAmount = fakeWorkshops.Count, Entities = mapper.Map<List<WorkshopInfoBaseDto>>(fakeWorkshops)});
+                {TotalAmount = fakeWorkshops.Count, Entities = fakeWorkshops.ToBaseOrInfoDto()});
 
         // Act
         var actionResult = await controller.GetWorkshopsByFilter(DateTime.UtcNow, new OffsetFilter {Size = 10});

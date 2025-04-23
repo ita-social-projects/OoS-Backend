@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,8 +15,6 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
@@ -41,7 +38,6 @@ public class RegionAdminServiceTests
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
-    private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
@@ -89,7 +85,6 @@ public class RegionAdminServiceTests
 
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         var logger = new Mock<ILogger<RegionAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -105,7 +100,6 @@ public class RegionAdminServiceTests
             regionAdminRepositoryMock.Object,
             logger.Object,
             userRepositoryMock.Object,
-            mapper,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             apiErrorService,
@@ -116,7 +110,7 @@ public class RegionAdminServiceTests
     public async Task GetById_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(regionAdmin);
 
         // Act
@@ -134,7 +128,7 @@ public class RegionAdminServiceTests
         // Act
         var result = await regionAdminService.GetByIdAsync(It.IsAny<string>()).ConfigureAwait(false);
 
-        // Assert
+        // Assert   
         Assert.That(result, Is.Null);
     }
 
@@ -142,7 +136,7 @@ public class RegionAdminServiceTests
     public async Task GetByUserId_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
@@ -163,7 +157,7 @@ public class RegionAdminServiceTests
     public void GetByUserId_WhenCalled_ReturnsException()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<RegionAdmin, bool>>>(), 
@@ -179,9 +173,7 @@ public class RegionAdminServiceTests
     public async Task GetByFilter_WhenCalled_ReturnsEntities()
     {
         // Arrange
-        var expected = regionAdmins
-            .Select(p => mapper.Map<RegionAdminDto>(p))
-            .ToList();
+        var expected = regionAdmins.ToDto();
 
         var filter = new RegionAdminFilter()
         {
@@ -330,7 +322,7 @@ public class RegionAdminServiceTests
         regionAdmins[1].CATOTTG = new CATOTTG() { Name = "Київська область" };
 
         var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[0], regionAdmins[1] };
-        var expectedDtos = mapper.Map<List<RegionAdminDto>>(filteredRegionAdmins);
+        var expectedDtos = filteredRegionAdmins.ToDto();
 
         SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "Хмельницька"]);
 

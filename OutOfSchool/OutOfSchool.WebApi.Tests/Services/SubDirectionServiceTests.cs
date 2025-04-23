@@ -1,22 +1,21 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Services.Repository.Base;
-using OutOfSchool.Services;
-using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.BusinessLogic;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using System.Collections.Generic;
-using System;
 using OutOfSchool.BusinessLogic.Models;
-using System.Threading.Tasks;
-using System.Linq;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,13 +25,11 @@ public class SubDirectionServiceTests
     private IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository;
     private IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private ISubDirectionService service;
-    private Mock<IMapper> mapper;
     private DbContextOptions<OutOfSchoolDbContext> options;
 
     [SetUp]
     public void SetUp()
     {
-        mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
                 databaseName: "OutOfSchoolTestDB");
@@ -48,8 +45,7 @@ public class SubDirectionServiceTests
         service = new SubDirectionService(
             subDirectionRepository,
             directionRepository,
-            logger.Object,
-            mapper.Object);
+            logger.Object);
 
         SeedDatabase();
     }
@@ -71,9 +67,6 @@ public class SubDirectionServiceTests
         };
 
         var directionId = 1;
-
-        mapper.Setup(m => m.Map<SubDirection>(input)).Returns(expected);
-        mapper.Setup(m => m.Map<SubDirectionDto>(expected)).Returns(input);
 
         // Act
         var result = await service.Create(directionId, input).ConfigureAwait(false);
@@ -166,8 +159,6 @@ public class SubDirectionServiceTests
             Id = expected.Id,
             Title = expected.Title,
         };
-
-        mapper.Setup(m => m.Map<SubDirectionDto>(expected)).Returns(expectedDto);
 
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);

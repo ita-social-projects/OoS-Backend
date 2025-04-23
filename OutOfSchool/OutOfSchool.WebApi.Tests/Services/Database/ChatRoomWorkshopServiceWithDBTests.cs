@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -10,8 +9,6 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -20,7 +17,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -44,7 +40,6 @@ public class ChatRoomWorkshopServiceWithDBTests
     private Mock<IWorkshopService> workshopServiceMock;
     private Mock<IBlockedProviderParentService> blockedProviderParentServiceMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
-    private IMapper mapper;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
     private TestOutOfSchoolDbContext dbContext;
@@ -94,7 +89,6 @@ public class ChatRoomWorkshopServiceWithDBTests
         roomRepository = new EntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>(dbContext);
         roomWorkshopModelForChatListRepository = new ChatRoomWorkshopModelForChatListRepository(dbContext);
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         workshopServiceMock = new Mock<IWorkshopService>();
         workshopServiceMock.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(new WorkshopDto() { ProviderId = Guid.Empty });
         blockedProviderParentServiceMock = new Mock<IBlockedProviderParentService>();
@@ -105,8 +99,7 @@ public class ChatRoomWorkshopServiceWithDBTests
             loggerMock.Object,
             roomWorkshopModelForChatListRepository,
             workshopServiceMock.Object,
-            blockedProviderParentServiceMock.Object,
-            mapper);
+            blockedProviderParentServiceMock.Object);
 
         SeedDatabase();
     }

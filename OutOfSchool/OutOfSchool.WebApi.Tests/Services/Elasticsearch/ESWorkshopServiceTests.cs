@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,7 +25,6 @@ public class ESWorkshopServiceTests
     private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProviderMock;
     private Mock<IElasticsearchHealthService> elasticHealthServiceMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
-    private Mock<IMapper> mapperMock;
     private Mock<IOptions<ElasticConfig>> configMock; 
 
     [SetUp]
@@ -36,7 +34,6 @@ public class ESWorkshopServiceTests
         esProviderMock = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
         elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
-        mapperMock = new Mock<IMapper>();
         configMock = new Mock<IOptions<ElasticConfig>>();
         service = new ESWorkshopService(
             workshopServiceMock.Object,
@@ -44,7 +41,6 @@ public class ESWorkshopServiceTests
             elasticHealthServiceMock.Object,
             new Mock<ILogger<ESWorkshopService>>().Object,
             averageRatingServiceMock.Object,
-            mapperMock.Object,
             configMock.Object);
     }
 
@@ -257,8 +253,6 @@ public class ESWorkshopServiceTests
         averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(hasRating ?
                 RatingsGenerator.GetAverageRating(Guid.NewGuid()) : null);
-        mapperMock.Setup(x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()))
-            .Returns(new WorkshopES());
         esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
             .ReturnsAsync(Result.Updated);
         configMock.Setup(x => x.Value).Returns(config);
@@ -271,8 +265,6 @@ public class ESWorkshopServiceTests
             x => x.GetAll(It.IsAny<OffsetFilter>()), Times.Exactly(2));
         averageRatingServiceMock.Verify(
             x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
-        mapperMock.Verify(
-            x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
         esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
         Assert.IsTrue(result);
     }
@@ -305,8 +297,6 @@ public class ESWorkshopServiceTests
             });
         averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(RatingsGenerator.GetAverageRating(Guid.NewGuid()));
-        mapperMock.Setup(x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()))
-            .Returns(new WorkshopES());
         esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
             .ReturnsAsync(Result.NoOp);
         configMock.Setup(x => x.Value).Returns(config);
@@ -319,8 +309,6 @@ public class ESWorkshopServiceTests
             x => x.GetAll(It.IsAny<OffsetFilter>()), Times.Exactly(2));
         averageRatingServiceMock.Verify(
             x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
-        mapperMock.Verify(
-            x => x.Map<WorkshopES>(It.IsAny<WorkshopDto>()), Times.Exactly(workshops.Count));
         esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
         Assert.IsFalse(result);
     }

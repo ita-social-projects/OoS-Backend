@@ -2,14 +2,11 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using AutoMapper;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -17,7 +14,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -27,7 +23,6 @@ public class WorkshopServicesCombinerV2Tests
     private Mock<IWorkshopService> workshopService;
     private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
     private IWorkshopServicesCombinerV2 service;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -43,7 +38,6 @@ public class WorkshopServicesCombinerV2Tests
         var regionAdminService = new Mock<IRegionAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var esProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         service = new WorkshopServicesCombinerV2(
             workshopService.Object,
@@ -56,8 +50,7 @@ public class WorkshopServicesCombinerV2Tests
             ministryAdminService.Object,
             regionAdminService.Object,
             codeficatorService.Object,
-            esProvider.Object,
-            mapper);
+            esProvider.Object);
     }
 
     #region Create
@@ -66,8 +59,8 @@ public class WorkshopServicesCombinerV2Tests
     {
         // Arrange
         var createdWorkshop = WorkshopGenerator.Generate();
-        var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(createdWorkshop);
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(createdWorkshop);
+        var workshopV2Dto = createdWorkshop.ToV2Dto();
+        var workshopV2CreateRequestDto = workshopV2Dto.ToDraft().ToV2CreateRequestDto();
         workshopV2Dto.AvailableSeats = 8;
         var workshopResultDto = new WorkshopResultDto()
         {

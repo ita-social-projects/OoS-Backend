@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,8 +15,6 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
@@ -41,7 +38,6 @@ public class MinistryAdminServiceTests
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
-    private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
     private Mock<ISearchStringService> searchStringServiceMock;
@@ -84,7 +80,6 @@ public class MinistryAdminServiceTests
 
         institutionAdminRepositoryMock = new Mock<IInstitutionAdminRepository>();
         var logger = new Mock<ILogger<MinistryAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
@@ -99,7 +94,6 @@ public class MinistryAdminServiceTests
             institutionAdminRepositoryMock.Object,
             logger.Object,
             userRepositoryMock.Object,
-            mapper,
             currentUserServiceMock.Object,
             apiErrorService,
             searchStringServiceMock.Object);
@@ -118,7 +112,7 @@ public class MinistryAdminServiceTests
         // Assert
         institutionAdminRepositoryMock.VerifyAll();
         Assert.That(result, Is.Not.Null);
-        TestHelper.AssertDtosAreEqual(mapper.Map<MinistryAdminDto>(expected), result);
+        TestHelper.AssertDtosAreEqual(expected.ToMinistryAdminDto(), result);
     }
 
     [Test]
@@ -135,9 +129,7 @@ public class MinistryAdminServiceTests
     public async Task GetByFilter_WhenCalled_ReturnsEntities()
     {
         // Arrange
-        var expected = institutionAdmins
-            .Select(p => mapper.Map<MinistryAdminDto>(p))
-            .ToList();
+        var expected = institutionAdmins.ToMinistryAdminDto();
 
         var filter = new MinistryAdminFilter()
         {
@@ -243,7 +235,7 @@ public class MinistryAdminServiceTests
         institutionAdmin.User.Email = "ministry@org.com";
 
         var filteredMinistryAdmins = new List<InstitutionAdmin>() { institutionAdmin };
-        var expectedDtos = mapper.Map<List<MinistryAdminDto>>(filteredMinistryAdmins);
+        var expectedDtos = filteredMinistryAdmins.ToMinistryAdminDto();
 
         SetupCommonMocks(
             filter,

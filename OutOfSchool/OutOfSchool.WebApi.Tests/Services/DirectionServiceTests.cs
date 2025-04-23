@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -33,7 +32,6 @@ public class DirectionServiceTests
     private DirectionService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<DirectionService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -41,7 +39,6 @@ public class DirectionServiceTests
     [SetUp]
     public void SetUp()
     {
-        mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
                 databaseName: "OutOfSchoolTestDB");
@@ -62,7 +59,6 @@ public class DirectionServiceTests
             repositoryWorkshop,
             logger.Object,
             localizer.Object,
-            mapper.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object);
@@ -86,9 +82,6 @@ public class DirectionServiceTests
             Title = "NewTitle",
             Description = "NewDescription",
         };
-
-        mapper.Setup(m => m.Map<Direction>(input)).Returns(expected);
-        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(input);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
@@ -147,8 +140,6 @@ public class DirectionServiceTests
             Id = expected.Id,
             Title = expected.Title,
         };
-
-        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(expectedDto);
 
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);
@@ -231,8 +222,6 @@ public class DirectionServiceTests
             Description = expected.FirstOrDefault().Description,
         };
 
-        mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(expectedDto);
-
         currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
@@ -267,8 +256,6 @@ public class DirectionServiceTests
             Title = expected.FirstOrDefault().Title,
             Description = expected.FirstOrDefault().Description,
         };
-
-        mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(expectedDto);
 
         currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
         regionAdminServiceMock

@@ -1,21 +1,17 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
@@ -26,7 +22,6 @@ public class LanguageServiceTests
     private LanguageService service;
     private IEntityRepository<long, Language> repository;
     private Mock<ILogger<LanguageService>> logger;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -40,9 +35,8 @@ public class LanguageServiceTests
         repository = new EntityRepository<long, Language>(context);
 
         logger = new Mock<ILogger<LanguageService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
-        service = new LanguageService(repository, logger.Object, mapper);
+        service = new LanguageService(repository, logger.Object);
 
         SeedDatabase();
     }

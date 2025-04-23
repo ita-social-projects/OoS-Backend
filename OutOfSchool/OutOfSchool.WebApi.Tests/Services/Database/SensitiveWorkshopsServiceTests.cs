@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
@@ -35,7 +34,6 @@ public class SensitiveWorkshopsServiceTests
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;
-    private Mock<IMapper> mapperMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
@@ -52,7 +50,6 @@ public class SensitiveWorkshopsServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
-        mapperMock = new Mock<IMapper>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
@@ -72,7 +69,6 @@ public class SensitiveWorkshopsServiceTests
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,
                 new Mock<ILogger<WorkshopService>>().Object,
-                mapperMock.Object,
                 new Mock<IImageDependentEntityImagesInteractionService<Workshop>>().Object,
                 new Mock<IAverageRatingService>().Object,
                 new Mock<IProviderRepository>().Object,
@@ -253,9 +249,6 @@ public class SensitiveWorkshopsServiceTests
 
         codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(parentCATOTTGId))
             .ReturnsAsync(subSettlementsIds);
-
-        mapperMock.Setup(m => m.Map<IEnumerable<WorkshopDto>>(workshops))
-            .Returns(workshopsDto);
 
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(searchWords);

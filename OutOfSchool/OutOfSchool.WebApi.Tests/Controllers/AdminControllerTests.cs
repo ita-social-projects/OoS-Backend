@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,8 +22,6 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
@@ -57,14 +54,12 @@ public class AdminControllerTests
     private List<MinistryAdminDto> ministryAdminDtos;
     private DirectionDto direction;
     private List<WorkshopDto> listWorkshopDto;
-    private IMapper mapper;
     private HttpContext fakeHttpContext;
     private string userRole;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         sensitiveMinistryAdminService = new Mock<ISensitiveMinistryAdminService>();
         sensitiveDirectionService = new Mock<ISensitiveDirectionService>();
         sensitiveProviderService = new Mock<ISensitiveProviderService>();
@@ -117,7 +112,7 @@ public class AdminControllerTests
         var expected = new SearchResult<MinistryAdminDto>
         {
             TotalAmount = 10,
-            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
+            Entities = ministryAdminDtos,
         };
 
         sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))
@@ -141,7 +136,7 @@ public class AdminControllerTests
         var expected = new SearchResult<MinistryAdminDto>
         {
             TotalAmount = 0,
-            Entities = ministryAdminDtos.Select(x => mapper.Map<MinistryAdminDto>(x)).ToList(),
+            Entities = ministryAdminDtos,
         };
 
         sensitiveMinistryAdminService.Setup(x => x.GetByFilter(It.IsAny<MinistryAdminFilter>()))

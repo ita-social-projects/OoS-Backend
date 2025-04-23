@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -31,7 +30,6 @@ public class StatisticServiceTest
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> directionRepository;
-    private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
     private Mock<IAverageRatingService> averageRatingServiceMock;
 
@@ -42,7 +40,6 @@ public class StatisticServiceTest
         workshopRepository = new Mock<IWorkshopRepository>();
         directionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         var logger = new Mock<ILogger<StatisticService>>();
-        mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
 
@@ -51,7 +48,6 @@ public class StatisticServiceTest
             workshopRepository.Object,
             directionRepository.Object,
             logger.Object,
-            mapper.Object,
             cache.Object,
             averageRatingServiceMock.Object);
     }
@@ -63,9 +59,6 @@ public class StatisticServiceTest
         List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
 
         SetupGetPopularWorkshops(expectedWorkshopCards);
-
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
 
         // Act
         var result = await service
@@ -88,8 +81,6 @@ public class StatisticServiceTest
         SetupGetPopularWorkshopsIncludingCATOTTG();
 
         var expectedWorkshopCards = new List<WorkshopCard>();
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
 
         // Act
         var result = await service
@@ -111,12 +102,6 @@ public class StatisticServiceTest
 
         SetupGetPopularDirections();
 
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
-
         // Act
         var result = await service
             .GetPopularDirectionsFromDatabase(1, 0)
@@ -136,12 +121,6 @@ public class StatisticServiceTest
         List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsCityFilter();
 
         SetupGetPopularDirections();
-
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
 
         // Act
         var result = await service

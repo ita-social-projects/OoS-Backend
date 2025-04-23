@@ -1,31 +1,30 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.AuthCommon;
+using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using System;
-using OutOfSchool.AuthCommon;
-using System.Linq;
-using OutOfSchool.EmailSender.Services;
-using Microsoft.Extensions.Options;
-using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
@@ -104,7 +103,6 @@ public class MinistryAdminControllerTests
         fakeHostsConfig.Setup(x => x.Value).Returns(config);
 
         ministryAdminService = new CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>(
-            new Mock<IMapper>().Object,
             ministryAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<Guid, InstitutionAdmin, MinistryAdminBaseDto, InstitutionAdminRepository>>>().Object,
         new Mock<IEmailSenderService>().Object,

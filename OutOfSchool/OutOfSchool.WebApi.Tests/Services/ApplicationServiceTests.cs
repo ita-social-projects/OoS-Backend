@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -38,7 +37,6 @@ public class ApplicationServiceTests
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<ILogger<ApplicationService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
@@ -75,7 +73,6 @@ public class ApplicationServiceTests
         officialRepositoryMock = new Mock<IOfficialRepository>();
 
         logger = new Mock<ILogger<ApplicationService>>();
-        mapper = new Mock<IMapper>();
 
         applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
         applicationsConstraintsConfig.Setup(x => x.Value)
@@ -97,7 +94,6 @@ public class ApplicationServiceTests
             applicationRepositoryMock.Object,
             logger.Object,
             workshopRepositoryMock.Object,
-            mapper.Object,
             applicationsConstraintsConfig.Object,
             notificationService.Object,
             changesLogService.Object,
@@ -125,7 +121,7 @@ public class ApplicationServiceTests
         var result = await service.GetById(id).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedApplicationGetByIdSuccess(id));
+        result.Should().BeEquivalentTo(new ApplicationDto() { Id = id });
     }
 
     [Test]
@@ -171,8 +167,6 @@ public class ApplicationServiceTests
         };
 
         applicationRepositoryMock.Setup(w => w.Create(applicationForCreation)).Returns(Task.FromResult(newApplication));
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(applicationDto);
-        mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>())).Returns(applicationForCreation);
 
         var input = new ApplicationCreate()
         {
@@ -207,7 +201,7 @@ public class ApplicationServiceTests
         result.Should().BeEquivalentTo(
             new ModelWithAdditionalData<ApplicationDto, int>
             {
-                Model = ExpectedApplicationCreate(newApplication),
+                Model = newApplication.ToDto(),
                 AdditionalData = 0,
             });
     }
@@ -308,7 +302,7 @@ public class ApplicationServiceTests
             .ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
         currentUserServiceMock.Verify(
             a => a.UserHasRights(It.IsAny<IUserRights[]>()), Times.Once);
     }
@@ -362,7 +356,7 @@ public class ApplicationServiceTests
             .ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -414,7 +408,7 @@ public class ApplicationServiceTests
         var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -487,7 +481,7 @@ public class ApplicationServiceTests
         var result = await service.GetAllByChild(existingApplications.First().ChildId).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -540,8 +534,6 @@ public class ApplicationServiceTests
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { changedEntity }));
         applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
            .Returns((Func<Task<Application>> f) => f.Invoke());
-
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
 
         var expected = new ApplicationDto() { Id = id };
         var update = new ApplicationUpdate
@@ -631,8 +623,6 @@ public class ApplicationServiceTests
            .Returns((Func<Task<Application>> f) => f.Invoke());
 
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-        { Id = id, Status = ApplicationStatus.Approved });
 
         var expected = new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved };
         var update = new ApplicationUpdate
@@ -709,8 +699,6 @@ public class ApplicationServiceTests
                 Application.ValidApplicationStatuses.Contains(x.Status)))
             .ReturnsAsync(1);
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-        { Id = id, Status = ApplicationStatus.Approved });
 
         var update = new ApplicationUpdate
         {
@@ -776,8 +764,6 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
            .Returns((Func<Task<Application>> f) => f.Invoke());
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-        { Id = id, Status = ApplicationStatus.Approved });
 
         var update = new ApplicationUpdate
         {
@@ -838,8 +824,6 @@ public class ApplicationServiceTests
                 Application.ValidApplicationStatuses.Contains(x.Status)))
             .ReturnsAsync(1);
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-        { Id = id, Status = ApplicationStatus.Approved });
 
         var update = new ApplicationUpdate
         {
@@ -923,7 +907,6 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
         applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
            .Returns((Func<Task<Application>> f) => f.Invoke());
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
 
         var expected = new ApplicationDto() { Id = id };
         var update = new ApplicationUpdate
@@ -991,7 +974,6 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
         applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
            .Returns((Func<Task<Application>> f) => f.Invoke());
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
 
         var expected = new ApplicationDto() { Id = id };
         var update = new ApplicationUpdate
@@ -1061,55 +1043,18 @@ public class ApplicationServiceTests
         workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).ReturnsAsync(workshopMock);
     }
 
-    private void SetupGetAll(List<Application> apps)
-    {
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
-    }
-
-    private void SetupGetAllByInstitutionId(List<Application> apps)
-    {
-        var mappedDtos = apps.Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"))
-            .Select(a => new ApplicationDto()
-            {
-                Id = a.Id,
-                Workshop = new WorkshopCard()
-                {
-                    InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-                },
-            })
-            .ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
-    }
-
     private void SetupGetAllBy(IEnumerable<Application> apps)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
-
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { apps.First() }));
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllByWorkshop(List<Application> apps)
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
 
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
         currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] { new ProviderRights(apps.First().Workshop.ProviderId) }))
@@ -1122,13 +1067,11 @@ public class ApplicationServiceTests
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllByWorkshopEmpty()
     {
         var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
-        var emptyApplicationDtosList = new List<ApplicationDto>();
 
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
@@ -1137,14 +1080,12 @@ public class ApplicationServiceTests
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
     }
 
     private void SetupGetAllByProvider(IEnumerable<Application> apps)
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
         var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
 
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
@@ -1160,14 +1101,12 @@ public class ApplicationServiceTests
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllByProviderEmpty()
     {
         var emptyWorkshopsList = new List<Workshop>().AsQueryable().BuildMock();
         var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
-        var emptyApplicationDtosList = new List<ApplicationDto>();
 
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
@@ -1183,7 +1122,6 @@ public class ApplicationServiceTests
                 It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
     }
 
     private void SetupGetById(Application application)
@@ -1195,22 +1133,6 @@ public class ApplicationServiceTests
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
             .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-        mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() { Id = application.Id });
-    }
-
-    private void SetupDelete(Application application)
-    {
-        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-
-        applicationRepositoryMock.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
-            .Returns(applicationsMock)
-            .Verifiable();
-        applicationRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(application);
-        applicationRepositoryMock.Setup(a => a.Delete(It.IsAny<Application>())).Returns(Task.CompletedTask);
     }
 
     #endregion
@@ -1403,25 +1325,6 @@ public class ApplicationServiceTests
                 ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups
             },
         };
-    }
-
-    #endregion
-
-    #region Expected
-
-    private ApplicationDto ExpectedApplicationCreate(Application application)
-    {
-        return mapper.Object.Map<ApplicationDto>(application);
-    }
-
-    private ApplicationDto ExpectedApplicationGetByIdSuccess(Guid id)
-    {
-        return new ApplicationDto() { Id = id };
-    }
-
-    private List<ApplicationDto> ExpectedApplicationsGetAll(IEnumerable<Application> apps)
-    {
-        return mapper.Object.Map<List<ApplicationDto>>(apps);
     }
 
     #endregion

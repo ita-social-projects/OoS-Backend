@@ -1,31 +1,30 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.AuthCommon;
+using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.AuthCommon.Controllers;
+using OutOfSchool.AuthCommon.Services;
+using OutOfSchool.AuthCommon.Services.Interfaces;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.AuthCommon.Controllers;
-using OutOfSchool.AuthCommon.Services.Interfaces;
-using OutOfSchool.Services.Enums;
-using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services;
-using System;
-using OutOfSchool.AuthCommon.Services;
-using AutoMapper;
-using OutOfSchool.Services.Repository;
-using Microsoft.AspNetCore.Identity;
-using OutOfSchool.RazorTemplatesData.Services;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.AuthCommon;
-using System.Linq;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using OutOfSchool.EmailSender.Services;
-using Microsoft.Extensions.Options;
-using OutOfSchool.AuthCommon.Config;
+using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
@@ -126,7 +125,6 @@ public class RegionAdminControllerTests
         fakeHostsConfig.Setup(x => x.Value).Returns(config);
 
         regionAdminService = new CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>(
-            new Mock<IMapper>().Object,
             regionAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, RegionAdmin, RegionAdminBaseDto, RegionAdminRepository>>>().Object,
             new Mock<IEmailSenderService>().Object,

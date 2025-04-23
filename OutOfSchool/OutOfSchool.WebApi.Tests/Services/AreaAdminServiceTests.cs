@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,8 +14,6 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Responses;
@@ -43,7 +40,6 @@ public class AreaAdminServiceTests
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IAreaAdminRepository> areaAdminRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
-    private IMapper mapper;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> institutionAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -92,7 +88,6 @@ public class AreaAdminServiceTests
 
         areaAdminRepositoryMock = new Mock<IAreaAdminRepository>();
         var logger = new Mock<ILogger<AreaAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         institutionAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -111,7 +106,6 @@ public class AreaAdminServiceTests
             areaAdminRepositoryMock.Object,
             logger.Object,
             userRepositoryMock.Object,
-            mapper,
             currentUserServiceMock.Object,
             institutionAdminServiceMock.Object,
             regionAdminServiceMock.Object,
@@ -123,7 +117,7 @@ public class AreaAdminServiceTests
     public async Task GetById_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<AreaAdminDto>(areaAdmin);
+        var expected = areaAdmin.ToDto();
         areaAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(areaAdmin);
 
         // Act
@@ -149,7 +143,7 @@ public class AreaAdminServiceTests
     public async Task GetByUserId_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<AreaAdminDto>(areaAdmin);
+        var expected = areaAdmin.ToDto();
         areaAdminRepositoryMock
             .Setup(x => x
                 .GetByFilter(It.IsAny<Expression<Func<AreaAdmin, bool>>>(),
@@ -186,9 +180,7 @@ public class AreaAdminServiceTests
     public async Task GetByFilter_WhenCalled_ReturnsEntities()
     {
         // Arrange
-        var expected = areaAdmins
-            .Select(p => mapper.Map<AreaAdminDto>(p))
-            .ToList();
+        var expected = areaAdmins.ToDto();
 
         var filter = new AreaAdminFilter()
         {
@@ -356,7 +348,7 @@ public class AreaAdminServiceTests
         areaAdmins[1].User.Email = "admin@otg.org";
 
         var filteredAreaAdmins = new List<AreaAdmin>() { areaAdmins[0], areaAdmins[1] };
-        var expectedAdminDtos = mapper.Map<List<AreaAdminDto>>(filteredAreaAdmins);
+        var expectedAdminDtos = filteredAreaAdmins.ToDto();
 
         SetupCommonMocks(filter, filteredAreaAdmins, ["admin@"]);
 

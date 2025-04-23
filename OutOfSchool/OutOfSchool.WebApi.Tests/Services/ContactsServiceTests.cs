@@ -5,10 +5,8 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ContactInfo;
-using OutOfSchool.Tests.Common;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -20,8 +18,7 @@ public class ContactsServiceTests
     [SetUp]
     public void SetUp()
     {
-        var mapper = TestHelper.CreateMapperInstanceOfProfileType<ContactsProfile>();
-        contactsService = new ContactsService<TestEntity, TestDto>(mapper);
+        contactsService = new ContactsService<TestEntity, TestDto>();
     }
 
     [Test]

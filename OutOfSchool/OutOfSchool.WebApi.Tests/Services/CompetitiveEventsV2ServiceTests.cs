@@ -1,25 +1,24 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using System;
-using System.Threading.Tasks;
-using OutOfSchool.BusinessLogic;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Models;
-using System.Collections.Generic;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -27,7 +26,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CompetitiveEventsV2ServiceTests
 {
     private Mock<ICompetitiveEventRepository> repoMock;
-    private Mock<IMapper> mapperMock;
     private Mock<ILogger<CompetitiveEventService>> loggerMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
     private Mock<ICurrentUserService> currentUserMock;
@@ -40,7 +38,6 @@ public class CompetitiveEventsV2ServiceTests
     public void Setup()
     {
         repoMock = new Mock<ICompetitiveEventRepository>();
-        mapperMock = new Mock<IMapper>();
         loggerMock = new Mock<ILogger<CompetitiveEventService>>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         currentUserMock = new Mock<ICurrentUserService>();
@@ -52,7 +49,6 @@ public class CompetitiveEventsV2ServiceTests
             Mock.Of<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>(),
             loggerMock.Object,
             localizerMock.Object,
-            mapperMock.Object,
             currentUserMock.Object,
             contactsServiceMock.Object,
             imageServiceMock.Object);
@@ -66,11 +62,9 @@ public class CompetitiveEventsV2ServiceTests
         var dto = new CompetitiveEventV2CreateRequestDto();
         var expectedDto = new CompetitiveEventV2Dto { Id = entity.Id };
 
-        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto)).Returns(entity);
         repoMock.Setup(r => r.Create(entity)).ReturnsAsync(entity);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
             .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
-        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity)).Returns(expectedDto);
 
         // Act
         var result = await service.CreateV2(dto);
@@ -95,9 +89,7 @@ public class CompetitiveEventsV2ServiceTests
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
             .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
 
-        mapperMock.Setup(m => m.Map<CompetitiveEventV2Dto>(entity)).Returns(resultDto);
         repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>())).ReturnsAsync(entity);
-        mapperMock.Setup(m => m.Map<CompetitiveEvent>(dto)).Returns(entity);
 
         var result = await service.CreateV2(dto);
 

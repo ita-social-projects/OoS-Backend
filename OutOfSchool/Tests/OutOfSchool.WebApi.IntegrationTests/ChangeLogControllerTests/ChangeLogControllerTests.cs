@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -13,8 +12,6 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -30,7 +27,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ChangeLogControllerTests;
 [TestFixture]
 public class ChangeLogControllerTests
 {
-    private IMapper mapper;
     private ChangesLogController changesLogControllerWithRealService;
     private IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository;
     private IChangesLogService changesLogService;
@@ -40,7 +36,6 @@ public class ChangeLogControllerTests
     {
         var context = GetContext();
         parentBlockedByAdminLogRepository = new EntityRepository<long, ParentBlockedByAdminLog>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         changesLogService = new ChangesLogService(
             new Mock<IOptions<ChangesLogConfig>>().Object,
             new Mock<IChangesLogRepository>().Object,
@@ -49,7 +44,6 @@ public class ChangeLogControllerTests
             new Mock<IEntityRepository<long, EmployeeChangesLog>>().Object,
             parentBlockedByAdminLogRepository,
             new Mock<ILogger<ChangesLogService>>().Object,
-            mapper,
             new Mock<IValueProjector>().Object,
             new Mock<ICurrentUserService>().Object,
             new Mock<IMinistryAdminService>().Object,

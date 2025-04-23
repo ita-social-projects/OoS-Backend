@@ -1,17 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Tests.Common.DbContextTests;
-using OutOfSchool.Services.Repository.WorkshopDraftRepository;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.WorkshopDraftRepository;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using AutoMapper;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Tests.Common;
-using System;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 
@@ -22,13 +20,9 @@ public class WorkshopDraftRepositoryTests
 
     private IReadOnlyCollection<WorkshopDraft> workshopDrafts;
 
-    private IMapper mapper;
-
     [SetUp]
     public async Task SetUp()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<WorkshopDraftMappingProfile>();
-
         dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
             .UseLazyLoadingProxies()
@@ -114,7 +108,7 @@ public class WorkshopDraftRepositoryTests
 
         var worshopV2Dtos = WorkshopV2DtoGenerator.Generate(3);
 
-        workshopDrafts = mapper.Map<List<WorkshopDraft>>(worshopV2Dtos);
+        workshopDrafts = worshopV2Dtos.ToDraft();
 
         context.AddRange(workshopDrafts);
         await context.SaveChangesAsync();

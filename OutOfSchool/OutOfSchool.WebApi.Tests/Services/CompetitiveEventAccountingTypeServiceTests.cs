@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -9,14 +9,10 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
-using System;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -30,7 +26,6 @@ public class CompetitiveEventAccountingTypeServiceTests
 
     private Mock<ILogger<CompetitiveEventAccountingType>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
-    private IMapper mapper;
 
     private CompetitiveEventAccountingTypeService service;
 
@@ -45,15 +40,13 @@ public class CompetitiveEventAccountingTypeServiceTests
 
         repository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventAccountingType>>();
 
         service = new CompetitiveEventAccountingTypeService(
             repository,
             logger.Object,
-            localizer.Object,
-            mapper);
+            localizer.Object);
 
         SeedDataBase();
     }

@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -22,8 +21,6 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
@@ -46,7 +43,6 @@ public class ProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
-    private IMapper mapper;
     private Mock<INotificationService> notificationService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -98,7 +94,6 @@ public class ProviderServiceTests
         workshopServicesCombinerMock = new Mock<IWorkshopServicesCombiner>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         var providerContactsServiceMock = new Mock<IContactsService<Provider, IHasContactsDto<Provider>>>();
 
@@ -107,7 +102,6 @@ public class ProviderServiceTests
             usersRepositoryMock.Object,
             logger.Object,
             localizer.Object,
-            mapper,
             addressRepo.Object,
             individualRepo.Object,
             officialRepo.Object,
@@ -144,7 +138,7 @@ public class ProviderServiceTests
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
-        var expected = mapper.Map<ProviderDto>(dto);
+        var expected = dto.ToModel().ToDto();
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
@@ -207,9 +201,7 @@ public class ProviderServiceTests
         var providersMock = fakeProviders.AsQueryable().BuildMock();
 
         var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
-        var expected = fakeProviders
-            .Select(p => mapper.Map<ProviderDto>(p))
-            .ToList();
+        var expected = fakeProviders.ToDto();
         expected
             .ForEach(p => p.Rating = fakeRatings
                 .Where(r => r.EntityId == p.Id)
@@ -258,9 +250,7 @@ public class ProviderServiceTests
             }));
 
         var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
-        var expected = fakeProviders
-            .Select(p => mapper.Map<ProviderDto>(p))
-            .ToList();
+        var expected = fakeProviders.ToDto();
         expected
             .ForEach(p => p.Rating = fakeRatings
                 .Where(r => r.EntityId == p.Id)
@@ -316,9 +306,7 @@ public class ProviderServiceTests
             .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
 
         var fakeRatings = RatingsGenerator.GetAverageRatings(fakeProviders.Select(p => p.Id)); // expected ratings
-        var expected = fakeProviders
-            .Select(p => mapper.Map<ProviderDto>(p))
-            .ToList();
+        var expected = fakeProviders.ToDto();
         expected
             .ForEach(p => p.Rating = fakeRatings
                 .Where(r => r.EntityId == p.Id)
@@ -364,7 +352,7 @@ public class ProviderServiceTests
         fakeProviders[1].ShortTitle = "Провайдер";
 
         var filteredProviders = new List<Provider> { fakeProviders[0], fakeProviders[1] };
-        var expectedDtos = mapper.Map<List<ProviderDto>>(filteredProviders);
+        var expectedDtos = filteredProviders.ToDto();
         var providerRatings = RatingsGenerator.GetAverageRatings(expectedDtos.Select(p => p.Id));
 
         SetupMocks(
@@ -412,7 +400,7 @@ public class ProviderServiceTests
         var actualProviderDto = await providerService.GetById(existingProvider.Id).ConfigureAwait(false);
 
         // Assert
-        TestHelper.AssertDtosAreEqual(mapper.Map<ProviderDto>(existingProvider), actualProviderDto);
+        TestHelper.AssertDtosAreEqual(existingProvider.ToDto(), actualProviderDto);
         averageRatingServiceMock.Verify(r => r.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Once);
     }
 
@@ -444,7 +432,7 @@ public class ProviderServiceTests
         var actualProviderStatusDto = await providerService.GetProviderStatusById(existingProvider.Id).ConfigureAwait(false);
 
         // Assert
-        TestHelper.AssertDtosAreEqual(mapper.Map<ProviderStatusDto>(existingProvider), actualProviderStatusDto);
+        TestHelper.AssertDtosAreEqual(existingProvider.ToStatusDto(), actualProviderStatusDto);
     }
 
     [Test]
@@ -473,7 +461,7 @@ public class ProviderServiceTests
 
         var updatedTitle = Guid.NewGuid().ToString();
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
-        var expectedProviderDto = mapper.Map<ProviderDto>(provider);
+        var expectedProviderDto = provider.ToDto();
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
 
@@ -515,7 +503,7 @@ public class ProviderServiceTests
         providerToUpdateDto.Status = ProviderStatus.Approved;
         providerToUpdateDto.ShortTitleEn = updatedTitle;
 
-        var expected = mapper.Map<ProviderDto>(provider);
+        var expected = provider.ToDto();
         expected.Status = initialStatus;
         expected.ShortTitleEn = updatedTitle;
 
@@ -544,7 +532,7 @@ public class ProviderServiceTests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.FullTitle = updatedTitle;
 
-        var expected = mapper.Map<ProviderDto>(provider);
+        var expected = provider.ToDto();
         expected.Status = ProviderStatus.Recheck;
         expected.FullTitle = updatedTitle;
 
@@ -589,7 +577,7 @@ public class ProviderServiceTests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.License = updatedLicense;
 
-        var expected = mapper.Map<ProviderDto>(provider);
+        var expected = provider.ToDto();
         expected.LicenseStatus = ProviderLicenseStatus.Pending;
         expected.License = updatedLicense;
 
@@ -629,7 +617,7 @@ public class ProviderServiceTests
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
         providerToUpdateDto.License = updatedLicense;
 
-        var expected = mapper.Map<ProviderDto>(provider);
+        var expected = provider.ToDto();
         expected.LicenseStatus = ProviderLicenseStatus.NotProvided;
         expected.License = updatedLicense;
 
@@ -655,7 +643,7 @@ public class ProviderServiceTests
         provider.Ownership = ownershipType;
 
         var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
-        var expectedProviderDto = mapper.Map<ProviderDto>(provider);
+        var expectedProviderDto = provider.ToDto();
 
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
             .ReturnsAsync(provider);
@@ -678,7 +666,7 @@ public class ProviderServiceTests
     public async Task Delete_WhenIdIsValid_CalledProvidersRepositoryDeleteMethod()
     {
         // Arrange
-        var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
+        var providerToDeleteDto = fakeProviders.RandomItem().ToDto();
         var deleteMethodArguments = new List<Provider>();
         var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
@@ -692,7 +680,7 @@ public class ProviderServiceTests
 
         // Act
         await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
-        var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
+        var result = deleteMethodArguments.Single().ToDto();
 
         // Assert
         TestHelper.AssertDtosAreEqual(providerToDeleteDto, result);
