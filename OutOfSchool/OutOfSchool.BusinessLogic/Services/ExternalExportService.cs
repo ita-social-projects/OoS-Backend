@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Exported;
 using OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
@@ -13,7 +12,16 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class ExternalExportService : IExternalExportService
+public class ExternalExportService(
+    IProviderRepository providerRepository,
+    IWorkshopRepository workshopRepository,
+    IApplicationRepository applicationRepository,
+    IAverageRatingService averageRatingService,
+    IEntityRepositorySoftDeleted<long, Direction> directionRepository,
+    ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository,
+    IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository,
+    ILogger<ExternalExportService> logger
+) : IExternalExportService
 {
     /// <summary>
     /// Create a delegate to include other entities in Provider entity
@@ -55,41 +63,6 @@ public class ExternalExportService : IExternalExportService
                     .ThenInclude(s => s.Direction)
                     .IncludeContactsWithCodeficatorHierarchy();
 
-    private readonly IProviderRepository providerRepository;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
-    private readonly ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository;
-    private readonly IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository;
-    private readonly IMapper mapper;
-    private readonly ILogger<ExternalExportService> logger;
-
-    public ExternalExportService(
-        IProviderRepository providerRepository,
-        IWorkshopRepository workshopRepository,
-        IApplicationRepository applicationRepository,
-        IAverageRatingService averageRatingService,
-        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
-        ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent> competitiveEventRepository,
-        IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository,
-        IMapper mapper,
-        ILogger<ExternalExportService> logger)
-    {
-        this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
-        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
-        this.applicationRepository =
-            applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
-        this.averageRatingService =
-            averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
-        this.directionRepository = directionRepository ?? throw new ArgumentNullException(nameof(directionRepository));
-        this.competitiveEventRepository = competitiveEventRepository ??
-                                          throw new ArgumentNullException(nameof(competitiveEventRepository));
-        this.subDirectionRepository = subDirectionRepository ?? throw new ArgumentNullException(nameof(subDirectionRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
     public async Task<SearchResult<ProviderInfoBaseDto>> GetProviders(DateTime updatedAfter,
         OffsetFilter offsetFilter)
     {
@@ -111,9 +84,7 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var providersDto = providers
-                .Select(MapToInfoDto<Provider, ProviderInfoBaseDto, ProviderInfoDto>)
-                .ToList();
+            var providersDto = providers.ToBaseOrInfoDto();
 
             await FillRatingsForType(providersDto).ConfigureAwait(false);
 
@@ -153,9 +124,7 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var workshopsDto = workshops
-                .Select(MapToInfoDto<Workshop, WorkshopInfoBaseDto, WorkshopInfoDto>)
-                .ToList();
+            var workshopsDto = workshops.ToBaseOrInfoDto();
 
             await FillRatingsForType(workshopsDto).ConfigureAwait(false);
             await FillTakenSeats(workshopsDto).ConfigureAwait(false);
@@ -195,9 +164,7 @@ public class ExternalExportService : IExternalExportService
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var eventsDto = events
-                .Select(MapToInfoDto<CompetitiveEvent, CompetitiveEventInfoBaseDto, CompetitiveEventInfoDto>)
-                .ToList();
+            var eventsDto = events.ToBaseOrInfoDto();
 
             await FillRatingsForType(eventsDto).ConfigureAwait(false);
 
@@ -239,14 +206,10 @@ public class ExternalExportService : IExternalExportService
             // Is deleted expression is added automatically by repo
             var count = await directionRepository.Count(filterExpression).ConfigureAwait(false);
 
-            var directionDtos = directions
-                .Select(MapToInfoDto<Direction, DirectionInfoBaseDto, DirectionInfoDto>)
-                .ToList();
-
             var result = new SearchResult<DirectionInfoBaseDto>()
             {
                 TotalAmount = count,
-                Entities = directionDtos,
+                Entities = directions.ToBaseOrInfoDto(),
             };
 
             return result;
@@ -280,14 +243,10 @@ public class ExternalExportService : IExternalExportService
 
             var count = await subDirectionRepository.Count(filterExpression).ConfigureAwait(false);
 
-            var subDirectionDtos = subDirections
-                .Select(MapToInfoDto<SubDirection, SubDirectionsInfoBaseDto, SubDirectionsInfoDto>)
-                .ToList();
-
             var result = new SearchResult<SubDirectionsInfoBaseDto>()
             {
                 TotalAmount = count,
-                Entities = subDirectionDtos,
+                Entities = subDirections.ToBaseOrInfoDto(),
             };
 
             return result;
@@ -298,10 +257,6 @@ public class ExternalExportService : IExternalExportService
             throw;
         }
     }
-
-    private TBase MapToInfoDto<TEntity, TBase, TFull>(TEntity entity)
-        where TEntity : ISoftDeleted
-        where TFull : TBase => entity.IsDeleted ? mapper.Map<TBase>(entity) : mapper.Map<TFull>(entity);
 
     private async Task FillRatingsForType<T>(List<T> dtos)
         where T : class, IExternalInfo<Guid>

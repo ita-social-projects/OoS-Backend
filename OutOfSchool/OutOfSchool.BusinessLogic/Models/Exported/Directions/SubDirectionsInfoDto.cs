@@ -16,3 +16,26 @@ public class SubDirectionsInfoDto : SubDirectionsInfoBaseDto
 
     public long DirectionId { get; set; }
 }
+
+public static class SubDirectionsInfoDtoExtensions
+{
+    public static SubDirectionsInfoBaseDto ToBaseInfoDto(this SubDirection model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static SubDirectionsInfoDto ToInfoDto(this SubDirection model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+            Title = model.Title,
+            Description = model.Description,
+            DirectionId = model.DirectionId,
+        };
+
+    public static List<SubDirectionsInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<SubDirection> list)
+        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
+}

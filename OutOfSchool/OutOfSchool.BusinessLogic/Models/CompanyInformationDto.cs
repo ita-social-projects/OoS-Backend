@@ -20,3 +20,30 @@ public class CompanyInformationDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<CompanyInformationItemDto> CompanyInformationItems { get; set; }
 }
+
+public static class CompanyInformationDtoExtensions
+{
+    public static CompanyInformation ToModel(this CompanyInformationDto dto)
+        => new()
+        {
+            Id = dto.Id,
+            Title = dto.Title,
+            Type = dto.Type,
+            CompanyInformationItems = dto.CompanyInformationItems.ToModel()
+        };
+
+    public static List<CompanyInformation> ToModel(this IEnumerable<CompanyInformationDto> list)
+        => list.MapToList(ToModel);
+
+    public static CompanyInformationDto ToDto(this CompanyInformation model)
+        => new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            Type = model.Type,
+            CompanyInformationItems = model.CompanyInformationItems.ToDto()
+        };
+
+    public static List<CompanyInformationDto> ToDto(this IEnumerable<CompanyInformation> list)
+        => list.MapToList(ToDto);
+}

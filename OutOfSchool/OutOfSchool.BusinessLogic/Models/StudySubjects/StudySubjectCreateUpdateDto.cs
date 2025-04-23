@@ -38,3 +38,28 @@ public class StudySubjectCreateUpdateDto : IValidatableObject
         }
     }
 }
+
+public static class StudySubjectCreateUpdateDtoExtensions
+{
+    public static StudySubject SetToModel(this StudySubjectCreateUpdateDto dto, StudySubject model)
+    {
+        model.Id = dto.Id;
+        model.NameInUkrainian = dto.NameInUkrainian;
+        model.NameInInstructionLanguage = dto.NameInInstructionLanguage;
+        model.IsLanguageUkrainian = dto.IsLanguageUkrainian;
+        model.Language = dto.Language.ToModel();
+        
+        return model;
+    }
+
+    public static StudySubject ToModel(this StudySubjectCreateUpdateDto dto, Guid providerId)
+        => new()
+        {
+            Id = dto.Id,
+            NameInUkrainian = dto.NameInUkrainian,
+            NameInInstructionLanguage = dto.NameInInstructionLanguage,
+            IsLanguageUkrainian = dto.IsLanguageUkrainian,
+            Language = dto.Language.ToModel(),
+            ProviderId = providerId,
+        };
+}

@@ -6,13 +6,8 @@ namespace OutOfSchool.BusinessLogic.Models.Codeficator;
 
 public class AllAddressPartsDto : CodeficatorAddressDto
 {
-    public string FullAddress
-    {
-        get
-        {
-            return GetFullAddress(AddressParts, string.Empty, true);
-        }
-    }
+    public string FullAddress 
+        => GetFullAddress(AddressParts, string.Empty, true);
 
     [JsonIgnore]
     public CodeficatorDto AddressParts { get; set; }
@@ -68,4 +63,58 @@ public class AllAddressPartsDto : CodeficatorAddressDto
                 break;
         }
     }
+}
+
+public static class AllAddressPartsDtoExtensions
+{
+    public static CodeficatorAddressES ToCodeficatorAddressES(this AllAddressPartsDto dto)
+        => new()
+        {
+            // FullAddress - ignored in original AM mapping 
+            Id = dto.Id,
+            Category = dto.Category,
+            ParentId = dto.AddressParts.ParentId,
+            // Parent - ignored in original AM mapping
+            Region = dto.Region,
+            District = dto.District,
+            TerritorialCommunity = dto.TerritorialCommunity,
+            Settlement = dto.Settlement,
+            CityDistrict = dto.CityDistrict,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Order = dto.Order,
+            // FullName - ignored in original AM mapping
+        };
+
+    public static AllAddressPartsDto ToAllAddressPartsDto(this CodeficatorAddressES dto)
+        => new()
+        {
+            Id = dto.Id,
+            Category = dto.Category,
+            Region = dto.Region,
+            District = dto.District,
+            TerritorialCommunity = dto.TerritorialCommunity,
+            Settlement = dto.Settlement,
+            CityDistrict = dto.CityDistrict,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Order = dto.Order,
+            AddressParts = dto.ToCodeficatorDto()
+        };
+
+    public static AllAddressPartsDto ToAllAddressPartsDto(this OutOfSchool.Services.Models.CATOTTG catottg)
+        => new()
+        {
+            Id = catottg.Id,
+            Category = catottg.Category,
+            Region = catottg.GetRegionName(),
+            District = catottg.GetDistrictName(),
+            TerritorialCommunity = catottg.GetTerritorialCommunityName(),
+            Settlement = catottg.GetSettlementName(),
+            CityDistrict = catottg.GetCityDistrictName(),
+            Latitude = catottg.Latitude,
+            Longitude = catottg.Longitude,
+            Order = catottg.Order,
+            AddressParts = catottg.ToCodeficatorDto()
+        };
 }

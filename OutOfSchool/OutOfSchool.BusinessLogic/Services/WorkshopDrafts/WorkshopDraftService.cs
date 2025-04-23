@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -22,89 +21,52 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
-
 /// <summary>
 /// Implements the interface with CRUD functionality for WorkshopDraft entity.
 /// </summary>
-public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDraftService
+/// <remarks>
+/// Initializes a new instance of the <see cref="WorkshopDraftService"/> class.
+/// </remarks>
+/// <param name="logger">Logger for error logging.</param>
+/// <param name="workshopDraftRepository">Repository for the <see cref="WorkshopDraft"/> entity, handling CRUD operations.</param>
+/// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
+/// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
+/// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
+/// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
+/// <param name="options">Provides configuration settings for upload concurrency.</param>    
+/// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
+/// <param name="currentUserService">Service for managing current user.</param>
+/// <param name="regionAdminService">Service for region admin.</param>
+/// <param name="ministryAdminService"> Service for ministry admin.</param>
+/// <param name="codeficatorService">Service for CATOTTG.</param>
+/// <param name="searchStringService">Service for handling the search string.</param>
+/// <param name="institutionHierarchyRepository">Repository for InstitutionHierarchy.</param>
+/// <param name="codeficatorRepository">Repository for CATOTTG.</param>
+public class WorkshopDraftService(
+    ILogger<WorkshopDraftService> logger,
+    IWorkshopDraftRepository workshopDraftRepository,
+    IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
+    IProviderService providerService,
+    ICurrentUserService currentUserService,
+    IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
+    IEntityRepository<long, Tag> tagRepository,
+    IOptions<UploadConcurrencySettings> options,
+    IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
+    IRegionAdminService regionAdminService,
+    IMinistryAdminService ministryAdminService,
+    ICodeficatorService codeficatorService,
+    ISearchStringService searchStringService,
+    IInstitutionHierarchyRepository institutionHierarchyRepository,
+    ICodeficatorRepository codeficatorRepository
+) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
-    private readonly ILogger<WorkshopDraftService> logger;
-    private readonly IWorkshopDraftRepository workshopDraftRepository;
-    private readonly IMapper mapper;
-    private readonly IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService;
-    private readonly IProviderService providerService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IWorkshopServicesCombinerV2 workshopServicesCombinerV2;
-    private readonly IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService;
-    private readonly IEntityRepository<long, Tag> tagRepository;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly ISearchStringService searchStringService;
-    private readonly IInstitutionHierarchyRepository institutionHierarchyRepository;
-    private readonly ICodeficatorRepository codeficatorRepository;
-    private readonly int maxParallelUploads;
+    private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
 
     /// <summary>
     /// Create a delegate to include other entities in InstitutionHierarchy entity
     /// </summary>
     private readonly Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>> includeDirectionsFunc =
         i => i.Include(i => i.SubDirections);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WorkshopDraftService"/> class.
-    /// </summary>
-    /// <param name="logger">Logger for error logging.</param>
-    /// <param name="workshopDraftRepository">Repository for the <see cref="WorkshopDraft"/> entity, handling CRUD operations.</param>
-    /// <param name="mapper">Service for mapping between domain models and DTOs.</param>
-    /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
-    /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
-    /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
-    /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
-    /// <param name="options">Provides configuration settings for upload concurrency.</param>    
-    /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
-    /// <param name="currentUserService">Service for managing current user.</param>
-    /// <param name="regionAdminService">Service for region admin.</param>
-    /// <param name="ministryAdminService"> Service for ministry admin.</param>
-    /// <param name="codeficatorService">Service for CATOTTG.</param>
-    /// <param name="searchStringService">Service for handling the search string.</param>
-    /// <param name="institutionHierarchyRepository">Repository for InstitutionHierarchy.</param>
-    /// <param name="codeficatorRepository">Repository for CATOTTG.</param>
-    public WorkshopDraftService(
-        ILogger<WorkshopDraftService> logger,
-        IWorkshopDraftRepository workshopDraftRepository,
-        IMapper mapper,
-        IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
-        IProviderService providerService,
-        ICurrentUserService currentUserService,
-        IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
-        IEntityRepository<long, Tag> tagRepository,
-        IOptions<UploadConcurrencySettings> options,
-        IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
-        IRegionAdminService regionAdminService,
-        IMinistryAdminService ministryAdminService,
-        ICodeficatorService codeficatorService,
-        ISearchStringService searchStringService,
-        IInstitutionHierarchyRepository institutionHierarchyRepository,
-        ICodeficatorRepository codeficatorRepository)
-    {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.workshopDraftRepository = workshopDraftRepository ?? throw new ArgumentNullException(nameof(workshopDraftRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.workshopDraftImagesService = workshopDraftImagesService ?? throw new ArgumentNullException(nameof(workshopDraftImagesService));
-        this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.teacherDraftImagesService = teacherDraftImagesService ?? throw new ArgumentNullException(nameof(teacherDraftImagesService));
-        this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
-        this.maxParallelUploads = options.Value.MaxParallelImageUploads;
-        this.workshopServicesCombinerV2 = workshopServicesCombinerV2 ?? throw new ArgumentNullException(nameof(workshopServicesCombinerV2));
-        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
-        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
-        this.institutionHierarchyRepository = institutionHierarchyRepository ?? throw new ArgumentNullException(nameof(institutionHierarchyRepository));
-        this.codeficatorRepository = codeficatorRepository ?? throw new ArgumentNullException(nameof(codeficatorRepository));
-    }
 
     // <inheritdoc/>
     public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto)
@@ -206,7 +168,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 throw new ArgumentException("This WorkshopDraft can`t be updated.");
             }
 
-            mapper.Map(workshopDraftUpdateDto.WorkshopV2Dto, workshopDraft);
+            workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
                 workshopDraft,
@@ -231,7 +193,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
                     teacherCreateUpdateResult.Add(new TeacherCreateUpdateResultDto()
                     {
-                        Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
+                        Teacher = teacher.ToResponseDto(),
                         UploadingCoverImageResult = teacherImageResult?.UploadingResult?.OperationResult
                     });
                 }
@@ -311,15 +273,11 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         if (workshopDraft.WorkshopId == null)
         {
-            var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(workshopDraft);
-
-            await workshopServicesCombinerV2.Create(workshopV2CreateRequestDto);
+            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
         {
-            var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshopDraft);
-
-            await workshopServicesCombinerV2.Update(workshopV2Dto);
+            await workshopServicesCombinerV2.Update(workshopDraft.ToDto());
         }
 
         await workshopDraftRepository.Delete(workshopDraft);
@@ -377,7 +335,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
         
         foreach (var draft in workshopDrafts)
         {
-            var responseDto = mapper.Map<WorkshopDraftViewCardDto>(draft);
+            var responseDto = draft.ToCardDto();
             responseDto.DirectionIds = institutionHierarchies
                 .FirstOrDefault(i => 
                     i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
@@ -409,8 +367,8 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
 
-        IEnumerable<long> allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
-        IEnumerable<long> subSettlementsIdsByFilter = Enumerable.Empty<long>();
+        var allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
+        var subSettlementsIdsByFilter = Enumerable.Empty<long>();
 
         if (catottgIdAdmin > 0)
         {
@@ -538,7 +496,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
     {
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopDraft = workshopV2Dto.ToDraft();
 
         var licenseStatusAndOwnership = await providerService.GetLicenseStatusAndOwnershipAsync(workshopV2Dto.ProviderId);
 
@@ -573,10 +531,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             }
         }        
 
-        Task<MultipleImageUploadingResult> workshopImagesUploadingTasks =
-            Task.FromResult<MultipleImageUploadingResult>(null);
+        var workshopImagesUploadingTasks = Task.FromResult<MultipleImageUploadingResult>(null);
 
-        Task<Result<string>> workshopUploadingCoverImageTask = Task.FromResult<Result<string>>(null);
+        var workshopUploadingCoverImageTask = Task.FromResult<Result<string>>(null);
 
         if (workshopV2Dto.ImageFiles?.Count > 0)
         {
@@ -632,7 +589,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
             teacherResults.Add(new TeacherCreateUpdateResultDto
             {
-                Teacher = mapper.Map<TeacherDraftResponseDto>(teacher),
+                Teacher = teacher.ToResponseDto(),
                 UploadingCoverImageResult = uploadingResult?.OperationResult
             });
         }
@@ -657,11 +614,12 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                      draftId);
             return null;
         }
+
         return task.Result;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
-        ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) 
+        => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
@@ -766,7 +724,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
     private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
     {
-        var workshopDraftResponseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+        var workshopDraftResponseDto = draft.ToResponseDto();
 
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 
@@ -785,8 +743,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
             .Select(c => c.Address)
             .ToList()
             .ForEach(address =>
-                address.CodeficatorAddressDto = mapper.Map<AllAddressPartsDto>(
-                    catottgs.FirstOrDefault(c => c.Id == address.CATOTTGId))
+                address.CodeficatorAddressDto = catottgs
+                    .FirstOrDefault(c => c.Id == address.CATOTTGId)
+                    ?.ToAllAddressPartsDto()
             );
 
         return workshopDraftResponseDto;
@@ -821,7 +780,7 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
 
         return workshopDrafts.Select(draft =>
         {
-            var responseDto = mapper.Map<WorkshopDraftResponseDto>(draft);
+            var responseDto = draft.ToResponseDto();
 
             var institutionHierarchy = institutionHierarchies
                 .FirstOrDefault(i => i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId);
@@ -835,8 +794,9 @@ public class WorkshopDraftService : IWorkshopDraftService, ISensitiveWorkshopDra
                 .Select(c => c.Address)
                 .ToList()
                 .ForEach(address =>
-                    address.CodeficatorAddressDto = mapper.Map<AllAddressPartsDto>(
-                        catottgs.FirstOrDefault(c => c.Id == address.CATOTTGId))
+                    address.CodeficatorAddressDto = catottgs
+                        .FirstOrDefault(c => c.Id == address.CATOTTGId)
+                        ?.ToAllAddressPartsDto()
                 );
 
             return responseDto;

@@ -12,3 +12,17 @@ public class CompetitiveEventViewCardDto
     [DataType(DataType.Text)]
     public string ShortTitle { get; set; }
 }
+
+public static class CompetitiveEventViewCardDtoExtensions
+{
+    public static CompetitiveEventViewCardDto ToViewCardDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+        => new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            ShortTitle = model.ShortTitle,
+        };
+
+    public static List<CompetitiveEventViewCardDto> ToViewCardDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
+        => list.MapToList(ToViewCardDto);
+}

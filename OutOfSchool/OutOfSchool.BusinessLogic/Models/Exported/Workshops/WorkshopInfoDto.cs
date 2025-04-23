@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
+using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
@@ -125,4 +126,64 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     public Coverage Coverage { get; set; } = Coverage.School;
     
     public List<ContactsInfoDto> Contacts { get; set; }
+}
+
+public static class WorkshopInfoDtoExtensions
+{
+    public static WorkshopInfoBaseDto ToBaseInfoDto(this Workshop model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static WorkshopInfoDto ToInfoDto(this Workshop model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+            ProviderId = model.ProviderId,
+            ParentWorkshopId = model.ParentWorkshopId,
+            Status = model.Status,
+            Title = model.Title,
+            ShortTitle = model.ShortTitle,
+            MinAge = model.MinAge,
+            MaxAge = model.MaxAge,
+            DateTimeRanges = model.DateTimeRanges.ToNotDeletedDto(),
+            IsPaid = model.IsPaid,
+            Price = model.Price,
+            PayRate = model.PayRate,
+            FormOfLearning = model.FormOfLearning,
+            AvailableSeats = model.AvailableSeats,
+            CompetitiveSelection = model.CompetitiveSelection,
+            CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
+            WorkshopDescriptionItems = model.WorkshopDescriptionItems.ToNotDeletedInfo(),
+            Institution = model.InstitutionHierarchy.Institution.Title,
+            InstitutionHierarchy = model.InstitutionHierarchy.Title,
+            DefaultTeacher = model.DefaultTeacher.ToInfoDto(),
+            DirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).ToList(),
+            SubDirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(x => x.Id).ToList(),
+            Keywords = model.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None),
+            Teachers = model.Teachers.ToInfoDto(),
+            ActiveFrom = model.ActiveFrom,
+            ActiveTo = model.ActiveTo,
+            IsSelfFinanced = model.IsSelfFinanced,
+            IsInclusive = model.IsInclusive,
+            WorkshopType = model.WorkshopType,
+            SpecialNeedsType = model.SpecialNeedsType,
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images.Select(x => x.ExternalStorageId).ToList(),
+            Tags = model.Tags.Select(x => x.Name).ToList(),
+            DefaultTeacherId = model.DefaultTeacherId,
+            EnrollmentProcedureDescription = model.EnrollmentProcedureDescription,
+            AreThereBenefits = model.AreThereBenefits,
+            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
+            EducationalShift = model.EducationalShift,
+            AgeComposition = model.AgeComposition,
+            Coverage = model.Coverage,
+            Contacts = model.Contacts.ToInfoDto(),
+        };
+
+    public static List<WorkshopInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Workshop> list)
+        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
 }

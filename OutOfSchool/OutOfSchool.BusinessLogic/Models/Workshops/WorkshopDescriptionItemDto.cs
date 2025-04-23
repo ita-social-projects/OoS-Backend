@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -13,4 +14,52 @@ public class WorkshopDescriptionItemDto
     public string Description { get; set; }
 
     public Guid WorkshopId { get; set; }
+}
+
+public static class WorkshopDescriptionItemDtoExtensions
+{
+    public static WorkshopDescriptionItemDraft ToDraft(this WorkshopDescriptionItemDto dto)
+        => new()
+        {
+            SectionName = dto.SectionName,
+            Description = dto.Description,
+        };
+
+    public static List<WorkshopDescriptionItemDraft> ToDraft(this IEnumerable<WorkshopDescriptionItemDto> list)
+        => list.MapToList(ToDraft);
+
+    public static WorkshopDescriptionItem ToModel(this WorkshopDescriptionItemDto dto)
+        => new()
+        {
+            SectionName = dto.SectionName,
+            Description = dto.Description,
+            WorkshopId = dto.WorkshopId,
+        };
+
+    public static List<WorkshopDescriptionItem> ToModel(this IEnumerable<WorkshopDescriptionItemDto> list)
+        => list.MapToList(ToModel);
+
+    public static WorkshopDescriptionItemDto ToDto(this WorkshopDescriptionItemDraft model)
+        => new()
+        {
+            SectionName = model.SectionName,
+            Description = model.Description,
+        };
+
+    public static List<WorkshopDescriptionItemDto> ToDto(this IEnumerable<WorkshopDescriptionItemDraft> list)
+        => list.MapToList(ToDto);
+
+    public static WorkshopDescriptionItemDto ToDto(this WorkshopDescriptionItem model)
+        => new()
+        {
+            SectionName = model.SectionName,
+            Description = model.Description,
+            WorkshopId = model.WorkshopId,
+        };
+
+    public static List<WorkshopDescriptionItemDto> ToDto(this IEnumerable<WorkshopDescriptionItem> list)
+        => list.MapToList(ToDto);
+
+    public static List<WorkshopDescriptionItemDto> ToNotDeletedDto(this IEnumerable<WorkshopDescriptionItem> list)
+        => list.MapNonDeletedToList(ToDto);
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.Services.Models.ContactInfo;
 
@@ -30,7 +31,7 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     {
         unchecked
         {
-            int hash = 13;
+            var hash = 13;
             hash = (hash * 7) + CATOTTGId.GetHashCode();
             hash = (hash * 7) + (!ReferenceEquals(null, Street)
                 ? Street.GetHashCode(StringComparison.OrdinalIgnoreCase)
@@ -81,4 +82,63 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
                string.Equals(BuildingNumber, other.BuildingNumber,
                    StringComparison.OrdinalIgnoreCase);
     }
+}
+
+public static class ContactsAddressDtoExtensions
+{
+    public static AddressES ToES(this ContactsAddressDto contactsAddress)
+        => new()
+        {
+            // Id - ignored in original AM mapper
+            City = contactsAddress.CodeficatorAddressDto.Settlement,
+            Latitude = contactsAddress.Latitude,
+            Longitude = contactsAddress.Longitude,
+            CATOTTGId = contactsAddress.CATOTTGId,
+            CodeficatorAddressES = contactsAddress.CodeficatorAddressDto.ToCodeficatorAddressES(),
+            Street = contactsAddress.Street,
+            BuildingNumber = contactsAddress.BuildingNumber,
+            Point = GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
+                {
+                    Lat = contactsAddress.Latitude,
+                    Lon = contactsAddress.Longitude,
+                }),
+        };
+
+    public static ContactsAddress SetToModel(this ContactsAddressDto contactsAddress, ContactsAddress model)
+    {
+        model.Street = contactsAddress.Street;
+        model.BuildingNumber = contactsAddress.BuildingNumber;
+        model.Latitude = contactsAddress.Latitude;
+        model.Longitude = contactsAddress.Longitude;
+        model.CATOTTGId = contactsAddress.CATOTTGId;
+        
+        return model;
+    }
+
+    public static ContactsAddress ToModel(this ContactsAddressDto contactsAddress)
+        => new()
+        {
+            Street = contactsAddress.Street,
+            BuildingNumber = contactsAddress.BuildingNumber,
+            Latitude = contactsAddress.Latitude,
+            Longitude = contactsAddress.Longitude,
+            CATOTTGId = contactsAddress.CATOTTGId,
+        };
+
+    public static List<ContactsAddress> ToModel(this IEnumerable<ContactsAddressDto> list)
+        => list.MapToList(ToModel);
+
+    public static ContactsAddressDto ToContactsDto(this ContactsAddress contactsAddress)
+        => new()
+        {
+            Street = contactsAddress.Street,
+            BuildingNumber = contactsAddress.BuildingNumber,
+            Latitude = contactsAddress.Latitude,
+            Longitude = contactsAddress.Longitude,
+            CATOTTGId = contactsAddress.CATOTTGId,
+            CodeficatorAddressDto = contactsAddress.CATOTTG.ToAllAddressPartsDto()
+        };
+
+    public static List<ContactsAddressDto> ToContactsDto(this IEnumerable<ContactsAddress> list)
+        => list.MapToList(ToContactsDto);
 }

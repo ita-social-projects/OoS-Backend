@@ -24,3 +24,38 @@ public class ShortUserDto : BaseUserDto
     [CustomAge(MinAge = Constants.AdultAge, ErrorMessage = Constants.DayOfBirthErrorMessage)]
     public DateTime? DateOfBirth { get; set; }
 }
+
+public static class ShortUserDtoExtensions
+{
+    public static ShortUserDto ToShortUser(this User user)
+    => new()
+    {
+        Id = user.Id,
+        Email = user.Email,
+        PhoneNumber = user.PhoneNumber,
+        LastName = user.LastName,
+        MiddleName = user.MiddleName ?? string.Empty,
+        FirstName = user.FirstName,
+        UserName = user.UserName,
+        Role = user.Role,
+        IsRegistered = user.IsRegistered,
+        EmailConfirmed = user.EmailConfirmed,
+    };
+
+    public static ShortUserDto ToShortUser(this OutOfSchool.Services.Models.Parent parent)
+    => new()
+    {
+        Id = parent.User.Id,
+        Email = parent.User.Email,
+        PhoneNumber = parent.User.PhoneNumber,
+        LastName = parent.User.LastName,
+        MiddleName = parent.User.MiddleName ?? string.Empty,
+        FirstName = parent.User.FirstName,
+        UserName = parent.User.UserName,
+        Role = parent.User.Role,
+        IsRegistered = parent.User.IsRegistered,
+        EmailConfirmed = parent.User.EmailConfirmed,
+        Gender = parent.Gender,
+        DateOfBirth = parent.DateOfBirth,
+    };
+}

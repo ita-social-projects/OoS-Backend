@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using NuGet.Packaging;
+﻿using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Common.QuartzConstants;
 using OutOfSchool.Services.Enums;
@@ -8,36 +7,16 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.AverageRatings;
 
-public class AverageRatingService : IAverageRatingService
+public class AverageRatingService(
+    ILogger<AverageRatingService> logger,
+    IEntityRepositorySoftDeleted<long, AverageRating> averageRatingRepository,
+    IRatingService ratingService,
+    IWorkshopRepository workshopRepository,
+    IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
+    IEntityRepository<long, QuartzJob> quartzJobRepository,
+    IOperationWithObjectService operationWithObjectService
+) : IAverageRatingService
 {
-    private readonly ILogger<AverageRatingService> logger;
-    private readonly IMapper mapper;
-    private readonly IEntityRepositorySoftDeleted<long, AverageRating> averageRatingRepository;
-    private readonly IRatingService ratingService;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepositorySoftDeleted<long, Rating> ratingRepository;
-    private readonly IEntityRepository<long, QuartzJob> quartzJobRepository;
-    private readonly IOperationWithObjectService operationWithObjectService;
-
-    public AverageRatingService(
-        ILogger<AverageRatingService> logger,
-        IMapper mapper,
-        IEntityRepositorySoftDeleted<long, AverageRating> averageRatingRepository,
-        IRatingService ratingService,
-        IWorkshopRepository workshopRepository,
-        IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
-        IEntityRepository<long, QuartzJob> quartzJobRepository,
-        IOperationWithObjectService operationWithObjectService)
-    {
-        this.logger = logger;
-        this.mapper = mapper;
-        this.averageRatingRepository = averageRatingRepository;
-        this.ratingService = ratingService;
-        this.workshopRepository = workshopRepository;
-        this.ratingRepository = ratingRepository;
-        this.quartzJobRepository = quartzJobRepository;
-        this.operationWithObjectService = operationWithObjectService;
-    }
 
     /// <inheritdoc/>
     public async Task<AverageRatingDto> GetByEntityIdAsync(Guid entityId)
@@ -48,7 +27,7 @@ public class AverageRatingService : IAverageRatingService
 
         logger.LogInformation("Getting the average rating by workshop's or provider's id finished.");
 
-        return mapper.Map<AverageRatingDto>(rating);
+        return rating.ToDto();
     }
 
     /// <inheritdoc/>
@@ -60,7 +39,7 @@ public class AverageRatingService : IAverageRatingService
 
         logger.LogInformation("Getting the average ratings by the list of the workshop's or provider's ids finished.");
 
-        return mapper.Map<IEnumerable<AverageRatingDto>>(ratings);
+        return ratings.ToDto();
     }
 
     /// <inheritdoc/>
@@ -140,13 +119,9 @@ public class AverageRatingService : IAverageRatingService
 
         var providersIds = GetUniqueProviderIdsByWorkshopIdsAsync(workshopsIds);
 
-        Dictionary<Guid, Tuple<float, int>> averageRatings = new Dictionary<Guid, Tuple<float, int>>();
-
         var averageWorkshopsRatings = CalculateWorkshopsRatingsByEntityIdsAsync(workshopsIds);
-        averageRatings.AddRange(averageWorkshopsRatings);
-
-        var averageProvidersRatings = CalculateProvidersRatingsByProvidersIdsAsync(providersIds);
-        averageRatings.AddRange(averageProvidersRatings);
+        var averageProvidersRatings = CalculateProvidersRatingsByProvidersIdsAsync(providersIds);        
+        var averageRatings = averageWorkshopsRatings.Concat(averageProvidersRatings).ToDictionary();
 
         await averageRatingRepository.RunInTransaction(DeleteAverageRatings).ConfigureAwait(false);
 

@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
@@ -12,48 +11,23 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Service with business logic for ParentController.
 /// </summary>
-public class ParentService : IParentService
+/// <param name="repositoryParent">Repository for parent entity.</param>
+/// <param name="currentUserService">Service for managing current user rights.</param>
+/// <param name="parentBlockedByAdminLogService">Service for logging parent blocking by an administrator.</param>
+/// <param name="repositoryChild">Repository for child entity.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="userService">Service for Users.</param>
+/// <param name="usersRepository">Repository for Users.</param>
+public class ParentService(
+    IParentRepository repositoryParent,
+    ICurrentUserService currentUserService,
+    IParentBlockedByAdminLogService parentBlockedByAdminLogService,
+    ILogger<ParentService> logger,
+    IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
+    IUserService userService,
+    IEntityRepositorySoftDeleted<string, User> usersRepository
+) : IParentService
 {
-    private readonly IParentRepository repositoryParent;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IParentBlockedByAdminLogService parentBlockedByAdminLogService;
-    private readonly ILogger<ParentService> logger;
-    private readonly IEntityRepositorySoftDeleted<Guid, Child> repositoryChild;
-    private readonly IMapper mapper;
-    private readonly IUserService userService;
-    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ParentService"/> class.
-    /// </summary>
-    /// <param name="repositoryParent">Repository for parent entity.</param>
-    /// <param name="currentUserService">Service for managing current user rights.</param>
-    /// <param name="parentBlockedByAdminLogService">Service for logging parent blocking by an administrator.</param>
-    /// <param name="repositoryChild">Repository for child entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="userService">Service for Users.</param>
-    /// <param name="usersRepository">Repository for Users.</param>
-    public ParentService(
-        IParentRepository repositoryParent,
-        ICurrentUserService currentUserService,
-        IParentBlockedByAdminLogService parentBlockedByAdminLogService,
-        ILogger<ParentService> logger,
-        IEntityRepositorySoftDeleted<Guid, Child> repositoryChild,
-        IMapper mapper,
-        IUserService userService,
-        IEntityRepositorySoftDeleted<string, User> usersRepository)
-    {
-        this.repositoryParent = repositoryParent ?? throw new ArgumentNullException(nameof(repositoryParent));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.repositoryChild = repositoryChild ?? throw new ArgumentNullException(nameof(repositoryChild));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.parentBlockedByAdminLogService = parentBlockedByAdminLogService ?? throw new ArgumentNullException(nameof(parentBlockedByAdminLogService));
-        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
-    }
-
     /// <inheritdoc/>
     public async Task<ParentDTO> Create(ParentCreateDto parentCreateDto)
     {
@@ -83,7 +57,7 @@ public class ParentService : IParentService
 
         logger.LogInformation("Creating Parent for UserId = {UserId} started", userId);
 
-        var newParent = mapper.Map<Parent>(parentCreateDto);
+        var newParent = parentCreateDto.ToModel();
 
         user.IsRegistered = true;
         user.PhoneNumber = parentCreateDto.PhoneNumber;
@@ -97,7 +71,7 @@ public class ParentService : IParentService
 
         logger.LogInformation("Successfully created Parent with Id = {Id} for UserId = {UserId}", parent.Id, userId);
 
-        return mapper.Map<ParentDTO>(parent);
+        return parent.ToDto();
     }
 
     /// <inheritdoc/>
@@ -138,7 +112,7 @@ public class ParentService : IParentService
 
         logger.LogDebug("Successfully got a Parent with UserId = {Id}", id);
 
-        return mapper.Map<ParentDTO>(parent);
+        return parent.ToDto();
     }
 
     /// <inheritdoc/>
@@ -156,7 +130,7 @@ public class ParentService : IParentService
                         includeExpression: includeFunc))
                         .SingleOrDefault();
 
-        return mapper.Map<ShortUserDto>(info);
+        return info.ToShortUser();
     }
 
     /// <inheritdoc/>
@@ -181,13 +155,13 @@ public class ParentService : IParentService
 
             await currentUserService.UserHasRights(new ParentRights(parent.Id));
 
-            mapper.Map(dto, parent.User);
+            dto.SetToModel(parent.User);
 
             logger.LogInformation("Parent with UserId = {ParentId} updated successfully", parent.Id);
 
             await repositoryParent.SaveChangesAsync();
 
-            return mapper.Map<ShortUserDto>(parent);
+            return parent.ToShortUser();
         }
         catch (DbUpdateException ex)
         {

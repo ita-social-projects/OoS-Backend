@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -10,32 +9,15 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with functionality for User entity.
 /// </summary>
-public class UserService : IUserService
+/// <param name="repository">Repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+public class UserService(
+    IEntityRepositorySoftDeleted<string, User> repository,
+    ILogger<UserService> logger,
+    IStringLocalizer<SharedResource> localizer
+) : IUserService
 {
-    private readonly IEntityRepositorySoftDeleted<string, User> repository;
-    private readonly ILogger<UserService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="UserService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public UserService(
-        IEntityRepositorySoftDeleted<string, User> repository,
-        ILogger<UserService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     public async Task<IEnumerable<ShortUserDto>> GetAll()
     {
         logger.LogInformation("Getting all Users started.");
@@ -46,7 +28,7 @@ public class UserService : IUserService
             ? "User table is empty."
             : $"All {users.Count()} records were successfully received from the User table");
 
-        return users.Select(user => mapper.Map<ShortUserDto>(user)).ToList();
+        return users.Select(user => user.ToShortUser()).ToList();
     }
 
     public async Task<ShortUserDto> GetById(string id)
@@ -62,7 +44,7 @@ public class UserService : IUserService
 
         logger.LogInformation("Successfully got an User with Id = {Id}.", id);
 
-        return mapper.Map<ShortUserDto>(user);
+        return user.ToShortUser();
     }
 
     public async Task<ShortUserDto> Update(BaseUpdateUserDto dto)
@@ -75,11 +57,11 @@ public class UserService : IUserService
 
             var users = repository.GetByFilterNoTracking(filter);
 
-            var updatedUser = await repository.Update(mapper.Map(dto, users.FirstOrDefault())).ConfigureAwait(false);
+            var updatedUser = await repository.Update(dto.SetToModel(users.FirstOrDefault())).ConfigureAwait(false);
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
-            return mapper.Map<ShortUserDto>(updatedUser);
+            return updatedUser.ToShortUser();
         }
         catch (DbUpdateConcurrencyException)
         {

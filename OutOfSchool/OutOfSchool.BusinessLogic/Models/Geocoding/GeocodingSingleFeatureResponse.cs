@@ -82,3 +82,25 @@ public class Properties
     [JsonPropertyName("street_url")]
     public Uri StreetUrl { get; set; }
 }
+
+public static class GeocodingSingleFeatureResponseExtensions
+{
+    public static GeocodingResponse SetToResponse(this GeocodingSingleFeatureResponse src, GeocodingResponse dest)
+    {
+        dest.Street = $"{src.Properties.StreetType} {src.Properties.Street}";
+        dest.BuildingNumber = src.Properties.Name;
+        dest.Lat = src.GeoCentroid.Coordinates.LastOrDefault();
+        dest.Lon = src.GeoCentroid.Coordinates.FirstOrDefault();
+
+        return dest;
+    }
+
+    public static GeocodingResponse ToResponse(this GeocodingSingleFeatureResponse src)
+        => new()
+        {
+            Street = $"{src.Properties.StreetType} {src.Properties.Street}",
+            BuildingNumber = src.Properties.Name,
+            Lat = src.GeoCentroid.Coordinates.LastOrDefault(),
+            Lon = src.GeoCentroid.Coordinates.FirstOrDefault(),
+        };
+}

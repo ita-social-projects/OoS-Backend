@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
@@ -43,4 +44,115 @@ public class TeacherDTO
     public IFormFile CoverImage { get; set; }
 
     public Guid WorkshopId { get; set; }
+}
+
+public static class TeacherDTOExtensions
+{
+    public static Teacher SetToModel(this TeacherDTO dto, Teacher model)
+    {
+        model.FirstName = dto.FirstName;
+        model.LastName = dto.LastName;
+        model.MiddleName = dto.MiddleName ?? string.Empty;
+        model.Gender = dto.Gender;
+        model.DateOfBirth = dto.DateOfBirth;
+        model.Description = dto.Description;
+
+        return model;
+    }
+
+    public static Teacher ToModel(this TeacherDTO dto)
+        => new()
+        {
+            Id = dto.Id,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            MiddleName = dto.MiddleName ?? string.Empty,
+            Gender = dto.Gender,
+            DateOfBirth = dto.DateOfBirth,
+            Description = dto.Description,
+            WorkshopId = dto.WorkshopId,
+        };
+
+    public static Teacher ToModel(this TeacherDTO dto, Guid id, Guid workshopId)
+        => new()
+        {
+            Id = id,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            MiddleName = dto.MiddleName ?? string.Empty,
+            Gender = dto.Gender,
+            DateOfBirth = dto.DateOfBirth,
+            Description = dto.Description,
+            WorkshopId = workshopId,
+        };
+
+    public static List<Teacher> ToModel(this IEnumerable<TeacherDTO> list)
+        => list.MapToList(ToModel);
+
+    public static TeacherDraft ToDraft(this TeacherDTO dto)
+        => new()
+        {
+            Id = dto.Id,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            MiddleName = dto.MiddleName ?? string.Empty,
+            Gender = dto.Gender,
+            DateOfBirth = dto.DateOfBirth,
+            Description = dto.Description,
+            CoverImageId = dto.CoverImageId,            
+        };
+
+    public static List<TeacherDraft> ToDraft(this IEnumerable<TeacherDTO> list)
+        => list.MapToList(ToDraft);
+
+    public static TeacherDTO ToDto(this Teacher model)
+        => new()
+        {
+            Id = model.Id,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            MiddleName = model.MiddleName ?? string.Empty,
+            Gender = model.Gender,
+            DateOfBirth = model.DateOfBirth,
+            Description = model.Description,
+            CoverImageId = model.CoverImageId,
+            WorkshopId = model.Workshop.Id,
+        };
+
+    public static TeacherDTO ToDto(this TeacherDraft draft)
+        => new()
+        {
+            Id = draft.Id,
+            FirstName = draft.FirstName,
+            LastName = draft.LastName,
+            MiddleName = draft.MiddleName ?? string.Empty,
+            Gender = draft.Gender,
+            DateOfBirth = draft.DateOfBirth,
+            Description = draft.Description,
+            CoverImageId = draft.CoverImageId,
+        };
+
+    public static TeacherDTO CopyDto(this TeacherDTO model)
+        => new()
+        {
+            Id = model.Id,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            MiddleName = model.MiddleName ?? string.Empty,
+            Gender = model.Gender,
+            DateOfBirth = model.DateOfBirth,
+            Description = model.Description,
+            CoverImageId = model.CoverImageId,
+            CoverImage = model.CoverImage,
+            WorkshopId = model.WorkshopId,
+        };
+
+    public static List<TeacherDTO> ToDto(this IEnumerable<Teacher> list)
+        => list.MapToList(ToDto);
+
+    public static List<TeacherDTO> ToDto(this IEnumerable<TeacherDraft> list)
+        => list.MapToList(ToDto);
+
+    public static List<TeacherDTO> ToNotDeletedDto(this IEnumerable<Teacher> list)
+        => list.MapNonDeletedToList(ToDto);
 }

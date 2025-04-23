@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.BusinessLogic.Common;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Teachers;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -10,42 +8,24 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Teacher entity.
 /// </summary>
-public class TeacherService : ITeacherService
+/// <param name="teacherRepository">Repository for Teacher entity.</param>
+/// <param name="teacherImagesService">Teacher images mediator.</param>
+/// <param name="logger">Logger.</param>
+public class TeacherService(
+    ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository, 
+    IEntityCoverImageInteractionService<Teacher> teacherImagesService, 
+    ILogger<TeacherService> logger
+) : ITeacherService
 {
-    private readonly ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository;
-    private readonly IEntityCoverImageInteractionService<Teacher> teacherImagesService;
-    private readonly ILogger<TeacherService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TeacherService"/> class.
-    /// </summary>
-    /// <param name="teacherRepository">Repository for Teacher entity.</param>
-    /// <param name="teacherImagesService">Teacher images mediator.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public TeacherService(ISensitiveEntityRepositorySoftDeleted<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
-        this.teacherImagesService = teacherImagesService ?? throw new ArgumentNullException(nameof(teacherImagesService));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<TeacherCreationResultDto> Create(TeacherDTO dto)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Teacher creating was started.");
 
-        var teacher = mapper.Map<Teacher>(dto);
-        teacher.Id = default;
-        teacher.WorkshopId = dto.WorkshopId;
-
-        var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
+        var newTeacher = await teacherRepository
+            .Create(dto.ToModel(default, dto.WorkshopId))
+            .ConfigureAwait(false);
 
         Result<string> uploadingResult = null;
         if (dto.CoverImage != null)
@@ -53,7 +33,7 @@ public class TeacherService : ITeacherService
             uploadingResult = await teacherImagesService.AddCoverImageAsync(newTeacher, dto.CoverImage).ConfigureAwait(false);
             if (uploadingResult.Succeeded)
             {
-                teacher.CoverImageId = uploadingResult.Value;
+                dto.ToModel(default, dto.WorkshopId).CoverImageId = uploadingResult.Value;
                 await UpdateTeacher().ConfigureAwait(false);
             }
         }
@@ -62,7 +42,7 @@ public class TeacherService : ITeacherService
 
         return new TeacherCreationResultDto
         {
-            Teacher = mapper.Map<TeacherDTO>(newTeacher),
+            Teacher = newTeacher.ToDto(),
             UploadingAvatarImageResult = uploadingResult?.OperationResult,
         };
     }
@@ -78,7 +58,7 @@ public class TeacherService : ITeacherService
             ? "Teacher table is empty."
             : $"All {teachers.Count()} records were successfully received from the Teacher table");
 
-        return teachers.Select(teacher => mapper.Map<TeacherDTO>(teacher)).ToList();
+        return teachers.ToDto();
     }
 
     /// <inheritdoc/>
@@ -97,7 +77,7 @@ public class TeacherService : ITeacherService
 
         logger.LogInformation($"Got a Teacher with Id = {id}.");
 
-        return mapper.Map<TeacherDTO>(teacher);
+        return teacher.ToDto();
     }
 
     /// <inheritdoc/>
@@ -108,7 +88,7 @@ public class TeacherService : ITeacherService
 
         var teacher = await teacherRepository.GetById(dto.Id).ConfigureAwait(false);
 
-        mapper.Map(dto, teacher);
+        teacher = dto.SetToModel(teacher);
 
         var changingAvatarResult = await teacherImagesService.ChangeCoverImageAsync(teacher, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
@@ -116,7 +96,7 @@ public class TeacherService : ITeacherService
 
         return new TeacherUpdateResultDto
         {
-            Teacher = mapper.Map<TeacherDTO>(teacher),
+            Teacher = teacher.ToDto(),
             UploadingAvatarImageResult = changingAvatarResult?.UploadingResult?.OperationResult,
         };
     }

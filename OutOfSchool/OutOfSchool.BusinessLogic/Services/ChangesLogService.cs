@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -10,59 +9,25 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class ChangesLogService : IChangesLogService
+public class ChangesLogService(
+    IOptions<ChangesLogConfig> config,
+    IChangesLogRepository changesLogRepository,
+    IProviderRepository providerRepository,
+    IApplicationRepository applicationRepository,
+    IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository,
+    IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
+    ILogger<ChangesLogService> logger,
+    IValueProjector valueProjector,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    IAreaAdminService areaAdminService,
+    ICodeficatorService codeficatorService) : IChangesLogService
 {
     public const char WORD_SEPARATOR_SPACE = ' ';
     public const char WORD_SEPARATOR_COMMA = ',';
 
-    private static char[] wordSplitSymbols = new char[] { WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA };
-
-    private readonly IOptions<ChangesLogConfig> config;
-    private readonly IChangesLogRepository changesLogRepository;
-    private readonly IProviderRepository providerRepository;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository;
-    private readonly IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository;
-    private readonly ILogger<ChangesLogService> logger;
-    private readonly IMapper mapper;
-    private readonly IValueProjector valueProjector;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly IAreaAdminService areaAdminService;
-    private readonly ICodeficatorService codeficatorService;
-
-    public ChangesLogService(
-        IOptions<ChangesLogConfig> config,
-        IChangesLogRepository changesLogRepository,
-        IProviderRepository providerRepository,
-        IApplicationRepository applicationRepository,
-        IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository,
-        IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
-        ILogger<ChangesLogService> logger,
-        IMapper mapper,
-        IValueProjector valueProjector,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        IAreaAdminService areaAdminService,
-        ICodeficatorService codeficatorService)
-    {
-        this.config = config;
-        this.changesLogRepository = changesLogRepository;
-        this.providerRepository = providerRepository;
-        this.applicationRepository = applicationRepository;
-        this.employeeChangesLogRepository = employeeChangesLogRepository;
-        this.parentBlockedByAdminLogRepository = parentBlockedByAdminLogRepository;
-        this.logger = logger;
-        this.mapper = mapper;
-        this.valueProjector = valueProjector;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
-        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
-        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-    }
+    private static readonly char[] wordSplitSymbols = [ WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA ];
 
     public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
         where TEntity : class, IKeyedEntity, new()
@@ -104,9 +69,9 @@ public class ChangesLogService : IChangesLogService
 
     public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
     {
-        var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
+        var changeLogFilter = request.ToFilter();
 
-        Expression<Func<Provider, bool>> predicate = PredicateBuilder.True<Provider>();
+        var predicate = PredicateBuilder.True<Provider>();
 
         if (currentUserService.IsMinistryAdmin())
         {
@@ -155,18 +120,8 @@ public class ChangesLogService : IChangesLogService
                     providers,
                     l => l.EntityIdGuid,
                     p => p.Id,
-                    (l, provider) => new ProviderChangesLogDto
-                    {
-                        FieldName = l.PropertyName,
-                        OldValue = l.OldValue,
-                        NewValue = l.NewValue,
-                        UpdatedDate = DateTime.SpecifyKind(l.UpdatedDate, DateTimeKind.Utc),
-                        User = mapper.Map<ShortUserDto>(l.User),
-                        ProviderId = l.EntityIdGuid.Value,
-                        ProviderTitle = provider.FullTitle,
-                        ProviderCity = provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
-                        InstitutionTitle = provider.Institution.Title,
-                    })
+                    (l, provider) => l.ToDto(provider)
+                )
                 .IgnoreQueryFilters();
 
         var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
@@ -180,9 +135,9 @@ public class ChangesLogService : IChangesLogService
 
     public async Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request)
     {
-        var changeLogFilter = mapper.Map<ChangesLogFilter>(request);
+        var changeLogFilter = request.ToFilter();
 
-        Expression<Func<Application, bool>> predicate = PredicateBuilder.True<Application>();
+        var predicate = PredicateBuilder.True<Application>();
 
         if (currentUserService.IsMinistryAdmin())
         {
@@ -231,19 +186,8 @@ public class ChangesLogService : IChangesLogService
                     applications,
                     l => l.EntityIdGuid,
                     a => a.Id,
-                    (l, app) => new ApplicationChangesLogDto
-                    {
-                        FieldName = l.PropertyName,
-                        OldValue = l.OldValue,
-                        NewValue = l.NewValue,
-                        UpdatedDate = DateTime.SpecifyKind(l.UpdatedDate, DateTimeKind.Utc),
-                        User = mapper.Map<ShortUserDto>(l.User),
-                        ApplicationId = l.EntityIdGuid.Value,
-                        WorkshopTitle = app.Workshop.Title,
-                        WorkshopCity = app.Workshop.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
-                        ProviderTitle = app.Workshop.ProviderTitle,
-                        InstitutionTitle = app.Workshop.Provider.Institution.Title,
-                    })
+                    (l, app) => l.ToDto(app)
+                )
                 .IgnoreQueryFilters();
 
         var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
@@ -304,21 +248,7 @@ public class ChangesLogService : IChangesLogService
         var query = employeeChangesLogRepository
             .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
             .AsNoTracking()
-            .Select(x => new EmployeeChangesLogDto()
-            {
-                EmployeeId = x.EmployeeUserId,
-                EmployeeFullName = $"{x.EmployeeUser.LastName} {x.EmployeeUser.FirstName} {x.EmployeeUser.MiddleName}".TrimEnd(),
-                ProviderTitle = x.Provider.FullTitle,
-                WorkshopCity = x.Provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
-                OperationType = x.OperationType,
-                OperationDate = DateTime.SpecifyKind(x.OperationDate, DateTimeKind.Utc),
-                User = mapper.Map<ShortUserDto>(x.User),
-                InstitutionTitle = x.Provider.Institution == null
-                    ? null : x.Provider.Institution.Title,
-                PropertyName = x.PropertyName,
-                OldValue = x.OldValue,
-                NewValue = x.NewValue,
-            })
+            .Select(x => x.ToDto())
             .IgnoreQueryFilters();
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
@@ -340,15 +270,8 @@ public class ChangesLogService : IChangesLogService
         var query = parentBlockedByAdminLogRepository
             .Get(skip: request.From, take: request.Size, whereExpression: where, orderBy: sortExpression)
             .AsNoTracking()
-            .Select(x => new ParentBlockedByAdminChangesLogDto()
-            {
-                ParentId = x.ParentId,
-                ParentFullName = $"{x.Parent.User.LastName} {x.Parent.User.FirstName} {x.Parent.User.MiddleName}".TrimEnd(),
-                User = mapper.Map<ShortUserDto>(x.User),
-                OperationDate = DateTime.SpecifyKind(x.OperationDate, DateTimeKind.Utc),
-                Reason = x.Reason,
-                IsBlocked = x.IsBlocked,
-            }).IgnoreQueryFilters();
+            .Select(x => x.ToDto())
+            .IgnoreQueryFilters();
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
 
@@ -436,7 +359,7 @@ public class ChangesLogService : IChangesLogService
 
     private Expression<Func<EmployeeChangesLog, bool>> GetQueryFilter(EmployeeChangesLogRequest request)
     {
-        Expression<Func<EmployeeChangesLog, bool>> expr = PredicateBuilder.True<EmployeeChangesLog>();
+        var expr = PredicateBuilder.True<EmployeeChangesLog>();
         if (request.OperationType != null)
         {
             expr = expr.And(x => x.OperationType == request.OperationType);
@@ -474,7 +397,7 @@ public class ChangesLogService : IChangesLogService
 
     private Expression<Func<ParentBlockedByAdminLog, bool>> GetQueryFilter(ParentBlockedByAdminChangesLogRequest request)
     {
-        Expression<Func<ParentBlockedByAdminLog, bool>> expr = PredicateBuilder.True<ParentBlockedByAdminLog>();
+        var expr = PredicateBuilder.True<ParentBlockedByAdminLog>();
 
         expr = request.ShowParents switch
         {

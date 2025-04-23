@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
@@ -30,7 +32,7 @@ public class AddressDto
     {
         unchecked
         {
-            int hash = 13;
+            var hash = 13;
             hash = (hash * 7) + CATOTTGId.GetHashCode();
             hash = (hash * 7) + (!ReferenceEquals(null, Street) ? Street.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
             hash = (hash * 7) + (!ReferenceEquals(null, BuildingNumber) ? BuildingNumber.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
@@ -54,4 +56,53 @@ public class AddressDto
                string.Equals(Street, address.Street, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(BuildingNumber, address.BuildingNumber, StringComparison.OrdinalIgnoreCase);
     }
+}
+
+public static class AddressDtoExtensions
+{
+    public static AddressDraft ToDraft(this AddressDto address) 
+        => new()
+        {
+            Street = address.Street,
+            BuildingNumber = address.BuildingNumber,
+            Latitude = address.Latitude,
+            Longitude = address.Longitude,
+            CATOTTGId = address.CATOTTGId,
+        };
+
+    public static AddressDto ToDto(this AddressDraft address)
+        => new()
+        {
+            Street = address.Street,
+            BuildingNumber = address.BuildingNumber,
+            Latitude = address.Latitude,
+            Longitude = address.Longitude,
+            CATOTTGId = address.CATOTTGId,
+        };
+
+    public static AddressDto ToDto(this AddressES address)
+        => new()
+        {
+            Id = address.Id,
+            Street = address.Street,
+            BuildingNumber = address.BuildingNumber,
+            Latitude = address.Point.GetLatitude() ?? default,
+            Longitude = address.Point.GetLongitude() ?? default,
+            CATOTTGId = address.CATOTTGId,
+            CodeficatorAddressDto = address.CodeficatorAddressES.ToAllAddressPartsDto(),
+        };
+
+    public static AddressDto ToDto(this ContactsAddress contactsAddress)
+        => new()
+        {
+            Street = contactsAddress.Street,
+            BuildingNumber = contactsAddress.BuildingNumber,
+            Latitude = contactsAddress.Latitude,
+            Longitude = contactsAddress.Longitude,
+            CATOTTGId = contactsAddress.CATOTTGId,
+            CodeficatorAddressDto = contactsAddress.CATOTTG.ToAllAddressPartsDto()
+        };
+
+    public static List<AddressDto> ToDto(this IEnumerable<ContactsAddress> list)
+        => list.MapToList(ToDto);
 }

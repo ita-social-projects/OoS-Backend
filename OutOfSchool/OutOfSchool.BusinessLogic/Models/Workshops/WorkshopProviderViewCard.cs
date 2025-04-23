@@ -12,3 +12,38 @@ public class WorkshopProviderViewCard : WorkshopBaseCard
     
     public int UnreadMessages { get; set; }
 }
+
+public static class WorkshopProviderViewCardExtensions
+{
+    public static WorkshopProviderViewCard ToProviderViewCard(this Workshop model)
+    {
+        var defaultContact = model.Contacts.FirstOrDefault(c => c.IsDefault);
+
+        return new()
+        {
+            Id = model.Id,
+            ProviderTitle = model.ProviderTitle,
+            ProviderTitleEn = model.ProviderTitleEn,
+            ProviderOwnership = model.ProviderOwnership,
+            Title = model.Title,
+            ShortTitle = model.ShortTitle,
+            PayRate = model.PayRate,
+            FormOfLearning = model.FormOfLearning,
+            CoverImageId = model.CoverImageId,
+            MinAge = model.MinAge,
+            MaxAge = model.MaxAge,
+            CompetitiveSelection = model.CompetitiveSelection,
+            Price = model.Price,
+            DirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
+            ProviderId = model.ProviderId,
+            Address = defaultContact.Address.ToDto(),
+            ProviderLicenseStatus = model.Provider.LicenseStatus,
+
+            AvailableSeats = model.AvailableSeats,
+            Status = model.Status,
+        };
+    }
+
+    public static List<WorkshopProviderViewCard> ToProviderViewCard(this IEnumerable<Workshop> list)
+        => list.MapToList(ToProviderViewCard);
+}

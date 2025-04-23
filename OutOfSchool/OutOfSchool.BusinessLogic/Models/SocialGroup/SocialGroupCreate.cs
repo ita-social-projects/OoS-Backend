@@ -13,3 +13,13 @@ public class SocialGroupCreate
     [MaxLength(100)]
     public string NameEn { get; set; } = string.Empty;
 }
+
+public static class SocialGroupCreateExtensions
+{
+    public static OutOfSchool.Services.Models.SocialGroup ToModel(this SocialGroupCreate socialGroup)
+        => new()
+        {
+            Id = socialGroup.Id,
+            Name = socialGroup.Name,
+        };
+}

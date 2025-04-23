@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 
 namespace OutOfSchool.Common.Models;
 public class MinistryAdminBaseUpdateDto : MinistryAdminBaseDto
@@ -8,5 +7,4 @@ public class MinistryAdminBaseUpdateDto : MinistryAdminBaseDto
     public new Guid InstitutionId { get; set; }
     public  new string FirstName { get; set; }
     public  new string LastName { get; set; }
-
 }

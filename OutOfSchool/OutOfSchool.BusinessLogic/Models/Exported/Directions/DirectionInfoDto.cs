@@ -13,3 +13,25 @@ public class DirectionInfoDto : DirectionInfoBaseDto
     [DataType(DataType.Text)]
     public string Description { get; set; } = string.Empty;
 }
+
+public static class DirectionInfoDtoExtensions
+{
+    public static DirectionInfoBaseDto ToBaseInfoDto(this Direction model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static DirectionInfoDto ToInfoDto(this Direction model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+            Title = model.Title,
+            Description = model.Description,
+        };
+
+    public static List<DirectionInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Direction> list)
+        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
+}

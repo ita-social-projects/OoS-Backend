@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
@@ -12,24 +11,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Codeficator entity.
 /// </summary>
-public class CodeficatorService : ICodeficatorService
+/// <param name="codeficatorRepository">СodeficatorRepository repository.</param>
+public class CodeficatorService(ICodeficatorRepository codeficatorRepository) : ICodeficatorService
 {
-    private readonly ICodeficatorRepository codeficatorRepository;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CodeficatorService"/> class.
-    /// </summary>
-    /// <param name="codeficatorRepository">СodeficatorRepository repository.</param>
-    /// <param name="mapper">Automapper DI service.</param>
-    public CodeficatorService(
-        ICodeficatorRepository codeficatorRepository,
-        IMapper mapper)
-    {
-        this.codeficatorRepository = codeficatorRepository ?? throw new ArgumentNullException(nameof(codeficatorRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<IEnumerable<CodeficatorDto>> GetChildrenByParentId(long? id = null)
     {
@@ -37,7 +21,7 @@ public class CodeficatorService : ICodeficatorService
 
         var codeficators = await codeficatorRepository.GetByFilter(filter).ConfigureAwait(false);
 
-        return mapper.Map<IEnumerable<CodeficatorDto>>(codeficators);
+        return codeficators.ToCodeficatorDto();
     }
 
     /// <inheritdoc/>
@@ -53,12 +37,7 @@ public class CodeficatorService : ICodeficatorService
     {
         var codeficator = await codeficatorRepository.GetById(id).ConfigureAwait(false);
 
-        if (codeficator == null)
-        {
-            return null;
-        }
-
-        return mapper.Map<AllAddressPartsDto>(codeficator);
+        return codeficator?.ToAllAddressPartsDto();
     }
 
     /// <inheritdoc/>
@@ -94,8 +73,7 @@ public class CodeficatorService : ICodeficatorService
                         lon),
             })
             .OrderBy(p => p.Distance)
-            .Select(c => c.city)
-            .Select(mapper.Map<CodeficatorAddressDto>)
+            .Select(c => c.city.ToCodeficatorAddressDto())
             .FirstOrDefault();
     }
 

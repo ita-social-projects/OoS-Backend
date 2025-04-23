@@ -14,3 +14,13 @@ public class BlockedProviderParentBlockDto
     [MaxLength(500)]
     public string Reason { get; set; }
 }
+public static class BlockedProviderParentBlockDtoExtensions
+{
+    public static OutOfSchool.Services.Models.BlockedProviderParent ToModel(this BlockedProviderParentBlockDto dto)
+        => new()
+        {
+            ParentId = dto.ParentId,
+            ProviderId = dto.ProviderId,
+            Reason = dto.Reason,
+        };
+}

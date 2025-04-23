@@ -29,3 +29,31 @@ public class AchievementDto
 
     public List<AchievementTeacherDto> Teachers { get; set; }
 }
+
+public static class AchievementDtoExtensions
+{
+    public static OutOfSchool.Services.Models.Achievement ToModel(this AchievementDto achievement)
+        => new()
+        {
+            Id = achievement.Id,
+            Title = achievement.Title,
+            AchievementDate = achievement.AchievementDate,
+            WorkshopId = achievement.WorkshopId,
+            AchievementTypeId = achievement.AchievementTypeId,
+        };
+
+    public static AchievementDto ToDto(this OutOfSchool.Services.Models.Achievement achievement)
+        => new()
+        {
+            Id = achievement.Id,
+            Title = achievement.Title,
+            AchievementDate = achievement.AchievementDate,
+            WorkshopId = achievement.WorkshopId,
+            AchievementTypeId = achievement.AchievementTypeId,
+            Children = achievement.Children.ToNotDeletedDto(),
+            Teachers = achievement.Teachers.ToNotDeletedDto()
+        };
+
+    public static List<AchievementDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Achievement> list)
+        => list.MapToList(ToDto); 
+}

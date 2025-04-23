@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Elastic.Clients.Elasticsearch;
+﻿using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.Services.Enums;
@@ -10,44 +9,26 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the operations for synchronization databases.
 /// </summary>
-public abstract class ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES> : 
-    IElasticsearchSynchronizationService<TService, TEntity>
+public abstract class ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>(
+    TService databaseService,
+    IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
+    IElasticsearchProvider<TEntityES, TEntityFilterES> esProvider,
+    ILogger<ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>> logger,
+    Func<IEnumerable<TEntity>, List<TEntityES>> mapper,
+    IOptions<ElasticsearchSynchronizationSchedulerConfig> options,
+    IAddNewRecordToESSynchronizationTableService addNewRecordToESSynchronizationTableService
+) : IElasticsearchSynchronizationService<TService, TEntity>
     where TEntityES : class, new()
     where TEntityFilterES : class, new()
 {
-    protected readonly TService databaseService;
-    protected readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
-    protected readonly IElasticsearchProvider<TEntityES, TEntityFilterES> esProvider;
-    protected readonly ILogger<ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>> logger;
-    protected readonly IMapper mapper;
-    protected readonly IOptions<ElasticsearchSynchronizationSchedulerConfig> options;
-    protected readonly IAddNewRecordToESSynchronizationTableService addNewRecordToESSynchronizationTableService;
-
-    protected ElasticsearchSynchronizationService(
-        TService databaseService,
-        IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
-        IElasticsearchProvider<TEntityES, TEntityFilterES> esProvider,
-        ILogger<ElasticsearchSynchronizationService<TService, TEntity, TEntityES, TEntityFilterES>> logger,
-        IMapper mapper,
-        IOptions<ElasticsearchSynchronizationSchedulerConfig> options,
-        IAddNewRecordToESSynchronizationTableService addNewRecordToESSynchronizationTableService)
-    {
-        this.databaseService = databaseService;
-        this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
-        this.esProvider = esProvider;
-        this.logger = logger;
-        this.mapper = mapper;
-        this.options = options;
-        this.addNewRecordToESSynchronizationTableService = addNewRecordToESSynchronizationTableService;
-    }
-
     public abstract Func<TService, List<Guid>, Task<IEnumerable<TEntity>>> GetbyIds { get; }
 
     public async Task AddNewRecordToElasticsearchSynchronizationTable(
         ElasticsearchSyncEntity entity,
         Guid id,
-        ElasticsearchSyncOperation operation) => 
-            await addNewRecordToESSynchronizationTableService.AddNewRecordToElasticsearchSynchronizationTable(entity, id, operation);
+        ElasticsearchSyncOperation operation
+    ) 
+        => await addNewRecordToESSynchronizationTableService.AddNewRecordToElasticsearchSynchronizationTable(entity, id, operation);
     
     public async Task Synchronize(IndexName indexName, CancellationToken cancellationToken)
     {
@@ -160,7 +141,7 @@ public abstract class ElasticsearchSynchronizationService<TService, TEntity, TEn
         {       
             var entities = await GetbyIds.Invoke(databaseService, ids);
 
-            var source = mapper.Map<List<TEntityES>>(entities);
+            var source = mapper(entities);
 
             try
             {

@@ -1,37 +1,23 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services;
-public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionService
+/// <summary>
+/// Initializes a new instance of the <see cref="SubDirectionService"/> class.
+/// </summary>
+/// <param name="subDirectionRepository">Repository for subdirections.</param>
+/// <param name="directionRepository">Repository for directions.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="mapper">Mapper.</param>
+public class SubDirectionService(
+    IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository,
+    IEntityRepositorySoftDeleted<long, Direction> directionRepository,
+    ILogger<SubDirectionService> logger
+) : ISubDirectionService, ISensitiveSubDirectionService
 {
-    private readonly IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository;
-    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
-    private readonly ILogger<SubDirectionService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SubDirectionService"/> class.
-    /// </summary>
-    /// <param name="subDirectionRepository">Repository for subdirections.</param>
-    /// <param name="directionRepository">Repository for directions.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public SubDirectionService(
-        IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository,
-        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
-        ILogger<SubDirectionService> logger,
-        IMapper mapper)
-    {
-        this.subDirectionRepository = subDirectionRepository ?? throw new ArgumentNullException(nameof(subDirectionRepository));
-        this.directionRepository = directionRepository ?? throw new ArgumentNullException(nameof(directionRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<SearchResult<SubDirectionDto>> GetByFilter(long directionId, SearchStringFilter filter)
     {
@@ -54,7 +40,7 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
             { x => x.Title, SortDirection.Ascending },
         };
 
-        int count = await subDirectionRepository.Count(predicate).ConfigureAwait(false);
+        var count = await subDirectionRepository.Count(predicate).ConfigureAwait(false);
 
         var subDirections =await subDirectionRepository
             .Get(
@@ -70,7 +56,7 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
 
         var result = new SearchResult<SubDirectionDto>
         {
-            Entities = mapper.Map<List<SubDirectionDto>>(subDirections),
+            Entities = subDirections.ToDto(),
             TotalAmount = count
         };
 
@@ -94,7 +80,7 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
 
         logger.LogDebug("Successfully got a SubDirection with Id = {id}.", id);
 
-        return mapper.Map<SubDirectionDto>(subDirection);
+        return subDirection.ToDto();
     }
 
     /// <inheritdoc/>
@@ -124,13 +110,13 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
             });
         }
 
-        mapper.Map(dto, subDirection);
-        subDirection.UpdatedAt = DateTime.UtcNow;
-        subDirection = await subDirectionRepository.Update(subDirection).ConfigureAwait(false);
+        subDirection = await subDirectionRepository
+            .Update(dto.SetToModel(subDirection, DateTime.UtcNow))
+            .ConfigureAwait(false);
 
         logger.LogDebug("SubDirection with Id = {id} updated succesfully.", subDirection?.Id);
 
-        return Result<SubDirectionDto>.Success(mapper.Map<SubDirectionDto>(subDirection));
+        return Result<SubDirectionDto>.Success(subDirection.ToDto());
     }
 
     /// <inheritdoc/>
@@ -166,14 +152,13 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
             return Result<SubDirectionDto>.Failed(validationErrors.ToArray());
         }
 
-        var subDirection = mapper.Map<SubDirection>(dto);
-        subDirection.DirectionId = directionId;
+        var subDirection = dto.ToModel(directionId);
 
         var newSubDirection = await subDirectionRepository.Create(subDirection).ConfigureAwait(false);
 
         logger.LogDebug("SubDirection with Id = {id} created successfully.", newSubDirection?.Id);
 
-        return Result<SubDirectionDto>.Success(mapper.Map<SubDirectionDto>(newSubDirection));
+        return Result<SubDirectionDto>.Success(newSubDirection.ToDto());
     }
 
     /// <inheritdoc/>
@@ -198,7 +183,7 @@ public class SubDirectionService : ISubDirectionService, ISensitiveSubDirectionS
 
             logger.LogDebug("SubDirection with Id = {id} succesfully deleted.", id);
 
-            return Result<SubDirectionDto>.Success(mapper.Map<SubDirectionDto>(subDirection));
+            return Result<SubDirectionDto>.Success(subDirection.ToDto());
         }
         catch (DbUpdateConcurrencyException ex)
         {

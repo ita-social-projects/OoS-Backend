@@ -1,12 +1,20 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class AchievementService : IAchievementService
+/// <summary>
+/// Initializes a new instance of the <see cref="AchievementService"/> class.
+/// </summary>
+/// <param name="repository">Repository for Achievement entity.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+public class AchievementService(
+    IAchievementRepository repository,
+    ILogger<AchievementService> logger,
+    IStringLocalizer<SharedResource> localizer) : IAchievementService
 {
     /// <summary>
     /// Create a delegate to include other entities in Achievement entity
@@ -16,36 +24,12 @@ public class AchievementService : IAchievementService
               .Include(a => a.Teachers)
               .Include(a => a.AchievementType);
 
-    private readonly IAchievementRepository achievementRepository;
-    private readonly ILogger<AchievementService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AchievementService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository for Achievement entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public AchievementService(
-        IAchievementRepository repository,
-        ILogger<AchievementService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer;
-        this.achievementRepository = repository;
-        this.logger = logger;
-        this.mapper = mapper;
-    }
-
     /// <inheritdoc/>
     public async Task<AchievementDto> GetById(Guid id)
     {
         logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
-        var achievements = await achievementRepository
+        var achievements = await repository
             .GetByFilter(
                 x => x.Id == id && 
                 !x.AchievementType.IsDeleted,
@@ -63,7 +47,7 @@ public class AchievementService : IAchievementService
 
         logger.LogInformation($"Successfully got a Achievement with Id = {id}.");
 
-        return mapper.Map<AchievementDto>(achievement);
+        return achievement.ToDto();
     }
 
     /// <inheritdoc/>
@@ -83,9 +67,9 @@ public class AchievementService : IAchievementService
 
         predicate = predicate.And(a => !a.AchievementType.IsDeleted);
 
-        int count = await achievementRepository.Count(predicate).ConfigureAwait(false);
+        var count = await repository.Count(predicate).ConfigureAwait(false);
 
-        var achievements = await achievementRepository
+        var achievements = await repository
             .Get(
                 skip: filter.From,
                 take: filter.Size,
@@ -98,12 +82,10 @@ public class AchievementService : IAchievementService
             ? "This Workshop has no achievements."
             : $"All {achievements.Count} records were successfully received");
 
-        var achievementsDto = achievements.Select(achievement => mapper.Map<AchievementDto>(achievement)).ToList();
-
         var result = new SearchResult<AchievementDto>()
         {
             TotalAmount = count,
-            Entities = achievementsDto,
+            Entities = achievements.ToDto(), 
         };
 
         return result;
@@ -120,13 +102,11 @@ public class AchievementService : IAchievementService
             throw new ArgumentException(localizer["dto is null."], nameof(dto));
         }
 
-        var achievement = mapper.Map<Achievement>(dto);
-
-        var newAchievement = await achievementRepository.Create(achievement, dto.ChildrenIDs, dto.Teachers).ConfigureAwait(false);
+        var newAchievement = await repository.Create(dto.ToModel(), dto.ChildrenIDs, dto.Teachers).ConfigureAwait(false);
 
         logger.LogInformation($"Achievement with Id = {newAchievement?.Id} created successfully.");
 
-        return mapper.Map<AchievementDto>(newAchievement);
+        return newAchievement.ToDto();
     }
 
     /// <inheritdoc/>
@@ -142,12 +122,12 @@ public class AchievementService : IAchievementService
 
         try
         {
-            var updatedAchievement = await achievementRepository.Update(mapper.Map<Achievement>(dto), dto.ChildrenIDs, dto.Teachers)
+            var updatedAchievement = await repository.Update(dto.ToModel(), dto.ChildrenIDs, dto.Teachers)
                 .ConfigureAwait(false);
 
             logger.LogInformation($"Achievement with Id = {updatedAchievement?.Id} updated succesfully.");
 
-            return mapper.Map<AchievementDto>(updatedAchievement);
+            return updatedAchievement.ToDto();
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -161,7 +141,7 @@ public class AchievementService : IAchievementService
     {
         logger.LogInformation($"Deleting Achievement with Id = {id} started.");
 
-        var achievement = await achievementRepository.GetById(id).ConfigureAwait(false);
+        var achievement = await repository.GetById(id).ConfigureAwait(false);
 
         if (achievement is null)
         {
@@ -171,7 +151,7 @@ public class AchievementService : IAchievementService
 
         try
         {
-            await achievementRepository.Delete(achievement).ConfigureAwait(false);
+            await repository.Delete(achievement).ConfigureAwait(false);
 
             logger.LogInformation($"Achievement with Id = {id} succesfully deleted.");
         }

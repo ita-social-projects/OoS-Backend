@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Official;
+
 public class OfficialDto
 {
     public Guid Id { get; set; }
@@ -16,4 +17,28 @@ public class OfficialDto
     public EmploymentType EmploymentType { get; set; }
     public DateOnly ActiveFrom { get; set; }
     public DateOnly ActiveTo { get; set; }
+}
+
+public static class OfficialDtoExtensions
+{
+    public static OfficialDto ToDto(this OutOfSchool.Services.Models.Official model)
+        => new()
+        {
+            Id = model.Id,
+            PositionId = model.Position.Id,
+            Position = model.Position.FullName,
+            FirstName = model.Individual.FirstName,
+            MiddleName = model.Individual.MiddleName,
+            LastName = model.Individual.LastName,
+            Rnokpp = model.Individual.Rnokpp,
+            DismissalOrder = model.DismissalOrder ?? string.Empty,
+            RecruitmentOrder = model.RecruitmentOrder ?? string.Empty,
+            DismissalReason = model.DismissalReason ?? string.Empty,
+            EmploymentType = model.EmploymentType,
+            ActiveFrom = model.ActiveFrom,
+            ActiveTo = model.ActiveTo,
+        };
+
+    public static List<OfficialDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Official> list)
+        => list.MapToList(ToDto);
 }

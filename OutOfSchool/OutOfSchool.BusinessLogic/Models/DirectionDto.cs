@@ -25,3 +25,46 @@ public class DirectionDto
         return this;
     }
 }
+
+public static class DirectionDtoExtensions
+{
+    public static Direction SetToModel(this DirectionDto dto, Direction model)
+    {
+        model.Id = dto.Id;
+        model.Title = dto.Title;
+        model.Description = dto.Description;
+        
+        return model;
+    }
+
+    public static Direction ToModel(this DirectionDto dto)
+        => new()
+        {
+            Id = dto.Id,
+            Title = dto.Title,
+            Description = dto.Description,
+        };
+
+    public static List<Direction> ToModel(this IEnumerable<DirectionDto> list)
+        => list.MapToList(ToModel);
+
+    public static DirectionDto ToDto(this Direction model)
+        => new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            Description = model.Description,
+        };
+
+    public static DirectionDto ToDto(this Direction model, int? workshopsCount)
+        => new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            Description = model.Description,
+            WorkshopsCount = workshopsCount
+        };
+
+    public static List<DirectionDto> ToDto(this IEnumerable<Direction> list)
+        => list.MapToList(ToDto);
+}

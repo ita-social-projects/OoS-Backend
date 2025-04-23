@@ -16,6 +16,6 @@ public static class AccountStatusExtensions
             : AccountStatus.Accepted;
     }
 
-    public static AccountStatus Convert(User user)
+    public static AccountStatus Convert(this User user)
         => Convert(user.IsBlocked, user.LastLogin);
 }

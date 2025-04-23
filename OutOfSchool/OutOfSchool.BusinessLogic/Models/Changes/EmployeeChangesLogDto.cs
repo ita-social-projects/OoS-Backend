@@ -26,3 +26,22 @@ public class EmployeeChangesLogDto
 
     public string NewValue { get; set; }
 }
+
+public static class EmployeeChangesLogDtoExtensions
+{
+    public static EmployeeChangesLogDto ToDto(this EmployeeChangesLog changesLog)
+        => new()
+        {
+            EmployeeId = changesLog.EmployeeUserId,
+            EmployeeFullName = $"{changesLog.EmployeeUser.LastName} {changesLog.EmployeeUser.FirstName} {changesLog.EmployeeUser.MiddleName}".TrimEnd(),
+            ProviderTitle = changesLog.Provider.FullTitle,
+            WorkshopCity = changesLog.Provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
+            OperationType = changesLog.OperationType,
+            OperationDate = DateTime.SpecifyKind(changesLog.OperationDate, DateTimeKind.Utc),
+            User = changesLog.User.ToShortUser(),
+            InstitutionTitle = changesLog.Provider.Institution?.Title,
+            PropertyName = changesLog.PropertyName,
+            OldValue = changesLog.OldValue,
+            NewValue = changesLog.NewValue,
+        };
+}

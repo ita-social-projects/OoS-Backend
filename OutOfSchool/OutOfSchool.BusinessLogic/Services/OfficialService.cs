@@ -1,41 +1,23 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
-public class OfficialService : IOfficialService
+/// <summary>
+/// Initializes a new instance of the <see cref="OfficialService"/> class.
+/// </summary>
+/// <param name="officialRepository">Repository for Officials.</param>
+/// <param name="currentUserService">Service for current user.</param>
+/// <param name="logger">Logger.</param>
+public class OfficialService(
+    IOfficialRepository officialRepository,
+    IOfficialChangesLogService officialChangesLogService,
+    ICurrentUserService currentUserService,
+    ILogger<OfficialService> logger
+) : IOfficialService
 {
-    private readonly IOfficialRepository officialRepository;
-    private readonly IOfficialChangesLogService officialChangesLogService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly ILogger<OfficialService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OfficialService"/> class.
-    /// </summary>
-    /// <param name="officialRepository">Repository for Officials.</param>
-    /// <param name="currentUserService">Service for current user.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public OfficialService(
-        IOfficialRepository officialRepository,
-        IOfficialChangesLogService officialChangesLogService,
-        ICurrentUserService currentUserService,
-        ILogger<OfficialService> logger,
-        IMapper mapper
-        )
-    {
-        this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
-        this.officialChangesLogService = officialChangesLogService;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<SearchResult<OfficialDto>> GetByFilter(Guid providerId, SearchStringFilter filter)
     {
@@ -47,7 +29,7 @@ public class OfficialService : IOfficialService
         var predicate = BuildPredicate(filter);
         predicate = predicate.And(p => p.Position.ProviderId == providerId);
 
-        int count = await officialRepository.Count(predicate).ConfigureAwait(false);
+        var count = await officialRepository.Count(predicate).ConfigureAwait(false);
 
         var officials = await officialRepository
             .Get(
@@ -64,7 +46,7 @@ public class OfficialService : IOfficialService
 
         var result = new SearchResult<OfficialDto>
         {
-            Entities = mapper.Map<List<OfficialDto>>(officials),
+            Entities = officials.ToDto(),
             TotalAmount = count
         };
 

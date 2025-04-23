@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.Services.Enums;
@@ -12,37 +11,17 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Service works with repositories for CRUD operations for <see cref = "ChatRoomWorkshop" />.
 /// </summary>
-public class ChatRoomWorkshopService : IChatRoomWorkshopService
+/// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
+/// <param name="roomWorkshopWithLastMessageRepository">Repository for the ChatRoom entity with special model.</param>
+/// <param name="logger">Logger.</param>
+public class ChatRoomWorkshopService(
+    IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> chatRoomRepository,
+    ILogger<ChatRoomWorkshopService> logger,
+    IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
+    IWorkshopService workshopService,
+    IBlockedProviderParentService blockedProviderParentService
+) : IChatRoomWorkshopService
 {
-    private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
-    private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
-    private readonly IWorkshopService workshopService;
-    private readonly IBlockedProviderParentService blockedProviderParentService;
-    private readonly ILogger<ChatRoomWorkshopService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
-    /// </summary>
-    /// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
-    /// <param name="roomWorkshopWithLastMessageRepository">Repository for the ChatRoom entity with special model.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public ChatRoomWorkshopService(
-        IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> chatRoomRepository,
-        ILogger<ChatRoomWorkshopService> logger,
-        IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository,
-        IWorkshopService workshopService,
-        IBlockedProviderParentService blockedProviderParentService,
-        IMapper mapper)
-    {
-        this.roomRepository = chatRoomRepository ?? throw new ArgumentNullException(nameof(chatRoomRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.roomWorkshopWithLastMessageRepository = roomWorkshopWithLastMessageRepository ?? throw new ArgumentNullException(nameof(roomWorkshopWithLastMessageRepository));
-        this.workshopService = workshopService ?? throw new ArgumentNullException(nameof(workshopService));
-        this.blockedProviderParentService = blockedProviderParentService ?? throw new ArgumentNullException(nameof(blockedProviderParentService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
 
     /// <inheritdoc/>
     public async Task<ChatRoomWorkshopDto> CreateOrReturnExistingAsync(Guid workshopId, Guid parentId)
@@ -94,13 +73,13 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var chatRooms = await roomRepository.Get(whereExpression: x => x.Id == id)
+            var chatRooms = await chatRoomRepository.Get(whereExpression: x => x.Id == id)
                     .Include(crw => crw.ChatMessages)
                     .ToListAsync()
                     .ConfigureAwait(false);
             var chatRoom = chatRooms.Single();
 
-            await roomRepository.Delete(chatRoom).ConfigureAwait(false);
+            await chatRoomRepository.Delete(chatRoom).ConfigureAwait(false);
 
             logger.LogDebug($"{nameof(ChatRoomWorkshop)} {nameof(id)}:{id} was successfully deleted.");
         }
@@ -123,14 +102,14 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var chatRooms = await roomRepository.GetByFilter(
+            var chatRooms = await chatRoomRepository.GetByFilter(
                     whereExpression: x => x.Id == id,
                     includeExpression: crw => crw.Include(crw => crw.Parent).Include(crw => crw.Workshop))
                 .ConfigureAwait(false);
 
             var chatRoom = chatRooms.SingleOrDefault();
 
-            return chatRoom is null ? null : mapper.Map<ChatRoomWorkshopDto>(chatRoom);
+            return chatRoom?.ToDto();
         }
         catch (Exception exception)
         {
@@ -147,9 +126,10 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var rooms = (await roomRepository.GetByFilter(
+            var rooms = (await chatRoomRepository.GetByFilter(
                 whereExpression: x => x.ParentId == parentId && x.Workshop.ProviderId == providerId)
-                .ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDto>(x)).ToList();
+                .ConfigureAwait(false))
+                .ToDto();
 
             if (rooms.Count > 0)
             {
@@ -183,7 +163,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
         try
         {
             var rooms = (await roomWorkshopWithLastMessageRepository.GetByParentIdProviderIdAsync(
-                parentId, providerId).ConfigureAwait(false)).Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x)).ToList();
+                parentId, providerId).ConfigureAwait(false)).ToDto();
 
             if (rooms.Count > 0)
             {
@@ -216,7 +196,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var room = (await roomRepository.GetByFilter(
+            var room = (await chatRoomRepository.GetByFilter(
                 whereExpression: x => x.ParentId == parentId && x.WorkshopId == workshopId)
                 .ConfigureAwait(false)).SingleOrDefault();
 
@@ -229,7 +209,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 logger.LogDebug("Successfully got record with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
             }
 
-            return mapper.Map<ChatRoomWorkshopDto>(room);
+            return room.ToDto();
         }
         catch (Exception exception)
         {
@@ -266,7 +246,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 logger.LogDebug("Successfully got record with parentId:{parentId} and workshopId:{workshopId}.", parentId, workshopId);
             }
 
-            return mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(room);
+            return room.ToDto();
         }
         catch (Exception exception)
         {
@@ -291,7 +271,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{parentId}."
                 : $"Successfully got all {rooms.Count} records with userId:{parentId}.");
-            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+            return rooms.ToDto();
         }
         catch (Exception exception)
         {
@@ -311,7 +291,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{providerId}."
                 : $"Successfully got all {rooms.Count} records with userId:{providerId}.");
-            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+            return rooms.ToDto();
         }
         catch (Exception exception)
         {
@@ -332,7 +312,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             logger.LogDebug(rooms.Count > 0
                 ? $"There is no Chat rooms in the system with userId:{workshopId}."
                 : $"Successfully got all {rooms.Count} records with userId:{workshopId}.");
-            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+            return rooms.ToDto();
         }
         catch (Exception exception)
         {
@@ -345,7 +325,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     [Obsolete("Unused")]
     public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
     {
-        string workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
+        var workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
         logger.LogDebug($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {workshopIdsStr} was started.");
 
         try
@@ -356,7 +336,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
                 ? $"There is no Chat rooms in the system with userId:{workshopIdsStr}."
                 : $"Successfully got all {rooms.Count} records with userId:{workshopIdsStr}.");
 
-            return rooms.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x));
+            return rooms.ToDto();
         }
         catch (Exception exception)
         {
@@ -372,7 +352,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var rooms = await roomRepository.GetByFilter(r => r.ParentId == parentId).ConfigureAwait(false);
+            var rooms = await chatRoomRepository.GetByFilter(r => r.ParentId == parentId).ConfigureAwait(false);
             logger.LogDebug(!rooms.Any()
                 ? $"There is no Chat rooms in the system with userId:{parentId}."
                 : $"Successfully got all {rooms.Count()} records with userId:{parentId}.");
@@ -392,7 +372,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var rooms = await roomRepository.GetByFilter(r => r.Workshop.ProviderId == providerId).ConfigureAwait(false);
+            var rooms = await chatRoomRepository.GetByFilter(r => r.Workshop.ProviderId == providerId).ConfigureAwait(false);
             logger.LogDebug(!rooms.Any()
                 ? $"There is no Chat rooms in the system with userId:{providerId}."
                 : $"Successfully got all {rooms.Count()} records with userId:{providerId}.");
@@ -408,12 +388,12 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
     /// <inheritdoc/>
     public async Task<IEnumerable<Guid>> GetChatRoomIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
     {
-        string workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
+        var workshopIdsStr = $"{nameof(workshopIds)}:{string.Join(", ", workshopIds)}";
         logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} WorkshopIds with {workshopIdsStr} was started.");
 
         try
         {
-            var rooms = await roomRepository.GetByFilter(r => workshopIds.Contains(r.WorkshopId)).ConfigureAwait(false);
+            var rooms = await chatRoomRepository.GetByFilter(r => workshopIds.Contains(r.WorkshopId)).ConfigureAwait(false);
             logger.LogDebug(!rooms.Any()
                 ? $"There is no Chat rooms in the system with workshopIds:{workshopIdsStr}."
                 : $"Successfully got all {rooms.Count()} records with workshopIds:{workshopIdsStr}.");
@@ -433,14 +413,14 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            var chatRooms = await roomRepository.GetByFilter(r => r.WorkshopId == workshopId && r.ParentId == parentId, $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}").ConfigureAwait(false);
+            var chatRooms = await chatRoomRepository.GetByFilter(r => r.WorkshopId == workshopId && r.ParentId == parentId, $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}").ConfigureAwait(false);
             var chatRoom = chatRooms.SingleOrDefault();
 
             logger.LogDebug(chatRoom is null
                 ? $"There is no {nameof(ChatRoomWorkshop)} in the system with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId}."
                 : $"Successfully got a {nameof(ChatRoomWorkshop)} with {nameof(chatRoom.Id)}:{chatRoom.Id}.");
 
-            return chatRoom is null ? null : mapper.Map<ChatRoomWorkshopDto>(chatRoom);
+            return chatRoom?.ToDto();
         }
         catch (InvalidOperationException)
         {
@@ -485,7 +465,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         try
         {
-            return roomRepository.Create(chatRoom);
+            return chatRoomRepository.Create(chatRoom);
         }
         catch (DbUpdateException exception)
         {
@@ -502,7 +482,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
 
         var filterPredicate = PredicateBuild(filter, userId);
 
-        var rooms = roomRepository.Get(
+        var rooms = chatRoomRepository.Get(
                 whereExpression: filterPredicate);
 
         var roomsCount = rooms.Count();
@@ -527,7 +507,7 @@ public class ChatRoomWorkshopService : IChatRoomWorkshopService
             ? "There was no matching entity found."
             : $"All matching {roomsCount} records were successfully received from the ChatWorkshop table");
 
-        var results = chatRoomsWithMessages.Select(x => mapper.Map<ChatRoomWorkshopDtoWithLastMessage>(x)).ToList();
+        var results = chatRoomsWithMessages.ToDto();
 
         return new SearchResult<ChatRoomWorkshopDtoWithLastMessage>()
         {

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
@@ -16,16 +15,20 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for CompetitiveEvent entity.
 /// </summary>
-public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEventServiceV2
+public class CompetitiveEventService(
+    ICompetitiveEventRepository competitiveEventRepository,
+    IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
+    ILogger<CompetitiveEventService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    ICurrentUserService currentUserService,
+    IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService,
+    IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService
+) : ICompetitiveEventService, ICompetitiveEventServiceV2
 {
-    private readonly ICompetitiveEventRepository competitiveEventRepository;
-    private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository;
-    private readonly ILogger<CompetitiveEventService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService;
-    private readonly IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService;
+    private readonly ICompetitiveEventRepository competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
+    private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
+    private readonly ILogger<CompetitiveEventService> logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IStringLocalizer<SharedResource> localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
 
     /// <summary>
     /// Create a delegate to include other entities in CompetitiveEvent entity
@@ -36,26 +39,6 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         .Include(e => e.CompetitiveEventDescriptionItems)
         .Include(e => e.Coverage)
         .IncludeContactsWithCodeficatorHierarchy();
-
-    public CompetitiveEventService(
-        ICompetitiveEventRepository competitiveEventRepository,
-        IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
-        ILogger<CompetitiveEventService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>> contactsService,
-        IImageDependentEntityImagesInteractionService<CompetitiveEvent> competitiveImagesService)
-    {
-        this.competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-        this.descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.currentUserService = currentUserService;
-        this.contactsService = contactsService;
-        this.competitiveImagesService = competitiveImagesService;
-    }
 
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto?> GetById(Guid id)
@@ -72,7 +55,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         logger.LogDebug(logMessage, id);
 
-        return mapper.Map<CompetitiveEventDto>(competitiveEvent);
+        return competitiveEvent.ToDto();
     }
 
     /// <inheritdoc/>
@@ -84,12 +67,11 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         logger.LogDebug("CompetitiveEvent creating was started.");
 
-        var competitiveEvent = mapper.Map<CompetitiveEvent>(dto);
+        var competitiveEvent = dto.ToModel();
 
         if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty())
         {
-            competitiveEvent.CompetitiveEventDescriptionItems =
-            dto.CompetitiveEventDescriptionItems.Select(mapper.Map<CompetitiveEventDescriptionItem>).ToList();
+            competitiveEvent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToModel();
         }
 
         contactsService.PrepareNewContacts(competitiveEvent, dto);
@@ -97,7 +79,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
 
-        return mapper.Map<CompetitiveEventDto>(newCompetitiveEvent);
+        return newCompetitiveEvent.ToDto();
     }
 
     /// <inheritdoc/>
@@ -122,7 +104,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
 
-        mapper.Map(dto, competitiveEvent);
+        dto.SetToModel(competitiveEvent);
 
         var updatedCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         {
@@ -131,7 +113,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         logger.LogDebug("CompetitiveEvent with Id = {competitiveEventId} updated successfully.", updatedCompetitiveEvent.Id);
 
-        return mapper.Map<CompetitiveEventDto>(updatedCompetitiveEvent);
+        return updatedCompetitiveEvent.ToDto();
     }
 
     /// <inheritdoc/>
@@ -190,7 +172,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
             .ToListAsync()
             .ConfigureAwait(false);
 
-        var competitiveEventViewCards = mapper.Map<List<CompetitiveEventViewCardDto>>(competitiveEvents);
+        var competitiveEventViewCards = competitiveEvents.ToViewCardDto();
 
         logger.LogDebug("From CompetitiveEvents table were successfully received {Count} records.", competitiveEventViewCards.Count);
 
@@ -208,8 +190,8 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         return await competitiveEventRepository.GetByIds(ids).ConfigureAwait(false);
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) =>
-      ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) 
+        => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
     {
@@ -258,12 +240,11 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
                 if (foundDescItem != null)
                 {
-                    mapper.Map(descItemDto, foundDescItem);
-                    await descriptionItemRepository.Update(foundDescItem).ConfigureAwait(false);
+                    await descriptionItemRepository.Update(descItemDto.SetToModel(foundDescItem)).ConfigureAwait(false);
                 }
                 else
                 {
-                    var newDescItem = mapper.Map<CompetitiveEventDescriptionItem>(descItemDto);
+                    var newDescItem = descItemDto.ToModel();
                     newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
                     await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
                 }
@@ -309,8 +290,8 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
         //}
 
         var createdEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
-            ? mapper.Map<CompetitiveEvent>(v2Dto)
-            : mapper.Map<CompetitiveEvent>(dto);
+            ? v2Dto.ToModel()
+            : dto.ToModel();
 
         //configure additional default value by the logic 
 
@@ -385,7 +366,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         return new CompetitiveEventResultDto
         {
-            CompetitiveEventV2 = mapper.Map<CompetitiveEventV2Dto>(lastCompetitiveEvent),
+            CompetitiveEventV2 = lastCompetitiveEvent.ToV2Dto(),
             UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
             UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
         };
@@ -427,7 +408,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
             contactsService.PrepareUpdatedContacts(currentCompetitiveEvent, dto);
 
-            mapper.Map(dto, currentCompetitiveEvent);
+            dto.SetToModel(currentCompetitiveEvent);
 
             var changingCoverImageResult = await competitiveImagesService
                 .ChangeCoverImageAsync(currentCompetitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
@@ -442,7 +423,7 @@ public class CompetitiveEventService : ICompetitiveEventService, ICompetitiveEve
 
         return new CompetitiveEventResultDto
         {
-            CompetitiveEventV2 = mapper.Map<CompetitiveEventV2Dto>(updatedCompetitiveEvent),
+            CompetitiveEventV2 = updatedCompetitiveEvent.ToV2Dto(),
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };

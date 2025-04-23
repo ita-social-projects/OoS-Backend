@@ -18,3 +18,20 @@ public class ContactsInfoDto
     
     public List<SocialNetworkInfoDto> SocialNetworks { get; set; } = [];
 }
+
+public static class ContactsInfoDtoExtensions
+{
+    public static ContactsInfoDto ToInfoDto(this OutOfSchool.Services.Models.ContactInfo.Contacts contacts)
+        => new()
+        {
+            Title = contacts.Title,
+            IsDefault = contacts.IsDefault,
+            Address = contacts.Address.ToInfoDto(),
+            Phones = contacts.Phones.ToInfoDto(),
+            Emails = contacts.Emails.ToInfoDto(),
+            SocialNetworks = contacts.SocialNetworks.ToInfoDto()
+        };
+
+    public static List<ContactsInfoDto> ToInfoDto(this IEnumerable<OutOfSchool.Services.Models.ContactInfo.Contacts> contacts)
+        => contacts.MapToList(ToInfoDto);
+}

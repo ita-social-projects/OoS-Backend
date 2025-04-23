@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using Asp.Versioning.ApiExplorer;
-using AutoMapper;
 using Elastic.Apm.DiagnosticSource;
 using Elastic.Apm.Elasticsearch;
 using Elastic.Apm.EntityFrameworkCore;
@@ -27,7 +26,6 @@ using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.TempSave;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
@@ -317,8 +315,6 @@ public static class Startup
                     sp.GetRequiredService<TrackableEntityInterceptor>()))
                 .AddCustomDataProtection("WebApi");
 
-        services.AddAutoMapper(typeof(CommonProfile), typeof(MappingProfile), typeof(ElasticProfile), typeof(WorkshopDraftMappingProfile), typeof(ExternalExportMappingProfile), typeof(ContactsProfile));
-
         // Add Elasticsearch client
         var elasticConfig = configuration
             .GetSection(ElasticConfig.Name)
@@ -436,8 +432,8 @@ public static class Startup
             return elasticSearchService.IsElasticAlive
                 ? new WorkshopESStrategy(
                     elasticSearchService,
-                    sp.GetRequiredService<ILogger<WorkshopESStrategy>>(),
-                    sp.GetRequiredService<IMapper>())
+                    sp.GetRequiredService<ILogger<WorkshopESStrategy>>()
+                )
                 : new WorkshopServiceStrategy(sp.GetRequiredService<IWorkshopService>(), sp.GetRequiredService<ILogger<WorkshopServiceStrategy>>());
         });
 

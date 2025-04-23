@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
@@ -13,67 +12,62 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
-public class ProviderServiceV2 : ProviderService, IProviderServiceV2
+public class ProviderServiceV2(
+    IProviderRepository providerRepository,
+    IEntityRepositorySoftDeleted<string, User> usersRepository,
+    ILogger<ProviderServiceV2> logger,
+    IStringLocalizer<SharedResource> localizer,
+    IEntityRepositorySoftDeleted<long, Address> addressRepository,
+    ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
+    IOfficialRepository officialRepository,
+    IPositionRepository positionRepository,
+    IWorkshopServicesCombiner workshopServiceCombiner,
+    IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
+    IChangesLogService changesLogService,
+    INotificationService notificationService,
+    IInstitutionAdminRepository institutionAdminRepository,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    ICodeficatorService codeficatorService,
+    IRegionAdminRepository regionAdminRepository,
+    IAverageRatingService averageRatingService,
+    IAreaAdminService areaAdminService,
+    IAreaAdminRepository areaAdminRepository,
+    IUserService userService,
+    IOptions<AuthorizationServerConfig> authorizationServerConfig,
+    ICommunicationService communicationService,
+    ISearchStringService searchStringService,
+    IContactsService<Provider, IHasContactsDto<Provider>> contactsService
+) : ProviderService(
+    providerRepository,
+    usersRepository,
+    logger,
+    localizer,
+    addressRepository,
+    individualRepository,
+    officialRepository,
+    positionRepository,
+    workshopServiceCombiner,
+    providerImagesService,
+    changesLogService,
+    notificationService,
+    institutionAdminRepository,
+    currentUserService,
+    ministryAdminService,
+    regionAdminService,
+    codeficatorService,
+    regionAdminRepository,
+    averageRatingService,
+    areaAdminService,
+    areaAdminRepository,
+    userService,
+    authorizationServerConfig,
+    communicationService,
+    searchStringService,
+    contactsService
+), IProviderServiceV2
 {
-    public ProviderServiceV2(
-        IProviderRepository providerRepository,
-        IEntityRepositorySoftDeleted<string, User> usersRepository,
-        ILogger<ProviderServiceV2> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        IEntityRepositorySoftDeleted<long, Address> addressRepository,
-        ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
-        IOfficialRepository officialRepository,
-        IPositionRepository positionRepository,
-        IWorkshopServicesCombiner workshopServiceCombiner,
-        IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-        IChangesLogService changesLogService,
-        INotificationService notificationService,
-        IInstitutionAdminRepository institutionAdminRepository,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService,
-        IRegionAdminRepository regionAdminRepository,
-        IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService,
-        IAreaAdminRepository areaAdminRepository,
-        IUserService userService,
-        IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService,
-        ISearchStringService searchStringService,
-        IContactsService<Provider, IHasContactsDto<Provider>> contactsService)
-        : base(
-              providerRepository,
-              usersRepository,
-              logger,
-              localizer,
-              mapper,
-              addressRepository,
-              individualRepository,
-              officialRepository,
-              positionRepository,
-              workshopServiceCombiner,
-              providerImagesService,
-              changesLogService,
-              notificationService,
-              institutionAdminRepository,
-              currentUserService,
-              ministryAdminService,
-              regionAdminService,
-              codeficatorService,
-              regionAdminRepository,
-              averageRatingService,
-              areaAdminService,
-              areaAdminRepository,
-              userService,
-              authorizationServerConfig,
-              communicationService,
-              searchStringService,
-              contactsService)
-    {
-    }
-
     /// <inheritdoc cref="IProviderServiceV2" />
     public new async Task<ProviderDto> Create(ProviderCreateDto providerDto)
     {

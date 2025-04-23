@@ -15,3 +15,18 @@ public class InstitutionFieldDescriptionDto
     [Required]
     public Guid InstitutionId { get; set; }
 }
+
+public static class InstitutionFieldDescriptionDtoExtensions
+{
+    public static InstitutionFieldDescriptionDto ToDto(this InstitutionFieldDescription model)
+        => new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            HierarchyLevel = model.HierarchyLevel,
+            InstitutionId = model.InstitutionId
+        };
+
+    public static List<InstitutionFieldDescriptionDto> ToDto(this IEnumerable<InstitutionFieldDescription> list)
+        => list.MapToList(ToDto);
+}

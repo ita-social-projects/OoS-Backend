@@ -23,3 +23,20 @@ public class StatisticReportDto
     [Required]
     public string ExternalStorageId { get; set; }
 }
+
+public static class StatisticReportDtoExtensions
+{
+    public static StatisticReportDto ToDto(this StatisticReport model)
+        => new()
+        {
+            Id = model.Id,
+            Date = model.Date,
+            ReportType = model.ReportType,
+            ReportDataType = model.ReportDataType,
+            Title = model.Title,
+            ExternalStorageId = model.ExternalStorageId,
+        };
+
+    public static List<StatisticReportDto> ToDto(this IEnumerable<StatisticReport> list)
+        => list.MapToList(ToDto);
+}

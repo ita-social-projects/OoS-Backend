@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Application;
 
@@ -33,4 +33,27 @@ public class ApplicationDto
     public ChildDto Child { get; set; }
 
     public ParentDTO Parent { get; set; }
+}
+
+public static class ApplicationDtoExtensions
+{
+    public static ApplicationDto ToDto(this OutOfSchool.Services.Models.Application application)
+        => new()
+        {
+            Id = application.Id,
+            Status = application.Status,
+            RejectionMessage = application.RejectionMessage,
+            CreationTime = application.CreationTime,
+            ApprovedTime = application.ApprovedTime,
+            IsBlockedByProvider = application.IsBlockedByProvider,
+            WorkshopId = application.WorkshopId,
+            ChildId = application.ChildId,
+            ParentId = application.ParentId,
+            Workshop = application.Workshop.ToCard(),
+            Child = application.Child.ToDto(),
+            Parent = application.Parent.ToDto(),
+        };
+
+    public static List<ApplicationDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Application> list)
+        => list.MapToList(ToDto);
 }

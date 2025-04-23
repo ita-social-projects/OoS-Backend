@@ -1,35 +1,21 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class PermissionsForRoleService : IPermissionsForRoleService
+/// <summary>
+/// Initializes a new instance of the <see cref="PermissionsForRoleService"/> class.
+/// </summary>
+/// <param name="repository">Repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+public class PermissionsForRoleService(
+    IEntityRepository<long, PermissionsForRole> repository,
+    ILogger<PermissionsForRoleService> logger,
+    IStringLocalizer<SharedResource> localizer
+) : IPermissionsForRoleService
 {
-    private readonly IEntityRepository<long, PermissionsForRole> repository;
-    private readonly ILogger<PermissionsForRoleService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PermissionsForRoleService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public PermissionsForRoleService(
-        IEntityRepository<long, PermissionsForRole> repository,
-        ILogger<PermissionsForRoleService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<PermissionsForRoleDTO>> GetAll()
@@ -42,7 +28,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
             ? "PermissionsForRole table is empty."
             : $"All {permissionsForRoles.Count()} records were successfully received from the PermissionsForRole table");
 
-        return permissionsForRoles.Select(permissionsForRole => mapper.Map<PermissionsForRoleDTO>(permissionsForRole)).ToList();
+        return permissionsForRoles.ToDto();
     }
 
     /// <inheritdoc/>
@@ -58,7 +44,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
         }
 
         logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.RoleName}.");
-        return mapper.Map<PermissionsForRoleDTO>(permissionsForRole);
+        return permissionsForRole.ToDto();
     }
 
     /// <inheritdoc/>
@@ -70,11 +56,11 @@ public class PermissionsForRoleService : IPermissionsForRoleService
             throw new ArgumentException("Permissions for this role exist in DB, you can't create one more", dto.RoleName);
         }
 
-        var permissionsForRole = mapper.Map<PermissionsForRole>(dto);
+        var permissionsForRole = dto.ToModel();
         var newPermissionsForRole = await repository.Create(permissionsForRole).ConfigureAwait(false);
         logger.LogInformation($"Permissions for role with name {newPermissionsForRole.RoleName} created successfully.");
 
-        return mapper.Map<PermissionsForRoleDTO>(newPermissionsForRole);
+        return newPermissionsForRole.ToDto();
     }
 
     /// <inheritdoc/>
@@ -84,11 +70,11 @@ public class PermissionsForRoleService : IPermissionsForRoleService
 
         try
         {
-            var permissionsForRole = await repository.Update(mapper.Map<PermissionsForRole>(dto)).ConfigureAwait(false);
+            var permissionsForRole = await repository.Update(dto.ToModel()).ConfigureAwait(false);
 
             logger.LogInformation($"Permissions for Role with name = {permissionsForRole?.RoleName} updated succesfully.");
 
-            return mapper.Map<PermissionsForRoleDTO>(permissionsForRole);
+            return permissionsForRole.ToDto();
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -96,5 +82,4 @@ public class PermissionsForRoleService : IPermissionsForRoleService
             throw;
         }
     }
-
 }

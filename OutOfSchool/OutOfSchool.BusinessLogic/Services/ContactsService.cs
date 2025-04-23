@@ -1,13 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
-using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
 /// <inheritdoc/>
-public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<TEntity, TDto>
+public class ContactsService<TEntity, TDto>() : IContactsService<TEntity, TDto>
     where TEntity : BusinessEntity, IHasContacts
     where TDto : IHasContactsDto<TEntity>
 {
@@ -26,7 +24,7 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
 
         ValidateDefaultCount(unique);
 
-        entity.Contacts = mapper.Map<List<Contacts>>(unique);
+        entity.Contacts = unique.ToModel();
     }
 
     /// <inheritdoc/>
@@ -46,7 +44,7 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
 
         if (entity.Contacts.IsNullOrEmpty())
         {
-            entity.Contacts = mapper.Map<List<Contacts>>(unique);
+            entity.Contacts = unique.ToModel();
             return;
         }
 
@@ -63,23 +61,26 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
             {
                 existing.Title = contactDto.Title;
                 existing.IsDefault = contactDto.IsDefault;
-                mapper.Map(contactDto.Address, existing.Address);
+                contactDto.Address.SetToModel(existing.Address);
 
                 this.UpdateContactsInfo(
                     existing.Phones,
-                    contactDto.Phones);
+                    contactDto.Phones,
+                    PhoneNumberDtoExtensions.ToModel, PhoneNumberDtoExtensions.SetToModel);
 
                 this.UpdateContactsInfo(
                     existing.Emails,
-                    contactDto.Emails);
+                    contactDto.Emails,
+                    EmailDtoExtensions.ToModel, EmailDtoExtensions.SetToModel);
 
                 this.UpdateContactsInfo(
                     existing.SocialNetworks,
-                    contactDto.SocialNetworks);
+                    contactDto.SocialNetworks,
+                    SocialNetworkDtoExtensions.ToModel, SocialNetworkDtoExtensions.SetToModel);
             }
             else
             {
-                entity.Contacts.Add(mapper.Map<Contacts>(contactDto));
+                entity.Contacts.Add(contactDto.ToModel());
             }
         }
     }
@@ -114,7 +115,10 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
     /// <param name="newInfo">The new list of contact information DTOs.</param>
     private void UpdateContactsInfo<TContactEntity, TContactDto>(
         List<TContactEntity> existingInfo,
-        List<TContactDto> newInfo)
+        List<TContactDto> newInfo,
+        Func<TContactDto, TContactEntity> toModel,
+        Func<TContactDto, TContactEntity, TContactEntity> setToModel
+    )
         where TContactEntity : class
         where TContactDto : IContentComparable<TContactEntity>, IEquatable<TContactDto>
     {
@@ -132,11 +136,11 @@ public class ContactsService<TEntity, TDto>(IMapper mapper) : IContactsService<T
 
             if (existing != null)
             {
-                mapper.Map(info, existing);
+                setToModel(info, existing);
             }
             else
             {
-                existingInfo.Add(mapper.Map<TContactEntity>(info));
+                existingInfo.Add(toModel(info));
             }
         }
     }

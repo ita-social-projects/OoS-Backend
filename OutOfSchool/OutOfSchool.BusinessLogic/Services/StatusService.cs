@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -9,34 +8,16 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for for InstitutionStatus entity.
 /// </summary>
-public class StatusService : IStatusService
+/// <param name="repository">Repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="mapper">Mapper.</param>
+public class StatusService(
+    IEntityRepositorySoftDeleted<long, InstitutionStatus> repository,
+    ILogger<StatusService> logger,
+    IStringLocalizer<SharedResource> localizer
+ ) : IStatusService
 {
-
-    private readonly IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
-    private readonly ILogger<StatusService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StatusService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public StatusService(
-        IEntityRepositorySoftDeleted<long, InstitutionStatus> repository,
-        ILogger<StatusService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
-
     /// <inheritdoc/>
     public async Task<IEnumerable<InstitutionStatusDTO>> GetAll(LocalizationType localization = LocalizationType.Ua)
     {
@@ -83,13 +64,13 @@ public class StatusService : IStatusService
     {
         logger.LogInformation("InstitutionStatus creating was started.");
 
-        var institutionStatus = mapper.Map<InstitutionStatus>(dto);
+        var institutionStatus = dto.ToModel();
 
         var newInstitutionStatus = await repository.Create(institutionStatus).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionStatus with Id = {newInstitutionStatus?.Id} created successfully.");
 
-        return mapper.Map<InstitutionStatusDTO>(newInstitutionStatus);
+        return newInstitutionStatus.ToDto();
     }
 
     /// <inheritdoc/>

@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Common.Enums;
@@ -9,35 +8,22 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class PositionService : IPositionService
+public class PositionService(
+    IPositionRepository positionRepository,
+    ICurrentUserService currentUserService,
+    ILogger<PositionService> logger
+) : IPositionService
 {
-    private readonly IPositionRepository positionRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMapper mapper;
-    private readonly ILogger<PositionService> logger;
-
-    public PositionService(
-        IPositionRepository positionRepository,
-        ICurrentUserService currentUserService,
-        IMapper mapper,
-        ILogger<PositionService> logger)
-    {
-        this.logger = logger;
-        this.mapper = mapper;
-        this.positionRepository = positionRepository;
-        this.currentUserService = currentUserService;
-    }
-
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
         await currentUserService.UserHasRights(new ProviderRights(providerId));
 
-        var position = mapper.Map<Position>(createDto);
+        var position = createDto.ToModel();
         position.ProviderId = providerId;
 
         var createdPosition = await positionRepository.Create(position);
         logger.LogDebug("Created position with id: {PositionId}", position.Id);
-        return mapper.Map<PositionDto>(createdPosition);
+        return createdPosition.ToDto();
     }
 
     public async Task<SearchResult<PositionDto>> GetByFilter(Guid providerId, PositionsFilter filter)
@@ -65,7 +51,7 @@ public class PositionService : IPositionService
         // Define sorting
         var sortPredicate = SortExpressionBuild(filter);
 
-        int count = await positionRepository.Count(whereExpression: predicate).ConfigureAwait(false);
+        var count = await positionRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         // No nested entities in use – eager loading not required.
         var positions = await positionRepository
@@ -79,12 +65,10 @@ public class PositionService : IPositionService
 
         logger.LogInformation("Retrieved {PositionsCount} positions", positions.Count);
 
-        var positionsDto = positions.Select(position => mapper.Map<PositionDto>(position)).ToList();
-
         var result = new SearchResult<PositionDto>
         {
             TotalAmount = count,
-            Entities = positionsDto,
+            Entities = positions.ToDto(),
         };
 
         return result;
@@ -95,7 +79,7 @@ public class PositionService : IPositionService
         await currentUserService.UserHasRights(new ProviderRights(providerId));
         var position = await GetPositionAsync(positionId, providerId);
 
-        return mapper.Map<PositionDto>(position);
+        return position.ToDto();
     }
 
     public async Task<PositionDto> UpdateAsync(Guid positionId, PositionCreateUpdateDto updateDto, Guid providerId)
@@ -107,11 +91,9 @@ public class PositionService : IPositionService
             throw new KeyNotFoundException($"Position with id {positionId} not found");
         }
 
-        mapper.Map(updateDto, existingPosition);
+        var updatedPosition = await positionRepository.Update(updateDto.SetToModel(existingPosition));
 
-        var updatedPosition = await positionRepository.Update(existingPosition);
-
-        return mapper.Map<PositionDto>(updatedPosition);
+        return updatedPosition.ToDto();
     }
 
     public async Task DeleteAsync(Guid positionId, Guid providerId)
