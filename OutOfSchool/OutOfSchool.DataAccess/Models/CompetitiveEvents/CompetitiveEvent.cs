@@ -75,7 +75,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    public Guid? OrganizerOfTheEventId { get; set; }
+    public Guid OrganizerOfTheEventId { get; set; }
 
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
