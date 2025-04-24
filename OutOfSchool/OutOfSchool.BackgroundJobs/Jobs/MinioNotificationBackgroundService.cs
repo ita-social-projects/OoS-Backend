@@ -1,120 +1,51 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ExternalFileStore.Models;
-using OutOfSchool.ExternalFileStore.NotificationInterfaces;
 
 namespace OutOfSchool.ExternalFileStore.NotificationImplementations;
-public class MinioNotificationBackgroundService : BackgroundService, IStorageNotificationService
-{
-    private readonly IStorageNotificationHandler _notificationHandler;
+public class MinioNotificationBackgroundService : BackgroundService
+{ 
     private readonly ILogger<MinioNotificationBackgroundService> _logger;
+    private readonly MinioNotificationListener _listener;
     private readonly string _bucketName;
-    private readonly NotificationFilter _filter;
-    private readonly MinioRedisNotificationBridge _bridge;
-    private bool _isRunning = false;
+    private readonly NotificationFilter _filter;  
 
-    public MinioNotificationBackgroundService(
-            IStorageNotificationHandler notificationHandler,
+    public MinioNotificationBackgroundService(     
             ILogger<MinioNotificationBackgroundService> logger,
-            MinioRedisNotificationBridge bridge,
-            string bucketName,
-            string prefix = "",
-            string suffix = "")
+            MinioNotificationListener listener,
+            string bucketName)
     {
-        _notificationHandler = notificationHandler;
-        _logger = logger;
+        _listener = listener ?? throw new ArgumentNullException(nameof(listener));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));       
         _bucketName = bucketName;
         _filter = new NotificationFilter
         {
-            Prefix = prefix,
-            Suffix = suffix
-        };
-        _bridge = bridge ?? throw new ArgumentNullException(nameof(bridge));
-    }
-
-    public async Task StartListening()
-    {
-        if (_isRunning)
-        {
-            _logger.LogInformation("Notification service is already running");
-            return;
-        }
-
-        _logger.LogInformation("Starting MinIO notification listener for bucket {BucketName}", _bucketName);
-        try
-        {
-            // First start the bridge to connect MinIO events to Redis
-            await _bridge.StartBridgeAsync(_bucketName, _filter);
-            // Then subscribe to Redis notifications
-            await _notificationHandler.Subscribe(_bucketName, _filter);
-            _isRunning = true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error starting notification service");
-            throw;
-        }
-    }
-
-    public async Task StopListening()
-    {
-        if (!_isRunning)
-        {
-            _logger.LogInformation("Notification service is not running");
-            return;
-        }
-
-        _logger.LogInformation("Stopping MinIO notification service");
-        try
-        {
-            await _notificationHandler.Unsubscribe(_bucketName, _filter);
-            _bridge.StopBridge(_bucketName, _filter);
-            _isRunning = false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error stopping notification service");
-            throw;
-        }
+            Prefix = "",
+            Suffix = "",
+            EventTypes = new List<string>
+            {
+                    "s3:ObjectCreated:Put",
+                    "s3:ObjectCreated:Post",
+                    "s3:ObjectCreated:Copy",
+                    "s3:ObjectCreated:CompleteMultipartUpload"
+            }
+        };        
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await StartListening();
+        _logger.LogInformation("Starting MinIO notification listener for bucket {BucketName}", _bucketName);
 
-        try
-        {
-            while (!stoppingToken.IsCancellationRequested && _isRunning)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // This is expected when the token is canceled, no action needed
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in MinIO notification background service");
-        }
-        finally
-        {
-            if (_isRunning)
-            {
-                await StopListening();
-            }
-        }
+        await _listener.StartListeningAsync(_bucketName, _filter);
+
+        _logger.LogInformation("Notification service is running and listening for bucket {BucketName}", _bucketName);
+
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Service stop requested");
-
-        if (_isRunning)
-        {
-            await StopListening();
-        }
-
+        await _listener.StopListeningAsync(_bucketName, _filter);
         await base.StopAsync(cancellationToken);
     }
 }

@@ -17,13 +17,29 @@ public class RedisSubscriptionService : IRedisSubscriptionService, IDisposable
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task SubscribeAsync(string channel, Action<RedisChannel, RedisValue> handler)
+    public IDisposable SubscribeAsync(string channel, Action<RedisChannel, RedisValue> handler)
     {
-        var subscriber = _connection.GetSubscriber();
-        await subscriber.SubscribeAsync(channel, handler);
-        
-        _subscribers[channel] = subscriber;
-        _logger.LogDebug("Subscribed to Redis channel {Channel}", channel);
+        try
+        {            
+            if (!_connection.IsConnected)
+            {
+                _logger.LogError("Redis connection is not established");
+                throw new InvalidOperationException("Redis connection is not established");
+            }
+
+            var subscriber = _connection.GetSubscriber();
+            subscriber.Subscribe(channel, handler);
+
+            _subscribers[channel] = subscriber;
+            _logger.LogDebug("Subscribed to Redis channel {Channel}", channel);
+            
+            return new RedisSubscription(subscriber, channel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to subscribe to Redis channel {Channel}", channel);
+            throw;
+        }
     }
 
     public async Task UnsubscribeAsync(string channel)
@@ -34,13 +50,11 @@ public class RedisSubscriptionService : IRedisSubscriptionService, IDisposable
             _subscribers.Remove(channel);
             _logger.LogDebug("Unsubscribed from Redis channel {Channel}", channel);
         }
-    }   
+    }
 
-    public void PublishNotification(string channelName, string json)
+    public IDatabase GetDatabase()
     {
-        var publisher = _connection.GetDatabase();
-        publisher.Publish(channelName, json);
-        _logger.LogDebug("Published event to Redis channel {Channel}", channelName);
+        return _connection.GetDatabase();
     }
 
     public void Dispose()
@@ -58,4 +72,9 @@ public class RedisSubscriptionService : IRedisSubscriptionService, IDisposable
         }
         _subscribers.Clear();
     }
+
+    public bool IsConnected()
+    {
+        return _connection.IsConnected;
+    }    
 }

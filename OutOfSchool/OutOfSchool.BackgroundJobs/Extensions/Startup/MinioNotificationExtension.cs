@@ -9,18 +9,13 @@ public static class MinioNotificationExtension
 {
     public static IServiceCollection AddMinioNotification(this IServiceCollection services)
     {
-        services.AddHostedService(provider => {
-            var redis = provider.GetRequiredService<RedisStorageNotificationHandler>();
-            var logger = provider.GetRequiredService<ILogger<MinioNotificationBackgroundService>>();
-            var bridge = provider.GetRequiredService<MinioRedisNotificationBridge>();
-
+        services.AddHostedService(provider => {            
             var storageOptions = provider.GetRequiredService<IOptions<StorageOptions>>().Value;
             var amazonS3 = storageOptions.Providers.AmazonS3;
 
             return new MinioNotificationBackgroundService(
-                redis,
-                logger,
-                bridge,
+                provider.GetRequiredService<ILogger<MinioNotificationBackgroundService>>(),
+                provider.GetRequiredService<MinioNotificationListener>(),
                 amazonS3.AccessKey
             );
         });

@@ -690,11 +690,10 @@ public static class Startup
             return ConnectionMultiplexer.Connect(config);
         });
 
-        // MinIO - Redis notifications
-        builder.Services.AddSingleton<RedisStorageNotificationHandler>();
-        builder.Services.AddSingleton<MinioRedisNotificationBridge>();
+        // MinIO - Redis notifications        
         builder.Services.AddSingleton<IProcessNotificationService, ProcessNotificationService>();
         builder.Services.AddSingleton<IRedisSubscriptionService, RedisSubscriptionService>();
+        builder.Services.AddSingleton<MinioNotificationListener>();
 
         // Register minio    
         var storageOptions = builder.Configuration.GetSection(StorageOptions.SectionName).Get<StorageOptions>();

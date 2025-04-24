@@ -13,4 +13,9 @@ public class NotificationFilter
     /// Object key suffix filter
     /// </summary>
     public string Suffix { get; set; } = string.Empty;
+
+    /// <summary>
+    /// List of events that should be processed
+    /// </summary>
+    public List<string> EventTypes { get; set; } = new List<string>();
 }
