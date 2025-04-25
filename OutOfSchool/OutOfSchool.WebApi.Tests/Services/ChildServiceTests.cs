@@ -596,6 +596,7 @@ public class ChildServiceTests
         {
             Id = Guid.NewGuid(),
             Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+            SocialGroups = []
         };
         var childList = new List<Child> { child }.BuildMock();
 
@@ -618,7 +619,7 @@ public class ChildServiceTests
             .Returns((Func<Task<Child>> f) => f.Invoke())
             .Verifiable(Times.Once);
 
-        childRepositoryMock.Setup(r => r.Create(child))
+        childRepositoryMock.Setup(r => r.Create(It.Is<Child>(c => c.ParentId == parent.Id)))
             .ReturnsAsync(child)
             .Verifiable(Times.Once);
 

@@ -14,6 +14,7 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
@@ -135,20 +136,22 @@ public class ProviderServiceV2Tests
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
-        var expected = dto.ToModel().ToDto();
+        var provider = dto.ToModel();
+        var expected = provider.ToDto();
+        provider.Contacts = dto.Contacts.ToModel();
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
         expected.CoverImageId = string.Empty;
-        expected.ImageIds = new List<string>();
-        expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
+        expected.ImageIds = [];
+        expected.ProviderSectionItems = [];
 
         var recipientsIds = new List<string>() { fakeUser.Id };
 
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
         providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
-            .ReturnsAsync(dto.ToModel());
+            .ReturnsAsync(provider);
         notificationService
             .Setup(s => s.Create(
                 NotificationType.Provider,
@@ -191,7 +194,7 @@ public class ProviderServiceV2Tests
     {
         // Arrange
         var expectedEntity = ProvidersGenerator.Generate();
-        var expectedEntityDto = mapper.Map<ProviderCreateDto>(expectedEntity);
+        var expectedEntityDto = ProviderCreateDtoGenerator.FromModel(expectedEntity);
         var file = new Mock<IFormFile>().Object;
         expectedEntityDto.ImageFiles = new List<IFormFile> { file };
 
@@ -221,7 +224,7 @@ public class ProviderServiceV2Tests
     {
         // Arrange
         var expectedEntity = ProvidersGenerator.Generate();
-        var expectedEntityDto = mapper.Map<ProviderCreateDto>(expectedEntity);
+        var expectedEntityDto = ProviderCreateDtoGenerator.FromModel(expectedEntity);
         var file = new Mock<IFormFile>().Object;
         expectedEntityDto.CoverImage = file;
 
@@ -258,7 +261,7 @@ public class ProviderServiceV2Tests
         provider.Status = ProviderStatus.Recheck;
 
         var updatedTitle = Guid.NewGuid().ToString();
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         var expectedProviderDto = provider.ToDto();
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
@@ -299,7 +302,7 @@ public class ProviderServiceV2Tests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
         providerToUpdateDto.ShortTitleEn = updatedTitle;
 
@@ -329,7 +332,7 @@ public class ProviderServiceV2Tests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.FullTitle = updatedTitle;
 
         var expected = provider.ToDto();
@@ -376,7 +379,7 @@ public class ProviderServiceV2Tests
         var updatedLicense = "1234567890";
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = provider.ToDto();
@@ -418,7 +421,7 @@ public class ProviderServiceV2Tests
         string updatedLicense = null;
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = provider.ToDto();
@@ -446,7 +449,7 @@ public class ProviderServiceV2Tests
         var provider = fakeProviders.RandomItem();
         provider.Ownership = ownershipType;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         var expectedProviderDto = provider.ToDto();
 
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))

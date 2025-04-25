@@ -253,20 +253,14 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Title = "Test Event",
             CompetitiveEventAccountingTypeId = 1,
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
-            {
-                new CompetitiveEventDescriptionItemDto { Description = "Desc 1", SectionName = "Section 1" },
-                new CompetitiveEventDescriptionItemDto { Description = "Desc 2", SectionName = "Section 2" }
-            }
+            CompetitiveEventDescriptionItems = [
+                new() { Description = "Desc 1", SectionName = "Section 1" },
+                new() { Description = "Desc 2", SectionName = "Section 2" }
+            ]
         };
 
-        var createdEvent = new CompetitiveEvent
-        {
-            Id = Guid.NewGuid(),
-            Title = input.Title,
-            CompetitiveEventAccountingTypeId = input.CompetitiveEventAccountingTypeId,
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
-        };
+        var createdEvent = input.ToModel();
+        createdEvent.CompetitiveEventDescriptionItems = input.CompetitiveEventDescriptionItems.ToModel();
 
         contactsService
            .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))

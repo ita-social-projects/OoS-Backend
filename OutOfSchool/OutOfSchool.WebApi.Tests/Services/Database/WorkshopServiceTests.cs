@@ -23,6 +23,7 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -120,14 +121,14 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once);
     }
 
     [Test]
-    public async Task Create_WhenEntityIsValidAndAvaliableSeatsIsNotNull_ShouldReturnThisEntity(
+    public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
         [Random(2, 25, 1)] int availableSeats,
         [Random(2, 8, 1)] int tagNumber)
@@ -144,7 +145,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -154,28 +155,27 @@ public class WorkshopServiceTests
     }
 
     [Test]
-    public async Task Create_WhenEntityIsValidAndAvaliableSeatsIsNull_ShouldReturnThisEntity(
+    public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
         [Random(2, 8, 1)] int tagNumber)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
-        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
-        createdEntity.AvailableSeats = 0;
-        var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
+        createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
+        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
+        createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreate(createdEntity);
 
+        var createRequest = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
+        createRequest.AvailableSeats = 0;
+
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(createRequest).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Tags.Should().BeEquivalentTo(expectedTags);
+        result.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
+        result.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -188,7 +188,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act
-        var result = await workshopService.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -203,7 +203,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<NullReferenceException>();
     }
 
@@ -224,7 +224,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -239,7 +239,7 @@ public class WorkshopServiceTests
         SetupCreate(createdEntity, true);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.Create(mapper.Map<WorkshopCreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
     #endregion
@@ -255,14 +255,14 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()), Times.Once);
     }
 
     [Test]
-    public async Task CreateV2_WhenEntityIsValidAndAvaliableSeatsIsNotNull_ShouldReturnThisEntity(
+    public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
         [Random(2, 25, 1)] int availableSeats,
         [Random(2, 8, 1)] int tagNumber)
@@ -280,7 +280,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -290,29 +290,28 @@ public class WorkshopServiceTests
     }
 
     [Test]
-    public async Task CreateV2_WhenEntityIsValidAndAvaliableSeatsIsNull_ShouldReturnThisEntity(
+    public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
         [Random(2, 8, 1)] int tagNumber)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
-        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
         createdEntity.DateTimeRanges = new List<DateTimeRange>();
-        createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
-        createdEntity.AvailableSeats = 0;
-        var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
+        createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
+        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
+        createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreateV2(createdEntity);
 
+        var createRequest = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
+        createRequest.AvailableSeats = 0;
+
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(createRequest).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Workshop.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Workshop.Tags.Should().BeEquivalentTo(expectedTags);
+        result.Workshop.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
+        result.Workshop.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.Workshop.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -325,7 +324,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -340,7 +339,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<NullReferenceException>();
     }
 
@@ -361,7 +360,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -376,7 +375,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, true);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(mapper.Map<WorkshopV2CreateRequestDto>(createdEntity)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -386,7 +385,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true, numberOfImages);
-        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.ImageFiles = new List<IFormFile>();
         for (int i = 1; i <= numberOfImages; i++)
@@ -409,7 +408,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true);
-        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
 
         // Act
@@ -427,7 +426,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.CoverImage = file;
 
@@ -445,7 +444,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = mapper.Map<WorkshopV2CreateRequestDto>(createdEntity);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
 
         // Act
         var result = await workshopService.CreateV2(dto).ConfigureAwait(false);
@@ -470,7 +469,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetAll(filter).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedWorkshopsGetAll(workshops));
+        result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto().AsReadOnly(), TotalAmount = workshops.Count() });
     }
 
     #endregion
@@ -489,7 +488,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedWorkshopGetByIdSuccess(id));
+        result.Should().BeEquivalentTo(workshop.ToDto());
     }
 
     [Test]
@@ -799,11 +798,13 @@ public class WorkshopServiceTests
     public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
-        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
+        var changeFirstEntityDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        changeFirstEntityDto.DateTimeRanges = [];
+        changeFirstEntityDto.AvailableSeats = 0;
+        var changedFirstEntity = changeFirstEntityDto.SetToModel(WorkshopGenerator.Generate().WithApplications().WithAddress()); 
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
-        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.ToDto();
@@ -811,7 +812,7 @@ public class WorkshopServiceTests
         applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
 
         // Act
-        var result = await workshopService.Update(mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity)).ConfigureAwait(false);
+        var result = await workshopService.Update(changeFirstEntityDto).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -820,19 +821,19 @@ public class WorkshopServiceTests
     }
 
     [Test]
-    public async Task Update_WhenEntityIsValidAvaliableSeatsIsNull_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
+    public async Task Update_WhenEntityIsValidAvailableSeatsIsNull_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
-        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
+        var changeFirstEntityDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        changeFirstEntityDto.DateTimeRanges = [];
+        var changedFirstEntity = changeFirstEntityDto.SetToModel(WorkshopGenerator.Generate().WithApplications().WithAddress());
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         var provider = ProvidersGenerator.Generate();
         changedFirstEntity.Teachers = teachers;
-        changedFirstEntity.DateTimeRanges = new List<DateTimeRange>();
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.ToDto();
 
-        var changeFirstEntityDto = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = null;
 
         applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
@@ -858,7 +859,9 @@ public class WorkshopServiceTests
         WorkshopStatus expectedWorkshopStatus)
     {
         // Arrange
-        var changedFirstEntity = WorkshopGenerator.Generate().WithAddress();
+        var changeFirstEntityDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        changeFirstEntityDto.DateTimeRanges = [];
+        var changedFirstEntity = changeFirstEntityDto.SetToModel(WorkshopGenerator.Generate().WithAddress());
         changedFirstEntity.Applications = SetupApplications(changedFirstEntity, currentTakenSeats);
         changedFirstEntity.Teachers = TeachersGenerator.Generate(3).WithWorkshop(changedFirstEntity);
         changedFirstEntity.DateTimeRanges = [];
@@ -869,7 +872,6 @@ public class WorkshopServiceTests
 
         SetupUpdate(changedFirstEntity);
 
-        var changeFirstEntityDto = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
         changeFirstEntityDto.AvailableSeats = newAvailableSeats;
 
         workshopRepository.Setup(x => x.Update(changedFirstEntity)).ReturnsAsync(changedFirstEntity);
@@ -909,7 +911,9 @@ public class WorkshopServiceTests
     public async Task Update_WhenTeachersWereDeletedBefore_ShouldReturnUpdatedEntity(int teachersInWorkshop, bool isDeleted)
     {
         // Arrange
-        var changedFirstEntity = WorkshopGenerator.Generate().WithApplications().WithAddress();
+        var changedFirstEntityDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        changedFirstEntityDto.DateTimeRanges = [];
+        var changedFirstEntity = changedFirstEntityDto.SetToModel(WorkshopGenerator.Generate().WithApplications().WithAddress());
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(true);
         teachers.AddRange(TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity).WithIsDeleted(isDeleted));
         var provider = ProvidersGenerator.Generate();
@@ -918,12 +922,11 @@ public class WorkshopServiceTests
         changedFirstEntity.Provider = provider;
         SetupUpdate(changedFirstEntity);
         var expectedTeachers = teachers.ToNotDeletedDto();
-        var techersToUpdate = mapper.Map<WorkshopCreateUpdateDto>(changedFirstEntity);
 
         applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
 
         // Act
-        var result = await workshopService.Update(techersToUpdate).ConfigureAwait(false);
+        var result = await workshopService.Update(changedFirstEntityDto).ConfigureAwait(false);
 
         // Assert
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
@@ -1000,22 +1003,28 @@ public class WorkshopServiceTests
     public async Task GetByFilter_WhenFilterIsNull_ShouldBuildPredicateAndReturnEntities()
     {
         // Arrange
-        var guids = WithWorkshopsList().Select(w => w.Id);
-        SetupGetByFilter(WithWorkshopsList(), WithAvarageRatings(guids));
+        var workshops = WithWorkshopsList();
+        var guids = workshops.Select(w => w.Id);
+        SetupGetByFilter(workshops, WithAvarageRatings(guids));
 
         // Act
         var result = await workshopService.GetByFilter(null).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
+        result.Should().BeEquivalentTo(new SearchResult<WorkshopCard>()
+        {
+            Entities = workshops.ToCard().AsReadOnly(),
+            TotalAmount = workshops.Count()
+        });
     }
 
     [Test]
     public async Task GetByFilter_WhenFilterIsNotNull_ShouldBuildPredicateAndReturnEntities()
     {
         // Arrange
-        var guids = WithWorkshopsList().Select(w => w.Id);
-        SetupGetByFilter(WithWorkshopsList(), WithAvarageRatings(guids));
+        var workshops = WithWorkshopsList();
+        var guids = workshops.Select(w => w.Id);
+        SetupGetByFilter(workshops, WithAvarageRatings(guids));
 
         var filter = new WorkshopFilter()
         {
@@ -1033,7 +1042,10 @@ public class WorkshopServiceTests
         var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
+        result.Should().BeEquivalentTo(new SearchResult<WorkshopCard>() { 
+            Entities = workshops.ToCard().AsReadOnly(), 
+            TotalAmount = workshops.Count() 
+        });
     }
 
     [Test]
@@ -1050,7 +1062,6 @@ public class WorkshopServiceTests
 
         var expectedEntities = new List<Workshop>() { workshops[0], workshops[1] };
         var workshopIds = expectedEntities.Select(w => w.Id);
-        var expectedResult = ExpectedSearchResultGetByFilter(expectedEntities);
         SetupGetByFilter(expectedEntities, WithAvarageRatings(workshopIds));
 
         // Act
@@ -1059,7 +1070,8 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should()
-            .BeEquivalentTo(expectedResult);
+            .BeEquivalentTo(new SearchResult<WorkshopCard>()
+            { Entities = expectedEntities.ToCard().AsReadOnly(), TotalAmount = expectedEntities.Count() });
 
         workshopRepository.VerifyAll();
         averageRatingServiceMock.VerifyAll();
@@ -1199,15 +1211,6 @@ public class WorkshopServiceTests
     #region Setup
     private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted = false)
     {
-        var workshopCreateUpdateDto = mapper.Map<WorkshopCreateRequestDto>(workshop);
-        var workshopDto = workshop.ToDto();
-
-        if (workshopCreateUpdateDto.AvailableSeats is 0)
-        {
-            workshopCreateUpdateDto.AvailableSeats = uint.MaxValue;
-            workshopDto.AvailableSeats = uint.MaxValue;
-        }
-
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
             .Returns(Task.FromResult(workshop.Provider));
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
@@ -1220,14 +1223,6 @@ public class WorkshopServiceTests
 
     private void SetupCreateV2(Workshop workshop, bool isMemberOfWorkshopIdExisted = false, int numberOfImages = 0)
     {
-        var workshopV2CreateRequestDto = mapper.Map<WorkshopV2CreateRequestDto>(workshop);
-        var workshopV2Dto = workshop.ToDto();
-
-        if (workshopV2Dto.AvailableSeats is 0)
-        {
-            workshopV2Dto.AvailableSeats = uint.MaxValue;
-        }
-
         if (isMemberOfWorkshopIdExisted)
         {
             workshopRepository.Setup(w => w.Any(It.IsAny<Expression<Func<Workshop, bool>>>()))
@@ -1255,7 +1250,6 @@ public class WorkshopServiceTests
             MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult(),
         };
 
-        var dictonary = new Dictionary<short, OperationResult>();
         for (short i = 1; i <= numberOfImages; i++)
         {
             multipleImageUploadingResult.MultipleKeyValueOperationResult.Results
@@ -1430,61 +1424,6 @@ public class WorkshopServiceTests
     #endregion
 
     #region Expected
-
-    private SearchResult<WorkshopDto> ExpectedWorkshopsGetAll(IEnumerable<Workshop> workshops)
-    {
-        var mappeddtos = workshops
-            .Select(w => new WorkshopDto()
-            {
-                Id = w.Id,
-            });
-
-        return new SearchResult<WorkshopDto>() { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
-    }
-
-    private WorkshopDto ExpectedWorkshopGetByIdSuccess(Guid id)
-    {
-        return new WorkshopDto() { Id = id };
-    }
-
-    private List<WorkshopCard> ExpectedWorkshopsGetByProviderId()
-    {
-        return new List<WorkshopCard>()
-        {
-            new WorkshopCard()
-            {
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            },
-            new WorkshopCard()
-            {
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            },
-            new WorkshopCard()
-            {
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            },
-        };
-    }
-
-    private SearchResult<WorkshopCard> ExpectedSearchResultGetByFilter(IEnumerable<Workshop> workshops)
-    {
-        var mappeddtos = workshops
-            .Select(w => new WorkshopCard()
-            {
-                ProviderId = w.ProviderId,
-                Id = w.Id,
-            });
-
-        return new SearchResult<WorkshopCard>()
-        { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
-    }
-
-    private Expression<Func<Workshop, bool>> ExpectedPredicateWithIds(WorkshopFilter filter)
-    {
-        var predicate = PredicateBuilder.True<Workshop>();
-        predicate = predicate.And(x => filter.Ids.Any(g => g == x.Id));
-        return predicate;
-    }
 
     private PriceRange ExpectedPriceRange(IEnumerable<Workshop> workshops)
     {

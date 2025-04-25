@@ -60,9 +60,8 @@ public class CompetitiveEventsV2ServiceTests
         // Arrange
         var entity = new CompetitiveEvent { Id = Guid.NewGuid() };
         var dto = new CompetitiveEventV2CreateRequestDto();
-        var expectedDto = new CompetitiveEventV2Dto { Id = entity.Id };
 
-        repoMock.Setup(r => r.Create(entity)).ReturnsAsync(entity);
+        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>())).ReturnsAsync(entity);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
             .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
 

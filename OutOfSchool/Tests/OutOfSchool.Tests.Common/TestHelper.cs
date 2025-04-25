@@ -92,9 +92,9 @@ public static class TestHelper
 
     private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
     {
-        return expected.GetType().GetProperties()
+        return expected.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
             .Select(p => (p.Name, Value: p.GetValue(expected)))
-            .Zip(actual.GetType().GetProperties()
+            .Zip(actual.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
                 .Select(r => (r.Name, Value: r.GetValue(actual))))
             .Select(t => (t.First.Value, t.Second.Value, t.First.Name));
     }

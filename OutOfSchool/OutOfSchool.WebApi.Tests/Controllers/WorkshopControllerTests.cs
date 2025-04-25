@@ -70,7 +70,7 @@ public class WorkshopControllerTests
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();
         workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
-        workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(WorkshopGenerator.Generate());
+        workshopCreateRequestDto = WorkshopCreateRequestDtoGenerator.FromModel(WorkshopGenerator.Generate());
         provider = ProviderDtoGenerator.Generate();
         workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);

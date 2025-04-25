@@ -15,6 +15,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
@@ -140,7 +141,9 @@ public class ProviderServiceTests
         dto.License = license;
         dto.Status = ProviderStatus.Approved;
 
-        var expected = dto.ToModel().ToDto();
+        var provider = dto.ToModel();
+        provider.Contacts = dto.Contacts.ToModel();
+        var expected = provider.ToDto();
         expected.Status = ProviderStatus.Pending;
         expected.License = license;
         expected.LicenseStatus = expectedLicenseStatus;
@@ -153,7 +156,7 @@ public class ProviderServiceTests
         providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
             .ReturnsAsync((Provider p) => p);
         providersRepositoryMock.Setup(r => r.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Provider>,IQueryable<Provider>>>()))
-            .ReturnsAsync(mapper.Map<Provider>(expected));
+            .ReturnsAsync(provider);
         notificationService
             .Setup(s => s.Create(
                 NotificationType.Provider,
@@ -184,7 +187,7 @@ public class ProviderServiceTests
     {
         // Arrange
         providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-        var randomProvider = mapper.Map<ProviderCreateDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
+        var randomProvider = ProviderCreateDtoGenerator.FromModel(fakeProviders.RandomItem());
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
@@ -396,7 +399,7 @@ public class ProviderServiceTests
         provider.Status = ProviderStatus.Recheck;
 
         var updatedTitle = Guid.NewGuid().ToString();
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         var expectedProviderDto = provider.ToDto();
         providerToUpdateDto.FullTitle = updatedTitle;
         expectedProviderDto.FullTitle = updatedTitle;
@@ -437,7 +440,7 @@ public class ProviderServiceTests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.Status = ProviderStatus.Approved;
         providerToUpdateDto.ShortTitleEn = updatedTitle;
 
@@ -467,7 +470,7 @@ public class ProviderServiceTests
         var updatedTitle = Guid.NewGuid().ToString();
         provider.Status = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.FullTitle = updatedTitle;
 
         var expected = provider.ToDto();
@@ -514,7 +517,7 @@ public class ProviderServiceTests
         var updatedLicense = "1234567890";
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = provider.ToDto();
@@ -556,7 +559,7 @@ public class ProviderServiceTests
         string updatedLicense = null;
         provider.LicenseStatus = initialStatus;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         providerToUpdateDto.License = updatedLicense;
 
         var expected = provider.ToDto();
@@ -584,7 +587,7 @@ public class ProviderServiceTests
         var provider = fakeProviders.RandomItem();
         provider.Ownership = ownershipType;
 
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = ProviderUpdateDtoGenerator.FromModel(provider);
         var expectedProviderDto = provider.ToDto();
 
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))
@@ -608,7 +611,7 @@ public class ProviderServiceTests
     public async Task Delete_WhenIdIsValid_CalledProvidersRepositoryDeleteMethod()
     {
         // Arrange
-        var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
+        var providerToDeleteDto = fakeProviders.RandomItem().ToDto();
         var deleteMethodArguments = new List<Provider>();
         var deleteUserArguments = new List<string>();
         providersRepositoryMock.Setup(r => r.GetWithNavigations(It.IsAny<Guid>()))

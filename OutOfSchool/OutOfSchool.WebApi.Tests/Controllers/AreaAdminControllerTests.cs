@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -26,10 +25,8 @@ public class AreaAdminControllerTests
 {
     private AreaAdminController areaAdminController;
     private Mock<IAreaAdminService> areaAdminServiceMock;
-    private AreaAdmin areaAdmin;
     private List<AreaAdmin> areaAdmins;
     private AreaAdminDto areaAdminDto;
-    private List<AreaAdminDto> areaAdminDtos;
     private HttpContext fakeHttpContext;
 
     [SetUp]
@@ -38,10 +35,8 @@ public class AreaAdminControllerTests
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         areaAdminController =
             new AreaAdminController(areaAdminServiceMock.Object, new Mock<ILogger<AreaAdminController>>().Object);
-        areaAdmin = AdminGenerator.GenerateAreaAdmin();
         areaAdmins = AdminGenerator.GenerateAreaAdmins(10);
         areaAdminDto = AdminGenerator.GenerateAreaAdminDto();
-        areaAdminDtos = AdminGenerator.GenerateAreaAdminsDtos(10);
         fakeHttpContext = GetFakeHttpContext();
         areaAdminController.ControllerContext.HttpContext = fakeHttpContext;
     }

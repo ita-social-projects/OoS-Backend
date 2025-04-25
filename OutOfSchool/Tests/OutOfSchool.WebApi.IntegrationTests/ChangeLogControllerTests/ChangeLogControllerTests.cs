@@ -64,7 +64,7 @@ public class ChangeLogControllerTests
         var request = new ParentBlockedByAdminChangesLogRequest()
         {
             ShowParents = ShowParents.All,
-            DateTo = DateTime.MaxValue,
+            DateTo = DateTime.MaxValue,            
         };
 
         // Act

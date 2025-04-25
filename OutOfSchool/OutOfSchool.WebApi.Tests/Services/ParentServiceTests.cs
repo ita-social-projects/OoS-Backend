@@ -569,7 +569,8 @@ public class ParentServiceTests
     public async Task Update_WhenUserHasRightsAndParentExists_ShouldReturnShortUserDto()
     {
         // Arrange
-        Parent parent = ParentGenerator.Generate();
+        var parent = ParentGenerator.Generate();
+        parent.User = new();
         var userId = parent.UserId;
         var parents = new List<Parent>() { parent };
         var parentDto = new BaseUpdateUserDto

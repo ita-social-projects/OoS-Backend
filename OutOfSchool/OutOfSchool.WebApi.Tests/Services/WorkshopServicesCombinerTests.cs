@@ -162,10 +162,13 @@ public class WorkshopServicesCombinerTests
         currentWorkshopDto.TakenSeats = 4;
         var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
         newWorkshopCreateUpdateDto.AvailableSeats = 10;
+        newWorkshopCreateUpdateDto.ProviderTitle = currentWorkshopDto.ProviderTitle;
         workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
 
         var updatedWorkshopDto = newWorkshopCreateUpdateDto.ToModel().ToDto();
+        newWorkshopCreateUpdateDto.ProviderTitle = updatedWorkshopDto.ProviderTitle;
+        newWorkshopCreateUpdateDto.TagIds = updatedWorkshopDto.Tags.Select(x => x.Id).ToList();
         workshopService.Setup(x => x.Update(newWorkshopCreateUpdateDto))
             .ReturnsAsync(updatedWorkshopDto);
 

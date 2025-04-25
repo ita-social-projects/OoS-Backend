@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -54,14 +55,14 @@ public class InstitutionHierarchyServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        Guid institutionId = Guid.NewGuid();
+        var institutionId = Guid.NewGuid();
 
         var expected = new InstitutionHierarchy()
         {
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            SubDirections = new List<SubDirection>(),
+            SubDirections = [],
         };
 
         var input = new InstitutionHierarchyDto()
@@ -69,16 +70,16 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            SubDirections = new List<SubDirectionDto>(),
+            SubDirections = [],
         };
 
-        repo.Setup(r => r.Create(expected, It.IsAny<List<long>>())).ReturnsAsync(expected);
+        repo.Setup(r => r.Create(It.Is<InstitutionHierarchy>(h => h.InstitutionId == institutionId && h.Title == input.Title), It.IsAny<List<long>>())).ReturnsAsync(expected);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
-        repo.Verify(r => r.Create(expected, It.IsAny<List<long>>()), Times.Once);
+        repo.VerifyAll();
         Assert.AreEqual(expected.Title, result.Title);
         Assert.AreEqual(expected.HierarchyLevel, result.HierarchyLevel);
         Assert.AreEqual(expected.InstitutionId, result.InstitutionId);
@@ -177,13 +178,14 @@ public class InstitutionHierarchyServiceTests
     public async Task GetById_WhenIdIsValid_ReturnsEntity(string idStr)
     {
         // Arrange
-        Guid id = Guid.Parse(idStr);
+        var id = Guid.Parse(idStr);
 
         var expected = new InstitutionHierarchyDto()
         {
             Title = "NewTitle1",
             HierarchyLevel = 1,
             InstitutionId = id,
+            SubDirections = []
         };
 
         var mockDbEntry = new InstitutionHierarchy()
@@ -199,7 +201,7 @@ public class InstitutionHierarchyServiceTests
         var result = await service.GetById(id).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(expected, result);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Test]

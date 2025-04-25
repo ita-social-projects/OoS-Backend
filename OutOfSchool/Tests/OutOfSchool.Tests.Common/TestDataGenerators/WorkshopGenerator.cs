@@ -32,7 +32,8 @@ public static class WorkshopGenerator
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(3))
         .RuleFor(x => x.IsPaid, _ => true)
         .RuleFor(x => x.IsSelfFinanced, f => f.Random.Bool())
-        .RuleFor(x => x.ShortTitle, f => f.Company.CompanyName());
+        .RuleFor(x => x.ShortTitle, f => f.Company.CompanyName())
+        .RuleFor(x => x.Tags, f => []);
 
     public static Workshop Generate() => faker.Generate();
 

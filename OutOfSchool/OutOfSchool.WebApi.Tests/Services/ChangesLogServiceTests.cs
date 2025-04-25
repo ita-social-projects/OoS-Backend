@@ -177,9 +177,7 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -234,9 +232,7 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -297,9 +293,7 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -344,9 +338,7 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -404,9 +396,7 @@ public class ChangesLogServiceTests
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);

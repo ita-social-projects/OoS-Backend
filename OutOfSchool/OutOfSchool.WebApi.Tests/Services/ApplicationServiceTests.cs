@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Elastic.Clients.Elasticsearch.Snapshot;
 using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -115,13 +116,14 @@ public class ApplicationServiceTests
     {
         // Arrange
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-        SetupGetById(WithApplication(id));
+        var application = WithApplication(id);
+        this.SetupGetById(application);
 
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(new ApplicationDto() { Id = id });
+        result.Should().BeEquivalentTo(application.ToDto());
     }
 
     [Test]
@@ -146,28 +148,6 @@ public class ApplicationServiceTests
         newApplication.Workshop.Id = newApplication.WorkshopId;
         newApplication.Status = ApplicationStatus.Pending;
 
-        var applicationForCreation = new Application()
-        {
-            Id = newApplication.Id,
-            WorkshopId = newApplication.WorkshopId,
-            CreationTime = newApplication.CreationTime,
-            Status = ApplicationStatus.Pending,
-            ChildId = newApplication.ChildId,
-            ParentId = newApplication.ParentId,
-        };
-
-        var applicationDto = new ApplicationDto()
-        {
-            Id = newApplication.Id,
-            WorkshopId = newApplication.WorkshopId,
-            CreationTime = newApplication.CreationTime,
-            Status = ApplicationStatus.Pending,
-            ChildId = newApplication.ChildId,
-            ParentId = newApplication.ParentId,
-        };
-
-        applicationRepositoryMock.Setup(w => w.Create(applicationForCreation)).Returns(Task.FromResult(newApplication));
-
         var input = new ApplicationCreate()
         {
             WorkshopId = newApplication.WorkshopId,
@@ -175,6 +155,11 @@ public class ApplicationServiceTests
             ParentId = newApplication.ParentId,
         };
         SetupCreate(newApplication);
+
+        applicationRepositoryMock.Setup(w => w.Create(It.Is<Application>(a => a.WorkshopId == input.WorkshopId
+            && a.ChildId == input.ChildId
+            && a.ParentId == input.ParentId)))
+            .Returns(Task.FromResult(newApplication));
 
         var recipientsIds = new List<string>()
         {
@@ -428,7 +413,7 @@ public class ApplicationServiceTests
         var result = await service.GetAllByParent(Guid.NewGuid(), filter).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result.Entities, Is.Null);
+        result.Entities.Should().HaveCount(0);
     }
 
     [Test]
@@ -491,7 +476,7 @@ public class ApplicationServiceTests
         var result = await service.GetAllByChild(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result, Is.Null);
+        result.Should().HaveCount(0);
     }
 
     [Test]
@@ -535,7 +520,6 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
            .Returns((Func<Task<Application>> f) => f.Invoke());
 
-        var expected = new ApplicationDto() { Id = id };
         var update = new ApplicationUpdate
         {
             Id = id,
@@ -586,7 +570,7 @@ public class ApplicationServiceTests
 
         // Assert
         Assert.NotNull(result);
-        AssertApplicationsDTOsAreEqual(expected, result);
+        AssertApplicationsDTOsAreEqual(changedEntity.ToDto(), result);
 
         notificationService.Verify(
             x => x.Create(
@@ -624,7 +608,6 @@ public class ApplicationServiceTests
 
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
 
-        var expected = new ApplicationDto() { Id = id, Status = ApplicationStatus.Approved };
         var update = new ApplicationUpdate
         {
             Id = id,
@@ -659,7 +642,7 @@ public class ApplicationServiceTests
 
         // Assert
         Assert.NotNull(result);
-        AssertApplicationsDTOsAreEqual(expected, result);
+        AssertApplicationsDTOsAreEqual(changedEntity.ToDto(), result);
     }
 
     [Test]
@@ -1049,7 +1032,7 @@ public class ApplicationServiceTests
                 It.IsAny<Expression<Func<Application, bool>>>(),
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { apps.First() }));
+            .Returns(Task.FromResult<IEnumerable<Application>>(apps.ToList()));
     }
 
     private void SetupGetAllByWorkshop(List<Application> apps)

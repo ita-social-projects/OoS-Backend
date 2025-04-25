@@ -541,11 +541,11 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>()
         {
-            mapper.Map<WorkshopDraft>(workshopV2Dto)
+            workshopV2Dto.ToDraft()
         };
 
         workshopDraftRepoMoq.Setup(x =>
