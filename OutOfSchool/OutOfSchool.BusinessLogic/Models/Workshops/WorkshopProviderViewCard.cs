@@ -17,7 +17,7 @@ public static class WorkshopProviderViewCardExtensions
 {
     public static WorkshopProviderViewCard ToProviderViewCard(this Workshop model)
     {
-        var defaultContact = model.Contacts.FirstOrDefault(c => c.IsDefault);
+        var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
 
         return new()
         {
@@ -34,10 +34,10 @@ public static class WorkshopProviderViewCardExtensions
             MaxAge = model.MaxAge,
             CompetitiveSelection = model.CompetitiveSelection,
             Price = model.Price,
-            DirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
+            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList() ?? [],
             ProviderId = model.ProviderId,
-            Address = defaultContact.Address.ToDto(),
-            ProviderLicenseStatus = model.Provider.LicenseStatus,
+            Address = defaultContact?.Address?.ToDto(),
+            ProviderLicenseStatus = model.Provider?.LicenseStatus ?? default,
 
             AvailableSeats = model.AvailableSeats,
             Status = model.Status,

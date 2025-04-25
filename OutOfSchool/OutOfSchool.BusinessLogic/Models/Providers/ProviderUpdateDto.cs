@@ -15,12 +15,12 @@ public static class ProviderUpdateDtoExtensions
         model.ShortTitleEn = dto.ShortTitleEn;
         model.GeneralWorkSchedule = dto.GeneralWorkSchedule;
         model.TypeId = dto.TypeId;
-        model.Type = dto.Type.ToModel();
+        model.Type = dto.Type?.ToModel();
         model.License = dto.License;
         model.InstitutionStatusId = dto.InstitutionStatusId;
         model.InstitutionId = dto.InstitutionId;
         model.InstitutionType = dto.InstitutionType;
-        model.ProviderSectionItems = dto.ProviderSectionItems.ToModel();
+        model.ProviderSectionItems = dto.ProviderSectionItems?.ToModel();
         model.UsesOutsourcingServices = dto.UsesOutsourcingServices;
         model.InstitutionCode = dto.InstitutionCode;
         model.IsStructuralUnit = dto.IsStructuralUnit;

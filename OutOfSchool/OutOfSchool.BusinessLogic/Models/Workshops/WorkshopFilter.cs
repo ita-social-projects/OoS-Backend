@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Enums;
-using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
@@ -101,7 +100,7 @@ public static class WorkshopFilterExtensions
             MaxPrice = dto.MaxPrice,
             DirectionIds = dto.DirectionIds,
             City = dto.City,
-            Workdays = string.Join(' ', dto.Workdays),
+            Workdays = string.Join(' ', dto.Workdays ?? []),
             MinStartTime = dto.MinStartTime,
             MaxStartTime = dto.MaxStartTime,
             Size = dto.Size,

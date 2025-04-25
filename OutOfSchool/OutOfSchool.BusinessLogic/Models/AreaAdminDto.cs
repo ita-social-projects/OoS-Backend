@@ -29,21 +29,21 @@ public static class AreaAdminDtoExtensions
     public static AreaAdminDto ToDto(this AreaAdmin areaAdmin)
         => new()
         {
-            Id = areaAdmin.User.Id,
-            FirstName = areaAdmin.User.FirstName,
-            LastName = areaAdmin.User.LastName,
-            MiddleName = areaAdmin.User.MiddleName ?? string.Empty,
-            PhoneNumber = areaAdmin.User.PhoneNumber,
-            Email = areaAdmin.User.Email,
+            Id = areaAdmin.User?.Id,
+            FirstName = areaAdmin.User?.FirstName,
+            LastName = areaAdmin.User?.LastName,
+            MiddleName = areaAdmin.User?.MiddleName ?? string.Empty,
+            PhoneNumber = areaAdmin.User?.PhoneNumber,
+            Email = areaAdmin.User?.Email,
 
-            AccountStatus = areaAdmin.User.Convert(),
+            AccountStatus = areaAdmin.User?.Convert() ?? default,
             InstitutionId = areaAdmin.InstitutionId, 
-            InstitutionTitle = areaAdmin.Institution.Title,
+            InstitutionTitle = areaAdmin.Institution?.Title,
             CATOTTGId = areaAdmin.CATOTTGId, 
-            CATOTTGCategory = areaAdmin.CATOTTG.Category,
-            CATOTTGName = areaAdmin.CATOTTG.Name,
-            RegionId = areaAdmin.CATOTTG.Parent.Parent.Id,
-            RegionName = areaAdmin.CATOTTG.Parent.Parent.Name ?? string.Empty,
+            CATOTTGCategory = areaAdmin.CATOTTG?.Category,
+            CATOTTGName = areaAdmin.CATOTTG?.Name,
+            RegionId = areaAdmin.CATOTTG?.Parent?.Parent?.Id ?? default,
+            RegionName = areaAdmin.CATOTTG?.Parent?.Parent?.Name ?? string.Empty,
         };
 
     public static AreaAdminDto ToDto(this AreaAdminBaseDto areaAdmin)

@@ -34,7 +34,7 @@ public static class CompetitiveEventDtoExtensions
             BuildingHoldingId = model.BuildingHoldingId,
             ChildParticipantId = model.ChildParticipantId,
             CoverageId = model.CoverageId,
-            CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems.ToDto(),
+            CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
             AdditionalDescription = model.AdditionalDescription,
             ScheduledStartTime = model.ScheduledStartTime,
             ScheduledEndTime = model.ScheduledEndTime,
@@ -57,10 +57,10 @@ public static class CompetitiveEventDtoExtensions
             Price = model.Price,
             CompetitiveSelection = model.CompetitiveSelection,
             NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
-            Contacts = model.Contacts.ToDto(),
-            InstitutionHierarchy = model.InstitutionHierarchy.Title,
-            DirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
-            Coverage = model.Coverage.ToDto(),
+            Contacts = model.Contacts?.ToDto(),
+            InstitutionHierarchy = model.InstitutionHierarchy?.Title,
+            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
+            Coverage = model.Coverage?.ToDto(),
         };
 
     public static List<CompetitiveEventDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)

@@ -19,10 +19,10 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.ShortTitle = dto.ShortTitle;
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges.ToModel()
-            .Concat(model.DateTimeRanges)
+        model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
+            .Concat(model.DateTimeRanges ?? [])
             .Distinct(new DateTimeRangeComparerWithoutFK())
-            .ToList();
+            .ToList() ?? [];
         model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? default;
         model.PayRate = dto.PayRate ?? default;
@@ -30,10 +30,10 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.AvailableSeats = dto.AvailableSeats ?? default;
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
-        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems.ToModel();
+        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel() ?? [];
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
-        model.DefaultTeacher = dto.DefaultTeacher.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
-        model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords.Distinct());
+        model.DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
+        model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
         model.ProviderId = dto.ProviderId;
         model.ActiveFrom = dto.ActiveFrom;
         model.ActiveTo = dto.ActiveTo;
@@ -62,7 +62,7 @@ public static class WorkshopCreateUpdateDtoExtensions
             ShortTitle = dto.ShortTitle,
             MinAge = dto.MinAge ?? default,
             MaxAge = dto.MaxAge ?? default,
-            DateTimeRanges = dto.DateTimeRanges.ToModel(),
+            DateTimeRanges = dto.DateTimeRanges?.ToModel() ?? [],
             IsPaid = dto.IsPaid,
             Price = dto.Price ?? default,
             PayRate = dto.PayRate ?? default,
@@ -70,10 +70,10 @@ public static class WorkshopCreateUpdateDtoExtensions
             AvailableSeats = dto.AvailableSeats ?? default,
             CompetitiveSelection = dto.CompetitiveSelection,
             CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
-            WorkshopDescriptionItems = dto.WorkshopDescriptionItems.ToModel(),
+            WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel() ?? [],
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
-            DefaultTeacher = dto.DefaultTeacher.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId),
-            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords.Distinct()),
+            DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId),
+            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),
             ProviderId = dto.ProviderId,
             ActiveFrom = dto.ActiveFrom,
             ActiveTo = dto.ActiveTo,

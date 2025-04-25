@@ -56,7 +56,7 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             Price = dto.Price ?? 0,
             CompetitiveSelection = dto.CompetitiveSelection ?? false,
             NumberOfOccupiedSeats = dto.NumberOfOccupiedSeats ?? 0,
-            Contacts = dto.Contacts.ToModel(),            
+            Contacts = dto.Contacts?.ToModel(),            
         };
 
     public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent SetToModel(this CompetitiveEventV2CreateRequestDto dto, OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)

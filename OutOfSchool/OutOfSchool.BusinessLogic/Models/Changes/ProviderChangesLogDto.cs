@@ -18,10 +18,10 @@ public static class ProviderChangesLogDtoExtensions
             OldValue = changesLog.OldValue,
             NewValue = changesLog.NewValue,
             UpdatedDate = DateTime.SpecifyKind(changesLog.UpdatedDate, DateTimeKind.Utc),
-            User = changesLog.User.ToShortUser(),
+            User = changesLog.User?.ToShortUser(),
             InstitutionTitle = provider.Institution.Title,
-            ProviderId = changesLog.EntityIdGuid.Value,
+            ProviderId = changesLog.EntityIdGuid ?? default,
             ProviderTitle = provider.FullTitle,
-            ProviderCity = provider.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
+            ProviderCity = provider.Contacts?.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTG?.Name,
         };
 }

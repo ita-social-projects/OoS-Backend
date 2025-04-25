@@ -20,10 +20,10 @@ public static class ApplicationChangesLogDtoExtensions
             OldValue = changesLog.OldValue,
             NewValue = changesLog.NewValue,
             UpdatedDate = DateTime.SpecifyKind(changesLog.UpdatedDate, DateTimeKind.Utc),
-            User = changesLog.User.ToShortUser(),
-            ApplicationId = changesLog.EntityIdGuid.Value,
-            WorkshopTitle = application.Workshop.Title,
-            WorkshopCity = application.Workshop.Contacts.SingleOrDefault(c => c.IsDefault).Address.CATOTTG.Name,
-            ProviderTitle = application.Workshop.ProviderTitle,
+            User = changesLog.User?.ToShortUser(),
+            ApplicationId = changesLog.EntityIdGuid ?? default,
+            WorkshopTitle = application.Workshop?.Title,
+            WorkshopCity = application.Workshop?.Contacts?.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTG?.Name,
+            ProviderTitle = application.Workshop?.ProviderTitle,
         };
 }

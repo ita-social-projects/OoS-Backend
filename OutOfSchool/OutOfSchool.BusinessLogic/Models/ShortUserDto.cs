@@ -45,16 +45,16 @@ public static class ShortUserDtoExtensions
     public static ShortUserDto ToShortUser(this OutOfSchool.Services.Models.Parent parent)
     => new()
     {
-        Id = parent.User.Id,
-        Email = parent.User.Email,
-        PhoneNumber = parent.User.PhoneNumber,
-        LastName = parent.User.LastName,
-        MiddleName = parent.User.MiddleName ?? string.Empty,
-        FirstName = parent.User.FirstName,
-        UserName = parent.User.UserName,
-        Role = parent.User.Role,
-        IsRegistered = parent.User.IsRegistered,
-        EmailConfirmed = parent.User.EmailConfirmed,
+        Id = parent.User?.Id,
+        Email = parent.User?.Email,
+        PhoneNumber = parent.User?.PhoneNumber,
+        LastName = parent.User?.LastName,
+        MiddleName = parent.User?.MiddleName ?? string.Empty,
+        FirstName = parent.User?.FirstName,
+        UserName = parent.User?.UserName,
+        Role = parent.User?.Role,
+        IsRegistered = parent.User?.IsRegistered ?? default,
+        EmailConfirmed = parent.User?.EmailConfirmed ?? default,
         Gender = parent.Gender,
         DateOfBirth = parent.DateOfBirth,
     };

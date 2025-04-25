@@ -29,7 +29,7 @@ public static class CompanyInformationDtoExtensions
             Id = dto.Id,
             Title = dto.Title,
             Type = dto.Type,
-            CompanyInformationItems = dto.CompanyInformationItems.ToModel()
+            CompanyInformationItems = dto.CompanyInformationItems?.ToModel() ?? []
         };
 
     public static List<CompanyInformation> ToModel(this IEnumerable<CompanyInformationDto> list)
@@ -41,7 +41,7 @@ public static class CompanyInformationDtoExtensions
             Id = model.Id,
             Title = model.Title,
             Type = model.Type,
-            CompanyInformationItems = model.CompanyInformationItems.ToDto()
+            CompanyInformationItems = model.CompanyInformationItems?.ToDto() ?? []
         };
 
     public static List<CompanyInformationDto> ToDto(this IEnumerable<CompanyInformation> list)

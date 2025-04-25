@@ -445,7 +445,7 @@ public class ProviderService(
             .Select(p => new Tuple<ProviderLicenseStatus, OwnershipType>(p.LicenseStatus, p.Ownership))
             .SingleOrDefaultAsync();
 
-private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 

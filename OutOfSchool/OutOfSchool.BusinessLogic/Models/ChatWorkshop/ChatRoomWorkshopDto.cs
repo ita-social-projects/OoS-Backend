@@ -24,8 +24,8 @@ public static class ChatRoomWorkshopDtoExtensions
             WorkshopId = model.WorkshopId,
             ParentId = model.ParentId,
             IsBlockedByProvider = model.IsBlockedByProvider,
-            Workshop = model.Workshop.ToChatListDto(),
-            Parent = model.Parent.ToContactInfoDto(),
+            Workshop = model.Workshop?.ToChatListDto(),
+            Parent = model.Parent?.ToContactInfoDto(),
         };
 
     public static List<ChatRoomWorkshopDto> ToDto(this IEnumerable<ChatRoomWorkshop> list)

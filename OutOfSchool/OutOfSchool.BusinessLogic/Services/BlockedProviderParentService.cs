@@ -142,7 +142,7 @@ public class BlockedProviderParentService(
             .GetBlockedProviderParentEntities(parentId, providerId)
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        return currentBlock.ToDto();
+        return currentBlock?.ToDto();
     }
 
     public Task<bool> IsBlocked(Guid parentId, Guid providerId)

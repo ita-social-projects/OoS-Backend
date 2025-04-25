@@ -392,6 +392,7 @@ public class StudySubjectService(
         var languageId = dto.Language.Id;
         var language = await languageRepository.Get(
             whereExpression: l => languageId == l.Id)
+            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (language == null)
@@ -400,6 +401,7 @@ public class StudySubjectService(
             throw new ArgumentException($"Language with Id = {languageId} was not found");
         }
 
-        studySubject.Language = language;
+        studySubject.LanguageId = languageId;
+        studySubject.Language = null;
     }
 }

@@ -49,9 +49,9 @@ public static class ApplicationDtoExtensions
             WorkshopId = application.WorkshopId,
             ChildId = application.ChildId,
             ParentId = application.ParentId,
-            Workshop = application.Workshop.ToCard(),
-            Child = application.Child.ToDto(),
-            Parent = application.Parent.ToDto(),
+            Workshop = application.Workshop?.ToCard(),
+            Child = application.Child?.ToDto(),
+            Parent = application.Parent?.ToDto(),
         };
 
     public static List<ApplicationDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Application> list)

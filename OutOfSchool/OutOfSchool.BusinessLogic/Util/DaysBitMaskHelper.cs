@@ -11,7 +11,9 @@ public static class DaysBitMaskHelper
     /// <returns>Merged enum.</returns>
     public static DaysBitMask ToDaysBitMask(this IEnumerable<DaysBitMask> daysList)
     {
-        return daysList.Aggregate((prev, next) => prev | next);
+        return daysList.Any() 
+            ? daysList.Aggregate((prev, next) => prev | next)
+            : default;
     }
 
     /// <summary>

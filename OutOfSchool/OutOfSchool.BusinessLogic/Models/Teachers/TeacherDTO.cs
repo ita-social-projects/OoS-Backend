@@ -116,7 +116,7 @@ public static class TeacherDTOExtensions
             DateOfBirth = model.DateOfBirth,
             Description = model.Description,
             CoverImageId = model.CoverImageId,
-            WorkshopId = model.Workshop.Id,
+            WorkshopId = model.WorkshopId ?? default,
         };
 
     public static TeacherDTO ToDto(this TeacherDraft draft)

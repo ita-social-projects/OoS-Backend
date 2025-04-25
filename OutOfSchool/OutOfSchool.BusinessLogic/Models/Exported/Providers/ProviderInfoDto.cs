@@ -90,15 +90,15 @@ public static class ProviderInfoDtoExtensions
             ShortTitleEn = model.ShortTitleEn,
             Edrpou = model.Edrpou,
             GeneralWorkSchedule = model.GeneralWorkSchedule,
-            Type = model.Type.Name,
+            Type = model.Type?.Name,
             Status = model.Status,
             CoverImageId = model.CoverImageId,
-            ImageIds = model.Images.Select(x => x.ExternalStorageId).ToArray(),
+            ImageIds = model.Images?.Select(x => x.ExternalStorageId).ToArray(),
             IsBlocked = model.IsBlocked,
-            Institution = model.Institution.Title,
+            Institution = model.Institution?.Title,
             InstitutionType = model.InstitutionType,
-            ProviderSectionItems = model.ProviderSectionItems.ToInfoDto(),
-            Contacts = model.Contacts.ToInfoDto()
+            ProviderSectionItems = model.ProviderSectionItems?.ToInfoDto(),
+            Contacts = model.Contacts?.ToInfoDto()
         };
 
     public static List<ProviderInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Provider> list)

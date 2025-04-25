@@ -25,12 +25,12 @@ public static class OfficialDtoExtensions
         => new()
         {
             Id = model.Id,
-            PositionId = model.Position.Id,
-            Position = model.Position.FullName,
-            FirstName = model.Individual.FirstName,
-            MiddleName = model.Individual.MiddleName,
-            LastName = model.Individual.LastName,
-            Rnokpp = model.Individual.Rnokpp,
+            PositionId = model.Position?.Id ?? default,
+            Position = model.Position?.FullName,
+            FirstName = model.Individual?.FirstName,
+            MiddleName = model.Individual?.MiddleName,
+            LastName = model.Individual?.LastName,
+            Rnokpp = model.Individual?.Rnokpp,
             DismissalOrder = model.DismissalOrder ?? string.Empty,
             RecruitmentOrder = model.RecruitmentOrder ?? string.Empty,
             DismissalReason = model.DismissalReason ?? string.Empty,

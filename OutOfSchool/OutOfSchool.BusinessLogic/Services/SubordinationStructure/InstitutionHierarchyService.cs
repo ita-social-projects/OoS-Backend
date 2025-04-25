@@ -34,7 +34,7 @@ public class InstitutionHierarchyService(
 
         logger.LogInformation($"InstitutionHierarchy with Id = {newInstitutionHierarchy?.Id} created successfully.");
 
-        return newInstitutionHierarchy.ToDto();
+        return newInstitutionHierarchy?.ToDto();
     }
 
     /// <inheritdoc/>
@@ -162,7 +162,7 @@ public class InstitutionHierarchyService(
 
         logger.LogInformation($"Successfully got a InstitutionHierarchy with Id = {id}.");
 
-        return institutionHierarchy.ToDto();
+        return institutionHierarchy?.ToDto();
     }
 
     /// <inheritdoc/>

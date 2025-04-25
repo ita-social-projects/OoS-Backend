@@ -55,7 +55,7 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
             Price = dto.Price ?? 0,
             CompetitiveSelection = dto.CompetitiveSelection ?? false,
             NumberOfOccupiedSeats = dto.NumberOfOccupiedSeats ?? 0,
-            Contacts = dto.Contacts.ToModel(),
+            Contacts = dto.Contacts?.ToModel(),
             CoverImageId = dto.CoverageId.ToString(),
         };
 

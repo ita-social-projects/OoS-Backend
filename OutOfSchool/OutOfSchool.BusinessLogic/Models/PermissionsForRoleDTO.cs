@@ -24,7 +24,7 @@ public static class PermissionsForRoleDTOExtensions
         {
             Id = dto.Id,
             RoleName = dto.RoleName,
-            PackedPermissions = dto.Permissions.PackPermissionsIntoString(),
+            PackedPermissions = dto.Permissions?.PackPermissionsIntoString(),
             Description = dto.Description,
         };
 
@@ -33,7 +33,7 @@ public static class PermissionsForRoleDTOExtensions
         {
             Id = model.Id,
             RoleName = model.RoleName,
-            Permissions = model.PackedPermissions.UnpackPermissionsFromString(),
+            Permissions = model.PackedPermissions?.UnpackPermissionsFromString(),
             Description = model.Description,
         };
 

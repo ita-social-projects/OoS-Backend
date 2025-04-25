@@ -50,8 +50,8 @@ public static class AchievementDtoExtensions
             AchievementDate = achievement.AchievementDate,
             WorkshopId = achievement.WorkshopId,
             AchievementTypeId = achievement.AchievementTypeId,
-            Children = achievement.Children.ToNotDeletedDto(),
-            Teachers = achievement.Teachers.ToNotDeletedDto()
+            Children = achievement.Children?.ToNotDeletedDto() ?? [],
+            Teachers = achievement.Teachers?.ToNotDeletedDto() ?? []
         };
 
     public static List<AchievementDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Achievement> list)

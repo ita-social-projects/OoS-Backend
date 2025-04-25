@@ -79,7 +79,7 @@ public class PositionService(
         await currentUserService.UserHasRights(new ProviderRights(providerId));
         var position = await GetPositionAsync(positionId, providerId);
 
-        return position.ToDto();
+        return position?.ToDto();
     }
 
     public async Task<PositionDto> UpdateAsync(Guid positionId, PositionCreateUpdateDto updateDto, Guid providerId)

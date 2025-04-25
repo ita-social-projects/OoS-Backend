@@ -21,7 +21,7 @@ public static class WorkshopDraftViewCardDtoExtensions
             WorkshopDraftId = draft.Id,
             DraftStatus = draft.DraftStatus,
             RejectionMessage = draft.RejectionMessage,
-            Title = draft.WorkshopDraftContent.Title,
+            Title = draft.WorkshopDraftContent?.Title,
             CoverImageId = draft.CoverImageId,
         };
 

@@ -79,10 +79,10 @@ public static class ContactsDtoExtensions
         {
             Title = contacts.Title,
             IsDefault = contacts.IsDefault,
-            Address = contacts.Address.ToModel(),
-            Phones = contacts.Phones.ToModel(),
-            Emails = contacts.Emails.ToModel(),
-            SocialNetworks = contacts.SocialNetworks.ToModel()
+            Address = contacts.Address?.ToModel(),
+            Phones = contacts.Phones?.ToModel(),
+            Emails = contacts.Emails?.ToModel(),
+            SocialNetworks = contacts.SocialNetworks?.ToModel()
         };
 
     public static List<Contacts> ToModel(this IEnumerable<ContactsDto> contacts)
@@ -93,10 +93,10 @@ public static class ContactsDtoExtensions
         {
             Title = contacts.Title,
             IsDefault = contacts.IsDefault,
-            Address = contacts.Address.ToContactsDto(),
-            Phones = contacts.Phones.ToDto(),
-            Emails = contacts.Emails.ToDto(),
-            SocialNetworks = contacts.SocialNetworks.ToDto()
+            Address = contacts.Address?.ToContactsDto(),
+            Phones = contacts.Phones?.ToDto(),
+            Emails = contacts.Emails?.ToDto(),
+            SocialNetworks = contacts.SocialNetworks?.ToDto()
         };
 
     public static List<ContactsDto> ToDto(this IEnumerable<Contacts> contacts)

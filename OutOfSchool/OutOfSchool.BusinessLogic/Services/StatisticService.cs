@@ -117,12 +117,13 @@ public class StatisticService(
         var sortedStatistics = await statistics
             .OrderByDescending(s => s.ApplicationsCount)
             .Take(limit)
+            .Select(s => s.Direction)
             .ToListAsync()
             .ConfigureAwait(false);
 
         logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
 
-        return sortedStatistics.Select(s => s.Direction);
+        return sortedStatistics;
     }
 
     /// <inheritdoc/>

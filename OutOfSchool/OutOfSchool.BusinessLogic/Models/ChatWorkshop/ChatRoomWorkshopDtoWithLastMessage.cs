@@ -16,10 +16,10 @@ public static class ChatRoomWorkshopDtoWithLastMessageExtensions
             WorkshopId = model.WorkshopId,
             ParentId = model.ParentId,
             IsBlockedByProvider = model.IsBlockedByProvider,
-            Workshop = model.Workshop.ToChatListDto(),
-            Parent = model.Parent.ToContactInfoDto(),
+            Workshop = model.Workshop?.ToChatListDto(),
+            Parent = model.Parent?.ToContactInfoDto(),
             NotReadByCurrentUserMessagesCount = model.NotReadByCurrentUserMessagesCount,
-            LastMessage = model.LastMessage.ToDto(),
+            LastMessage = model.LastMessage?.ToDto(),
         };
 
     public static List<ChatRoomWorkshopDtoWithLastMessage> ToDto(this IEnumerable<OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists.ChatRoomWorkshopForChatList> list)

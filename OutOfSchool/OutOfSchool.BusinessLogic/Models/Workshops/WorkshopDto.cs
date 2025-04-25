@@ -55,7 +55,7 @@ public static class WorkshopDtoExtensions
 {
     public static WorkshopES ToES(this WorkshopDto dto)
     {
-        var defaultContact = dto.Contacts.FirstOrDefault(c => c.IsDefault);
+        var defaultContact = dto.Contacts?.FirstOrDefault(c => c.IsDefault);
 
         return new()
         {
@@ -71,21 +71,21 @@ public static class WorkshopDtoExtensions
             ProviderStatus = dto.ProviderStatus,
             ProviderOwnership = dto.ProviderOwnership,
             Description = dto.WorkshopDescriptionItems
-                .Aggregate(string.Empty, (accumulator, wdi) =>
+                ?.Aggregate(string.Empty, (accumulator, wdi) =>
                     $"{accumulator}{wdi.SectionName}{Constants.MappingSeparator}{wdi.Description}{Constants.MappingSeparator}"),
             MinAge = dto.MinAge ?? default,
             MaxAge = dto.MaxAge ?? default,
             CompetitiveSelection = dto.CompetitiveSelection,
             Price = dto.Price ?? default,
             PayRate = dto.PayRate ?? PayRateType.None,
-            Address = defaultContact.Address.ToES(),
+            Address = defaultContact?.Address?.ToES(),
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
             InstitutionHierarchy = dto.InstitutionHierarchy,
             InstitutionId = dto.InstitutionId,
             Institution = dto.Institution,
-            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords.Distinct()),
+            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),
             DirectionIds = dto.DirectionIds,
-            DateTimeRanges = dto.DateTimeRanges.ToES(),
+            DateTimeRanges = dto.DateTimeRanges?.ToES() ?? [],
             Status = dto.Status,
             IsBlocked = dto.IsBlocked,
             AvailableSeats = dto.AvailableSeats ?? default,
@@ -103,13 +103,13 @@ public static class WorkshopDtoExtensions
             AreThereBenefits = dto.AreThereBenefits,
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             Coverage = dto.Coverage,
-            Tags = dto.Tags.Select(x => x.Name).ToList(),
+            Tags = dto.Tags?.Select(x => x.Name).ToList() ?? [],
         };
     }
 
     public static WorkshopDto ToDto(this Workshop model)
     {
-        var defaultContact = model.Contacts.FirstOrDefault(c => c.IsDefault);
+        var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
 
         return new()
         {
@@ -119,7 +119,7 @@ public static class WorkshopDtoExtensions
             NoAgeRestrictions = model.MinAge == 0 && model.MaxAge == 120,
             MinAge = model.MinAge,
             MaxAge = model.MaxAge,
-            DateTimeRanges = model.DateTimeRanges.ToNotDeletedDto(),
+            DateTimeRanges = model.DateTimeRanges?.ToNotDeletedDto() ?? [],
             IsPaid = model.IsPaid,
             Price = model.Price,
             PayRate = model.PayRate,
@@ -127,19 +127,19 @@ public static class WorkshopDtoExtensions
             AvailableSeats = model.AvailableSeats,
             CompetitiveSelection = model.CompetitiveSelection,
             CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
-            WorkshopDescriptionItems = model.WorkshopDescriptionItems.ToNotDeletedDto(),
-            InstitutionId = model.InstitutionHierarchy.InstitutionId,
-            Institution = model.InstitutionHierarchy.Institution.Title,
+            WorkshopDescriptionItems = model.WorkshopDescriptionItems?.ToNotDeletedDto() ?? [],
+            InstitutionId = model.InstitutionHierarchy?.InstitutionId,
+            Institution = model.InstitutionHierarchy?.Institution?.Title,
             InstitutionHierarchyId = model.InstitutionHierarchyId,
-            InstitutionHierarchy = model.InstitutionHierarchy.Title,
-            DefaultTeacher = model.DefaultTeacher.ToDto(),
-            DirectionIds = model.InstitutionHierarchy.SubDirections.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
-            Keywords = model.Keywords.Split(Constants.MappingSeparator, StringSplitOptions.None),
-            Teachers = model.Teachers.ToNotDeletedDto(),
+            InstitutionHierarchy = model.InstitutionHierarchy?.Title,
+            DefaultTeacher = model.DefaultTeacher?.ToDto(),
+            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList() ?? [],
+            Keywords = model.Keywords?.Split(Constants.MappingSeparator, StringSplitOptions.None) ?? [],
+            Teachers = model.Teachers?.ToNotDeletedDto() ?? [],
             ProviderId = model.ProviderId,
             ProviderTitle = model.ProviderTitle,
             ProviderTitleEn = model.ProviderTitleEn,
-            ProviderLicenseStatus = model.Provider.LicenseStatus,
+            ProviderLicenseStatus = model.Provider?.LicenseStatus ?? default,
             ActiveFrom = model.ActiveFrom,
             ActiveTo = model.ActiveTo,
             IsSelfFinanced = model.IsSelfFinanced,
@@ -155,24 +155,24 @@ public static class WorkshopDtoExtensions
             WorkshopType = model.WorkshopType,
             DefaultTeacherId = model.DefaultTeacherId,
             ParentWorkshopId = model.ParentWorkshopId,
-            ParentWorkshop = model.ParentWorkshop.ToDto(),
-            Contacts = model.Contacts.ToDto(),
+            ParentWorkshop = model.ParentWorkshop?.ToDto(),
+            Contacts = model.Contacts?.ToDto(),
 
-            TagIds = model.Tags.Select(x => x.Id).ToList(),
+            TagIds = model.Tags?.Select(x => x.Id).ToList() ?? [],
 
             CoverImageId = model.CoverImageId,
-            ImageIds = model.Images.Select(x => x.ExternalStorageId).ToList(),
-            Tags = model.Tags.ToDto(),
+            ImageIds = model.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
+            Tags = model.Tags?.ToDto() ?? [],
             Status = model.Status,
-            IsBlocked = model.Provider.IsBlocked,
+            IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
-            ProviderStatus = model.Provider.Status,
-            Phone = defaultContact.Phones.FirstOrDefault().Number,
-            Email = defaultContact.Emails.FirstOrDefault().Address,
-            Website = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website).Url,
-            Facebook = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook).Url,
-            Instagram = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram).Url,
-            Address = defaultContact.Address.ToDto(),
+            ProviderStatus = model.Provider?.Status ?? default,
+            Phone = defaultContact?.Phones?.FirstOrDefault()?.Number,
+            Email = defaultContact?.Emails?.FirstOrDefault()?.Address,
+            Website = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
+            Facebook = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
+            Instagram = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
+            Address = defaultContact?.Address?.ToDto(),
         };
     }
 

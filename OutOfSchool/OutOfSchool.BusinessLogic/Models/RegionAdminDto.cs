@@ -25,18 +25,18 @@ public static class RegionAdminDtoExtensions
     public static RegionAdminDto ToDto(this RegionAdmin model)
         => new()
         {
-            Id = model.User.Id,
-            Email = model.User.Email,
-            PhoneNumber = model.User.PhoneNumber,
-            LastName = model.User.LastName,
-            MiddleName = model.User.MiddleName ?? string.Empty,
-            FirstName = model.User.FirstName,
-            AccountStatus = model.User.Convert(),
+            Id = model.User?.Id,
+            Email = model.User?.Email,
+            PhoneNumber = model.User?.PhoneNumber,
+            LastName = model.User?.LastName,
+            MiddleName = model.User?.MiddleName ?? string.Empty,
+            FirstName = model.User?.FirstName,
+            AccountStatus = model.User?.Convert() ?? default,
             InstitutionId = model.InstitutionId,
-            InstitutionTitle = model.Institution.Title,
+            InstitutionTitle = model.Institution?.Title,
             CATOTTGId = model.CATOTTGId,
-            CATOTTGCategory = model.CATOTTG.Category,
-            CATOTTGName = model.CATOTTG.Name,
+            CATOTTGCategory = model.CATOTTG?.Category,
+            CATOTTGName = model.CATOTTG?.Name,
         };
 
     public static List<RegionAdminDto> ToDto(this IEnumerable<RegionAdmin> list)

@@ -28,7 +28,7 @@ public class CompanyInformationService(
 
         logger.LogDebug("Get CompanyInformation is finished.");
 
-        return companyInformation.ToDto();
+        return companyInformation?.ToDto();
     }
 
     /// <inheritdoc/>

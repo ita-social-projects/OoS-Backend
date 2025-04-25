@@ -33,13 +33,13 @@ public static class ParentDtoWithContactInfoExtensions
             Id = parent.Id,
             UserId = parent.UserId,
             Gender = parent.Gender ?? Gender.Male,
-            Email = parent.User.Email,
-            EmailConfirmed = parent.User.EmailConfirmed,
-            PhoneNumber = parent.User.PhoneNumber,
-            LastName = parent.User.LastName,
-            MiddleName = parent.User.MiddleName,
-            FirstName = parent.User.FirstName,
-            IsBlocked = parent.User.IsBlocked,
+            Email = parent.User?.Email,
+            EmailConfirmed = parent.User?.EmailConfirmed ?? default,
+            PhoneNumber = parent.User?.PhoneNumber,
+            LastName = parent.User?.LastName,
+            MiddleName = parent.User?.MiddleName,
+            FirstName = parent.User?.FirstName,
+            IsBlocked = parent.User?.IsBlocked ?? default,
         };
 
     public static List<ParentDtoWithContactInfo> ToContactInfoDto(this IEnumerable<OutOfSchool.Services.Models.Parent> list)

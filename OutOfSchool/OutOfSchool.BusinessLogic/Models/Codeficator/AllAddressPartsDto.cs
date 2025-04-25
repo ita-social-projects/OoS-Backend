@@ -73,7 +73,7 @@ public static class AllAddressPartsDtoExtensions
             // FullAddress - ignored in original AM mapping 
             Id = dto.Id,
             Category = dto.Category,
-            ParentId = dto.AddressParts.ParentId,
+            ParentId = dto.AddressParts?.ParentId,
             // Parent - ignored in original AM mapping
             Region = dto.Region,
             District = dto.District,
@@ -102,7 +102,7 @@ public static class AllAddressPartsDtoExtensions
             AddressParts = dto.ToCodeficatorDto()
         };
 
-    public static AllAddressPartsDto ToAllAddressPartsDto(this OutOfSchool.Services.Models.CATOTTG catottg)
+    public static AllAddressPartsDto ToAllAddressPartsDto(this CATOTTG catottg)
         => new()
         {
             Id = catottg.Id,

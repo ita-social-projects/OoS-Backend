@@ -90,11 +90,11 @@ public static class ContactsAddressDtoExtensions
         => new()
         {
             // Id - ignored in original AM mapper
-            City = contactsAddress.CodeficatorAddressDto.Settlement,
+            City = contactsAddress.CodeficatorAddressDto?.Settlement,
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressES = contactsAddress.CodeficatorAddressDto.ToCodeficatorAddressES(),
+            CodeficatorAddressES = contactsAddress.CodeficatorAddressDto?.ToCodeficatorAddressES(),
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
             Point = GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
@@ -136,7 +136,7 @@ public static class ContactsAddressDtoExtensions
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressDto = contactsAddress.CATOTTG.ToAllAddressPartsDto()
+            CodeficatorAddressDto = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };
 
     public static List<ContactsAddressDto> ToContactsDto(this IEnumerable<ContactsAddress> list)

@@ -57,7 +57,7 @@ public class UserService(
 
             var users = repository.GetByFilterNoTracking(filter);
 
-            var updatedUser = await repository.Update(dto.SetToModel(users.FirstOrDefault())).ConfigureAwait(false);
+            var updatedUser = await repository.Update(dto.SetToModel(users.FirstOrDefault() ?? new())).ConfigureAwait(false);
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 

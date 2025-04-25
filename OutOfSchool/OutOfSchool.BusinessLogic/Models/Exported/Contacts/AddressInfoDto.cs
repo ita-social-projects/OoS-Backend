@@ -18,7 +18,7 @@ public static class AddressInfoDtoExtensions
         {
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
-            CodeficatorAddress = contactsAddress.CATOTTG.ToInfoDto()
+            CodeficatorAddress = contactsAddress.CATOTTG?.ToInfoDto()
         };
 
     public static List<AddressInfoDto> ToInfoDto(this IEnumerable<ContactsAddress> list)

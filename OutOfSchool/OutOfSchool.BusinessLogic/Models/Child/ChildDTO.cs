@@ -39,10 +39,10 @@ public static class ChildDtoExtensions
             IsParent = child.IsParent,
             LastName = child.LastName,
             MiddleName = child.MiddleName ?? string.Empty,
-            Parent = child.Parent.ToContactInfoDto(),
+            Parent = child.Parent?.ToContactInfoDto(),
             ParentId = child.ParentId,
             PlaceOfStudy = child.PlaceOfStudy,
-            SocialGroups = child.SocialGroups.ToNotDeletedDto()
+            SocialGroups = child.SocialGroups?.ToNotDeletedDto()
         };
 
     public static List<ChildDto> ToDto(this IEnumerable<Child> list)

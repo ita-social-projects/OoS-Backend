@@ -47,7 +47,8 @@ public static class StudySubjectCreateUpdateDtoExtensions
         model.NameInUkrainian = dto.NameInUkrainian;
         model.NameInInstructionLanguage = dto.NameInInstructionLanguage;
         model.IsLanguageUkrainian = dto.IsLanguageUkrainian;
-        model.Language = dto.Language.ToModel();
+        model.Language = dto.Language?.ToModel();
+        model.LanguageId = dto.Language?.Id ?? default;
         
         return model;
     }
@@ -59,7 +60,8 @@ public static class StudySubjectCreateUpdateDtoExtensions
             NameInUkrainian = dto.NameInUkrainian,
             NameInInstructionLanguage = dto.NameInInstructionLanguage,
             IsLanguageUkrainian = dto.IsLanguageUkrainian,
-            Language = dto.Language.ToModel(),
+            Language = dto.Language?.ToModel(),
             ProviderId = providerId,
+            LanguageId = dto.Language?.Id ?? default,
         };
 }

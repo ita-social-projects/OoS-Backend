@@ -816,7 +816,7 @@ public class ApplicationService : IApplicationService
 
         return new ModelWithAdditionalData<ApplicationDto, int>
         {
-            Model = newApplication.ToDto(),
+            Model = newApplication?.ToDto(),
             AdditionalData = 0,
         };
     }

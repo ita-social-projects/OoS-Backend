@@ -55,7 +55,7 @@ public class CompetitiveEventService(
 
         logger.LogDebug(logMessage, id);
 
-        return competitiveEvent.ToDto();
+        return competitiveEvent?.ToDto();
     }
 
     /// <inheritdoc/>

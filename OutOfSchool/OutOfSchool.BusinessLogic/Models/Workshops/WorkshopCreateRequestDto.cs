@@ -25,7 +25,7 @@ public static class WorkshopCreateRequestDtoExtensions
             ShortTitle = dto.ShortTitle,
             MinAge = dto.MinAge ?? default,
             MaxAge = dto.MaxAge ?? default,
-            DateTimeRanges = dto.DateTimeRanges.ToModel(),
+            DateTimeRanges = dto.DateTimeRanges?.ToModel(),
             FormOfLearning = dto.FormOfLearning,
             CompetitiveSelection = dto.CompetitiveSelection,
             CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
@@ -39,13 +39,13 @@ public static class WorkshopCreateRequestDtoExtensions
             AreThereBenefits = dto.AreThereBenefits,
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
            
-            WorkshopDescriptionItems = dto.WorkshopDescriptionItems.ToModel(),
+            WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel(),
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
-            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords.Distinct()),
+            Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),
             EnrollmentProcedureDescription = dto.EnrollmentProcedureDescription,
             Coverage = dto.Coverage,
 
-            DefaultTeacher = dto.DefaultTeacher.ToModel(),
+            DefaultTeacher = dto.DefaultTeacher?.ToModel(),
             DefaultTeacherId = dto.DefaultTeacherId,
         };
 }

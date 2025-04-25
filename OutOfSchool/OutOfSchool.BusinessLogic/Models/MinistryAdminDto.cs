@@ -20,12 +20,12 @@ public static class MinistryAdminDtoExtensions
         => new()
         {
             Id = model.UserId,
-            Email = model.User.Email,
-            PhoneNumber = model.User.PhoneNumber,
-            LastName = model.User.LastName,
-            MiddleName = model.User.MiddleName ?? string.Empty,
-            FirstName = model.User.FirstName,
-            AccountStatus = model.User.Convert(),
+            Email = model.User?.Email,
+            PhoneNumber = model.User?.PhoneNumber,
+            LastName = model.User?.LastName,
+            MiddleName = model.User?.MiddleName ?? string.Empty,
+            FirstName = model.User?.FirstName,
+            AccountStatus = model.User?.Convert() ?? default,
             InstitutionId = model.InstitutionId,
             InstitutionTitle = model.Institution.Title,
         };

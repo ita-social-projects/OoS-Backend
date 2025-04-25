@@ -56,8 +56,8 @@ public static class InstitutionHierarchyDtoExtensions
             HierarchyLevel = model.HierarchyLevel,
             ParentId = model.ParentId,
             InstitutionId = model.InstitutionId,
-            Institution = model.Institution.ToDto(),
-            SubDirections = model.SubDirections.ToDto()
+            Institution = model.Institution?.ToDto(),
+            SubDirections = model.SubDirections?.ToDto() ?? []
         };
 
     public static List<InstitutionHierarchyDto> ToDto(this IEnumerable<InstitutionHierarchy> list)

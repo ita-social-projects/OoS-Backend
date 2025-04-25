@@ -27,7 +27,7 @@ public static class DateTimeRangeDtoExtensions
         {
             StartTime = TimeOnly.FromTimeSpan(dto.StartTime),
             EndTime = TimeOnly.FromTimeSpan(dto.EndTime),
-            Workdays = dto.Workdays.ToHashSet()
+            Workdays = dto.Workdays?.ToHashSet() ?? []
         };
 
     public static List<DateTimeRangeDraft> ToDraft(this IEnumerable<DateTimeRangeDto> list)
@@ -39,7 +39,7 @@ public static class DateTimeRangeDtoExtensions
             Id = dto.Id,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
-            Workdays = string.Join(' ', dto.Workdays),
+            Workdays = string.Join(' ', dto.Workdays ?? []),
             // WorkshopId - ignored in original AM mapping
         };
 
@@ -52,7 +52,7 @@ public static class DateTimeRangeDtoExtensions
             Id = dto.Id,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
-            Workdays = dto.Workdays.ToDaysBitMask()
+            Workdays = dto.Workdays?.ToDaysBitMask() ?? default,
         };
 
     public static List<DateTimeRange> ToModel(this IEnumerable<DateTimeRangeDto> list)
@@ -63,7 +63,7 @@ public static class DateTimeRangeDtoExtensions
         {
             StartTime = model.StartTime.ToTimeSpan(),
             EndTime = model.EndTime.ToTimeSpan(),
-            Workdays = model.Workdays.ToList()
+            Workdays = model.Workdays?.ToList()
         };
 
     public static List<DateTimeRangeDto> ToDto(this IEnumerable<DateTimeRangeDraft> list)
