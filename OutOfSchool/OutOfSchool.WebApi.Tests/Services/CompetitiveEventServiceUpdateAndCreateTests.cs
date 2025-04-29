@@ -170,7 +170,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
             CompetitiveEventDescriptionItems =
             [
                 new CompetitiveEventDescriptionItem { Description = "Desc 1", SectionName = "Section 1" },
-                new CompetitiveEventDescriptionItem { Description = "Desc 1", SectionName = "Section 1" }
+                new CompetitiveEventDescriptionItem { Description = "Desc 2", SectionName = "Section 2" }
             ]
         };
 
@@ -200,6 +200,11 @@ class CompetitiveEventServiceUpdateAndCreateTests
         Assert.AreEqual(input.CompetitiveEventDescriptionItems.Count, createdEvent.CompetitiveEventDescriptionItems.Count);
         Assert.AreEqual(expected.Description, actual.Description, $"First description of item is not mapped correctly.");
         Assert.AreEqual(expected.SectionName, actual.SectionName, $"First SectionName of item is not mapped correctly.");
+        // Verify second item
+        var expected2 = input.CompetitiveEventDescriptionItems[1];
+        var actual2 = createdEvent.CompetitiveEventDescriptionItems.ElementAt(1);
+        Assert.AreEqual(expected2.Description, actual2.Description, $"Second description of item is not mapped correctly.");
+        Assert.AreEqual(expected2.SectionName, actual2.SectionName, $"Second SectionName of item is not mapped correctly.");
         Mock.VerifyAll();
     }
 
@@ -501,7 +506,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            //.Returns<Func<Task<CompetitiveEvent>>>(async operation => await operation())
             .ReturnsAsync(updatedCompetitiveEvent)
             .Verifiable(Times.Once);
 
@@ -518,6 +522,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         Assert.IsNotNull(result);
         Assert.AreEqual("Updated Event", result.Title);
+        // Validate SubDirections were properly updated
+        Assert.IsTrue(result.SubDirectionIds.Contains(1), "SubDirection was not properly updated");
+        // Validate DescriptionItems were properly updated
+        Assert.IsTrue(result.CompetitiveEventDescriptionItems.Count > 0, "Description items should not be empty");
+        Assert.IsFalse(result.CompetitiveEventDescriptionItems.Any(d => d.Id == mustBeDeletedId),
+        "Description item that should have been deleted still exists");
         Mock.VerifyAll();
     }
 }

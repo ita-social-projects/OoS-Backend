@@ -37,6 +37,7 @@ public class CompetitiveEventService(
     private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> includeFunc =
     query => query
         .Include(e => e.SubDirections)
+        .ThenInclude(sd => sd.Direction)
         .Include(e => e.CompetitiveEventDescriptionItems)
         .Include(e => e.Coverage)
         .IncludeContactsWithCodeficatorHierarchy();
@@ -282,7 +283,7 @@ public class CompetitiveEventService(
         //fill in SubDirections
         if (!dto.SubDirectionIds.IsNullOrEmpty())
         {
-            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id))).ToList();
+            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)).ToList();
         }
 
         if (competitiveEvent.SubDirections.IsNullOrEmpty())

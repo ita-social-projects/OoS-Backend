@@ -15,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
@@ -43,6 +44,7 @@ public class CompetitiveEventsV2ServiceTests
         loggerMock = new Mock<ILogger<CompetitiveEventService>>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(u => u.UserHasRights(It.IsAny<IUserRights>())).Returns(Task.CompletedTask);
         contactsServiceMock = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
         imageServiceMock = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
         mockSubDirectionRepository = new Mock<IEntityRepository<long, SubDirection>>();
@@ -80,7 +82,7 @@ public class CompetitiveEventsV2ServiceTests
             ]
         };
 
-        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1] };
+        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
         var expectedDto = new CompetitiveEventV2Dto { Id = createdEntity.Id };
 
         repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
