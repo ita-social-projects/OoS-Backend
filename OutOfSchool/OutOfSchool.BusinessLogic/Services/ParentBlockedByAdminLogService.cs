@@ -7,15 +7,10 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 
 // No nested entities in use – eager loading not required.
-public class ParentBlockedByAdminLogService : IParentBlockedByAdminLogService
+public class ParentBlockedByAdminLogService(
+    IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository
+) : IParentBlockedByAdminLogService
 {
-    private readonly IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository;
-
-    public ParentBlockedByAdminLogService(
-        IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository)
-    {
-        this.parentBlockedByAdminLogRepository = parentBlockedByAdminLogRepository;
-    }
 
     /// <summary>
     /// Saves a log record for parent blocking or unblocking actions performed by administrators.

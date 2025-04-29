@@ -1,6 +1,5 @@
 #nullable enable
 
-using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
@@ -13,26 +12,16 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with geocoding functionality.
 /// </summary>
-public class GeocodingService : CommunicationService, IGeocodingService
+public class GeocodingService(
+    IOptions<GeocodingConfig>? options,
+    IHttpClientFactory httpClientFactory,
+    IOptions<CommunicationConfig> communicationConfig,
+    ICodeficatorService? codeficatorService,
+    ILogger<GeocodingService> logger
+) : CommunicationService(httpClientFactory, communicationConfig, logger), IGeocodingService
 {
     private const double SearchBoundsRadiusMeters = 50000.0;
-    private readonly GeocodingConfig config;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IMapper mapper;
-
-    public GeocodingService(
-        IOptions<GeocodingConfig>? options,
-        IHttpClientFactory httpClientFactory,
-        IOptions<CommunicationConfig> communicationConfig,
-        ICodeficatorService? codeficatorService,
-        IMapper? mapper,
-        ILogger<GeocodingService> logger)
-        : base(httpClientFactory, communicationConfig, logger)
-    {
-        config = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-    }
+    private readonly GeocodingConfig config = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
     /// <inheritdoc/>
     public async Task<Either<ErrorResponse, GeocodingResponse?>> GetGeocodingInfo(GeocodingRequest? request)
@@ -107,12 +96,12 @@ public class GeocodingService : CommunicationService, IGeocodingService
 
             return r switch
             {
-                GeocodingSingleFeatureResponse single => mapper.Map(single, result),
+                GeocodingSingleFeatureResponse single => single.SetToResponse(result),
 
                 // for now take the most relevant (sorted by API) address,
                 // might need to change if frontend has issues
                 GeocodingListFeatureResponse multi => multi.Features.Any()
-                    ? mapper.Map(multi.Features.First(), result)
+                    ? multi.Features.First().SetToResponse(result)
                     : null,
                 GeocodingEmptyResponse => null,
                 _ => null
@@ -150,9 +139,8 @@ public class GeocodingService : CommunicationService, IGeocodingService
         return await response
             .Map(r => r switch
             {
-                GeocodingSingleFeatureResponse single => mapper.Map<GeocodingResponse>(single),
-                GeocodingListFeatureResponse multi => multi.Features.Select(mapper.Map<GeocodingResponse>)
-                    .FirstOrDefault(),
+                GeocodingSingleFeatureResponse single => single.ToResponse(),
+                GeocodingListFeatureResponse multi => multi.Features.FirstOrDefault()?.ToResponse(),
                 GeocodingEmptyResponse => null,
                 _ => null
             })
@@ -179,7 +167,7 @@ public class GeocodingService : CommunicationService, IGeocodingService
                     }
 
                     r.CATOTTGId = catottg.Id;
-                    r.Codeficator = mapper.Map<CodeficatorAddressDto>(catottg);
+                    r.Codeficator = catottg.Copy();
                     return r;
                 }
                 catch (Exception e)

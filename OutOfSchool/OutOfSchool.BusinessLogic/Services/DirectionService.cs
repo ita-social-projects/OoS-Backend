@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -12,54 +11,27 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Direction entity.
 /// </summary>
-public class DirectionService : IDirectionService, ISensitiveDirectionService
+/// <param name="repository">Repository for Direction entity.</param>
+/// <param name="repositoryWorkshop">Workshop repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="currentUserService">Service for manage current user.</param>
+/// <param name="ministryAdminService">Service for manage ministry admin.</param>
+/// <param name="regionAdminService">Service for managing region admin rigths.</param>
+public class DirectionService(
+    IEntityRepositorySoftDeleted<long, Direction> repository,
+    IWorkshopRepository repositoryWorkshop,
+    ILogger<DirectionService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService
+) : IDirectionService, ISensitiveDirectionService
 {
-    private readonly IEntityRepositorySoftDeleted<long, Direction> repository;
-    private readonly IWorkshopRepository repositoryWorkshop;
-    private readonly ILogger<DirectionService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DirectionService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository for Direction entity.</param>
-    /// <param name="repositoryWorkshop">Workshop repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="currentUserService">Service for manage current user.</param>
-    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
-    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
-    public DirectionService(
-        IEntityRepositorySoftDeleted<long, Direction> repository,
-        IWorkshopRepository repositoryWorkshop,
-        ILogger<DirectionService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService)
-    {
-        this.localizer = localizer;
-        this.repository = repository;
-        this.repositoryWorkshop = repositoryWorkshop;
-        this.logger = logger;
-        this.mapper = mapper;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
-        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-    }
-
     /// <inheritdoc/>
     public async Task<Result<DirectionDto>> Create(DirectionDto dto)
     {
         logger.LogDebug("Direction creating was started.");
-
-        var direction = mapper.Map<Direction>(dto);
 
         var validationErrors = await DirectionValidation(dto).ConfigureAwait(false);
         if (validationErrors.Any())
@@ -67,11 +39,11 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
             return Result<DirectionDto>.Failed(validationErrors.ToArray());
         }
 
-        var newDirection = await repository.Create(direction).ConfigureAwait(false);
+        var newDirection = await repository.Create(dto.ToModel()).ConfigureAwait(false);
 
         logger.LogDebug("Direction with Id = {id} created successfully.", newDirection?.Id);
 
-        return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(newDirection));
+        return Result<DirectionDto>.Success(newDirection.ToDto());
     }
 
     /// <inheritdoc/>
@@ -109,7 +81,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
 
             logger.LogDebug("Direction with Id = {id} succesfully deleted.", id);
 
-            return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
+            return Result<DirectionDto>.Success(direction.ToDto());
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -131,7 +103,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
 
         logger.LogDebug("{Count} records were successfully received from the Direction table.", directions.Count());
 
-        return directions.OrderBy(x => x.Title).Select(entity => mapper.Map<DirectionDto>(entity)).ToList();
+        return directions.OrderBy(x => x.Title).ToDto();
     }
 
     /// <inheritdoc/>
@@ -169,7 +141,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
                                    join wc in workshopCount
                                        on d.Id equals wc.DirectionId into dwc
                                    from res in dwc.DefaultIfEmpty()
-                                   select mapper.Map<DirectionDto>(d).WithCount(res?.WorkshopsCount ?? 0))
+                                   select d.ToDto(res?.WorkshopsCount ?? 0))
             .ToList();
 
         logger.LogDebug("{Count} records were successfully received from the Direction table.", directionsWorkshops.Count);
@@ -198,7 +170,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
 
         logger.LogDebug("Successfully got a Direction with Id = {id}.", id);
 
-        return mapper.Map<DirectionDto>(direction);
+        return direction.ToDto();
     }
 
     /// <inheritdoc/>
@@ -228,12 +200,11 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
             });
         }
 
-        mapper.Map(dto, direction);
-        direction = await repository.Update(direction).ConfigureAwait(false);
+        direction = await repository.Update(dto.SetToModel(direction)).ConfigureAwait(false);
 
         logger.LogDebug("Direction with Id = {id} updated succesfully.", direction?.Id);
 
-        return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(direction));
+        return Result<DirectionDto>.Success(direction.ToDto());
     }
 
     private async Task<List<OperationError>> DirectionValidation(DirectionDto dto)
@@ -256,7 +227,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
 
     private async Task<(Expression<Func<Direction, bool>>, Expression<Func<Workshop, bool>>)> BuildPredicate(DirectionFilter filter, bool isAdmins)
     {
-        Expression<Func<Direction, bool>> predicate = PredicateBuilder.True<Direction>();
+        var predicate = PredicateBuilder.True<Direction>();
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
@@ -265,7 +236,7 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
                 direction.SubDirections.Any(s => s.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        Expression<Func<Workshop, bool>> workshopCountFilter = PredicateBuilder.True<Workshop>();
+        var workshopCountFilter = PredicateBuilder.True<Workshop>();
 
         if (isAdmins)
         {
@@ -288,7 +259,8 @@ public class DirectionService : IDirectionService, ISensitiveDirectionService
                     .And<Workshop>(w => w.InstitutionHierarchy.InstitutionId == regionAdmin.InstitutionId);
             }
         }
-        else {
+        else 
+        {
             workshopCountFilter = workshopCountFilter
                 .And<Workshop>(w => w.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == filter.CatottgId));
         }

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using OutOfSchool.BusinessLogic.Common;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.Common.Models;
@@ -10,40 +9,22 @@ using System.Linq.Expressions;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services;
-public class StudySubjectService : IStudySubjectService
+/// <summary>
+/// Initializes a new instance of the <see cref="StudySubjectService"/> class.
+/// </summary>
+/// <param name="studySubjectRepository">Repository for StudySubject.</param>
+/// <param name="workshopRepository">Repository for Workshop.</param>
+/// <param name="languageRepository">Repository for Language.</param>
+/// <param name="currentUserService">Current User service.</param>
+/// <param name="logger">Logger.</param>
+public class StudySubjectService(
+    IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
+    IWorkshopRepository workshopRepository,
+    IEntityRepository<long, Language> languageRepository,
+    ICurrentUserService currentUserService,
+    ILogger<StudySubjectService> logger
+) : IStudySubjectService
 {
-    private readonly IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository;
-    private readonly IEntityRepository<long, Language> languageRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly ILogger<StudySubjectService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StudySubjectService"/> class.
-    /// </summary>
-    /// <param name="studySubjectRepository">Repository for StudySubject.</param>
-    /// <param name="workshopRepository">Repository for Workshop.</param>
-    /// <param name="languageRepository">Repository for Language.</param>
-    /// <param name="currentUserService">Current User service.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public StudySubjectService(
-        IEntityRepositorySoftDeleted<Guid, StudySubject> studySubjectRepository,
-        IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Language> languageRepository,
-        ICurrentUserService currentUserService,
-        ILogger<StudySubjectService> logger,
-        IMapper mapper)
-    {
-        this.studySubjectRepository = studySubjectRepository ?? throw new ArgumentNullException(nameof(studySubjectRepository));
-        this.languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
-    }
-
     /// <inheritdoc/>
     public async Task<StudySubjectDto> Create(StudySubjectCreateUpdateDto dto, Guid providerId)
     {
@@ -59,9 +40,7 @@ public class StudySubjectService : IStudySubjectService
 
         await CheckIfLanguageIdIsCorrect(dto);
 
-        var studySubject = mapper.Map<StudySubject>(dto);
-
-        studySubject.ProviderId = providerId;
+        var studySubject = dto.ToModel(providerId);
 
         await UpdateEntityLanguages(dto, studySubject);
 
@@ -69,7 +48,7 @@ public class StudySubjectService : IStudySubjectService
 
         logger.LogDebug("StudySubject with Id = {Id} created successfully.", newStudySubject?.Id);
 
-        return mapper.Map<StudySubjectDto>(newStudySubject);
+        return newStudySubject.ToDto();
     }
 
     /// <inheritdoc/>
@@ -96,7 +75,7 @@ public class StudySubjectService : IStudySubjectService
             await studySubjectRepository.Delete(studySubject).ConfigureAwait(false);
             logger.LogDebug("StudySubject with Id = {Id} successfully deleted", id);
 
-            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+            return Result<StudySubjectDto>.Success(studySubject.ToDto());
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -119,7 +98,7 @@ public class StudySubjectService : IStudySubjectService
         filter ??= new StudySubjectFilter();
         var predicate = BuildPredicate(filter);
 
-        int count = await studySubjectRepository.Count(predicate).ConfigureAwait(false);
+        var count = await studySubjectRepository.Count(predicate).ConfigureAwait(false);
 
         var studySubjects = await studySubjectRepository
             .Get(
@@ -135,7 +114,7 @@ public class StudySubjectService : IStudySubjectService
 
         var result = new SearchResult<StudySubjectDto>
         {
-            Entities = mapper.Map<List<StudySubjectDto>>(studySubjects),
+            Entities = studySubjects.ToDto(),
             TotalAmount = count
         };
 
@@ -160,7 +139,7 @@ public class StudySubjectService : IStudySubjectService
 
         logger.LogDebug("Got a StudySubject with Id = {Id}", id);
 
-        return mapper.Map<StudySubjectDto>(studySubject);
+        return studySubject.ToDto();
     }
 
     /// <inheritdoc/>
@@ -186,26 +165,24 @@ public class StudySubjectService : IStudySubjectService
 
         if (studySubject == null)
         {
-            logger.LogWarning("There are no recors in StudySubjects table with such id - {Id}", dto.Id);
+            logger.LogWarning("There are no records in StudySubjects table with such id - {Id}", dto.Id);
             return Result<StudySubjectDto>.Failed(new OperationError
             {
                 Code = "404",
-                Description = $"There are no recors in StudySubjects table with such id - {dto.Id}",
+                Description = $"There are no records in StudySubjects table with such id - {dto.Id}",
             });
         }
 
         await UpdateEntityLanguages(dto, studySubject);
 
-        mapper.Map(dto, studySubject);
-
         try
         {
-            var updatedStudySubject = await studySubjectRepository.Update(studySubject)
+            var updatedStudySubject = await studySubjectRepository.Update(dto.SetToModel(studySubject))
                 .ConfigureAwait(false);
 
-            logger.LogDebug("StudySubject updated succesfully");
+            logger.LogDebug("StudySubject updated successfully");
 
-            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(updatedStudySubject));
+            return Result<StudySubjectDto>.Success(updatedStudySubject.ToDto());
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -266,7 +243,7 @@ public class StudySubjectService : IStudySubjectService
 
             if (language == null || ukrainianLanguageId != language.Id)
             {
-                dto.Language = mapper.Map<LanguageDto>(ukrainianLanguage);
+                dto.Language = ukrainianLanguage.ToDto();
 
                 logger.LogDebug("Ukrainian language was set in dto as the primary language");
             }
@@ -338,7 +315,7 @@ public class StudySubjectService : IStudySubjectService
         {
             await studySubjectRepository.Update(studySubject).ConfigureAwait(false);
             logger.LogDebug("Updated workshop attachments for StudySubject with Id = {StudySubjectId}", studySubjectId);
-            return Result<StudySubjectDto>.Success(mapper.Map<StudySubjectDto>(studySubject));
+            return Result<StudySubjectDto>.Success(studySubject.ToDto());
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -415,6 +392,7 @@ public class StudySubjectService : IStudySubjectService
         var languageId = dto.Language.Id;
         var language = await languageRepository.Get(
             whereExpression: l => languageId == l.Id)
+            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (language == null)
@@ -423,6 +401,7 @@ public class StudySubjectService : IStudySubjectService
             throw new ArgumentException($"Language with Id = {languageId} was not found");
         }
 
-        studySubject.Language = language;
+        studySubject.LanguageId = languageId;
+        studySubject.Language = null;
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -11,8 +10,6 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -33,7 +30,6 @@ public class BlockedProviderParentServiceTests
     private Mock<IBlockedProviderParentRepository> blockedProviderParentRepositoryMock;
     private Mock<ILogger<BlockedProviderParentService>> loggerMock;
     private Mock<IStringLocalizer<SharedResource>> localizerMock;
-    private IMapper mapper;
     private Mock<INotificationService> notificationServiceMock;
     private Mock<IParentRepository> parentRepositoryMock;
 
@@ -50,7 +46,6 @@ public class BlockedProviderParentServiceTests
         blockedProviderParentRepositoryMock = new Mock<IBlockedProviderParentRepository>();
         loggerMock = new Mock<ILogger<BlockedProviderParentService>>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         notificationServiceMock = new Mock<INotificationService>();
         parentRepositoryMock = new Mock<IParentRepository>();
 
@@ -58,7 +53,6 @@ public class BlockedProviderParentServiceTests
             blockedProviderParentRepositoryMock.Object,
             loggerMock.Object,
             localizerMock.Object,
-            mapper,
             notificationServiceMock.Object,
             parentRepositoryMock.Object);
 

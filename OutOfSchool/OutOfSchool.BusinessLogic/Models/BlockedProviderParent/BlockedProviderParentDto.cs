@@ -26,3 +26,19 @@ public class BlockedProviderParentDto
 
     public DateTimeOffset? DateTimeTo { get; set; }
 }
+
+public static class BlockedProviderParentDtoExtensions
+{
+    public static BlockedProviderParentDto ToDto(this OutOfSchool.Services.Models.BlockedProviderParent dto)
+        => new()
+        {
+            Id = dto.Id,
+            ParentId = dto.ParentId,
+            ProviderId = dto.ProviderId,
+            Reason = dto.Reason,
+            UserIdBlock = dto.UserIdBlock,
+            UserIdUnblock = dto.UserIdUnblock,
+            DateTimeFrom = dto.DateTimeFrom,
+            DateTimeTo = dto.DateTimeTo,
+        };
+}

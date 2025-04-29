@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -13,49 +12,20 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class WorkshopServicesCombiner : IWorkshopServicesCombiner
+public class WorkshopServicesCombiner(
+    IWorkshopService workshopService,
+    IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
+    INotificationService notificationService,
+    IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
+    IApplicationRepository applicationRepository,
+    IWorkshopStrategy workshopStrategy,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    ICodeficatorService codeficatorService,
+    IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider
+) : IWorkshopServicesCombiner
 {
-    private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
-    private protected readonly IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService; // make it private after removing v2 version
-    private readonly INotificationService notificationService;
-    private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IWorkshopStrategy workshopStrategy;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-    private readonly IMapper mapper;
-
-    public WorkshopServicesCombiner(
-        IWorkshopService workshopService,
-        IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
-        INotificationService notificationService,
-        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
-        IApplicationRepository applicationRepository,
-        IWorkshopStrategy workshopStrategy,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService,
-        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        IMapper mapper)
-    {
-        this.workshopService = workshopService;
-        this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
-        this.notificationService = notificationService;
-        this.favoriteRepository = favoriteRepository;
-        this.applicationRepository = applicationRepository;
-        this.workshopStrategy = workshopStrategy;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
-        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-        this.esProvider = esProvider ?? throw new ArgumentNullException(nameof(esProvider));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<WorkshopDto> Create(WorkshopCreateRequestDto dto)
     {
@@ -238,7 +208,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner
             return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        var settlementsFilter = mapper.Map<WorkshopFilterWithSettlements>(filter);
+        var settlementsFilter = filter.ToFilterWithSettlements();
 
         if (currentUserService.IsMinistryAdmin())
         {

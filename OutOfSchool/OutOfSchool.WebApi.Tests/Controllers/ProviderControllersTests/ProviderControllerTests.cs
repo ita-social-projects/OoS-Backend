@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
+using Bogus;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -18,9 +18,8 @@ using OutOfSchool.BusinessLogic.Models.Individual;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -38,13 +37,11 @@ public class ProviderControllerTests
     private Mock<ICurrentUserService> currentUserService;
     private List<Provider> providers;
     private Provider provider;
-    private IMapper mapper;
     private string userId;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, ContactsProfile, MappingProfile>();
         userId = Guid.NewGuid().ToString();
 
         providerService = new Mock<IProviderService>();
@@ -83,8 +80,8 @@ public class ProviderControllerTests
     public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult_WithExpectedValue()
     {
         // Arrange
-        var expected = mapper.Map<ProviderDto>(provider);
-        providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(mapper.Map<ProviderDto>(provider));
+        var expected = provider.ToDto();
+        providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(provider.ToDto());
 
         // Act
         var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -110,10 +107,10 @@ public class ProviderControllerTests
     public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsOkObjectResult_WithExpectedValue()
     {
         // Arrange
-        var expectedDto = mapper.Map<ProviderDto>(providers.RandomItem());
+        var expectedDto = providers.RandomItem().ToDto();
         var existingId = expectedDto.Id;
         providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync(mapper.Map<ProviderDto>(providers.SingleOrDefault(x => x.Id == existingId)));
+            .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToDto());
 
         // Act
         var result = await providerController.GetById(existingId).ConfigureAwait(false);
@@ -141,16 +138,18 @@ public class ProviderControllerTests
     public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        var expectedCreated = mapper.Map<ProviderDto>(provider);
+        var createDto = ProviderCreateDtoGenerator.Generate();
+        var expectedCreated = createDto.ToModel().ToDto();
         var expectedResponse = new CreatedAtActionResult(
             nameof(providerController.GetById),
             nameof(ProviderController),
             new { providerId = expectedCreated.Id, },
-            expectedCreated);
-        providerService.Setup(x => x.Create(It.IsAny<ProviderCreateDto>())).ReturnsAsync(mapper.Map<ProviderDto>(provider));
+            expectedCreated
+        );
+        providerService.Setup(x => x.Create(It.IsAny<ProviderCreateDto>())).ReturnsAsync(expectedCreated);
 
         // Act
-        var result = await providerController.Create(mapper.Map<ProviderCreateDto>(provider)).ConfigureAwait(false);
+        var result = await providerController.Create(createDto).ConfigureAwait(false);
 
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
@@ -160,13 +159,14 @@ public class ProviderControllerTests
     public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
         // Arrange
+        var createDto = ProviderCreateDtoGenerator.Generate();
         var dictionary = new ModelStateDictionary();
         dictionary.AddModelError("CreateProvider", "Invalid model state.");
         var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
         providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
         // Act
-        var result = await providerController.Create(mapper.Map<ProviderCreateDto>(provider)).ConfigureAwait(false);
+        var result = await providerController.Create(createDto).ConfigureAwait(false);
 
         // Assert
         result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
@@ -178,30 +178,30 @@ public class ProviderControllerTests
         // Arrange
         var providerToUpdate = providers.FirstOrDefault();
         providerToUpdate.FullTitle = TestDataHelper.GetRandomWords();
-        var providerDto = mapper.Map<ProviderUpdateDto>(providerToUpdate);
+        var providerDto = GenerateProviderUpdateDto();
         providerService.Setup(x => x.Update(providerDto, userId))
-            .ReturnsAsync(mapper.Map<ProviderDto>(providerToUpdate));
+            .ReturnsAsync(providerToUpdate.ToDto());
 
         // Act
         var result = await providerController.Update(providerDto).ConfigureAwait(false);
         var value = (result as ObjectResult).Value as ProviderDto;
 
         // Assert
-        result.AssertResponseOkResultAndValidateValue(mapper.Map<ProviderDto>(providerToUpdate));
+        result.AssertResponseOkResultAndValidateValue(providerToUpdate.ToDto());
     }
 
     [Test]
     public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
     {
         // Arrange
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdateDto = GenerateProviderUpdateDto();
         var dictionary = new ModelStateDictionary();
         dictionary.AddModelError("UpdateError", "bad model state");
         var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
         providerController.ModelState.AddModelError("UpdateError", "bad model state");
 
         providerService.Setup(x => x.Update(providerToUpdateDto, userId))
-            .ReturnsAsync(mapper.Map<ProviderDto>(provider));
+            .ReturnsAsync(provider.ToDto());
 
         // Act
         var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
@@ -215,7 +215,7 @@ public class ProviderControllerTests
     public async Task UpdateProvider_WhenCorrectData_AND_WrongUserId_ModelIsValid_But_BadRequest()
     {
         // Arrange
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(providers.FirstOrDefault());
+        var providerToUpdateDto = GenerateProviderUpdateDto();
         providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
         var expected = new BadRequestObjectResult("Can't change Provider with such parameters.\n" +
                                                   "Please check that information are valid.");
@@ -233,7 +233,7 @@ public class ProviderControllerTests
     public async Task UpdateProvider_ServiceCantGetRequestedProvider_BadRequest_WithExceptionAsValue()
     {
         // Arrange
-        var providerToUpdateDto = mapper.Map<ProviderUpdateDto>(ProviderDtoGenerator.Generate());
+        var providerToUpdateDto = GenerateProviderUpdateDto();
         providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
         var expected = new BadRequestObjectResult(new DbUpdateConcurrencyException());
         providerService.Setup(x => x.Update(providerToUpdateDto, userId)).ThrowsAsync(new DbUpdateConcurrencyException());
@@ -450,9 +450,9 @@ public class ProviderControllerTests
     public async Task Update_WhenModelIsValid_PassesUserIdFromCurrentUser()
     {
         // Arrange
-        var providerToUpdate = mapper.Map<ProviderUpdateDto>(provider);
+        var providerToUpdate = GenerateProviderUpdateDto();
         providerService.Setup(x => x.Update(providerToUpdate, userId))
-            .ReturnsAsync(mapper.Map<ProviderDto>(provider));
+            .ReturnsAsync(provider.ToDto());
 
         // Act
         await providerController.Update(providerToUpdate).ConfigureAwait(false);
@@ -460,4 +460,25 @@ public class ProviderControllerTests
         // Assert
         providerService.Verify(x => x.Update(providerToUpdate, userId), Times.Once);
     }
+
+    private ProviderCreateDto GenerateProviderCreateDto()
+        => new Faker<ProviderCreateDto>()
+            .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
+            .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
+            .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
+            .RuleFor(x => x.TypeId, _ => 1)
+            .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
+            .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
+            .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
+            .Generate();
+
+    private ProviderUpdateDto GenerateProviderUpdateDto()
+        => new Faker<ProviderUpdateDto>()
+            .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
+            .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
+            .RuleFor(x => x.TypeId, _ => 1)
+            .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
+            .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
+            .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
+            .Generate();
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,9 +20,6 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
@@ -41,7 +37,6 @@ public class WorkshopDraftServiceTests
 {
     private IWorkshopDraftService service;  
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMoq;
-    private IMapper mapper;
 
     private Mock<IProviderService> providerServiceMoq;
     private Mock<ICurrentUserService> currentUserServiceMoq;
@@ -56,14 +51,6 @@ public class WorkshopDraftServiceTests
     public void SetUp()
     {
         workshopDraftRepoMoq = new Mock<IWorkshopDraftRepository>();
-
-        var config = new MapperConfiguration(cfg =>
-            cfg.UseProfile<CommonProfile>()
-                .UseProfile<ContactsProfile>()
-               .UseProfile<MappingProfile>()
-               .UseProfile<WorkshopDraftMappingProfile>());
-
-        mapper = config.CreateMapper();
 
         currentUserServiceMoq = new Mock<ICurrentUserService>();
         providerServiceMoq = new Mock<IProviderService>();
@@ -89,7 +76,6 @@ public class WorkshopDraftServiceTests
         service = new WorkshopDraftService(
                    logger.Object,
                    workshopDraftRepoMoq.Object,
-                   mapper,
                    workshopDraftImagesService.Object,
                    providerServiceMoq.Object,
                    currentUserServiceMoq.Object,
@@ -121,10 +107,10 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();    
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = workshop.ToV2Dto();
 
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
-        var workshopResponse= mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
+        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopResponse = workshopDraft.ToResponseDto();
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
@@ -169,9 +155,9 @@ public class WorkshopDraftServiceTests
     {
         //Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
-        var workshopResponse = mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopResponse = workshopDraft.ToResponseDto();
 
         var workshopUpdateDto = new WorkshopDraftUpdateDto()
         {
@@ -218,8 +204,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
@@ -241,8 +227,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
@@ -264,8 +250,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
 
@@ -289,8 +275,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;   
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -315,8 +301,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
         var rejectionMessage = "rejectionMessage";
@@ -338,8 +324,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
 
         var rejectionMessage = "rejectionMessage";
@@ -395,9 +381,9 @@ public class WorkshopDraftServiceTests
         var numberOfWorkshops = 5;
 
         var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
-        var workshopV2Dtos = mapper.Map<List<WorkshopV2Dto>>(workshops);
-        var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshopV2Dtos);
-        var workshopDraftResponses = mapper.Map<List<WorkshopDraftViewCardDto>>(workshopDrafts);
+        var workshopV2Dtos = workshops.ToV2Dto();
+        var workshopDrafts = workshopV2Dtos.ToDraft();
+        var workshopDraftResponses = workshopDrafts.ToCardDto();
 
         institutionHierarchyRepositoryMoq.Setup(
             x => x.Get(
@@ -431,8 +417,8 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopDto = mapper.Map<WorkshopDto>(workshop);
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopDto = workshop.ToDto();
+        var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopResultDto = new WorkshopResultDto
         {
@@ -468,12 +454,12 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopDto = mapper.Map<WorkshopDto>(workshop);
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopDto = workshop.ToDto();
+        var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>()
         {
-            new WorkshopDraft()
+            new()
         };
 
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
@@ -499,8 +485,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopDto = (WorkshopDto)null;
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
-
+        var workshopV2Dto = workshop.ToV2Dto();
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopDto).Verifiable(Times.Once);
 
@@ -515,12 +500,12 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
-        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopDto = workshop.ToDto();
         workshopDto.Title = "Changed title";
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>();
-        var workshopDraft = mapper.Map<WorkshopDraft>(workshopV2Dto);
+        var workshopDraft = workshopV2Dto.ToDraft();
 
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopDto).Verifiable(Times.Exactly(2));
@@ -556,11 +541,11 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate();
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(workshop);
+        var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>()
         {
-            mapper.Map<WorkshopDraft>(workshopV2Dto)
+            workshopV2Dto.ToDraft()
         };
 
         workshopDraftRepoMoq.Setup(x =>

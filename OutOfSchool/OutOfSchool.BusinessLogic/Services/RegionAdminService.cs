@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
@@ -12,47 +11,20 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class RegionAdminService : CommunicationService, IRegionAdminService
+public class RegionAdminService(
+    IHttpClientFactory httpClientFactory,
+    IOptions<AuthorizationServerConfig> authorizationServerConfig,
+    IOptions<CommunicationConfig> communicationConfig,
+    IRegionAdminRepository regionAdminRepository,
+    ILogger<RegionAdminService> logger,
+    IEntityRepositorySoftDeleted<string, User> userRepository,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IApiErrorService apiErrorService,
+    ISearchStringService searchStringService
+) : CommunicationService(httpClientFactory, communicationConfig, logger), IRegionAdminService
 {
-    private readonly AuthorizationServerConfig authorizationServerConfig;
-    private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
-    private readonly IMapper mapper;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IApiErrorService apiErrorService;
-    private readonly ISearchStringService searchStringService;
-
-    public RegionAdminService(
-        IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
-        IRegionAdminRepository regionAdminRepository,
-        ILogger<RegionAdminService> logger,
-        IEntityRepositorySoftDeleted<string, User> userRepository,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IApiErrorService apiErrorService,
-        ISearchStringService searchStringService)
-        : base(httpClientFactory, communicationConfig, logger)
-    {
-        ArgumentNullException.ThrowIfNull(authorizationServerConfig);
-        ArgumentNullException.ThrowIfNull(regionAdminRepository);
-        ArgumentNullException.ThrowIfNull(userRepository);
-        ArgumentNullException.ThrowIfNull(mapper);
-        ArgumentNullException.ThrowIfNull(ministryAdminService);
-        ArgumentNullException.ThrowIfNull(searchStringService);
-
-        this.authorizationServerConfig = authorizationServerConfig.Value;
-        this.regionAdminRepository = regionAdminRepository;
-        this.userRepository = userRepository;
-        this.mapper = mapper;
-        this.currentUserService = currentUserService;
-        this.ministryAdminService = ministryAdminService;
-        this.apiErrorService = apiErrorService;
-        this.searchStringService = searchStringService;
-    }
+    private readonly AuthorizationServerConfig authorizationServerConfig = authorizationServerConfig.Value;
 
     public async Task<RegionAdminDto> GetByIdAsync(string id)
     {
@@ -67,7 +39,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         Logger.LogInformation("Successfully got a RegionAdmin with Id = {Id}", id);
 
-        return mapper.Map<RegionAdminDto>(regionAdmin);
+        return regionAdmin.ToDto();
     }
 
     public async Task<RegionAdminDto> GetByUserId(string id)
@@ -84,7 +56,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
 
         Logger.LogInformation("Successfully got a RegionAdmin with UserId = {Id}", id);
 
-        return mapper.Map<RegionAdminDto>(regionAdmin);
+        return regionAdmin.ToDto();
     }
 
     public async Task<Either<ErrorResponse, RegionAdminBaseDto>> CreateRegionAdminAsync(string userId, RegionAdminBaseDto regionAdminBaseDto, string token)
@@ -224,12 +196,10 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             Logger.LogInformation("RegionAdmins table is empty.");
         }
 
-        var regionAdminsDto = regionAdmins.Select(admin => mapper.Map<RegionAdminDto>(admin)).ToList();
-
         var result = new SearchResult<RegionAdminDto>()
         {
             TotalAmount = count,
-            Entities = regionAdminsDto,
+            Entities = regionAdmins.ToDto(),
         };
 
         return result;
@@ -263,7 +233,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateRegionAdmin + updateRegionAdminDto.Id),
             Token = token,
-            Data = mapper.Map<RegionAdminBaseUpdateDto>(updateRegionAdminDto),
+            Data = updateRegionAdminDto.ToRegionAdminDto(),
         };
 
         Logger.LogDebug(
@@ -284,7 +254,7 @@ public class RegionAdminService : CommunicationService, IRegionAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<RegionAdminDto>(JsonSerializerHelper.Deserialize<RegionAdminBaseDto>(result.Result.ToString()))
+                ? JsonSerializerHelper.Deserialize<RegionAdminBaseDto>(result.Result.ToString()).ToDto()
                 : null);
     }
 

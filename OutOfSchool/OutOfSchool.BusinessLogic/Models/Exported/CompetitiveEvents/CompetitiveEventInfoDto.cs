@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
+using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
@@ -98,4 +99,57 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     public List<string> ImageIds { get; set; } = [];
 
     public List<ContactsInfoDto> Contacts { get; set; }
+}
+
+public static class CompetitiveEventInfoDtoExtensions
+{
+    public static CompetitiveEventInfoBaseDto ToBaseInfoDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static CompetitiveEventInfoDto ToInfoDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+            Title = model.Title,
+            ShortTitle = model.ShortTitle,
+            ScheduledStartTime = model.ScheduledStartTime,
+            ScheduledEndTime = model.ScheduledEndTime,
+            NumberOfSeats = model.NumberOfSeats,
+            NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
+            OrganizerOfTheEventId = model.OrganizerOfTheEventId ?? default,
+            Institution = model.InstitutionHierarchy?.Institution?.Title,
+            InstitutionHierarchy = model.InstitutionHierarchy?.Title,
+            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).ToList(),
+            SubDirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(x => x.Id).ToList(),
+            Coverage = model.Coverage?.ToInfoDto(),
+            RegistrationStartTime = model.RegistrationStartTime,
+            RegistrationEndTime = model.RegistrationEndTime,
+            ParentEventId = model.ParentId,
+            BuildingHoldingId = model.BuildingHoldingId,
+            CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
+            AccountingType = model.CompetitiveEventAccountingType?.ToInfoDto(),
+            DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
+            PlannedFormatOfClasses = model.PlannedFormatOfClasses,
+            VenueName = model.VenueName,
+            TermsOfParticipation = model.TermsOfParticipation,
+            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
+            AreThereBenefits = model.AreThereBenefits,
+            Benefits = model.Benefits,
+            OptionsForPeopleWithDisabilities = model.OptionsForPeopleWithDisabilities,
+            DescriptionOfOptionsForPeopleWithDisabilities = model.DescriptionOfOptionsForPeopleWithDisabilities,
+            MinimumAge = model.MinimumAge,
+            MaximumAge = model.MaximumAge,
+            Price = model.Price,
+            CompetitiveSelection = model.CompetitiveSelection,
+            CompetitiveSelectionDescription = model.AdditionalDescription,
+            Contacts = model.Contacts?.ToInfoDto(),
+        };
+
+    public static List<CompetitiveEventInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
+        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
 }

@@ -3,19 +3,10 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class ValidationService : IValidationService
+public class ValidationService(
+    IParentRepository parentRepository,
+    IOfficialRepository officialRepository) : IValidationService
 {
-    private readonly IParentRepository parentRepository;
-    private readonly IOfficialRepository officialRepository;
-
-    public ValidationService(
-        IParentRepository parentRepository,
-        IOfficialRepository officialRepository)
-    {
-        this.parentRepository = parentRepository;
-        this.officialRepository = officialRepository;
-    }
-
     /// <inheritdoc/>>
     public async Task<bool> UserIsParentOwnerAsync(string userId, Guid parentId)
     {

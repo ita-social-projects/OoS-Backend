@@ -3,7 +3,6 @@ using Microsoft.FeatureManagement;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Config.ExternalUriModels;
 using OutOfSchool.AuthCommon.Services;
-using OutOfSchool.AuthCommon.Util;
 using OutOfSchool.AuthCommon.Validators;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Redis;
@@ -44,7 +43,6 @@ public static class AuthCommonServiceExtensions
             });
         services.AddSingleton<IValidationAttributeAdapterProvider, CustomClientValidationProvider>();
         services.AddRazorPages();
-        services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));

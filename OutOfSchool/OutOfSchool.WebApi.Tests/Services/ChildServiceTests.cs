@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,7 +33,6 @@ public class ChildServiceTests
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> childRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<long, SocialGroup>> socialGroupRepositoryMock;
     private Mock<ILogger<ChildService>> loggerMock;
-    private Mock<IMapper> mapperMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IOptions<ParentConfig>> parentConfigMock;
     private ChildService childService;
@@ -50,7 +48,6 @@ public class ChildServiceTests
         childRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
         socialGroupRepositoryMock = new Mock<IEntityRepositorySoftDeleted<long, SocialGroup>>();
         loggerMock = new Mock<ILogger<ChildService>>();
-        mapperMock = new Mock<IMapper>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         parentConfigMock = new Mock<IOptions<ParentConfig>>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
@@ -60,7 +57,6 @@ public class ChildServiceTests
             parentRepositoryMock.Object,
             socialGroupRepositoryMock.Object,
             loggerMock.Object,
-            mapperMock.Object,
             applicationRepositoryMock.Object,
             parentConfigMock.Object,
             searchStringServiceMock.Object);
@@ -99,8 +95,6 @@ public class ChildServiceTests
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(new List<Child>().AsTestAsyncEnumerableQuery());
-        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
-            .Returns(new List<ChildDto>());
 
         var result = await childService.GetApprovedByWorkshopId(workshopId, offsetFilter);
 
@@ -140,8 +134,6 @@ public class ChildServiceTests
                 It.IsAny<Expression<Func<Child, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>()))
             .Returns(new List<Child>().AsTestAsyncEnumerableQuery());
-        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
-            .Returns(new List<ChildDto>());
 
         var result = await childService.GetApprovedByWorkshopId(workshopId, offsetFilter);
 
@@ -363,9 +355,6 @@ public class ChildServiceTests
             .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
             .ReturnsAsync(children.Count)
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
-            .Returns(new List<ChildDto>())
-            .Verifiable(Times.Once);
 
         // Act
         var result = await childService.GetByFilter(null);
@@ -392,9 +381,6 @@ public class ChildServiceTests
             .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
             .ReturnsAsync(children.Count)
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
-            .Returns(new List<ChildDto>())
-            .Verifiable(Times.Once);
 
         // Act
         var result = await childService.GetByParentIdOrderedByFirstName(parent.Id, offsetFilter);
@@ -420,9 +406,6 @@ public class ChildServiceTests
         childRepositoryMock
             .Setup(m => m.Count(It.IsAny<Expression<Func<Child, bool>>>()))
             .ReturnsAsync(children.Count)
-            .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<List<ChildDto>>(It.IsAny<List<Child>>()))
-            .Returns(new List<ChildDto>())
             .Verifiable(Times.Once);
 
         // Act
@@ -452,9 +435,6 @@ public class ChildServiceTests
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .ReturnsAsync(childList.AsEnumerable())
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
-            .Returns(new ChildDto())
-            .Verifiable(Times.Once);
 
         // Act
         var result = await childService.GetByIdAndUserId(child.Id, userId.ToString());
@@ -483,9 +463,6 @@ public class ChildServiceTests
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .ReturnsAsync(childList.AsEnumerable())
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
-            .Returns(new ChildDto())
-            .Verifiable(Times.Never);
 
         // Act & Assert
         await childService
@@ -516,9 +493,6 @@ public class ChildServiceTests
                 null))
             .ReturnsAsync(childList.AsEnumerable())
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<List<ShortEntityDto>>(childList))
-            .Returns(new List<ShortEntityDto>() { })
-            .Verifiable(Times.Once);
 
         // Act
         var result = await childService.GetChildrenListByParentId(child.ParentId, false);
@@ -543,9 +517,6 @@ public class ChildServiceTests
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .ReturnsAsync(childList.AsEnumerable())
             .Verifiable(Times.Once);
-        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
-            .Returns(new ChildDto())
-            .Verifiable(Times.Never);
 
         // Act & Assert
         await childService
@@ -625,6 +596,7 @@ public class ChildServiceTests
         {
             Id = Guid.NewGuid(),
             Parent = new Parent() { UserId = Guid.NewGuid().ToString() },
+            SocialGroups = []
         };
         var childList = new List<Child> { child }.BuildMock();
 
@@ -647,11 +619,7 @@ public class ChildServiceTests
             .Returns((Func<Task<Child>> f) => f.Invoke())
             .Verifiable(Times.Once);
 
-        mapperMock.Setup(mapper => mapper.Map<Child>(/*It.IsAny<ChildCreateDto>()*/childCreateDto))
-            .Returns(child)
-            .Verifiable(Times.Once);
-
-        childRepositoryMock.Setup(r => r.Create(child))
+        childRepositoryMock.Setup(r => r.Create(It.Is<Child>(c => c.ParentId == parent.Id)))
             .ReturnsAsync(child)
             .Verifiable(Times.Once);
 
@@ -664,10 +632,6 @@ public class ChildServiceTests
                 "",
                 It.IsAny<Func<IQueryable<Child>, IQueryable<Child>>>()))
             .ReturnsAsync(childList.AsEnumerable())
-            .Verifiable(Times.Once);
-
-        mapperMock.Setup(mapper => mapper.Map<ChildDto>(It.IsAny<Child>()))
-            .Returns(new ChildDto())
             .Verifiable(Times.Once);
 
         // Act

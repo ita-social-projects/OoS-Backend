@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -12,8 +11,6 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Achievement;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -27,15 +24,14 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class AchievementServiceTest
 {
-    private readonly Guid validWorkshopGuid = new Guid("08da8474-a754-4d37-879e-4932d389b27a");
-    private readonly Guid notValidWorkshopGuid = new Guid("05da8774-d754-1d37-979e-4135d389c27a");
+    private readonly Guid validWorkshopGuid = new ("08da8474-a754-4d37-879e-4932d389b27a");
+    private readonly Guid notValidWorkshopGuid = new ("05da8774-d754-1d37-979e-4135d389c27a");
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
     private AchievementService service;
     private IAchievementRepository achievementRepository;
     private Mock<ILogger<AchievementService>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -50,8 +46,7 @@ public class AchievementServiceTest
         achievementRepository = new AchievementRepository(context);
         logger = new Mock<ILogger<AchievementService>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        service = new AchievementService(achievementRepository, logger.Object, localizer.Object, mapper);
+        service = new AchievementService(achievementRepository, logger.Object, localizer.Object);
 
         SeedDatabase();
     }

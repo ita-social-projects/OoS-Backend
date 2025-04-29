@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -13,9 +12,6 @@ using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V2;
 
@@ -38,7 +34,6 @@ public class WorkshopDraftControllerTests
     private Mock<IProviderService> providerServiceMoq;
     private Mock<IWorkshopDraftService> workshopDraftServiceMoq;
     private Mock<HttpContext> httpContextMoq;
-    private IMapper mapper;
 
     private string userId;
 
@@ -52,8 +47,6 @@ public class WorkshopDraftControllerTests
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<WorkshopDraftMappingProfile>();
-
         provider = ProviderDtoGenerator.Generate();
 
         workshopV2Dto = WorkshopV2DtoGenerator.Generate();
@@ -63,7 +56,7 @@ public class WorkshopDraftControllerTests
 
         workshopDraftResultDto = new WorkshopDraftResultDto()
         {
-            WorkshopDraft = mapper.Map<WorkshopDraftResponseDto>(mapper.Map<WorkshopDraft>(workshopV2Dto))
+            WorkshopDraft = workshopV2Dto.ToDraft().ToResponseDto()
         };
     }
 
@@ -232,7 +225,7 @@ public class WorkshopDraftControllerTests
             TotalAmount = 1,
             Entities = new List<WorkshopDraftViewCardDto>()
             {
-                mapper.Map<WorkshopDraftViewCardDto>(mapper.Map<WorkshopDraft>(workshopV2Dto))
+                workshopV2Dto.ToDraft().ToCardDto()
             },            
         };
 

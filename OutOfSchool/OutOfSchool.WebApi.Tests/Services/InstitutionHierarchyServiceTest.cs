@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -31,7 +31,6 @@ public class InstitutionHierarchyServiceTests
     private IInstitutionHierarchyService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<InstitutionHierarchyService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
 
     [SetUp]
@@ -42,7 +41,6 @@ public class InstitutionHierarchyServiceTests
         repositoryProvider = new Mock<IProviderRepository>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<InstitutionHierarchyService>>();
-        mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
         service = new InstitutionHierarchyService(
             repo.Object,
@@ -50,7 +48,6 @@ public class InstitutionHierarchyServiceTests
             repositoryProvider.Object,
             logger.Object,
             localizer.Object,
-            mapper.Object,
             cache.Object);
     }
 
@@ -58,14 +55,14 @@ public class InstitutionHierarchyServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        Guid institutionId = Guid.NewGuid();
+        var institutionId = Guid.NewGuid();
 
         var expected = new InstitutionHierarchy()
         {
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            SubDirections = new List<SubDirection>(),
+            SubDirections = [],
         };
 
         var input = new InstitutionHierarchyDto()
@@ -73,18 +70,16 @@ public class InstitutionHierarchyServiceTests
             Title = "NewTitle",
             HierarchyLevel = 1,
             InstitutionId = institutionId,
-            SubDirections = new List<SubDirectionDto>(),
+            SubDirections = [],
         };
 
-        mapper.Setup(m => m.Map<InstitutionHierarchy>(It.IsAny<InstitutionHierarchyDto>())).Returns(expected);
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(It.IsAny<InstitutionHierarchy>())).Returns(input);
-        repo.Setup(r => r.Create(expected, It.IsAny<List<long>>())).ReturnsAsync(expected);
+        repo.Setup(r => r.Create(It.Is<InstitutionHierarchy>(h => h.InstitutionId == institutionId && h.Title == input.Title), It.IsAny<List<long>>())).ReturnsAsync(expected);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
-        repo.Verify(r => r.Create(expected, It.IsAny<List<long>>()), Times.Once);
+        repo.VerifyAll();
         Assert.AreEqual(expected.Title, result.Title);
         Assert.AreEqual(expected.HierarchyLevel, result.HierarchyLevel);
         Assert.AreEqual(expected.InstitutionId, result.InstitutionId);
@@ -170,8 +165,6 @@ public class InstitutionHierarchyServiceTests
                 It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, dynamic>>, SortDirection>>()))
             .Returns(expectedEntityQueryable);
 
-        mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(It.IsAny<InstitutionHierarchy>())).Returns(expectedDto);
-
         // Act
         var result = await service.GetAll().ConfigureAwait(false);
 
@@ -185,13 +178,14 @@ public class InstitutionHierarchyServiceTests
     public async Task GetById_WhenIdIsValid_ReturnsEntity(string idStr)
     {
         // Arrange
-        Guid id = Guid.Parse(idStr);
+        var id = Guid.Parse(idStr);
 
         var expected = new InstitutionHierarchyDto()
         {
             Title = "NewTitle1",
             HierarchyLevel = 1,
             InstitutionId = id,
+            SubDirections = []
         };
 
         var mockDbEntry = new InstitutionHierarchy()
@@ -202,13 +196,12 @@ public class InstitutionHierarchyServiceTests
         };
 
         repo.Setup(r => r.GetById(id)).ReturnsAsync(mockDbEntry);
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(mockDbEntry)).Returns(expected);
 
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(expected, result);
+        result.Should().BeEquivalentTo(expected);
     }
 
     [Test]
@@ -250,9 +243,6 @@ public class InstitutionHierarchyServiceTests
             SubDirections = subDirections,
         };
 
-        mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(changedEntity)).Returns(changedDto);
-
         repo.Setup(r => r.GetById(changedDto.Id)).ReturnsAsync(changedEntity);
         repo.Setup(r => r.Update(changedEntity, directionsIds)).ReturnsAsync(changedEntity);
 
@@ -292,7 +282,6 @@ public class InstitutionHierarchyServiceTests
             SubDirections = subDirectionsDtos,
         };
 
-        mapper.Setup(m => m.Map<InstitutionHierarchy>(changedDto)).Returns(changedEntity);
         repo.Setup(r => r.Update(changedEntity, directionsIds)).Throws<DbUpdateConcurrencyException>();
 
         // Act and Assert
@@ -311,8 +300,6 @@ public class InstitutionHierarchyServiceTests
         {
             Id = id,
         };
-
-        mapper.Setup(m => m.Map<InstitutionHierarchyDto>(It.IsAny<InstitutionHierarchy>())).Returns(deleted);
 
         // Act
         var result = await service.Delete(id).ConfigureAwait(false);
@@ -399,8 +386,6 @@ public class InstitutionHierarchyServiceTests
             string.Empty,
             It.IsAny<Func<IQueryable<InstitutionHierarchy>, IQueryable<InstitutionHierarchy>>>()))
             .ReturnsAsync(expectedEntity);
-
-        mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(It.IsAny<List<InstitutionHierarchy>>())).Returns(expectedDto);
 
         // Act
         var entities = await service.GetChildrenFromDatabase(parentId).ConfigureAwait(false);

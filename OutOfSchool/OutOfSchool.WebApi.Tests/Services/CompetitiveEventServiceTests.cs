@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -13,8 +12,6 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -23,7 +20,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -42,12 +38,9 @@ public class CompetitiveEventServiceTests
     private Mock<ICurrentUserService> userService;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsService;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> competitiveImagesService;
-    private IMapper mapper;
-
 
     private CompetitiveEventService service;
     private Guid firstId;
-    private Guid firstJudgeId;
     private Guid firstProviderId;
 
     [SetUp]
@@ -64,7 +57,6 @@ public class CompetitiveEventServiceTests
         accountingTypeOfEventRepository = new EntityRepositorySoftDeleted<int, CompetitiveEventAccountingType>(context);
         descriptionItemRepository = new EntityRepository<Guid, CompetitiveEventDescriptionItem>(context);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         logger = new Mock<ILogger<CompetitiveEventService>>();
         userService = new Mock<ICurrentUserService>();
@@ -76,7 +68,6 @@ public class CompetitiveEventServiceTests
             descriptionItemRepository,
             logger.Object,
             localizer.Object,
-            mapper,
             userService.Object,
             contactsService.Object,
             competitiveImagesService.Object);

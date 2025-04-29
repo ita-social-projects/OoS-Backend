@@ -1,5 +1,6 @@
-﻿using OutOfSchool.Common.Validators;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models;
 public class BaseUpdateUserDto
@@ -14,4 +15,40 @@ public class BaseUpdateUserDto
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
     public string PhoneNumber { get; set; }
+}
+
+public static class BaseUpdateUserDtoExtensions
+{
+    public static MinistryAdminBaseUpdateDto ToMinistryAdminDto(this BaseUpdateUserDto user)
+        => new()
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+        };
+
+    public static User SetToModel(this BaseUpdateUserDto dto, User model)
+    {
+        model.Id = dto.Id;
+        model.Email = dto.Email;
+        model.PhoneNumber = dto.PhoneNumber;
+
+        return model;
+    }
+
+    public static RegionAdminBaseUpdateDto ToRegionAdminDto(this BaseUpdateUserDto user)
+        => new()
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+        };
+
+    public static AreaAdminBaseUpdateDto ToAreaAdminDto(this BaseUpdateUserDto user)
+        => new()
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+        };
 }

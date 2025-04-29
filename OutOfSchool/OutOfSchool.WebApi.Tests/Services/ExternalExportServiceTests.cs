@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
@@ -30,7 +28,6 @@ public class ExternalExportServiceTests
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> mockDirectionRepository;
     private Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>> mockCompetitiveEventRepository;
     private Mock<IEntityRepositorySoftDeleted<long, SubDirection>> mockSubDirectionRepository;
-    private IMapper mockMapper;
     private Mock<ILogger<ExternalExportService>> mockLogger;
 
     [SetUp]
@@ -43,7 +40,6 @@ public class ExternalExportServiceTests
         mockDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         mockCompetitiveEventRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<CompetitiveEvent>>();
         mockSubDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, SubDirection>>();
-        mockMapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ExternalExportMappingProfile>();
         mockLogger = new Mock<ILogger<ExternalExportService>>();
 
         externalExportService = new ExternalExportService(
@@ -54,7 +50,6 @@ public class ExternalExportServiceTests
             mockDirectionRepository.Object,
             mockCompetitiveEventRepository.Object,
             mockSubDirectionRepository.Object,
-            mockMapper,
             mockLogger.Object);
     }
 
@@ -314,54 +309,6 @@ public class ExternalExportServiceTests
 
         // Act & Assert
         Assert.CatchAsync<Exception>(() => externalExportService.GetDirections(updatedAfter, new OffsetFilter()));
-    }
-
-    [Test]
-    public void Constructor_NullProviderRepository_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(null, Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
-    }
-
-    [Test]
-    public void Constructor_NullWorkshopRepository_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), null, Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
-    }
-
-    [Test]
-    public void Constructor_NullApplicationRepository_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), null, Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
-    }
-
-    [Test]
-    public void Constructor_NullMapper_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, null, Mock.Of<ILogger<ExternalExportService>>()));
-    }
-
-    [Test]
-    public void Constructor_NullLogger_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), Mock.Of<IAverageRatingService>(), null, null, null, Mock.Of<IMapper>(), null));
-    }
-
-    [Test]
-    public void Constructor_NullAverageRatingService_ThrowsArgumentNullException()
-    {
-        // Arrange, Act, Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new ExternalExportService(Mock.Of<IProviderRepository>(), Mock.Of<IWorkshopRepository>(), Mock.Of<IApplicationRepository>(), null, null, null, null, Mock.Of<IMapper>(), Mock.Of<ILogger<ExternalExportService>>()));
     }
     
     [Test]

@@ -13,3 +13,14 @@ public class ProviderStatusDto
 
     public string? StatusReason { get; set; } = default;
 }
+
+public static class ProviderStatusDtoExtensions
+{
+    public static ProviderStatusDto ToStatusDto(this Provider model)
+        => new()
+        {
+            ProviderId = model.Id,
+            Status = model.Status,
+            StatusReason = string.Empty, // not model.StatusReason - see original AM mapping,
+        };
+}

@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StatisticReports;
 using OutOfSchool.ExternalFileStore.Models;
@@ -9,32 +8,18 @@ using OutOfSchool.Services.Repository.Files;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class StatisticReportService : IStatisticReportService
+/// <summary>
+/// Initializes a new instance of the <see cref="StatisticReportService"/> class.
+/// </summary>
+/// <param name="storage">Storage for StatisticReport entity.</param>
+/// <param name="statisticReportRepository">Repository for the StatisticReport entity.</param>
+/// <param name="logger">Logger.</param>
+public class StatisticReportService(
+    IStatisticReportFileStorage storage,
+    IStatisticReportRepository statisticReportRepository,
+    ILogger<StatisticReportService> logger
+) : IStatisticReportService
 {
-    private readonly IStatisticReportFileStorage storage;
-    private readonly IStatisticReportRepository statisticReportRepository;
-    private readonly ILogger<StatisticReportService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StatisticReportService"/> class.
-    /// </summary>
-    /// <param name="storage">Storage for StatisticReport entity.</param>
-    /// <param name="statisticReportRepository">Repository for the StatisticReport entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public StatisticReportService(
-        IStatisticReportFileStorage storage,
-        IStatisticReportRepository statisticReportRepository,
-        ILogger<StatisticReportService> logger,
-        IMapper mapper)
-    {
-        this.storage = storage;
-        this.statisticReportRepository = statisticReportRepository;
-        this.logger = logger;
-        this.mapper = mapper;
-    }
-
     public async Task Create(StatisticReport statisticReport)
     {
         await statisticReportRepository.Create(statisticReport).ConfigureAwait(false);
@@ -92,7 +77,7 @@ public class StatisticReportService : IStatisticReportService
         var searchResult = new SearchResult<StatisticReportDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<StatisticReportDto>>(statisticReports),
+            Entities = statisticReports.ToDto(),
         };
 
         return searchResult;

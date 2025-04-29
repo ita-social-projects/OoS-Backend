@@ -34,7 +34,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [Range(0, 120, ErrorMessage = "Max age should be between 0 and 120")]
     public int? MaxAge { get; set; }
 
-
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }

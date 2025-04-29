@@ -57,3 +57,34 @@ public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquat
                string.Equals(Url, other.Url, StringComparison.OrdinalIgnoreCase);
     }
 }
+
+public static class SocialNetworkDtoExtensions
+{
+    public static SocialNetwork SetToModel(this SocialNetworkDto socialNetwork, SocialNetwork model)
+    {
+        model.Type = socialNetwork.Type;
+        model.Url = socialNetwork.Url;
+
+        return model;
+    }
+
+    public static SocialNetwork ToModel(this SocialNetworkDto socialNetwork)
+        => new()
+        {
+            Type = socialNetwork.Type,
+            Url = socialNetwork.Url
+        };
+
+    public static List<SocialNetwork> ToModel(this IEnumerable<SocialNetworkDto> list)
+        => list.MapToList(ToModel);
+
+    public static SocialNetworkDto ToDto(this SocialNetwork socialNetwork)
+        => new()
+        {
+            Type = socialNetwork.Type,
+            Url = socialNetwork.Url
+        };
+
+    public static List<SocialNetworkDto> ToDto(this IEnumerable<SocialNetwork> list)
+        => list.MapToList(ToDto);
+}

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
 using OutOfSchool.Services.Enums;
@@ -7,43 +6,25 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class BlockedProviderParentService : IBlockedProviderParentService
+/// <summary>
+/// Initializes a new instance of the <see cref="BlockedProviderParentService"/> class.
+/// </summary>
+/// <param name="blockedProviderParentRepository">Repository for the BlockedProviderParent entity.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="mapper">Mapper.</param>
+/// <param name="notificationService">Notification service.</param>
+/// <param name="parentRepository">Parent repository.</param>
+public class BlockedProviderParentService(
+    IBlockedProviderParentRepository blockedProviderParentRepository,
+    ILogger<BlockedProviderParentService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    INotificationService notificationService,
+    IParentRepository parentRepository) : IBlockedProviderParentService
 {
     public const string ProviderIdKey = "ProviderId";
     public const string ProviderFullTitleKey = "ProviderFullTitle";
     public const string ProviderShortTitleKey = "ProviderShortTitle";
-
-    private readonly IBlockedProviderParentRepository blockedProviderParentRepository;
-    private readonly ILogger<BlockedProviderParentService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly INotificationService notificationService;
-    private readonly IParentRepository parentRepository;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BlockedProviderParentService"/> class.
-    /// </summary>
-    /// <param name="blockedProviderParentRepository">Repository for the BlockedProviderParent entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="notificationService">Notification service.</param>
-    /// <param name="parentRepository">Parent repository.</param>
-    public BlockedProviderParentService(
-        IBlockedProviderParentRepository blockedProviderParentRepository,
-        ILogger<BlockedProviderParentService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        INotificationService notificationService,
-        IParentRepository parentRepository)
-    {
-        this.blockedProviderParentRepository = blockedProviderParentRepository;
-        this.logger = logger;
-        this.localizer = localizer;
-        this.mapper = mapper;
-        this.notificationService = notificationService;
-        this.parentRepository = parentRepository;
-    }
 
     /// <inheritdoc/>
     public async Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto, string userId)
@@ -55,7 +36,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
             throw new ArgumentNullException(nameof(blockedProviderParentBlockDto));
         }
 
-        bool isBloked = await IsBlocked(blockedProviderParentBlockDto.ParentId, blockedProviderParentBlockDto.ProviderId).ConfigureAwait(false);
+        var isBloked = await IsBlocked(blockedProviderParentBlockDto.ParentId, blockedProviderParentBlockDto.ProviderId).ConfigureAwait(false);
 
         if (isBloked)
         {
@@ -70,7 +51,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
             });
         }
 
-        var newBlockedProviderParent = mapper.Map<BlockedProviderParent>(blockedProviderParentBlockDto);
+        var newBlockedProviderParent = blockedProviderParentBlockDto.ToModel();
         newBlockedProviderParent.UserIdBlock = userId;
         newBlockedProviderParent.DateTimeFrom = DateTime.Now;
 
@@ -97,7 +78,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
                 additionalData).ConfigureAwait(false);
         }
 
-        return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
+        return Result<BlockedProviderParentDto>.Success(entity.ToDto());
     }
 
     /// <inheritdoc/>
@@ -151,7 +132,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
             recipientsIds,
             additionalData).ConfigureAwait(false);
 
-        return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
+        return Result<BlockedProviderParentDto>.Success(entity.ToDto());
     }
 
     /// <inheritdoc/>
@@ -161,7 +142,7 @@ public class BlockedProviderParentService : IBlockedProviderParentService
             .GetBlockedProviderParentEntities(parentId, providerId)
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        return mapper.Map<BlockedProviderParentDto>(currentBlock);
+        return currentBlock?.ToDto();
     }
 
     public Task<bool> IsBlocked(Guid parentId, Guid providerId)

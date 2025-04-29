@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.Services.Models;
 
@@ -47,4 +48,19 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
     public bool MustChangePassword { get; set; }
 
     public virtual Individual? Individual { get; set; }
+}
+
+public static class UserExtensions
+{
+    public static User ToUser(this MinistryAdminBaseDto ministryAdminBaseDto)
+        => new()
+        {
+            FirstName = ministryAdminBaseDto.FirstName,
+            LastName = ministryAdminBaseDto.LastName,
+            MiddleName = ministryAdminBaseDto.MiddleName,
+            CreatingTime = ministryAdminBaseDto.CreatingTime,
+            Email = ministryAdminBaseDto.Email,
+            UserName = ministryAdminBaseDto.Email,
+            PhoneNumber = ministryAdminBaseDto.PhoneNumber,
+        };
 }

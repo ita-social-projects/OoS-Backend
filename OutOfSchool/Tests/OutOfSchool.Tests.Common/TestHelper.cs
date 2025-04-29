@@ -1,55 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.Tests.Common;
 
 public static class TestHelper
 {
-    /// <summary>
-    /// Creates a new mapper instance of given mapping profile.
-    /// </summary>
-    /// <typeparam name="TProfile"></typeparam>
-    /// <returns></returns>
-    public static IMapper CreateMapperInstanceOfProfileType<TProfile>()
-        where TProfile : Profile, new()
-    {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<TProfile>());
-        return config.CreateMapper();
-    }
-
-    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2>()
-        where TProfile1 : Profile, new()
-        where TProfile2 : Profile, new()
-    {
-        var config = new MapperConfiguration(cfg => cfg.UseProfile<TProfile1>().UseProfile<TProfile2>());
-        return config.CreateMapper();
-    }
-
-    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2, TProfile3>()
-        where TProfile1 : Profile, new()
-        where TProfile2 : Profile, new()
-        where TProfile3 : Profile, new()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.UseProfile<TProfile1>().UseProfile<TProfile2>().UseProfile<TProfile3>());
-        return config.CreateMapper();
-    }
-    
-    public static IMapper CreateMapperInstanceOfProfileTypes<TProfile1, TProfile2, TProfile3, TProfile4>()
-        where TProfile1 : Profile, new()
-        where TProfile2 : Profile, new()
-        where TProfile3 : Profile, new()
-        where TProfile4 : Profile, new()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.UseProfile<TProfile1>().UseProfile<TProfile2>().UseProfile<TProfile3>().UseProfile<TProfile4>());
-        return config.CreateMapper();
-    }
-
     public static void AssertResponseOkResultAndValidateValue<TExpectedValue>(this IActionResult response, TExpectedValue expected)
     {
         var actual = (response as ObjectResult).Value;
@@ -89,9 +46,9 @@ public static class TestHelper
     {
         Assert.Multiple(() =>
             {
-                foreach (var collection in expected.Zip(actual))
+                foreach (var (First, Second) in expected.Zip(actual))
                 {
-                    AssertDtosAreEqual(collection.First, collection.Second);
+                    AssertDtosAreEqual(First, Second);
                 }
             }
         );
@@ -135,9 +92,9 @@ public static class TestHelper
 
     private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
     {
-        return expected.GetType().GetProperties()
+        return expected.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
             .Select(p => (p.Name, Value: p.GetValue(expected)))
-            .Zip(actual.GetType().GetProperties()
+            .Zip(actual.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
                 .Select(r => (r.Name, Value: r.GetValue(actual))))
             .Select(t => (t.First.Value, t.Second.Value, t.First.Name));
     }

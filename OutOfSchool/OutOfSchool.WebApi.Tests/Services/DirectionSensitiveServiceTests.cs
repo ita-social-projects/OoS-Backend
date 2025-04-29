@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,6 @@ public class DirectionSensitiveServiceTests
     private static Guid institutionHierarchyId;
     private IEntityRepositorySoftDeleted<long, Direction> repo;
     private ISensitiveDirectionService service;
-    private Mock<IMapper> mapper;
     private DbContextOptions<OutOfSchoolDbContext> options;
 
     [SetUp]
@@ -36,7 +34,6 @@ public class DirectionSensitiveServiceTests
     {
         institutionId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
         institutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771");
-        mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
                 databaseName: "OutOfSchoolTestDB");
@@ -57,7 +54,6 @@ public class DirectionSensitiveServiceTests
             repositoryWorkshop,
             logger.Object,
             localizer.Object,
-            mapper.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object);
@@ -77,9 +73,6 @@ public class DirectionSensitiveServiceTests
         };
 
         var expected = await repo.GetById(changedEntity.Id).ConfigureAwait(false);
-
-        mapper.Setup(m => m.Map<Direction>(changedEntity)).Returns(expected);
-        mapper.Setup(m => m.Map<DirectionDto>(expected)).Returns(changedEntity);
 
         // Act
         var result = await service.Update(changedEntity).ConfigureAwait(false);

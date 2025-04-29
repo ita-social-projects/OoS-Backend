@@ -1,4 +1,3 @@
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.Geocoding;
 using OutOfSchool.Common.Enums;
@@ -8,14 +7,9 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class FakeGeocodingService(
     ICodeficatorService codeficatorService,
-    IMapper mapper,
-    ILogger<GeocodingService> logger)
-    : IGeocodingService
+    ILogger<GeocodingService> logger
+): IGeocodingService
 {
-    private readonly ICodeficatorService codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-    private readonly IMapper mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    private ILogger<GeocodingService> logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
     public async Task<Either<ErrorResponse, GeocodingResponse>> GetGeocodingInfo(GeocodingRequest request)
     {
         if (request is null)
@@ -95,7 +89,7 @@ public class FakeGeocodingService(
 
             return new GeocodingResponse
             {
-                Codeficator = mapper.Map<CodeficatorAddressDto>(catottg),
+                Codeficator = catottg.Copy(),
                 CATOTTGId = catottg.Id,
                 Street = "вул. Тестова",
                 BuildingNumber = "1",

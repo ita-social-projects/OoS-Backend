@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -31,7 +30,6 @@ public class StatisticServiceTest
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> directionRepository;
-    private Mock<IMapper> mapper;
     private Mock<ICacheService> cache;
     private Mock<IAverageRatingService> averageRatingServiceMock;
 
@@ -42,7 +40,6 @@ public class StatisticServiceTest
         workshopRepository = new Mock<IWorkshopRepository>();
         directionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         var logger = new Mock<ILogger<StatisticService>>();
-        mapper = new Mock<IMapper>();
         cache = new Mock<ICacheService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
 
@@ -51,7 +48,6 @@ public class StatisticServiceTest
             workshopRepository.Object,
             directionRepository.Object,
             logger.Object,
-            mapper.Object,
             cache.Object,
             averageRatingServiceMock.Object);
     }
@@ -60,12 +56,23 @@ public class StatisticServiceTest
     public async Task GetPopularWorkshops_WhenCityNotQueried_ShouldReturnCertainWorkshops()
     {
         // Arrange
-        List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
+        var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
 
-        SetupGetPopularWorkshops(expectedWorkshopCards);
+        workshopRepository
+            .Setup(w => w.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
+            .Returns(workshopsMock)
+            .Verifiable();
 
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
+        var expectedWorkshopCardsIds = new List<Guid>() { new ("6f8bf795-072d-4fca-ad89-e54a275eb674"), new ("3a2fbb29-e097-4184-ad02-26ed1e5f5057") };
+        var ratings = RatingsGenerator.GetAverageRatings(expectedWorkshopCardsIds);
+
+        averageRatingServiceMock
+            .Setup(r => r.GetByEntityIdsAsync(It.Is<List<Guid>>(l => l.Count == expectedWorkshopCardsIds.Count && !l.Except(expectedWorkshopCardsIds).Any())))
+            .ReturnsAsync(ratings);
 
         // Act
         var result = await service
@@ -76,46 +83,49 @@ public class StatisticServiceTest
         result
             .Should()
             .BeEquivalentTo(
-                expectedWorkshopCards, options => options.WithStrictOrdering());
+                workshopsMock.Where(w => expectedWorkshopCardsIds.Contains(w.Id)).ToCard());
     }
 
     [Test]
     public async Task GetPopularWorkshops_WithCityQueried_ShouldReturnCertainWorkshops()
     {
         // Arrange
-        List<Workshop> expectedWorkshops = ExpectedWorkshopCardsCityFilter();
+        var workshopsMock = WithWorkshopsIncludingCATOTTG().AsQueryable().BuildMock();
 
-        SetupGetPopularWorkshopsIncludingCATOTTG();
+        workshopRepository
+            .Setup(w => w.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
+            .Returns(workshopsMock)
+            .Verifiable();
 
-        var expectedWorkshopCards = new List<WorkshopCard>();
-        mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
-            .Returns(expectedWorkshopCards);
+        const int catottgId = 31737;
+        var expectedWorkshopCards = workshopsMock
+            .Where(w => w.Contacts.Any(c => c.Address.CATOTTGId == catottgId || c.Address.CATOTTG.ParentId == catottgId))
+            .ToCard();
 
         // Act
+
         var result = await service
-            .GetPopularWorkshopsFromDatabase(2, 31737)
+            .GetPopularWorkshopsFromDatabase(2, catottgId)
             .ConfigureAwait(false);
 
         // Assert
-        result
-            .Should()
-            .BeEquivalentTo(
-                expectedWorkshopCards, options => options.WithStrictOrdering());
+        result.Should().BeEquivalentTo(expectedWorkshopCards);
     }
 
     [Test]
     public async Task GetPopularDirections_WhenCityNotQueried_ShouldReturnCertainDirections()
     {
         // Arrange
-        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
+        var expectedDirectionStatistic = new List<DirectionDto>
+        {
+            new() { Id = 3, WorkshopsCount = 1 },
+        };
 
         SetupGetPopularDirections();
-
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
 
         // Act
         var result = await service
@@ -133,15 +143,12 @@ public class StatisticServiceTest
     public async Task GetPopularDirections_WithCityQueried_ShouldReturnCertainDirections()
     {
         // Arrange
-        List<DirectionDto> expectedDirectionStatistic = ExpectedDirectionStatisticsCityFilter();
+        var expectedDirectionStatistic = new List<DirectionDto>
+        {
+            new() { Id = 1, WorkshopsCount = 1 },
+        };
 
         SetupGetPopularDirections();
-
-        foreach (var stat in expectedDirectionStatistic)
-        {
-            mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
-                .Returns(stat);
-        }
 
         // Act
         var result = await service
@@ -151,8 +158,7 @@ public class StatisticServiceTest
         // Assert
         result
             .Should()
-            .BeEquivalentTo(
-                ExpectedDirectionStatisticsCityFilter(), options => options.WithStrictOrdering());
+            .BeEquivalentTo(expectedDirectionStatistic, options => options.WithStrictOrdering());
     }
 
     [TearDown]
@@ -164,41 +170,6 @@ public class StatisticServiceTest
     }
 
     #region Setup
-
-    private void SetupGetPopularWorkshops(List<WorkshopCard> expectedWorkshopCards)
-    {
-        var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
-
-        workshopRepository
-            .Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
-            .Returns(workshopsMock)
-            .Verifiable();
-
-        var expectedWorkshopCardsIds = expectedWorkshopCards.Select(wc => wc.Id).ToList();
-        var ratings = RatingsGenerator.GetAverageRatings(expectedWorkshopCardsIds);
-
-        averageRatingServiceMock
-            .Setup(r => r.GetByEntityIdsAsync(expectedWorkshopCardsIds))
-            .ReturnsAsync(ratings);
-    }
-
-    private void SetupGetPopularWorkshopsIncludingCATOTTG()
-    {
-        var workshopsMock = WithWorkshopsIncludingCATOTTG().AsQueryable().BuildMock();
-
-        workshopRepository
-            .Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
-            .Returns(workshopsMock)
-            .Verifiable();
-    }
 
     private void SetupGetPopularDirections()
     {
@@ -654,125 +625,6 @@ public class StatisticServiceTest
                     },
                 },
             },
-        };
-    }
-
-    private IEnumerable<Workshop> WithWorkshopsFilteredForCityQuery(int limit, string city)
-    {
-        var workshops = WithWorkshops();
-
-        if (!string.IsNullOrWhiteSpace(city))
-        {
-            workshops = workshops
-                .Where(w => string.Equals(w.Contacts.FirstOrDefault()?.Address.CATOTTG.Name, city.Trim()));
-        }
-
-        var workshopsWithApplications = workshops.Select(w => new
-        {
-            Workshop = w,
-            Applications = w.Applications.Count,
-        });
-
-        var popularWorkshops = workshopsWithApplications
-            .OrderByDescending(w => w.Applications)
-            .Select(w => w.Workshop)
-            .Take(limit);
-
-        return popularWorkshops.ToList();
-    }
-
-    #endregion
-
-    #region Expected
-
-    private List<WorkshopCard> ExpectedWorkshopCardsNoCityFilter()
-    {
-        return new List<WorkshopCard>
-        {
-            new WorkshopCard {Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {CATOTTGId = 5000}},
-            new WorkshopCard {Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {CATOTTGId = 4970}},
-        };
-    }
-
-    private List<WorkshopCard> ExpectedWorkshopCardsInstitutionId()
-    {
-        return new List<WorkshopCard>
-        {
-            new WorkshopCard
-            {
-                Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
-                Title = "w3",
-                Address = new AddressDto
-                {
-                    CATOTTGId = 5000,
-                },
-                InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-            },
-        };
-    }
-
-    private List<Workshop> ExpectedWorkshopCardsCityFilter()
-    {
-        return new List<Workshop>
-        {
-            new Workshop
-            {
-                Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
-                Title = "w2",
-                Contacts = [
-                    new ()
-                    {
-                        Title = "Test",
-                        IsDefault = true,
-                        Address = new ()
-                        {
-                            CATOTTGId = 31737,
-                            CATOTTG = new CATOTTG
-                            {
-                                Category = "K",
-                                ParentId = null,
-                            },
-                        }
-                    }
-                ],
-            },
-            new Workshop
-            {
-                Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                Title = "w1",
-                Contacts = [
-                    new ()
-                    {
-                        Title = "Test",
-                        IsDefault = true,
-                        Address = new ()
-                        {
-                            CATOTTGId = 31739,
-                            CATOTTG = new CATOTTG
-                            {
-                                Category = "B",
-                                ParentId = 31737,
-                            },
-                        }
-                    }
-                ],
-            },
-        };
-    }
-
-    private List<DirectionDto> ExpectedDirectionStatisticsNoCityFilter()
-    {
-        return new List<DirectionDto>
-        {
-            new DirectionDto { Id = 3, WorkshopsCount = 1 },
-        };
-    }
-
-    private List<DirectionDto> ExpectedDirectionStatisticsCityFilter()
-    {
-        return new List<DirectionDto>
-        {
-            new DirectionDto { Id = 2, WorkshopsCount = 1 },
         };
     }
 

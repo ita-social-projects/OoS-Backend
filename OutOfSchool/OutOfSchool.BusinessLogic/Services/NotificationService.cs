@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models.Notifications;
@@ -8,53 +7,35 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class NotificationService : INotificationService
+/// <summary>
+/// Initializes a new instance of the <see cref="NotificationService"/> class.
+/// </summary>
+/// <param name="notificationRepository">Repository for the Notification entity.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="notificationHub">NotificationHub.</param>
+/// <param name="notificationsConfig">NotificationsConfig.</param>
+public class NotificationService(
+    INotificationRepository notificationRepository,
+    ILogger<NotificationService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    IHubContext<NotificationHub> notificationHub,
+    IOptions<NotificationsConfig> notificationsConfig
+) : INotificationService
 {
-    private readonly INotificationRepository notificationRepository;
-    private readonly ILogger<NotificationService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly IHubContext<NotificationHub> notificationHub;
-    private readonly IOptions<NotificationsConfig> notificationsConfig;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NotificationService"/> class.
-    /// </summary>
-    /// <param name="notificationRepository">Repository for the Notification entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="notificationHub">NotificationHub.</param>
-    /// <param name="notificationsConfig">NotificationsConfig.</param>
-    public NotificationService(
-        INotificationRepository notificationRepository,
-        ILogger<NotificationService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        IHubContext<NotificationHub> notificationHub,
-        IOptions<NotificationsConfig> notificationsConfig)
-    {
-        this.notificationRepository = notificationRepository;
-        this.logger = logger;
-        this.localizer = localizer;
-        this.mapper = mapper;
-        this.notificationHub = notificationHub;
-        this.notificationsConfig = notificationsConfig;
-    }
-
     /// <inheritdoc/>
     public async Task<NotificationDto> Create(NotificationDto notificationDto)
     {
         logger.LogInformation("Notification creation started");
 
-        var notification = mapper.Map<Notification>(notificationDto);
+        var notification = notificationDto.ToModel();
         notification.CreatedDateTime = DateTimeOffset.UtcNow;
 
         var newNotification = await notificationRepository.Create(notification).ConfigureAwait(false);
 
         logger.LogInformation("Notification with Id = {Id} created successfully", newNotification?.Id);
 
-        var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
+        var notificationDtoReturn = newNotification.ToDto();
 
         var unreadNotificationsCount = await GetAmountOfNewUsersNotificationsAsync(notification.UserId);
 
@@ -155,7 +136,7 @@ public class NotificationService : INotificationService
 
             logger.LogInformation("Notification with Id = {Id} updated successfully", id);
 
-            return mapper.Map<NotificationDto>(result);
+            return result.ToDto();
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -261,9 +242,8 @@ public class NotificationService : INotificationService
 
         result.Notifications = allNotifications
             .Where(n => !grouped.Contains(n.Type))
-            .Select(notification => mapper.Map<NotificationDto>(notification))
             .OrderByDescending(n => n.CreatedDateTime)
-            .ToList();
+            .ToDto();
 
         return result;
     }
@@ -290,9 +270,8 @@ public class NotificationService : INotificationService
             userId);
 
         return notifications
-            .Select(notification => mapper.Map<NotificationDto>(notification))
             .OrderByDescending(n => n.CreatedDateTime)
-            .ToList();
+            .ToDto();
     }
 
     /// <inheritdoc/>
@@ -325,6 +304,6 @@ public class NotificationService : INotificationService
 
         logger.LogInformation("Successfully got a Notification with Id = {Id}", id);
 
-        return mapper.Map<NotificationDto>(notification);
+        return notification.ToDto();
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common.StatusPermissions;
@@ -39,7 +38,6 @@ public class ApplicationService : IApplicationService
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
     private readonly ILogger<ApplicationService> logger;
-    private readonly IMapper mapper;
     private readonly INotificationService notificationService;
     private readonly IChangesLogService changesLogService;
     private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
@@ -66,7 +64,6 @@ public class ApplicationService : IApplicationService
     /// <param name="repository">Application repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="workshopRepository">Workshop repository.</param>
-    /// <param name="mapper">Automapper DI service.</param>
     /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
     /// <param name="notificationService">Notification service.</param>
     /// <param name="changesLogService">ChangesLogService.</param>
@@ -84,7 +81,6 @@ public class ApplicationService : IApplicationService
         IApplicationRepository repository,
         ILogger<ApplicationService> logger,
         IWorkshopRepository workshopRepository,
-        IMapper mapper,
         IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
         INotificationService notificationService,
         IChangesLogService changesLogService,
@@ -103,7 +99,6 @@ public class ApplicationService : IApplicationService
         applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
         this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
         this.applicationsConstraintsConfig = (applicationsConstraintsConfig ??
@@ -218,7 +213,7 @@ public class ApplicationService : IApplicationService
         var searchResult = new SearchResult<ApplicationDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ApplicationDto>>(applications),
+            Entities = applications.ToDto(),
         };
 
         return searchResult;
@@ -256,7 +251,7 @@ public class ApplicationService : IApplicationService
         var searchResult = new SearchResult<ApplicationDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ApplicationDto>>(applications),
+            Entities = applications.ToDto(),
         };
 
         return searchResult;
@@ -306,7 +301,7 @@ public class ApplicationService : IApplicationService
 
         logger.LogInformation("There are {Count} applications in the Db with Parent Id = {Id}", applications.Count, id);
 
-        return mapper.Map<List<ApplicationDto>>(applications);
+        return applications.ToDto();
     }
 
     /// <inheritdoc/>
@@ -343,7 +338,7 @@ public class ApplicationService : IApplicationService
         var searchResult = new SearchResult<ApplicationDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ApplicationDto>>(applications),
+            Entities = applications.ToDto(),
         };
 
         return searchResult;
@@ -396,7 +391,7 @@ public class ApplicationService : IApplicationService
         var searchResult = new SearchResult<ApplicationDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ApplicationDto>>(applications),
+            Entities = applications.ToDto(),
         };
 
         return searchResult;
@@ -426,7 +421,7 @@ public class ApplicationService : IApplicationService
             new ParentRights(application.ParentId),
             new EmployeeWorkshopRights(application.Workshop.Id));
 
-        return mapper.Map<ApplicationDto>(application);
+        return application.ToDto();
     }
 
     public Task<Either<ErrorResponse, ApplicationDto>> Update(ApplicationUpdate applicationDto)
@@ -675,7 +670,7 @@ public class ApplicationService : IApplicationService
                 "Limit of applications per {Limit} days is exceeded",
                 applicationsConstraintsConfig.ApplicationsLimitDays);
 
-            DateTimeOffset dateStartingSendNewApplication = applications
+            var dateStartingSendNewApplication = applications
                 .OrderByDescending(a => a.CreationTime)
                 .Take(applicationsConstraintsConfig.ApplicationsLimit)
                 .Last()
@@ -776,20 +771,19 @@ public class ApplicationService : IApplicationService
             throw new ArgumentException(this.errorNoAllowedNewApplicationMessage);
         }
 
-        (bool IsCorrect, int SecondsRetryAfter) resultOfCheck =
-            await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
+        var (IsCorrect, SecondsRetryAfter) = await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
 
-        if (!resultOfCheck.IsCorrect)
+        if (!IsCorrect)
         {
             return new ModelWithAdditionalData<ApplicationDto, int>
             {
                 Description =
                     $"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.",
-                AdditionalData = resultOfCheck.SecondsRetryAfter,
+                AdditionalData = SecondsRetryAfter,
             };
         }
 
-        var application = mapper.Map<Application>(applicationDto);
+        var application = applicationDto.ToModel();
 
         application.Id = Guid.Empty;
 
@@ -808,7 +802,7 @@ public class ApplicationService : IApplicationService
                 { StatusTitle, newApplication.Status.ToString() },
             };
 
-            string groupedData = newApplication.Status.ToString();
+            var groupedData = newApplication.Status.ToString();
             var recipientsIds = await GetNotificationsRecipientIds(NotificationAction.Create, additionalData, newApplication).ConfigureAwait(false);
 
             await notificationService.Create(
@@ -822,7 +816,7 @@ public class ApplicationService : IApplicationService
 
         return new ModelWithAdditionalData<ApplicationDto, int>
         {
-            Model = mapper.Map<ApplicationDto>(newApplication),
+            Model = newApplication?.ToDto(),
             AdditionalData = 0,
         };
     }
@@ -845,7 +839,7 @@ public class ApplicationService : IApplicationService
         if (currentApplication.Status == applicationDto.Status)
         {
             logger.LogDebug("Application with Id = {Id} doesn't need to update", currentApplication.Id);
-            return mapper.Map<ApplicationDto>(currentApplication);
+            return currentApplication.ToDto();
         }
 
         try
@@ -858,8 +852,8 @@ public class ApplicationService : IApplicationService
 
                 if (providerOwnership.Any())
                 {
-                    int amountOfApproved = await GetAmountOfApprovedApplications(currentApplication.WorkshopId);
-                    uint availableSeats = await workshopRepository.GetAvailableSeats(currentApplication.WorkshopId);
+                    var amountOfApproved = await GetAmountOfApprovedApplications(currentApplication.WorkshopId);
+                    var availableSeats = await workshopRepository.GetAvailableSeats(currentApplication.WorkshopId);
 
                     if (amountOfApproved >= availableSeats)
                     {
@@ -913,7 +907,7 @@ public class ApplicationService : IApplicationService
 
             await ControlWorkshopStatus(previewAppStatus, application.Status, currentApplication.WorkshopId);
 
-            return mapper.Map<ApplicationDto>(application);
+            return application.ToDto();
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -984,7 +978,7 @@ public class ApplicationService : IApplicationService
 
     private async Task SendApplicationUpdateStatusEmail(Application application)
     {
-        (string subject, string templateName) = application.Status switch
+        (var subject, var templateName) = application.Status switch
         {
             ApplicationStatus.Approved =>
                 (localizer["Approved!"], RazorTemplates.ApplicationApprovedEmail),

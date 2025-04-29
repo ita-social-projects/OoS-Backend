@@ -28,3 +28,16 @@ public class AchievementCreateDTO
 
     public List<string> Teachers { get; set; }
 }
+
+public static class AchievementCreateDtoExtensions
+{
+    public static OutOfSchool.Services.Models.Achievement ToModel(this AchievementCreateDTO achievement)
+        => new()
+        {
+            Id = achievement.Id,
+            Title = achievement.Title,
+            AchievementDate = achievement.AchievementDate,
+            WorkshopId = achievement.WorkshopId,
+            AchievementTypeId = achievement.AchievementTypeId,
+        };
+}

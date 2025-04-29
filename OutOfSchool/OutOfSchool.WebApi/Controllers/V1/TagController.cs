@@ -39,7 +39,7 @@ public class TagController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get(LocalizationType localization = LocalizationType.Ua)
     {
-        var tag = await service.GetAll(localization).ConfigureAwait(false);
+        var tag = await service.GetAll().ConfigureAwait(false);
 
         if (!tag.Any())
         {
@@ -65,7 +65,7 @@ public class TagController : ControllerBase
     {
         this.ValidateId(id, localizer);
 
-        return Ok(await service.GetById(id, localization).ConfigureAwait(false));
+        return Ok(await service.GetById(id).ConfigureAwait(false));
     }
 
     /// <summary>

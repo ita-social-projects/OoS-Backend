@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
@@ -24,7 +21,6 @@ public class CompetitiveEventAccountingTypeControllerTests
     public void Setup()
     {
         service = new Mock<ICompetitiveEventAccountingTypeService>();
-        var localizer = new Mock<IStringLocalizer<SharedResource>>();
         controller = new CompetitiveEventAccountingTypeController(service.Object);
     }
 

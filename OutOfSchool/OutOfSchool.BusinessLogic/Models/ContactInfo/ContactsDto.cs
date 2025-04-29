@@ -71,3 +71,34 @@ public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<Conta
         return Title == other.Title && Address.ContentEquals(other.Address);
     }
 }
+
+public static class ContactsDtoExtensions
+{
+    public static Contacts ToModel(this ContactsDto contacts)
+        => new()
+        {
+            Title = contacts.Title,
+            IsDefault = contacts.IsDefault,
+            Address = contacts.Address?.ToModel(),
+            Phones = contacts.Phones?.ToModel(),
+            Emails = contacts.Emails?.ToModel(),
+            SocialNetworks = contacts.SocialNetworks?.ToModel()
+        };
+
+    public static List<Contacts> ToModel(this IEnumerable<ContactsDto> contacts)
+        => contacts.MapToList(ToModel);
+
+    public static ContactsDto ToDto(this Contacts contacts)
+        => new()
+        {
+            Title = contacts.Title,
+            IsDefault = contacts.IsDefault,
+            Address = contacts.Address?.ToContactsDto(),
+            Phones = contacts.Phones?.ToDto(),
+            Emails = contacts.Emails?.ToDto(),
+            SocialNetworks = contacts.SocialNetworks?.ToDto()
+        };
+
+    public static List<ContactsDto> ToDto(this IEnumerable<Contacts> contacts)
+        => contacts.MapToList(ToDto);
+}

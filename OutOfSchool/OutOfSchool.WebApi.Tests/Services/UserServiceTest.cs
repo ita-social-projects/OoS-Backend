@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -12,13 +11,10 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -32,7 +28,6 @@ public class UserServiceTest
     private IUserService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<UserService>> logger;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -46,8 +41,7 @@ public class UserServiceTest
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         repo = new EntityRepositorySoftDeleted<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
-        service = new UserService(repo, logger.Object, localizer.Object, mapper);
+        service = new UserService(repo, logger.Object, localizer.Object);
 
         SeedDatabase();
     }
@@ -107,7 +101,7 @@ public class UserServiceTest
         var users = repo.GetByFilterNoTracking(filter);
 
         // Act
-        var result = await repo.Update(mapper.Map(changedEntity, users.FirstOrDefault())).ConfigureAwait(false);
+        var result = await repo.Update(changedEntity.SetToModel(users.FirstOrDefault())).ConfigureAwait(false);
 
         // Assert
         Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));

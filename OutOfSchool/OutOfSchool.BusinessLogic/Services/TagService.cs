@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -9,36 +8,19 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for for SocialGroup entity.
 /// </summary>
-public class TagService : ITagService
+/// <param name="repository">Repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+public class TagService(
+    IEntityRepository<long, Tag> repository,
+    ILogger<TagService> logger,
+    IStringLocalizer<SharedResource> localizer
+) : ITagService
 {
-    private readonly IEntityRepository<long, Tag> repository;
-    private readonly ILogger<TagService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TagService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public TagService(
-        IEntityRepository<long, Tag> repository,
-        ILogger<TagService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
-    public async Task<IEnumerable<TagDto>> GetAll(LocalizationType localization = LocalizationType.Ua)
+    public async Task<IEnumerable<TagDto>> GetAll()
     {
-        logger.LogDebug($"Getting all Tags, {localization} localization, started.");
+        logger.LogDebug($"Getting all Tags, started.");
 
         var tags = await repository.GetAll().ConfigureAwait(false);
 
@@ -46,14 +28,13 @@ public class TagService : ITagService
             ? "Tag table is empty."
             : $"All {tags.Count()} records were successfully received from the Tag table");
 
-        return mapper.Map<List<TagDto>>(tags, opt =>
-        opt.Items["Localization"] = localization);
+        return tags.ToDto();
     }
 
     /// <inheritdoc/>
-    public async Task<TagDto> GetById(long id, LocalizationType localization = LocalizationType.Ua)
+    public async Task<TagDto> GetById(long id)
     {
-        logger.LogDebug($"Getting Tag by Id, {localization} localization, started. Looking Id = {id}.");
+        logger.LogDebug($"Getting Tag by Id, started. Looking Id = {id}.");
 
         var tag = await repository.GetById(id).ConfigureAwait(false);
 
@@ -64,10 +45,9 @@ public class TagService : ITagService
                 localizer["A Tag with a respective Id does not exist."]);
         }
 
-        logger.LogDebug($"Successfully got a Tag with Id = {id} and {localization} localization.");
+        logger.LogDebug($"Successfully got a Tag with Id = {id}.");
 
-        return mapper.Map<TagDto>(tag, opt =>
-        opt.Items["Localization"] = localization);
+        return tag.ToDto();
     }
 
     /// <inheritdoc/>
@@ -75,13 +55,13 @@ public class TagService : ITagService
     {
         logger.LogDebug("Tag creating was started.");
 
-        var tag = mapper.Map<Tag>(dto);
+        var tag = dto.ToModel();
 
         var newTag = await repository.Create(tag).ConfigureAwait(false);
 
         logger.LogDebug($"Tag with Id = {newTag?.Id} created successfully.");
 
-        return mapper.Map<TagDto>(newTag);
+        return newTag.ToDto();
     }
 
     /// <inheritdoc/>
@@ -111,7 +91,7 @@ public class TagService : ITagService
 
         logger.LogDebug($"Tag with Id = {tag.Id} updated succesfully.");
 
-        return mapper.Map<TagDto>(tag);
+        return tag.ToDto();
     }
 
     /// <inheritdoc/>

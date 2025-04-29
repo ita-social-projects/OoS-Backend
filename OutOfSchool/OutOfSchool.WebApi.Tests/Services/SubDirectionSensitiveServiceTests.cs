@@ -1,22 +1,21 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Tests.Common.DbContextTests;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Repository.Base;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
-using System.Collections.Generic;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using System;
 using OutOfSchool.BusinessLogic.Models;
-using System.Threading.Tasks;
-using System.Linq;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -26,13 +25,11 @@ public class SubDirectionSensitiveServiceTests
     private IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository;
     private IEntityRepositorySoftDeleted<long, Direction> directionRepository;
     private ISensitiveSubDirectionService service;
-    private Mock<IMapper> mapper;
     private DbContextOptions<OutOfSchoolDbContext> options;
 
     [SetUp]
     public void SetUp()
     {
-        mapper = new Mock<IMapper>();
         var builder =
             new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
                 databaseName: "OutOfSchoolTestDB");
@@ -48,8 +45,7 @@ public class SubDirectionSensitiveServiceTests
         service = new SubDirectionService(
             subDirectionRepository,
             directionRepository,
-            logger.Object,
-            mapper.Object);
+            logger.Object);
 
         SeedDatabase();
     }
@@ -65,9 +61,6 @@ public class SubDirectionSensitiveServiceTests
         };
 
         var expected = await subDirectionRepository.GetById(changedEntity.Id).ConfigureAwait(false);
-
-        mapper.Setup(m => m.Map<SubDirection>(changedEntity)).Returns(expected);
-        mapper.Setup(m => m.Map<SubDirectionDto>(expected)).Returns(changedEntity);
 
         // Act
         var result = await service.Update(changedEntity).ConfigureAwait(false);

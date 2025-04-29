@@ -68,3 +68,39 @@ public class ProviderInfoDto : ProviderInfoBaseDto, IExternalRatingInfo
     
     public List<ContactsInfoDto> Contacts { get; set; }
 }
+
+public static class ProviderInfoDtoExtensions
+{
+    public static ProviderInfoBaseDto ToBaseInfoDto(this Provider model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static ProviderInfoDto ToInfoDto(this Provider model)
+        => new()
+        {
+            Id = model.Id,
+            IsDeleted = model.IsDeleted,
+            Ownership = model.Ownership,
+            FullTitle = model.FullTitle,
+            ShortTitle = model.ShortTitle,
+            FullTitleEn = model.FullTitleEn,
+            ShortTitleEn = model.ShortTitleEn,
+            Edrpou = model.Edrpou,
+            GeneralWorkSchedule = model.GeneralWorkSchedule,
+            Type = model.Type?.Name,
+            Status = model.Status,
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(x => x.ExternalStorageId).ToArray(),
+            IsBlocked = model.IsBlocked,
+            Institution = model.Institution?.Title,
+            InstitutionType = model.InstitutionType,
+            ProviderSectionItems = model.ProviderSectionItems?.ToInfoDto(),
+            Contacts = model.Contacts?.ToInfoDto()
+        };
+
+    public static List<ProviderInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Provider> list)
+        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
+}

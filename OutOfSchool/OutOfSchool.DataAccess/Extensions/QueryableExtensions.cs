@@ -7,7 +7,7 @@ namespace OutOfSchool.Services.Extensions;
 public static class QueryableExtensions
 {
     public const char PROPERTIES_SEPARATOR = ',';
-    private static char[] propertiesSplitSymbols = new char[] { PROPERTIES_SEPARATOR };
+    private static readonly char[] propertiesSplitSymbols = [ PROPERTIES_SEPARATOR ];
 
     public static IQueryable<T> IncludeProperties<T>(
                   this IQueryable<T> query,

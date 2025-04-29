@@ -14,3 +14,22 @@ public class ParentBlockedByAdminChangesLogDto
 
     public bool IsBlocked { get; set; }
 }
+
+public static class ParentBlockedByAdminChangesLogDtoExtensions
+{
+    public static ParentBlockedByAdminChangesLogDto ToDto(this ParentBlockedByAdminLog log)
+        => new()
+        {
+            ParentId = log.ParentId,
+            ParentFullName = log.Parent?.User is null 
+                ? default 
+                : $"{log.Parent.User.LastName} {log.Parent.User.FirstName} {log.Parent.User.MiddleName}".TrimEnd(),
+            User = log.User?.ToShortUser(),
+            OperationDate = DateTime.SpecifyKind(log.OperationDate, DateTimeKind.Utc),
+            Reason = log.Reason,
+            IsBlocked = log.IsBlocked,
+        };
+
+    public static List<ParentBlockedByAdminChangesLogDto> ToDto(this IEnumerable<ParentBlockedByAdminLog> list)
+        => list.MapToList(ToDto);
+}

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -11,8 +10,6 @@ using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -27,14 +24,12 @@ public class InstitutionStatusControllerTests
     private Mock<IStatusService> service;
     private IEnumerable<InstitutionStatus> institutionStatuses;
     private InstitutionStatus institutionStatus;
-    private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
         // setup controller
         service = new Mock<IStatusService>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         controller = new InstitutionStatusController(service.Object, localizer.Object);
 
@@ -47,9 +42,9 @@ public class InstitutionStatusControllerTests
     public async Task GetInstitutionStatuses_WhenCalled_ReturnsOkResultObject()
     {
         // Arrange
-        var expected = institutionStatuses.Select(x => mapper.Map<InstitutionStatusDTO>(x));
+        var expected = institutionStatuses.ToDto();
 
-        service.Setup(x => x.GetAll(It.IsAny<LocalizationType>())).ReturnsAsync(institutionStatuses.Select(x => mapper.Map<InstitutionStatusDTO>(x)));
+        service.Setup(x => x.GetAll(It.IsAny<LocalizationType>())).ReturnsAsync(institutionStatuses.ToDto());
 
         // Act
         var response = await controller.Get().ConfigureAwait(false);
@@ -76,10 +71,10 @@ public class InstitutionStatusControllerTests
     {
         // Arrange
         var existingId = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
-        var expected = mapper.Map<InstitutionStatusDTO>(institutionStatuses.First(x => x.Id == existingId));
+        var expected = institutionStatuses.First(x => x.Id == existingId).ToDto();
 
         service.Setup(x => x.GetById(existingId, It.IsAny<LocalizationType>()))
-            .ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatuses.First(x => x.Id == existingId)));
+            .ReturnsAsync(institutionStatuses.First(x => x.Id == existingId).ToDto());
 
         // Act
         var response = await controller.GetById(existingId).ConfigureAwait(false);
@@ -95,7 +90,7 @@ public class InstitutionStatusControllerTests
         var invalidId = TestDataHelper.GetNegativeInt();
         var exceptedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
         service.Setup(x => x.GetById(invalidId, It.IsAny<LocalizationType>()))
-            .ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatuses.SingleOrDefault(x => x.Id == invalidId)));
+            .ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == invalidId)?.ToDto());
 
         // Act
         var response = await controller.GetById(invalidId).ConfigureAwait(false);
@@ -124,13 +119,13 @@ public class InstitutionStatusControllerTests
     public async Task CreateInstitutionStatus_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        var expected = mapper.Map<InstitutionStatusDTO>(institutionStatus);
+        var expected = institutionStatus.ToDto();
         var expectedResponse = new CreatedAtActionResult(
             nameof(controller.GetById),
             nameof(controller),
             new { id = expected.Id },
             expected);
-        service.Setup(x => x.Create(expected)).ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatus));
+        service.Setup(x => x.Create(expected)).ReturnsAsync(institutionStatus.ToDto());
 
         // Act
         var response = await controller.Create(expected).ConfigureAwait(false);
@@ -143,8 +138,8 @@ public class InstitutionStatusControllerTests
     public async Task UpdateInstitutionStatus_WhenModelIsValid_ReturnsOkObjectResult()
     {
         // Arrange
-        var expected = mapper.Map<InstitutionStatusDTO>(institutionStatus);
-        service.Setup(x => x.Update(expected, It.IsAny<LocalizationType>())).ReturnsAsync(mapper.Map<InstitutionStatusDTO>(institutionStatus));
+        var expected = institutionStatus.ToDto();
+        service.Setup(x => x.Update(expected, It.IsAny<LocalizationType>())).ReturnsAsync(institutionStatus.ToDto());
 
         // Act
         var response = await controller.Update(expected).ConfigureAwait(false);

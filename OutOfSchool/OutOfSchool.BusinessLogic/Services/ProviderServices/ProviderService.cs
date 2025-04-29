@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
@@ -20,121 +19,66 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 /// <summary>
 /// Implements the interface with CRUD functionality for Provider entity.
 /// </summary>
-public class ProviderService : IProviderService, ISensitiveProviderService
+/// <param name="providerRepository">Provider repository.</param>
+/// <param name="usersRepository">UsersRepository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="addressRepository">AddressRepository.</param>
+/// <param name="individualRepository">IndividualRepository.</param>
+/// <param name="officialRepository">OfficialRepository.</param>
+/// <param name="positionRepository">PositionRepository.</param>
+/// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
+/// <param name="providerImagesService">Images service.</param>
+/// <param name="changesLogService">ChangesLogService.</param>
+/// <param name="notificationService">Notification service.</param>
+/// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
+/// <param name="currentUserService">Service for manage current user.</param>
+/// <param name="ministryAdminService">Service for manage ministry admin.</param>
+/// <param name="regionAdminService">Service for managing region admin rigths.</param>
+/// <param name="codeficatorService">Codeficator service.</param>
+/// <param name="regionAdminRepository">RegionAdminRepository.</param>
+/// <param name="averageRatingService">Average rating service.</param>
+/// <param name="areaAdminService">Service for manage area admin.</param>
+/// <param name="areaAdminRepository">Repository for manage area admin.</param>
+/// <param name="userService">Service for manage users.</param>
+/// <param name="authorizationServerConfig">Path to authorization server.</param>
+/// <param name="communicationService">Service for communication.</param>
+/// <param name="searchStringService">Service for handling search string.</param>
+/// <param name="contactsService">Service for handling contacts.</param>
+public class ProviderService(
+    IProviderRepository providerRepository,
+    IEntityRepositorySoftDeleted<string, User> usersRepository,
+    ILogger<ProviderService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    IEntityRepositorySoftDeleted<long, Address> addressRepository,
+    ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
+    IOfficialRepository officialRepository,
+    IPositionRepository positionRepository,
+    IWorkshopServicesCombiner workshopServiceCombiner,
+    IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
+    IChangesLogService changesLogService,
+    INotificationService notificationService,
+    IInstitutionAdminRepository institutionAdminRepository,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    ICodeficatorService codeficatorService,
+    IRegionAdminRepository regionAdminRepository,
+    IAverageRatingService averageRatingService,
+    IAreaAdminService areaAdminService,
+    IAreaAdminRepository areaAdminRepository,
+    IUserService userService,
+    IOptions<AuthorizationServerConfig> authorizationServerConfig,
+    ICommunicationService communicationService,
+    ISearchStringService searchStringService,
+    IContactsService<Provider, IHasContactsDto<Provider>> contactsService
+) : IProviderService, ISensitiveProviderService
 {
-    private readonly IProviderRepository providerRepository;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly IEntityRepositorySoftDeleted<long, Address> addressRepository;
-    private readonly ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository;
-    private readonly IOfficialRepository officialRepository;
-    private readonly IPositionRepository positionRepository;
-    private readonly IWorkshopServicesCombiner workshopServiceCombiner;
-    private readonly IChangesLogService changesLogService;
-    private readonly INotificationService notificationService;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IRegionAdminRepository regionAdminRepository;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IAreaAdminService areaAdminService;
-    private readonly IAreaAdminRepository areaAdminRepository;
-    private readonly ILogger<ProviderService> logger;
-    private readonly ISearchStringService searchStringService;
-    private readonly IContactsService<Provider, IHasContactsDto<Provider>> contactsService;
-
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
-    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository;
+    private readonly IEntityRepositorySoftDeleted<string, User> usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProviderService"/> class.
-    /// </summary>
-    /// <param name="providerRepository">Provider repository.</param>
-    /// <param name="usersRepository">UsersRepository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="addressRepository">AddressRepository.</param>
-    /// <param name="individualRepository">IndividualRepository.</param>
-    /// <param name="officialRepository">OfficialRepository.</param>
-    /// <param name="positionRepository">PositionRepository.</param>
-    /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
-    /// <param name="providerImagesService">Images service.</param>
-    /// <param name="changesLogService">ChangesLogService.</param>
-    /// <param name="notificationService">Notification service.</param>
-    /// <param name="institutionAdminRepository">Repository for getting ministry admins.</param>
-    /// <param name="currentUserService">Service for manage current user.</param>
-    /// <param name="ministryAdminService">Service for manage ministry admin.</param>
-    /// <param name="regionAdminService">Service for managing region admin rigths.</param>
-    /// <param name="codeficatorService">Codeficator service.</param>
-    /// <param name="regionAdminRepository">RegionAdminRepository.</param>
-    /// <param name="averageRatingService">Average rating service.</param>
-    /// <param name="areaAdminService">Service for manage area admin.</param>
-    /// <param name="areaAdminRepository">Repository for manage area admin.</param>
-    /// <param name="userService">Service for manage users.</param>
-    /// <param name="authorizationServerConfig">Path to authorization server.</param>
-    /// <param name="communicationService">Service for communication.</param>
-    /// <param name="searchStringService">Service for handling search string.</param>
-    /// <param name="contactsService">Service for handling contacts.</param>
-    public ProviderService(
-        IProviderRepository providerRepository,
-        IEntityRepositorySoftDeleted<string, User> usersRepository,
-        ILogger<ProviderService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        IEntityRepositorySoftDeleted<long, Address> addressRepository,
-        ISensitiveEntityRepositorySoftDeleted<Individual> individualRepository,
-        IOfficialRepository officialRepository,
-        IPositionRepository positionRepository,
-        IWorkshopServicesCombiner workshopServiceCombiner,
-        IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-        IChangesLogService changesLogService,
-        INotificationService notificationService,
-        IInstitutionAdminRepository institutionAdminRepository,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService,
-        IRegionAdminRepository regionAdminRepository,
-        IAverageRatingService averageRatingService,
-        IAreaAdminService areaAdminService,
-        IAreaAdminRepository areaAdminRepository,
-        IUserService userService,
-        IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        ICommunicationService communicationService,
-        ISearchStringService searchStringService,
-        IContactsService<Provider, IHasContactsDto<Provider>> contactsService)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
-        this.individualRepository = individualRepository ?? throw new ArgumentNullException(nameof(individualRepository));
-        this.officialRepository = officialRepository ?? throw new ArgumentNullException(nameof(officialRepository));
-        this.positionRepository = positionRepository ?? throw new ArgumentNullException(nameof(positionRepository));
-        this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
-        this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
-        this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
-        ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
-        this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
-        this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        this.institutionAdminRepository = institutionAdminRepository;
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
-        this.regionAdminService = regionAdminService ?? throw new ArgumentNullException(nameof(regionAdminService));
-        this.codeficatorService = codeficatorService ?? throw new ArgumentNullException(nameof(codeficatorService));
-        this.regionAdminRepository = regionAdminRepository;
-        this.averageRatingService = averageRatingService ?? throw new ArgumentNullException(nameof(averageRatingService));
-        this.areaAdminService = areaAdminService ?? throw new ArgumentNullException(nameof(areaAdminService));
-        this.areaAdminRepository = areaAdminRepository;
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
-        this.contactsService = contactsService ?? throw new ArgumentNullException(nameof(contactsService));
-    }
-
-    private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
+    private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; } = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
 
     /// <inheritdoc/>
     public async Task<ProviderDto> Create(ProviderCreateDto providerDto)
@@ -222,7 +166,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             ? "Parents table is empty."
             : $"All {providers.Count} records were successfully received from the Parent table");
 
-        var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
+        var providersDTO = providers.ToDto();
         await FillRatingsForProviders(providersDTO).ConfigureAwait(false);
 
         var result = new SearchResult<ProviderDto>()
@@ -262,7 +206,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         logger.LogInformation($"Successfully got a Provider with Id = {id}.");
 
-        var providerDTO = mapper.Map<ProviderDto>(provider);
+        var providerDTO = provider.ToDto();
 
         var rating = await averageRatingService.GetByEntityIdAsync(providerDTO.Id).ConfigureAwait(false);
 
@@ -284,8 +228,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
 
         logger.LogInformation($"Successfully got a ProviderStatus with Id = {id}.");
 
-        var providerStatusDTO = mapper.Map<ProviderStatusDto>(provider);
-        return providerStatusDTO;
+        return provider.ToStatusDto();
     }
 
     /// <inheritdoc/>
@@ -502,7 +445,7 @@ public class ProviderService : IProviderService, ISensitiveProviderService
             .Select(p => new Tuple<ProviderLicenseStatus, OwnershipType>(p.LicenseStatus, p.Ownership))
             .SingleOrDefaultAsync();
 
-private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    private async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
     {
         var recipientIds = new List<string>();
 
@@ -587,7 +530,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
 
         logger.LogDebug("Provider creating was started");
 
-        var providerDomainModel = mapper.Map<Provider>(providerDto);
+        var providerDomainModel = providerDto.ToModel();
 
         contactsService.PrepareNewContacts(providerDomainModel, providerDto);
 
@@ -620,7 +563,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
 
         await SendNotification(newProvider, NotificationAction.Create, true, true);
 
-        return mapper.Map<ProviderDto>(newProvider);
+        return newProvider.ToDto();
     }
 
     private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderUpdateDto providerUpdateDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
@@ -653,7 +596,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
                             providerUpdateDto.FullTitleEn)
                         .ConfigureAwait(false);
 
-                    mapper.Map(providerUpdateDto, checkProvider);
+                    providerUpdateDto.SetToModel(checkProvider);
                     LogProviderChanges(checkProvider, userId);
                     await UpdateProvider().ConfigureAwait(false);
 
@@ -668,7 +611,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
             }
             else
             {
-                mapper.Map(providerUpdateDto, checkProvider);
+                providerUpdateDto.SetToModel(checkProvider);
             }
 
             if (actionBeforeUpdating != null)
@@ -692,7 +635,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
                 await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged);
             }
 
-            return mapper.Map<ProviderDto>(checkProvider);
+            return checkProvider.ToDto();
         }
         finally
         {
@@ -985,7 +928,7 @@ private async Task<IEnumerable<string>> GetNotificationsRecipientIds(Notificatio
             }
             else // Add an Individual to DB if it has not already existed in DB
             {
-                var newIndividual = await individualRepository.Create(mapper.Map<Individual>(employee));
+                var newIndividual = await individualRepository.Create(employee.ToModel());
                 uploadResponse.CountOfCreatedIndividuals++;
                 uploadDictionary.Add(newIndividual.Id, employee);
             }

@@ -12,3 +12,22 @@ public class StudySubjectDto
     public DateOnly ActiveFrom { get; set; }
     public DateOnly ActiveTo { get; set; }
 }
+
+public static class StudySubjectDtoExtensions
+{
+    public static StudySubjectDto ToDto(this StudySubject model)
+        => new()
+        {
+            Id = model.Id,
+            NameInUkrainian = model.NameInUkrainian,
+            NameInInstructionLanguage = model.NameInInstructionLanguage,
+            IsLanguageUkrainian= model.IsLanguageUkrainian,
+            LanguageId = model.LanguageId,
+            Language = model.Language?.ToDto(),
+            ProviderId = model.ProviderId,
+            Workshops = model.Workshops?.ToShortEntityDto()
+        };
+
+    public static List<StudySubjectDto> ToDto(this IEnumerable<StudySubject> list)
+        => list.MapToList(ToDto);
+}

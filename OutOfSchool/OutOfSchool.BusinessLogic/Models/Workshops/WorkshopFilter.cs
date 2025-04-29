@@ -84,3 +84,45 @@ public class WorkshopFilter : OffsetFilter
 
     public PayRateType PayRate { get; set; } = PayRateType.None;
 }
+
+public static class WorkshopFilterExtensions
+{
+    public static WorkshopFilterES ToES(this WorkshopFilter dto)
+        => new()
+        {    
+            Ids = dto.Ids,
+            SearchText = dto.SearchText,
+            OrderByField = dto.OrderByField,
+            MinAge = dto.MinAge,
+            MaxAge = dto.MaxAge,
+            IsFree = dto.IsFree,
+            MinPrice = dto.MinPrice,
+            MaxPrice = dto.MaxPrice,
+            DirectionIds = dto.DirectionIds,
+            City = dto.City,
+            Workdays = string.Join(' ', dto.Workdays ?? []),
+            MinStartTime = dto.MinStartTime,
+            MaxStartTime = dto.MaxStartTime,
+            Size = dto.Size,
+            From = dto.From,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Statuses = dto.Statuses,
+            IsAppropriateAge = dto.IsAppropriateAge,
+            IsAppropriateHours = dto.IsAppropriateHours,
+            IsStrictWorkdays = dto.IsStrictWorkdays,
+            CATOTTGId = dto.CATOTTGId,
+            ElasticRadius = $"{dto.RadiusKm * 1000}m",
+            InstitutionId = dto.InstitutionId,
+            FormOfLearning = dto.FormOfLearning,
+            AgeComposition = [],
+            EducationalShift = [],
+            IsSelfFinanced = false,
+            IsPaid = dto.IsPaid,
+            SpecialNeedsType = [],
+            IsInclusive = false,
+            AreThereBenefits = dto.AreThereBenefits,
+            Coverage = dto.Coverage,
+            PayRate = dto.PayRate,
+        };
+}

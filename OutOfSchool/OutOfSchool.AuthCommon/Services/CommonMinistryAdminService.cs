@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.AuthCommon.Config;
@@ -13,24 +12,22 @@ using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.AuthCommon.Services;
 
-public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : ICommonMinistryAdminService<TDto>
+public class CommonMinistryAdminService<TId, TEntity, TDto, TRepository> : ICommonMinistryAdminService<TDto>
     where TEntity : InstitutionAdminBase, IKeyedEntity<(string, TId)>, new()
     where TDto : MinistryAdminBaseDto
-    where TRepositoty : IInstitutionAdminRepositoryBase<TId, TEntity>
+    where TRepository : IInstitutionAdminRepositoryBase<TId, TEntity>
 {
     private readonly IEmailSenderService emailSender;
-    private readonly IMapper mapper;
-    private readonly ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger;
-    private readonly TRepositoty institutionAdminRepository;
+    private readonly ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepository>> logger;
+    private readonly TRepository institutionAdminRepository;
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IStringLocalizer<SharedResource> localizer;
 
     public CommonMinistryAdminService(
-        IMapper mapper,
-        TRepositoty institutionAdminRepository,
-        ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty>> logger,
+        TRepository institutionAdminRepository,
+        ILogger<CommonMinistryAdminService<TId, TEntity, TDto, TRepository>> logger,
         IEmailSenderService emailSender,
         UserManager<User> userManager,
         OutOfSchoolDbContext context,
@@ -38,7 +35,6 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         IStringLocalizer<SharedResource> localizer,
         IOptions<HostsConfig> hostsConfig)
     {
-        ArgumentNullException.ThrowIfNull(mapper);
         ArgumentNullException.ThrowIfNull(institutionAdminRepository);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(emailSender);
@@ -49,7 +45,6 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         ArgumentNullException.ThrowIfNull(hostsConfig);
         ArgumentNullException.ThrowIfNull(hostsConfig.Value.BackendUrl);
 
-        this.mapper = mapper;
         this.institutionAdminRepository = institutionAdminRepository;
         this.logger = logger;
         this.emailSender = emailSender;
@@ -69,8 +64,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
         ArgumentNullException.ThrowIfNull(url);
         ArgumentNullException.ThrowIfNull(userId);
 
-        var user = mapper.Map<User>(ministryAdminBaseDto);
-
+        var user = ministryAdminBaseDto.ToUser();
         var password = PasswordGenerator.GenerateRandomPassword();
 
         var executionStrategy = context.Database.CreateExecutionStrategy();
@@ -129,7 +123,7 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
 
                 ministryAdminBaseDto.UserId = user.Id;
 
-                var ministryAdmin = mapper.Map<TEntity>(ministryAdminBaseDto);
+                var ministryAdmin = ToModel(ministryAdminBaseDto);
                 await institutionAdminRepository.Create(ministryAdmin)
                     .ConfigureAwait(false);
 
@@ -161,6 +155,35 @@ public class CommonMinistryAdminService<TId, TEntity, TDto, TRepositoty> : IComm
                 return response;
             }
         }
+    }
+    private TEntity ToModel(MinistryAdminBaseDto adminBaseDto)
+    {
+        var entityType = typeof(TEntity);
+
+        if (entityType == typeof(InstitutionAdmin) && adminBaseDto is MinistryAdminBaseDto ministryAdmin)
+            return new InstitutionAdmin()
+            {
+                UserId = adminBaseDto.UserId,
+                InstitutionId = ministryAdmin.InstitutionId
+            } as TEntity;
+
+        if (entityType == typeof(AreaAdmin) && adminBaseDto is AreaAdminBaseDto areaAdmin)
+            return new AreaAdmin()
+            {
+                UserId = adminBaseDto.UserId,
+                InstitutionId = areaAdmin.InstitutionId,
+                CATOTTGId = areaAdmin.CATOTTGId
+            } as TEntity;
+
+        if (entityType == typeof(RegionAdmin) && adminBaseDto is RegionAdminBaseDto regionAdmin)
+            return new RegionAdmin()
+            {
+                UserId = adminBaseDto.UserId,
+                InstitutionId = regionAdmin.InstitutionId,
+                CATOTTGId = regionAdmin.CATOTTGId
+            } as TEntity;
+
+        throw new NotImplementedException($"{nameof(InstitutionAdminBase)} Dto to Entity mapping is not implemented");
     }
 
     public async Task<ResponseDto> DeleteMinistryAdminAsync(

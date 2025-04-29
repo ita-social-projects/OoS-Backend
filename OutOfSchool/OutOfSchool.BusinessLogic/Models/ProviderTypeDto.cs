@@ -41,3 +41,23 @@ public class ProviderTypeDto
                string.Equals(Name, type.Name, StringComparison.OrdinalIgnoreCase);
     }
 }
+
+public static class ProviderTypeDtoExtensions
+{
+    public static ProviderType ToModel(this ProviderTypeDto providerType)
+        => new()
+        {
+            Id = providerType.Id,
+            Name = providerType.Name,
+        };
+
+    public static ProviderTypeDto ToDto(this ProviderType providerType)
+        => new()
+        {
+            Id = providerType.Id,
+            Name = providerType.Name,
+        };
+
+    public static List<ProviderTypeDto> ToDto(this IEnumerable<ProviderType> list)
+        => list.MapToList(ToDto);
+}

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +16,9 @@ using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 
@@ -51,7 +47,6 @@ public class WorkshopControllerTests
     private Mock<ILogger<WorkshopController>> loggerMoq;
     private Mock<HttpContext> httpContextMoq;
     private Mock<ICurrentUserService> currentUserServiceMoq;
-    private IMapper mapper;
 
     private string userId;
     private List<WorkshopBaseCard> workshopBaseCards;
@@ -71,12 +66,11 @@ public class WorkshopControllerTests
             .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
         httpContextMoq.Setup(x => x.User.IsInRole("provider"))
             .Returns(true);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         workshops = WorkshopDtoGenerator.Generate(5);
         workshop = WorkshopDtoGenerator.Generate();
         workshopUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
-        workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(WorkshopGenerator.Generate());
+        workshopCreateRequestDto = WorkshopCreateRequestDtoGenerator.FromModel(WorkshopGenerator.Generate());
         provider = ProviderDtoGenerator.Generate();
         workshopCards = WorkshopCardGenerator.Generate(5);
         workshopBaseCards = WorkshopBaseCardGenerator.Generate(5);

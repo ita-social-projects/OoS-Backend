@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
@@ -11,44 +10,21 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface for CRUD functionality for Rating entity.
 /// </summary>
-public class RatingService : IRatingService
+/// <param name="ratingRepository">Repository for Rating entity.</param>
+/// <param name="workshopRepository">Repository for Workshop entity.</param>
+/// <param name="parentRepository">Repository for Parent entity.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="operationWithObjectService">Service operation with rating.</param>
+public class RatingService(
+    IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
+    IWorkshopRepository workshopRepository,
+    IParentRepository parentRepository,
+    ILogger<RatingService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    IOperationWithObjectService operationWithObjectService
+) : IRatingService
 {
-    private readonly IEntityRepositorySoftDeleted<long, Rating> ratingRepository;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly IParentRepository parentRepository;
-    private readonly ILogger<RatingService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly IOperationWithObjectService operationWithObjectService;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RatingService"/> class.
-    /// </summary>
-    /// <param name="ratingRepository">Repository for Rating entity.</param>
-    /// <param name="workshopRepository">Repository for Workshop entity.</param>
-    /// <param name="parentRepository">Repository for Parent entity.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="operationWithObjectService">Service operation with rating.</param>
-    public RatingService(
-        IEntityRepositorySoftDeleted<long, Rating> ratingRepository,
-        IWorkshopRepository workshopRepository,
-        IParentRepository parentRepository,
-        ILogger<RatingService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        IOperationWithObjectService operationWithObjectService)
-    {
-        this.ratingRepository = ratingRepository ?? throw new ArgumentNullException(nameof(ratingRepository));
-        this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
-        this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.operationWithObjectService = operationWithObjectService ?? throw new ArgumentNullException(nameof(operationWithObjectService));
-    }
-
     /// <inheritdoc/>
     public async Task<bool> IsReviewed(Guid parentId, Guid workshopId)
     {
@@ -69,9 +45,7 @@ public class RatingService : IRatingService
             ? "Rating table is empty."
             : $"All {ratings.Count()} records were successfully received from the Rating table");
 
-        var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
-
-        return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
+        return await AddParentInfoAsync(ratings.ToDto()).ConfigureAwait(false);
     }
 
     public async Task<IEnumerable<RatingDto>> GetAllAsync(Expression<Func<Rating, bool>> filter)
@@ -82,7 +56,7 @@ public class RatingService : IRatingService
 
         logger.LogInformation("Getting all ratings by filter finished.");
 
-        return mapper.Map<IEnumerable<RatingDto>>(ratings);
+        return ratings.ToDto();
     }
 
     /// <inheritdoc/>
@@ -101,7 +75,7 @@ public class RatingService : IRatingService
 
         logger.LogInformation($"Successfully got a Rating with Id = {id}.");
 
-        return mapper.Map<RatingDto>(rating);
+        return rating.ToDto();
     }
 
     /// <inheritdoc/>
@@ -124,8 +98,7 @@ public class RatingService : IRatingService
             : $"All {ratings.Count} records with EntityId = {entityId} " +
               $"were successfully received from the Rating table");
 
-        var ratingsDto = ratings.Select(r => mapper.Map<RatingDto>(r));
-        ratingsDto = await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
+        var ratingsDto = await AddParentInfoAsync(ratings.ToDto()).ConfigureAwait(false);
 
         var searchResult = new SearchResult<RatingDto>()
         {
@@ -143,7 +116,7 @@ public class RatingService : IRatingService
 
         var worshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
 
-        List<Rating> worshopsRating = new List<Rating>();
+        var worshopsRating = new List<Rating>();
 
         foreach (var workshop in worshops)
         {
@@ -155,9 +128,7 @@ public class RatingService : IRatingService
             : $"All {worshopsRating.Count} records with ProviderId = {id} " +
               $"were successfully received from the Rating table");
 
-        var ratingsDto = worshopsRating.Select(r => mapper.Map<RatingDto>(r));
-
-        return await AddParentInfoAsync(ratingsDto).ConfigureAwait(false);
+        return await AddParentInfoAsync(worshopsRating.ToDto()).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -172,7 +143,7 @@ public class RatingService : IRatingService
 
         logger.LogInformation($"Successfully got a Rating for Parent with Id = {parentId}");
 
-        return rating is null ? null : mapper.Map<RatingDto>(rating);
+        return rating?.ToDto();
     }
 
     /// <inheritdoc/>
@@ -182,11 +153,11 @@ public class RatingService : IRatingService
 
         if (await CheckRatingCreation(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.Create(mapper.Map<Rating>(dto)).ConfigureAwait(false);
+            var rating = await ratingRepository.Create(dto.ToModel()).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} created successfully.");
 
-            return mapper.Map<RatingDto>(rating);
+            return rating.ToDto();
         }
 
         logger.LogInformation($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
@@ -201,11 +172,11 @@ public class RatingService : IRatingService
 
         if (await CheckRatingUpdate(dto).ConfigureAwait(false))
         {
-            var rating = await ratingRepository.ReadAndUpdateWith<RatingDto>(dto, mapper.Map).ConfigureAwait(false);
+            var rating = await ratingRepository.ReadAndUpdateWith(dto, RatingDtoExtensions.SetToModel).ConfigureAwait(false);
 
             logger.LogInformation($"Rating with Id = {rating?.Id} updated succesfully.");
 
-            return mapper.Map<RatingDto>(rating);
+            return rating.ToDto();
         }
 
         logger.LogInformation("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
@@ -235,7 +206,8 @@ public class RatingService : IRatingService
                 EntityId = rating.EntityId,
             };
 
-            if (!await operationWithObjectService.Exists(filter)) {
+            if (!await operationWithObjectService.Exists(filter)) 
+            {
                 await operationWithObjectService.Create(
                     OperationWithObjectOperationType.RecalculateAverageRating,
                     rating.EntityId,
@@ -348,7 +320,7 @@ public class RatingService : IRatingService
     /// <returns>True if Entity with such parameters already exists in the system and false otherwise.</returns>
     private async Task<bool> EntityExists(Guid id)
     {
-        Workshop workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
+        var workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
         return workshop != null;
     }
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -13,14 +12,11 @@ using OutOfSchool.BusinessLogic.Hubs;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -42,7 +38,6 @@ public class ChatMessageWorkshopServiceTests
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<IHubContext<ChatWorkshopHub>> workshopHub;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
-    private IMapper mapper;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
     private TestOutOfSchoolDbContext dbContext;
@@ -67,7 +62,6 @@ public class ChatMessageWorkshopServiceTests
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         workshopHub = new Mock<IHubContext<ChatWorkshopHub>>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
 
         clientsMock = new Mock<IHubClients>();
         clientProxyMock = new Mock<IClientProxy>();
@@ -79,8 +73,7 @@ public class ChatMessageWorkshopServiceTests
             messageRepository,
             roomServiceMock.Object,
             workshopHub.Object,
-            loggerMock.Object,
-            mapper);
+            loggerMock.Object);
 
         SeedDatabase();
     }

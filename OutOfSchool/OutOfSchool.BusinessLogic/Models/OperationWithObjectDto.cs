@@ -23,3 +23,21 @@ public class OperationWithObjectDto
 
     public string Comment { get; set; }
 }
+
+public static class OperationWithObjectDtoExtensions
+{
+    public static OperationWithObjectDto ToDto(this OperationWithObject model)
+        => new()
+        {
+            Id = model.Id,
+            EntityId = model.EntityId,
+            EntityType = model.EntityType,
+            OperationType = model.OperationType,
+            RowSeparator = model.RowSeparator,
+            EventDateTime = model.EventDateTime,
+            Comment = model.Comment
+        };
+
+    public static List<OperationWithObjectDto> ToDto(this IEnumerable<OperationWithObject> list)
+        => list.MapToList(ToDto);
+}

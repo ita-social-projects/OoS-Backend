@@ -1,61 +1,40 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 
-public class InstitutionHierarchyService : IInstitutionHierarchyService
+/// <summary>
+/// Initializes a new instance of the <see cref="InstitutionHierarchyService"/> class.
+/// </summary>
+/// <param name="repository">Repository for InstitutionHierarchy entity.</param>
+/// <param name="repositoryWorkshop">Workshop repository.</param>
+/// <param name="repositoryProvider">Provider repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="cache">Redis cache service.</param>
+public class InstitutionHierarchyService(
+    IInstitutionHierarchyRepository repository,
+    IWorkshopRepository repositoryWorkshop,
+    IProviderRepository repositoryProvider,
+    ILogger<InstitutionHierarchyService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    ICacheService cache
+) : IInstitutionHierarchyService
 {
-    private readonly IInstitutionHierarchyRepository repository;
-    private readonly IWorkshopRepository repositoryWorkshop;
-    private readonly IProviderRepository repositoryProvider;
-    private readonly ILogger<InstitutionHierarchyService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-    private readonly ICacheService cache;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InstitutionHierarchyService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository for InstitutionHierarchy entity.</param>
-    /// <param name="repositoryWorkshop">Workshop repository.</param>
-    /// <param name="repositoryProvider">Provider repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    /// <param name="cache">Redis cache service.</param>
-    public InstitutionHierarchyService(
-        IInstitutionHierarchyRepository repository,
-        IWorkshopRepository repositoryWorkshop,
-        IProviderRepository repositoryProvider,
-        ILogger<InstitutionHierarchyService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper,
-        ICacheService cache)
-    {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.repositoryWorkshop = repositoryWorkshop ?? throw new ArgumentNullException(nameof(repositoryWorkshop));
-        this.repositoryProvider = repositoryProvider ?? throw new ArgumentNullException(nameof(repositoryProvider));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
-    }
-
     /// <inheritdoc/>
     public async Task<InstitutionHierarchyDto> Create(InstitutionHierarchyDto dto)
     {
         logger.LogInformation("InstitutionHierarchy creating was started.");
 
-        var institutionHierarchy = mapper.Map<InstitutionHierarchy>(dto);
+        var institutionHierarchy = dto.ToModel();
 
         var newInstitutionHierarchy = await repository.Create(institutionHierarchy, dto.SubDirections.Select(d => d.Id).ToList()).ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionHierarchy with Id = {newInstitutionHierarchy?.Id} created successfully.");
 
-        return mapper.Map<InstitutionHierarchyDto>(newInstitutionHierarchy);
+        return newInstitutionHierarchy?.ToDto();
     }
 
     /// <inheritdoc/>
@@ -71,7 +50,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
 
             logger.LogInformation($"InstitutionHierarchy with Id = {id} succesfully deleted.");
 
-            return Result<InstitutionHierarchyDto>.Success(mapper.Map<InstitutionHierarchyDto>(entity));
+            return Result<InstitutionHierarchyDto>.Success(entity.ToDto());
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -96,7 +75,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
             ? "InstitutionHierarchy table is empty."
             : $"All {institutionHierarchies.Count} records were successfully received from the InstitutionHierarchy table.");
 
-        return institutionHierarchies.Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+        return institutionHierarchies.ToDto();
     }
 
     /// <inheritdoc/>
@@ -104,7 +83,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     {
         logger.LogInformation("Getting all children InstitutionHierarchies started.");
 
-        string cacheKey = $"InstitutionHierarchyService_GetChildren_{parentId}";
+        var cacheKey = $"InstitutionHierarchyService_GetChildren_{parentId}";
 
         var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
             GetChildrenFromDatabase(parentId)).ConfigureAwait(false);
@@ -121,7 +100,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
             ? $"There is no children in InstitutionHierarchy table for parentId = {parentId}."
             : $"{institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table for parentId = {parentId}.");
 
-        return institutionHierarchies.OrderBy(entity => entity.Title).Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+        return institutionHierarchies.OrderBy(entity => entity.Title).ToDto();
     }
 
     /// <inheritdoc/>
@@ -129,7 +108,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
     {
         logger.LogInformation("Getting all parents InstitutionHierarchies started.");
 
-        string cacheKey = $"InstitutionHierarchyService_GetParents_{childId}";
+        var cacheKey = $"InstitutionHierarchyService_GetParents_{childId}";
 
         var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
             GetParentsFromDatabase(childId, includeCurrentLevel)).ConfigureAwait(false);
@@ -148,12 +127,12 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
         {
             if (includeCurrentLevel)
             {
-                result.Add(mapper.Map<InstitutionHierarchyDto>(currentInstitutionHierarchy));
+                result.Add(currentInstitutionHierarchy.ToDto());
             }
 
-            int amountOfLevels = currentInstitutionHierarchy.HierarchyLevel - 1;
+            var amountOfLevels = currentInstitutionHierarchy.HierarchyLevel - 1;
 
-            for (int i = amountOfLevels; i > 0; i--)
+            for (var i = amountOfLevels; i > 0; i--)
             {
                 institutionHierarchiesTmp = await repository.GetByFilter(i => i.Id == currentInstitutionHierarchy.ParentId).ConfigureAwait(false);
                 currentInstitutionHierarchy = institutionHierarchiesTmp.FirstOrDefault();
@@ -163,7 +142,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
                     break;
                 }
 
-                result.Add(mapper.Map<InstitutionHierarchyDto>(currentInstitutionHierarchy));
+                result.Add(currentInstitutionHierarchy.ToDto());
             }
         }
 
@@ -183,7 +162,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
 
         logger.LogInformation($"Successfully got a InstitutionHierarchy with Id = {id}.");
 
-        return mapper.Map<InstitutionHierarchyDto>(institutionHierarchy);
+        return institutionHierarchy?.ToDto();
     }
 
     /// <inheritdoc/>
@@ -210,7 +189,7 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
             ? $"There is no entities in InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}."
             : $"{institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}.");
 
-        return institutionHierarchies.OrderBy(entity => entity.Title).Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+        return institutionHierarchies.OrderBy(entity => entity.Title).ToDto();
     }
 
     /// <inheritdoc/>
@@ -229,16 +208,14 @@ public class InstitutionHierarchyService : IInstitutionHierarchyService
             throw new DbUpdateConcurrencyException(message);
         }
 
-        mapper.Map(dto, institutionHierarchy);
-
         institutionHierarchy = await repository
             .Update(
-                institutionHierarchy,
+                dto.SetToModel(institutionHierarchy),
                 dto.SubDirections.Select(d => d.Id).ToList())
             .ConfigureAwait(false);
 
         logger.LogInformation($"InstitutionHierarchy with Id = {institutionHierarchy?.Id} updated succesfully.");
 
-        return mapper.Map<InstitutionHierarchyDto>(institutionHierarchy);
+        return institutionHierarchy.ToDto();
     }
 }

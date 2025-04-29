@@ -23,12 +23,10 @@
         <PackageReference Include="Elastic.CommonSchema" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Include="AutoMapper" />
         <!-- TODO: Check who is using Protobuf -->
         <PackageReference Include="Google.Protobuf" />
         <PackageReference Include="H3Lib" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -73,7 +71,7 @@
         <PackageReference Include="Elastic.Apm.EntityFrameworkCore" />
         <PackageReference Include="Elastic.Apm.Elasticsearch" />
         <PackageReference Include="Elastic.Apm.StackExchange.Redis" />
-        <PackageReference Include="Microsoft.Extensions.Http.Resilience"/>
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\OutOfSchool.BackgroundJobs\OutOfSchool.BackgroundJobs.csproj" />

@@ -14,3 +14,17 @@ public class CodeficatorAddressInfoDto
     
     public string Code { get; set; }
 }
+
+public static class CodeficatorAddressInfoDtoExtensions
+{
+    public static CodeficatorAddressInfoDto ToInfoDto(this OutOfSchool.Services.Models.CATOTTG catottg)
+        => new()
+        {
+            Region = catottg.GetRegionName(),
+            District = catottg.GetDistrictName(),
+            TerritorialCommunity = catottg.GetTerritorialCommunityName(),
+            Settlement = catottg.GetSettlementName(),
+            CityDistrict = catottg.GetCityDistrictName(),
+            Code = catottg.Code
+        };
+}

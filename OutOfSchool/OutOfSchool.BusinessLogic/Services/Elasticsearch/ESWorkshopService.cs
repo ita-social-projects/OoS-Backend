@@ -1,48 +1,29 @@
-﻿using AutoMapper;
-using Elastic.Clients.Elasticsearch;
+﻿using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
 /// <inheritdoc/>
-public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilterES>
+/// <summary>
+/// Initializes a new instance of the <see cref="ESWorkshopService"/> class.
+/// </summary>
+/// <param name="workshopService">Service that provides access to Workshops in the database.</param>
+/// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
+/// <param name="elasticHealthService">Background worker pings the Elasticsearch.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
+public class ESWorkshopService(
+    IWorkshopService workshopService,
+    IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
+    IElasticsearchHealthService elasticHealthService,
+    ILogger<ESWorkshopService> logger,
+    IAverageRatingService averageRatingService,
+    IOptions<ElasticConfig> config
+) : IElasticsearchService<WorkshopES, WorkshopFilterES>
 {
-    private readonly IWorkshopService workshopService;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-    private readonly IElasticsearchHealthService elasticHealthService;
-    private readonly ILogger<ESWorkshopService> logger;
-    private readonly IMapper mapper;
-    private readonly IOptions<ElasticConfig> config;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ESWorkshopService"/> class.
-    /// </summary>
-    /// <param name="workshopService">Service that provides access to Workshops in the database.</param>
-    /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
-    /// <param name="elasticHealthService">Background worker pings the Elasticsearch.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="averageRatingService">Service that provides access to average ratings in the database.</param>
-    /// <param name="mapper">AutoMapper interface.</param>
-    public ESWorkshopService(
-        IWorkshopService workshopService,
-        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        IElasticsearchHealthService elasticHealthService,
-        ILogger<ESWorkshopService> logger,
-        IAverageRatingService averageRatingService,
-        IMapper mapper,
-        IOptions<ElasticConfig> config)
-    {
-        this.workshopService = workshopService;
-        this.esProvider = esProvider;
-        this.elasticHealthService = elasticHealthService;
-        this.logger = logger;
-        this.averageRatingService = averageRatingService;
-        this.mapper = mapper;
-        this.config = config;
-    }
 
     /// <inheritdoc/>
     public bool IsElasticAlive => elasticHealthService.IsHealthy;
@@ -109,7 +90,7 @@ public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilte
                 {
                     var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
                     entity.Rating = rating?.Rate ?? default;
-                    source.Add(mapper.Map<WorkshopES>(entity));
+                    source.Add(entity.ToES());
                 }
 
                 filter.From += filter.Size;

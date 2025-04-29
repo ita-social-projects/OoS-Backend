@@ -1,37 +1,22 @@
-using AutoMapper;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class ProviderTypeService:IProviderTypeService
+/// <summary>
+/// Initializes a new instance of the <see cref="ProviderTypeService"/> class.
+/// </summary>
+/// <param name="repository">Repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="localizer">Localizer.</param>
+/// <param name="mapper">Mapper.</param>
+public class ProviderTypeService(
+    IEntityRepository<long, ProviderType> repository,
+    ILogger<ProviderTypeService> logger,
+    IStringLocalizer<SharedResource> localizer
+) : IProviderTypeService
 {
-    private readonly IEntityRepository<long, ProviderType> repository;
-    private readonly ILogger<ProviderTypeService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProviderTypeService"/> class.
-    /// </summary>
-    /// <param name="repository">Repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="mapper">Mapper.</param>
-    public ProviderTypeService(
-        IEntityRepository<long,
-            ProviderType> repository,
-        ILogger<ProviderTypeService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IMapper mapper)
-    {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
     /// <inheritdoc/>
     public async Task<IEnumerable<ProviderTypeDto>> GetAll()
     {
@@ -43,7 +28,7 @@ public class ProviderTypeService:IProviderTypeService
             ? "Provider types table is empty."
             : $"All {providerTypes.Count()} records were successfully received from the Provider types table");
 
-        return providerTypes.Select(providerType => mapper.Map<ProviderTypeDto>(providerType)).ToList();
+        return providerTypes.ToDto();
     }
 
     /// <inheritdoc/>
@@ -62,7 +47,7 @@ public class ProviderTypeService:IProviderTypeService
 
         logger.LogInformation($"Successfully got a Provider type with Id = {id}.");
 
-        return mapper.Map<ProviderTypeDto>(providerType);
+        return providerType.ToDto();
     }
 
     /// <inheritdoc/>
@@ -70,13 +55,11 @@ public class ProviderTypeService:IProviderTypeService
     {
         logger.LogInformation("Provider type creating was started.");
 
-        var providerType = mapper.Map<ProviderType>(dto);
-
-        var newProviderType = await repository.Create(providerType).ConfigureAwait(false);
+        var newProviderType = await repository.Create(dto.ToModel()).ConfigureAwait(false);
 
         logger.LogInformation($"Provider type with Id = {newProviderType?.Id} created successfully.");
 
-        return mapper.Map<ProviderTypeDto>(newProviderType);
+        return newProviderType.ToDto();
     }
 
     /// <inheritdoc/>
@@ -86,11 +69,11 @@ public class ProviderTypeService:IProviderTypeService
 
         try
         {
-            var providerType = await repository.Update(mapper.Map<ProviderType>(dto)).ConfigureAwait(false);
+            var providerType = await repository.Update(dto.ToModel()).ConfigureAwait(false);
 
             logger.LogInformation($"Provider type with Id = {providerType?.Id} updated succesfully.");
 
-            return mapper.Map<ProviderTypeDto>(providerType);
+            return providerType.ToDto();
         }
         catch (DbUpdateConcurrencyException)
         {

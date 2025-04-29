@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -14,7 +13,21 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class AreaAdminService : CommunicationService, IAreaAdminService
+public class AreaAdminService(
+    ICodeficatorRepository codeficatorRepository,
+    ICodeficatorService codeficatorService,
+    IHttpClientFactory httpClientFactory,
+    IOptions<AuthorizationServerConfig> authorizationServerConfig,
+    IOptions<CommunicationConfig> communicationConfig,
+    IAreaAdminRepository areaAdminRepository,
+    ILogger<AreaAdminService> logger,
+    IEntityRepositorySoftDeleted<string, User> userRepository,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    IApiErrorService apiErrorService,
+    ISearchStringService searchStringService
+) : CommunicationService(httpClientFactory, communicationConfig, logger), IAreaAdminService
 {
     /// <summary>
     /// Create a delegate to include other entities in AreaAdmin entity
@@ -26,54 +39,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                             .ThenInclude(c => c.Parent)
                             .ThenInclude(p => p.Parent);
 
-    private readonly AuthorizationServerConfig authorizationServerConfig;
-    private readonly IAreaAdminRepository areaAdminRepository;
-    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
-    private readonly IMapper mapper;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly IApiErrorService apiErrorService;
-    private readonly ISearchStringService searchStringService;
-    private ICodeficatorRepository codeficatorRepository;
-
-    public AreaAdminService(
-        ICodeficatorRepository codeficatorRepository,
-        ICodeficatorService codeficatorService,
-        IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
-        IAreaAdminRepository areaAdminRepository,
-        ILogger<AreaAdminService> logger,
-        IEntityRepositorySoftDeleted<string, User> userRepository,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        IApiErrorService apiErrorService,
-        ISearchStringService searchStringService)
-        : base(httpClientFactory, communicationConfig, logger)
-    {
-        ArgumentNullException.ThrowIfNull(authorizationServerConfig);
-        ArgumentNullException.ThrowIfNull(areaAdminRepository);
-        ArgumentNullException.ThrowIfNull(userRepository);
-        ArgumentNullException.ThrowIfNull(mapper);
-        ArgumentNullException.ThrowIfNull(ministryAdminService);
-        ArgumentNullException.ThrowIfNull(searchStringService);
-
-        this.authorizationServerConfig = authorizationServerConfig.Value;
-        this.areaAdminRepository = areaAdminRepository;
-        this.userRepository = userRepository;
-        this.codeficatorRepository = codeficatorRepository;
-        this.mapper = mapper;
-        this.currentUserService = currentUserService;
-        this.ministryAdminService = ministryAdminService;
-        this.regionAdminService = regionAdminService;
-        this.codeficatorService = codeficatorService;
-        this.apiErrorService = apiErrorService;
-        this.searchStringService = searchStringService;
-    }
+    private readonly AuthorizationServerConfig authorizationServerConfig = authorizationServerConfig.Value;
 
     public async Task<AreaAdminDto> GetByIdAsync(string id)
     {
@@ -88,14 +54,14 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         Logger.LogInformation("Successfully got a AreaAdmin with Id = {Id}", id);
 
-        return mapper.Map<AreaAdminDto>(otgAdmin);
+        return otgAdmin.ToDto();
     }
 
     public async Task<AreaAdminDto> GetByUserId(string id)
     {
         Logger.LogInformation("Getting AreaAdmin by UserId started. Looking UserId is {Id}", id);
 
-        AreaAdmin areaAdmin = (await areaAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false))
+        var areaAdmin = (await areaAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false))
             .FirstOrDefault();
 
         if (areaAdmin == null)
@@ -106,7 +72,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
         Logger.LogInformation("Successfully got a AreaAdmin with UserId = {Id}", id);
 
-        return mapper.Map<AreaAdminDto>(areaAdmin);
+        return areaAdmin.ToDto();
     }
 
     public async Task<Either<ErrorResponse, AreaAdminBaseDto>> CreateAreaAdminAsync(
@@ -127,7 +93,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             return ErrorResponse.BadRequest(badRequestApiErrorResponse);
         }
 
-        bool isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);
+        var isValidCatottg = await IsValidCatottg(areaAdminBaseDto.CATOTTGId);
         if (!isValidCatottg)
         {
             Logger.LogDebug(
@@ -203,11 +169,9 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             catottgs = childrenIds.ToList();
         }
 
-        Expression<Func<AreaAdmin, bool>> filterPredicate = PredicateBuild(filter, catottgs);
+        var filterPredicate = PredicateBuild(filter, catottgs);
 
-        int count = await areaAdminRepository.Count(filterPredicate).ConfigureAwait(false);
-
-
+        var count = await areaAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<AreaAdmin, object>>, SortDirection>
         {
@@ -238,7 +202,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
             Logger.LogInformation("AreaAdmins table is empty");
         }
 
-        var otgAdminsDto = otgAdmins.Select(admin => mapper.Map<AreaAdminDto>(admin)).ToList();
+        var otgAdminsDto = otgAdmins.ToDto();
 
         var result = new SearchResult<AreaAdminDto>()
         {
@@ -285,7 +249,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                 authorizationServerConfig.Authority,
                 CommunicationConstants.UpdateAreaAdmin + updateAreaAdminDto.Id),
             Token = token,
-            Data = mapper.Map<AreaAdminBaseUpdateDto>(updateAreaAdminDto),
+            Data = updateAreaAdminDto.ToAreaAdminDto(),
         };
 
         Logger.LogDebug(
@@ -306,7 +270,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<AreaAdminDto>(JsonConvert.DeserializeObject<AreaAdminBaseDto>(result.Result.ToString()))
+                ? JsonConvert.DeserializeObject<AreaAdminBaseDto>(result.Result.ToString()).ToDto()
                 : null);
     }
 
@@ -524,7 +488,7 @@ public class AreaAdminService : CommunicationService, IAreaAdminService
 
     private Expression<Func<AreaAdmin, bool>> PredicateBuild(AreaAdminFilter filter, List<long> catottgs)
     {
-        Expression<Func<AreaAdmin, bool>> predicate = PredicateBuilder.True<AreaAdmin>();
+        var predicate = PredicateBuilder.True<AreaAdmin>();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {

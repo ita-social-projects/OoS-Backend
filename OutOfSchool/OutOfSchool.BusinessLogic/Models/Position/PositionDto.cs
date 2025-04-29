@@ -45,3 +45,35 @@ public class PositionDto // for get method
 
     public bool IsDeleted { get; set; }
 }
+
+public static class PositionDtoExtensions
+{
+    public static PositionDto ToDto(this OutOfSchool.Services.Models.Position model)
+        => new()
+        {
+            Id = model.Id,
+            Language = model.Language,
+            Description = model.Description,
+            IsForRuralAreas = model.IsForRuralAreas,
+            Department = model.Department,
+            SeatsAmount = model.SeatsAmount,
+            FullName = model.FullName,
+            ShortName = model.ShortName,
+            GenitiveName = model.GenitiveName,
+            IsTeachingPosition = model.IsTeachingPosition,
+            Rate = model.Rate,
+            Tariff = model.Tariff,
+            ClassifierType = model.ClassifierType,
+            ProviderId = model.ProviderId,
+            ContactId = model.ContactId,
+            CreatedAt = model.CreatedAt,
+            UpdatedAt = model.UpdatedAt,
+            ActiveFrom = model.ActiveFrom,
+            ActiveTo = model.ActiveTo,
+            PositionType = model.PositionType,
+            IsDeleted = model.IsDeleted,
+        };
+
+    public static List<PositionDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.Position> list)
+        => list.MapToList(ToDto);
+}

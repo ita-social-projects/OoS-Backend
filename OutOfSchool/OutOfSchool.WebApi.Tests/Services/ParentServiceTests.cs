@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Bogus;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,13 +12,10 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Parent;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -34,7 +30,6 @@ public class ParentServiceTests
     private Mock<IParentBlockedByAdminLogService> parentBlockedByAdminLogServiceMock;
     private Mock<ILogger<ParentService>> loggerMock;
     private Mock<IEntityRepositorySoftDeleted<Guid, Child>> repositoryChildMock;
-    private IMapper mapper;
     private Mock<IUserService> userService;
     private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private Faker faker;
@@ -47,7 +42,6 @@ public class ParentServiceTests
         parentBlockedByAdminLogServiceMock = new Mock<IParentBlockedByAdminLogService>();
         loggerMock = new Mock<ILogger<ParentService>>();
         repositoryChildMock = new Mock<IEntityRepositorySoftDeleted<Guid, Child>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         userService = new Mock<IUserService>();
         userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         faker = new();
@@ -58,7 +52,6 @@ public class ParentServiceTests
             parentBlockedByAdminLogServiceMock.Object,
             loggerMock.Object,
             repositoryChildMock.Object,
-            mapper,
             userService.Object,
             userRepositoryMock.Object);
     }
@@ -576,7 +569,8 @@ public class ParentServiceTests
     public async Task Update_WhenUserHasRightsAndParentExists_ShouldReturnShortUserDto()
     {
         // Arrange
-        Parent parent = ParentGenerator.Generate();
+        var parent = ParentGenerator.Generate();
+        parent.User = new();
         var userId = parent.UserId;
         var parents = new List<Parent>() { parent };
         var parentDto = new BaseUpdateUserDto

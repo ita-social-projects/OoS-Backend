@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using OutOfSchool.BusinessLogic.Common;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.Services.Enums;
@@ -8,37 +7,32 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopServicesCombinerV2
+public class WorkshopServicesCombinerV2(
+    IWorkshopService workshopService,
+    IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
+    INotificationService notificationService,
+    IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
+    IApplicationRepository applicationRepository,
+    IWorkshopStrategy workshopStrategy,
+    ICurrentUserService currentUserServicse,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    ICodeficatorService codeficatorService,
+    IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider
+) : WorkshopServicesCombiner(
+        workshopService,
+        elasticsearchSynchronizationService,
+        notificationService,
+        favoriteRepository,
+        applicationRepository,
+        workshopStrategy,
+        currentUserServicse,
+        ministryAdminService,
+        regionAdminService,
+        codeficatorService,
+        esProvider
+    ), IWorkshopServicesCombinerV2
 {
-    public WorkshopServicesCombinerV2(
-        IWorkshopService workshopService,
-        IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
-        INotificationService notificationService,
-        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
-        IApplicationRepository applicationRepository,
-        IWorkshopStrategy workshopStrategy,
-        ICurrentUserService currentUserServicse,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService,
-        IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-        IMapper mapper)
-        : base(
-            workshopService,
-            elasticsearchSynchronizationService,
-            notificationService,
-            favoriteRepository,
-            applicationRepository,
-            workshopStrategy,
-            currentUserServicse,
-            ministryAdminService,
-            regionAdminService,
-            codeficatorService,
-            esProvider,
-            mapper)
-    {
-    }
-
     public async Task<WorkshopResultDto> Create(WorkshopV2CreateRequestDto dto)
     {
         var creationResult = await workshopService.CreateV2(dto).ConfigureAwait(false);

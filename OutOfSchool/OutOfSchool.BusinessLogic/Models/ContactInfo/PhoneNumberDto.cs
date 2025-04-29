@@ -60,3 +60,34 @@ public sealed class PhoneNumberDto : IContentComparable<PhoneNumber>, IEquatable
                Number == other.Number;
     }
 }
+
+public static class PhoneNumberDtoExtensions
+{
+    public static PhoneNumber SetToModel(this PhoneNumberDto phoneNumber, PhoneNumber model)
+    {
+        model.Type = phoneNumber.Type;
+        model.Number = phoneNumber.Number;
+
+        return model;
+    }
+
+    public static PhoneNumber ToModel(this PhoneNumberDto phoneNumber)
+        => new()
+        {
+            Type = phoneNumber.Type,
+            Number = phoneNumber.Number
+        };
+
+    public static List<PhoneNumber> ToModel(this IEnumerable<PhoneNumberDto> list)
+        => list.MapToList(ToModel);
+
+    public static PhoneNumberDto ToDto(this PhoneNumber phoneNumber)
+        => new()
+        {
+            Type = phoneNumber.Type,
+            Number = phoneNumber.Number
+        };
+
+    public static List<PhoneNumberDto> ToDto(this IEnumerable<PhoneNumber> list)
+        => list.MapToList(ToDto);
+}

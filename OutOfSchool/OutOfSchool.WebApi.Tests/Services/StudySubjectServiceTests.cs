@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,15 +12,12 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.StudySubjects;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -35,13 +31,11 @@ public class StudySubjectServiceTests
     private IEntityRepository<long, Language> languageRepository;
     private Mock<ICurrentUserService> currentUserService;
     private Mock<ILogger<StudySubjectService>> logger;
-    private IMapper mapper;
     private Guid providerId;
     private Guid studySubjectId;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<Guid, StudySubject>> studySubjectRepositoryMock;
     private Mock<IEntityRepository<long, Language>> languageRepositoryMock;
-    private Mock<IMapper> mapperMock;
 
     [SetUp]
     public void SetUp()
@@ -58,7 +52,6 @@ public class StudySubjectServiceTests
 
         currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<StudySubjectService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
 
         service = new StudySubjectService(
@@ -66,8 +59,7 @@ public class StudySubjectServiceTests
             workshopRepositoryMock.Object,
             languageRepository,
             currentUserService.Object,
-            logger.Object, 
-            mapper
+            logger.Object
             );
 
         SeedDatabase();
@@ -303,8 +295,7 @@ public class StudySubjectServiceTests
             workshopRepositoryMock.Object,
             languageRepository,
             currentUserService.Object,
-            logger.Object,
-            mapper);
+            logger.Object);
 
         // Act
         var result = await service.Update(dto, providerId);
@@ -399,8 +390,7 @@ public class StudySubjectServiceTests
             workshopRepositoryMock.Object,
             languageRepository,
             currentUserService.Object,
-            logger.Object,
-            mapper);
+            logger.Object);
 
         // Act
         var result = await service.Delete(id, providerId);
@@ -774,37 +764,18 @@ public class StudySubjectServiceTests
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
         currentUserService = new Mock<ICurrentUserService>();
         logger = new Mock<ILogger<StudySubjectService>>();
-        mapperMock = new Mock<IMapper>();
 
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
-
-        mapperMock.Setup(m => m.Map<StudySubjectDto>(It.IsAny<StudySubject>()))
-        .Returns((StudySubject s) => new StudySubjectDto
-        {
-            Id = s.Id,
-            NameInUkrainian = s.NameInUkrainian,
-            NameInInstructionLanguage = s.NameInInstructionLanguage,
-            IsLanguageUkrainian = s.IsLanguageUkrainian,
-            LanguageId = s.LanguageId,
-            ProviderId = s.ProviderId,
-            Workshops = s.Workshops?
-                .Select(w => new ShortEntityDto { Id = w.Id, Title = w.Title })
-                .ToList() ?? new List<ShortEntityDto>(),
-            ActiveFrom = s.ActiveFrom,
-            ActiveTo = s.ActiveTo
-        });
 
         service = new StudySubjectService(
             studySubjectRepositoryMock.Object,
             workshopRepositoryMock.Object,
             languageRepositoryMock.Object,
             currentUserService.Object,
-            logger.Object,
-            mapper
+            logger.Object
         );
     }
-
 
     private void SeedDatabase()
     {
@@ -860,5 +831,4 @@ public class StudySubjectServiceTests
             }
         };
     }
-    
 }

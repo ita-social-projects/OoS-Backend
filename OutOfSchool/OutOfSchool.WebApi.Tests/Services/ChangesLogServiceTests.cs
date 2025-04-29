@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
@@ -27,7 +26,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class ChangesLogServiceTests
 {
     private Mock<ILogger<ChangesLogService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<IChangesLogRepository> changesLogRepository;
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
@@ -76,7 +74,6 @@ public class ChangesLogServiceTests
         };
 
         logger = new Mock<ILogger<ChangesLogService>>();
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
         changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
@@ -176,18 +173,11 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ProviderChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -238,18 +228,11 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ProviderChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -306,18 +289,11 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ProviderChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -358,18 +334,11 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ApplicationChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -423,18 +392,11 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ApplicationChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
         changesLogRepository
-            .Setup(repo => repo.Get(
-                request.From,
-                request.Size,
+            .Setup(repo => repo.Get(0, 0,
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>()))
             .Returns(changesMock);
@@ -481,8 +443,6 @@ public class ChangesLogServiceTests
             })
             .AsQueryable()
             .BuildMock();
-
-        mapper.Setup(m => m.Map<ShortUserDto>(user)).Returns(new ShortUserDto { Id = user.Id });
 
         employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
@@ -537,9 +497,6 @@ public class ChangesLogServiceTests
             })
             .AsQueryable()
             .BuildMock();
-
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
 
         employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
@@ -604,8 +561,6 @@ public class ChangesLogServiceTests
         employeeChangesLogRepository
             .Setup(repo => repo.Count(It.IsAny<Expression<Func<EmployeeChangesLog, bool>>>()))
             .Returns(Task.FromResult(totalAmount));
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
         employeeChangesLogRepository
             .Setup(repo => repo.Get(
                 request.From,
@@ -665,9 +620,6 @@ public class ChangesLogServiceTests
                 IsBlocked = false,
             },
         };
-
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
 
         parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
             .ReturnsAsync(fakeData.Count);
@@ -746,9 +698,6 @@ public class ChangesLogServiceTests
             },
         };
 
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
             .ReturnsAsync(fakeData.Count);
 
@@ -808,9 +757,6 @@ public class ChangesLogServiceTests
             },
         };
 
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         parentBlockedByAdminLogRepository.Setup(x => x.Count(It.IsAny<Expression<Func<ParentBlockedByAdminLog, bool>>>()))
             .ReturnsAsync(fakeData.Count);
 
@@ -832,8 +778,8 @@ public class ChangesLogServiceTests
     }
     #endregion
 
-    private IOptions<ChangesLogConfig> CreateChangesLogOptions() =>
-        Options.Create(new ChangesLogConfig
+    private IOptions<ChangesLogConfig> CreateChangesLogOptions() 
+        => Options.Create(new ChangesLogConfig
         {
             TrackedProperties = new Dictionary<string, string[]>
             {
@@ -850,7 +796,6 @@ public class ChangesLogServiceTests
             employeeChangesLogRepository.Object,
             parentBlockedByAdminLogRepository.Object,
             logger.Object,
-            mapper.Object,
             valueProjector.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,

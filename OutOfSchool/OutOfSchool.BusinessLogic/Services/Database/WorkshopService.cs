@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
 using OutOfSchool.BusinessLogic.Common;
@@ -25,7 +24,42 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Workshop entity.
 /// </summary>
-public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
+/// <param name="workshopRepository">Repository for Workshop entity.</param>
+/// <param name="tagRepository">Repository for Tag entity.</param>
+/// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
+/// <param name="roomRepository">Repository for ChatRoomWorkshop entity.</param>
+/// <param name="teacherService">Teacher service.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="workshopImagesService">Workshop images mediator.</param>
+/// <param name="employeeRepository">Repository for employees.</param>
+/// <param name="averageRatingService">Average rating service.</param>
+/// <param name="providerRepository">Repository for providers.</param>
+/// <param name="currentUserService">Service that checks the roles and rights current user.</param>
+/// <param name="ministryAdminService"> Service for ministry admin.</param>
+/// <param name="regionAdminService">Service for region admin.</param>
+/// <param name="codeficatorService">Srvice for CATOTTG.</param>
+/// <param name="searchStringService">Service for handling the search string.</param>
+/// <param name="tagService">Service for Tag entity.</param>
+public class WorkshopService(
+    IWorkshopRepository workshopRepository,
+    IEntityRepository<long, Tag> tagRepository,
+    IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
+    IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
+    ITeacherService teacherService,
+    ILogger<WorkshopService> logger,
+    IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
+    IAverageRatingService averageRatingService,
+    IProviderRepository providerRepository,
+    ICurrentUserService currentUserService,
+    IMinistryAdminService ministryAdminService,
+    IRegionAdminService regionAdminService,
+    ICodeficatorService codeficatorService,
+    ITagService tagService,
+    ISearchStringService searchStringService,
+    IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
+    IApplicationRepository applicationRepository,
+    IFeatureManager featureManager
+) : IWorkshopService, ISensitiveWorkshopsService
 {
     /// <summary>
     /// Create a delegate to include other entities in Workshop entity
@@ -35,89 +69,6 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
               .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG);
-
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<long, Tag> tagRepository;
-    private readonly IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository;
-    private readonly ITeacherService teacherService;
-    private readonly ILogger<WorkshopService> logger;
-    private readonly IMapper mapper;
-    private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
-    private readonly IAverageRatingService averageRatingService;
-    private readonly IProviderRepository providerRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IMinistryAdminService ministryAdminService;
-    private readonly IRegionAdminService regionAdminService;
-    private readonly ICodeficatorService codeficatorService;
-    private readonly ISearchStringService searchStringService;
-    private readonly ITagService tagService;
-    private readonly IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IFeatureManager featureManager;
-
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="WorkshopService"/> class.
-    /// </summary>
-    /// <param name="workshopRepository">Repository for Workshop entity.</param>
-    /// <param name="tagRepository">Repository for Tag entity.</param>
-    /// <param name="dateTimeRangeRepository">Repository for DateTimeRange entity.</param>
-    /// <param name="roomRepository">Repository for ChatRoomWorkshop entity.</param>
-    /// <param name="teacherService">Teacher service.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Automapper DI service.</param>
-    /// <param name="workshopImagesService">Workshop images mediator.</param>
-    /// <param name="employeeRepository">Repository for employees.</param>
-    /// <param name="averageRatingService">Average rating service.</param>
-    /// <param name="providerRepository">Repository for providers.</param>
-    /// <param name="currentUserService">Service that checks the roles and rights current user.</param>
-    /// <param name="ministryAdminService"> Service for ministry admin.</param>
-    /// <param name="regionAdminService">Service for region admin.</param>
-    /// <param name="codeficatorService">Srvice for CATOTTG.</param>
-    /// <param name="searchStringService">Service for handling the search string.</param>
-    /// <param name="tagService">Service for Tag entity.</param>
-    public WorkshopService(
-        IWorkshopRepository workshopRepository,
-        IEntityRepository<long, Tag> tagRepository,
-        IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
-        IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
-        ITeacherService teacherService,
-        ILogger<WorkshopService> logger,
-        IMapper mapper,
-        IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService,
-        IAverageRatingService averageRatingService,
-        IProviderRepository providerRepository,
-        ICurrentUserService currentUserService,
-        IMinistryAdminService ministryAdminService,
-        IRegionAdminService regionAdminService,
-        ICodeficatorService codeficatorService,
-        ITagService tagService,
-        ISearchStringService searchStringService,
-        IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
-        IApplicationRepository applicationRepository,
-        IFeatureManager featureManager)
-    {
-        this.workshopRepository = workshopRepository;
-        this.tagRepository = tagRepository;
-        this.dateTimeRangeRepository = dateTimeRangeRepository;
-        this.roomRepository = roomRepository;
-        this.teacherService = teacherService;
-        this.logger = logger;
-        this.mapper = mapper;
-        this.workshopImagesService = workshopImagesService;
-        this.averageRatingService = averageRatingService;
-        this.providerRepository = providerRepository;
-        this.currentUserService = currentUserService;
-        this.ministryAdminService = ministryAdminService;
-        this.regionAdminService = regionAdminService;
-        this.codeficatorService = codeficatorService;
-        this.searchStringService = searchStringService;
-        this.tagService = tagService;
-        this.contactsService = contactsService;
-        this.applicationRepository = applicationRepository;
-        this.featureManager = featureManager;
-    }
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
@@ -137,7 +88,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
-        var workshopDtos = mapper.Map<WorkshopDto>(newWorkshop);
+        var workshopDtos = newWorkshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDtos, applicationRepository);
 
@@ -190,7 +141,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         return new WorkshopResultDto
         {
-            Workshop = mapper.Map<WorkshopV2Dto>(newWorkshop),
+            Workshop = newWorkshop.ToV2Dto(),
             UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
             UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
         };
@@ -229,7 +180,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             ? "Workshop table is empty."
             : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-        var dtos = mapper.Map<List<WorkshopDto>>(workshops);
+        var dtos = workshops.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(dtos, applicationRepository);
 
@@ -251,7 +202,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
-        var workshopDTO = mapper.Map<WorkshopDto>(workshop);
+        var workshopDTO = workshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
 
@@ -272,7 +223,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var workshops = await workshopRepository.GetByFilter(
             whereExpression: x => x.ProviderId == providerId);
 
-        var result = mapper.Map<List<ShortEntityDto>>(workshops).OrderBy(entity => entity.Title).ToList();
+        var result = workshops.OrderBy(entity => entity.Title).ToShortEntityDto();
 
         return result;
     }
@@ -301,7 +252,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var chatrooms = roomRepository.Get(skip: 0, take: 0)
             .Include(crw => crw.ChatMessages);
 
-        var workshopProviderViewCards = mapper.Map<List<WorkshopProviderViewCard>>(workshops);
+        var workshopProviderViewCards = workshops.ToProviderViewCard();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopProviderViewCards, applicationRepository);
         await FillPendingApplications(workshopProviderViewCards).ConfigureAwait(false);
@@ -401,7 +352,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             await UpdateWorkshopStatusBySeatsLimitAndAvailability(
                 (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
-            mapper.Map(dto, currentWorkshop);
+            dto.SetToModel(currentWorkshop);
 
             await UpdateWorkshop().ConfigureAwait(false);
 
@@ -411,10 +362,9 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        var workshopDTO = mapper.Map<WorkshopDto>(updatedWorkshop);
+        var workshopDTO = updatedWorkshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
-
         return workshopDTO;
     }
 
@@ -435,8 +385,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             var tag = await tagService.GetById(tagId);
             if (tag != null)
             {
-                var tagDto = mapper.Map<TagDto>(tag);
-                tags.Add(tagDto);
+                tags.Add(tag);
             }
         }
 
@@ -445,7 +394,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         await workshopRepository.Update(workshop);
 
-        var workshopDto = mapper.Map<WorkshopDto>(workshop);
+        var workshopDto = workshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDto, applicationRepository);
 
@@ -481,10 +430,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             }
         }
 
-        var dtoWithTitle = mapper.Map<WorkshopStatusWithTitleDto>(dto);
-        dtoWithTitle.Title = currentWorkshop.Title;
-
-        return dtoWithTitle;
+        return dto.ToWorkshopStatusWithTitleDto(currentWorkshop.Title);
     }
 
     /// <inheritdoc/>
@@ -514,7 +460,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             await UpdateWorkshopStatusBySeatsLimitAndAvailability(
                 (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
-            mapper.Map(dto, currentWorkshop);
+            dto.SetToModel(currentWorkshop);
 
             var changingCoverImageResult = await workshopImagesService
                 .ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
@@ -529,7 +475,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         return new WorkshopResultDto
         {
-            Workshop = mapper.Map<WorkshopV2Dto>(updatedWorkshop),
+            Workshop = updatedWorkshop.ToV2Dto(),
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
@@ -658,7 +604,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             ? "There was no matching entity found."
             : $"All matching {workshops.Count} records were successfully received from the Workshop table");
 
-        var workshopCards = mapper.Map<List<WorkshopCard>>(workshops);
+        var workshopCards = workshops.ToCard();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopCards, applicationRepository);
 
@@ -708,7 +654,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             })
             .OrderBy(p => p.Distance).Take(filter.Size).Select(a => a.w);
 
-        var workshopsDTO = mapper.Map<List<WorkshopCard>>(nearestWorkshops);
+        var workshopsDTO = nearestWorkshops.ToCard();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopsDTO, applicationRepository);
 
@@ -776,7 +722,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         logger.LogInformation("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopsCount);
 
-        var workshopsDTO = mapper.Map<List<WorkshopDto>>(workshops);
+        var workshopsDTO = workshops.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopsDTO, applicationRepository);
 
@@ -917,8 +863,8 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
         return (await workshopRepository.GetById(workshopId).ConfigureAwait(false)).IsBlocked;
     }
 
-    private static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter) =>
-        ModelValidationHelper.ValidateWorkshopTitleFilter(filter);
+    private static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter) 
+        => ModelValidationHelper.ValidateWorkshopTitleFilter(filter);
 
     private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter, bool includePrice = true)
     {
@@ -1183,7 +1129,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
             }
             else
             {
-                var newTeacher = mapper.Map<TeacherDTO>(teacherDto);
+                var newTeacher = teacherDto.CopyDto();
                 newTeacher.WorkshopId = currentWorkshop.Id;
                 await teacherService.Create(newTeacher).ConfigureAwait(false);
             }
@@ -1192,7 +1138,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
     private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Guid workshopId)
     {
-        var ranges = mapper.Map<List<DateTimeRange>>(dtos);
+        var ranges = dtos.ToModel();
         foreach (var range in ranges)
         {
             if (await dateTimeRangeRepository.Any(r => r.Id == range.Id).ConfigureAwait(false))
@@ -1271,11 +1217,11 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (dto is WorkshopV2CreateRequestDto v2Dto)
         {
-            createdWorkshop = mapper.Map<Workshop>(v2Dto);
+            createdWorkshop = v2Dto.ToModel();
         }
         else
         {
-            createdWorkshop = mapper.Map<Workshop>(dto);
+            createdWorkshop = dto.ToModel();
         }
 
         createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
@@ -1285,7 +1231,7 @@ public class WorkshopService : IWorkshopService, ISensitiveWorkshopsService
 
         if (!dto.Teachers.IsNullOrEmpty())
         {
-            createdWorkshop.Teachers = dto.Teachers.Select(mapper.Map<Teacher>).ToList();
+            createdWorkshop.Teachers = dto.Teachers.ToModel();
         }
 
         createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();

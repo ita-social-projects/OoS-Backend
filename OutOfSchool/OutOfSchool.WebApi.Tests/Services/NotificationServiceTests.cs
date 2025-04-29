@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Bogus;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +17,6 @@ using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Hubs;
 using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -32,7 +29,6 @@ public class NotificationServiceTests
 {
     private INotificationService notificationService;
     private Mock<INotificationRepository> notificationRepositoryMock;
-    private IMapper mapper;
     private Mock<IOptions<NotificationsConfig>> notificationsConfigMock;
     private Mock<IHubContext<NotificationHub>> notificationHub;
 
@@ -43,7 +39,6 @@ public class NotificationServiceTests
     public void SetUp()
     {
         notificationRepositoryMock = new Mock<INotificationRepository>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         notificationsConfigMock = new Mock<IOptions<NotificationsConfig>>();
 
         notificationHub = new Mock<IHubContext<NotificationHub>>();
@@ -57,7 +52,6 @@ public class NotificationServiceTests
             notificationRepositoryMock.Object,
             new Mock<ILogger<NotificationService>>().Object,
             new Mock<IStringLocalizer<SharedResource>>().Object,
-            mapper,
             notificationHub.Object,
             notificationsConfigMock.Object);
 
@@ -316,9 +310,8 @@ public class NotificationServiceTests
 
         var expectedNotifications = notifications
             .Where(n => !notificationsConfig.Grouped.Contains(n.Type.ToString()))
-            .Select(notification => mapper.Map<NotificationDto>(notification))
             .OrderByDescending(n => n.CreatedDateTime)
-            .ToList();
+            .ToDto();
 
         // Act
         var result = await notificationService.GetAllUsersNotificationsGroupedAsync(userId).ConfigureAwait(false);
@@ -352,9 +345,8 @@ public class NotificationServiceTests
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
         var expected = notifications
             .Where(n => n.Type == notificationType)
-            .Select(n => mapper.Map<NotificationDto>(n))
             .OrderByDescending(n => n.CreatedDateTime)
-            .ToList();
+            .ToDto();
 
         // Act
         var result = await notificationService
@@ -377,9 +369,8 @@ public class NotificationServiceTests
                 It.IsAny<Func<IQueryable<Notification>, IQueryable<Notification>>>()))
             .Returns(Task.FromResult<IEnumerable<Notification>>(notifications));
         var expected = notifications
-            .Select(n => mapper.Map<NotificationDto>(n))
             .OrderByDescending(n => n.CreatedDateTime)
-            .ToList();
+            .ToDto();
 
         // Act
         var result = await notificationService

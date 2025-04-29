@@ -13,7 +13,6 @@ public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
     [StringLength(Constants.MaxEmailAddressLength)]
     public string Address { get; set; } = null!;
 
-
     public override bool Equals(object obj)
     {
         if (obj is not EmailDto email)
@@ -58,4 +57,35 @@ public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
         return string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(Address, other.Address, StringComparison.OrdinalIgnoreCase);
     }
+}
+
+public static class EmailDtoExtensions
+{
+    public static Email SetToModel(this EmailDto email, Email model)
+    {
+        model.Type = email.Type;
+        model.Address = email.Address;
+
+        return model;
+    }
+
+    public static Email ToModel(this EmailDto email)
+        => new()
+        {
+            Type = email.Type,
+            Address = email.Address
+        };
+
+    public static List<Email> ToModel(this IEnumerable<EmailDto> list)
+        => list.MapToList(ToModel);
+
+    public static EmailDto ToDto(this Email email)
+        => new()
+        {
+            Type = email.Type,
+            Address = email.Address
+        };
+
+    public static List<EmailDto> ToDto(this IEnumerable<Email> list)
+        => list.MapToList(ToDto);
 }

@@ -1,26 +1,15 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class OperationWithObjectService : IOperationWithObjectService
+public class OperationWithObjectService(
+    ILogger<OperationWithObjectService> logger,
+    ISensitiveEntityRepository<OperationWithObject> operationWithObjectRepository
+) : IOperationWithObjectService
 {
-    private readonly ILogger<OperationWithObjectService> logger;
-    private readonly IMapper mapper;
-    private readonly ISensitiveEntityRepository<OperationWithObject> operationWithObjectRepository;
-
-    public OperationWithObjectService(
-        ILogger<OperationWithObjectService> logger,
-        IMapper mapper,
-        ISensitiveEntityRepository<OperationWithObject> operationWithObjectRepository)
-    {
-        this.logger = logger;
-        this.mapper = mapper;
-        this.operationWithObjectRepository = operationWithObjectRepository;
-    }
 
     /// <inheritdoc/>
     public async Task Create(
@@ -81,7 +70,7 @@ public class OperationWithObjectService : IOperationWithObjectService
             "{Count} records were successfully received from the OperationWithObject table.",
             operationsWithObjects.Count);
 
-        return operationsWithObjects.Select(operation => mapper.Map<OperationWithObjectDto>(operation)).ToList();
+        return operationsWithObjects.ToDto();
     }
 
     public async Task<bool> Exists(OperationWithObjectFilter filter)

@@ -35,3 +35,21 @@ public class TeacherInfoDto
     [MaxLength(300)]
     public string Description { get; set; } = string.Empty;
 }
+
+public static class TeacherInfoDtoExtensions
+{
+    public static TeacherInfoDto ToInfoDto(this Teacher model)
+        => new()
+        {
+            Id = model.Id,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            MiddleName = model.MiddleName ?? string.Empty,
+            Gender = model.Gender,
+            DateOfBirth = model.DateOfBirth,
+            Description = model.Description,
+        };
+
+    public static List<TeacherInfoDto> ToInfoDto(this IEnumerable<Teacher> list)
+        => list.MapToList(ToInfoDto);
+}

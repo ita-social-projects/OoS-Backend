@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.SearchString;
@@ -13,7 +12,21 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Child entity.
 /// </summary>
-public class ChildService : IChildService
+/// <param name="childRepository">Repository for the Child entity.</param>
+/// <param name="parentRepository">Repository for the Parent entity.</param>
+/// <param name="socialGroupRepository">Repository for the social groups.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="parentConfig">Parent configuration.</param>
+/// <param name ="searchStringService">Service for handling search string.</param>
+public class ChildService(
+    IEntityRepositorySoftDeleted<Guid, Child> childRepository,
+    IParentRepository parentRepository,
+    IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository,
+    ILogger<ChildService> logger,
+    IApplicationRepository applicationRepository,
+    IOptions<ParentConfig> parentConfig,
+    ISearchStringService searchStringService
+) : IChildService
 {
     /// <summary>
     /// Create a delegate to include other entities in Child entity
@@ -21,47 +34,6 @@ public class ChildService : IChildService
     private readonly Func<IQueryable<Child>, IQueryable<Child>> includeFunc =
         c => c.Include(c => c.SocialGroups)
               .Include(c => c.Parent).ThenInclude(p => p.User);
-
-    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
-    private readonly IParentRepository parentRepository;
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository;
-    private readonly ILogger<ChildService> logger;
-    private readonly IMapper mapper;
-    private readonly IOptions<ParentConfig> parentConfig;
-    private readonly ISearchStringService searchStringService;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChildService"/> class.
-    /// </summary>
-    /// <param name="childRepository">Repository for the Child entity.</param>
-    /// <param name="parentRepository">Repository for the Parent entity.</param>
-    /// <param name="socialGroupRepository">Repository for the social groups.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Automapper DI service.</param>
-    /// <param name="parentConfig">Parent configuration.</param>
-    /// <param name ="searchStringService">Service for handling search string.</param>
-    public ChildService(
-        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
-        IParentRepository parentRepository,
-        IEntityRepositorySoftDeleted<long, SocialGroup> socialGroupRepository,
-        ILogger<ChildService> logger,
-        IMapper mapper,
-        IApplicationRepository applicationRepository,
-        IOptions<ParentConfig> parentConfig,
-        ISearchStringService searchStringService)
-    {
-        this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
-        this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-        this.socialGroupRepository =
-            socialGroupRepository ?? throw new ArgumentNullException(nameof(socialGroupRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.applicationRepository =
-            applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
-        this.parentConfig = parentConfig ?? throw new ArgumentNullException(nameof(parentConfig));
-        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
-    }
 
     /// <inheritdoc/>
     public async Task<ChildDto> CreateChildForUser(ChildCreateDto childCreateDto, string userId)
@@ -85,10 +57,7 @@ public class ChildService : IChildService
 
         async Task<Child> CreateChild()
         {
-            var child = mapper.Map<Child>(childCreateDto);
-            child.Id = default;
-            child.ParentId = parent.Id;
-            child.SocialGroups = new List<SocialGroup>();
+            var child = childCreateDto.ToModel(parent.Id);
 
             var newChild = await childRepository.Create(child).ConfigureAwait(false);
 
@@ -112,7 +81,7 @@ public class ChildService : IChildService
                                 ?? throw new UnauthorizedAccessException(
                                     $"User:{userId} is trying to get an unexisting child with id: {newChild.Id}.");
 
-        return mapper.Map<ChildDto>(newChildWithDetails);
+        return newChildWithDetails.ToDto();
     }
 
     /// <inheritdoc/>
@@ -129,7 +98,7 @@ public class ChildService : IChildService
 
         var children = new ChildrenCreationResultDto()
         {
-            Parent = mapper.Map<ParentDTO>(parent),
+            Parent = parent.ToDto(),
         };
 
         foreach (var childCreateDto in childrenCreateDtos)
@@ -219,7 +188,7 @@ public class ChildService : IChildService
         var searchResult = new SearchResult<ChildDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ChildDto>>(children),
+            Entities = children.ToDto(),
         };
 
         return searchResult;
@@ -239,7 +208,7 @@ public class ChildService : IChildService
 
         // No nested entities in use – eager loading not required.
         var children = await childRepository.GetByFilter(func).ConfigureAwait(false);
-        var result = mapper.Map<List<ShortEntityDto>>(children).OrderBy(entity => entity.Title).ToList();
+        var result = children.ToShortEntityDto().OrderBy(entity => entity.Title).ToList();
 
         return result;
     }
@@ -266,7 +235,7 @@ public class ChildService : IChildService
 
         logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
 
-        return mapper.Map<ChildDto>(child);
+        return child.ToDto();
     }
 
     /// <inheritdoc/>
@@ -301,7 +270,7 @@ public class ChildService : IChildService
         var searchResult = new SearchResult<ChildDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ChildDto>>(children),
+            Entities = children.ToDto(),
         };
 
         return searchResult;
@@ -346,7 +315,7 @@ public class ChildService : IChildService
         var searchResult = new SearchResult<ChildDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ChildDto>>(children),
+            Entities = children.ToDto(),
         };
 
         return searchResult;
@@ -390,7 +359,7 @@ public class ChildService : IChildService
         var searchResult = new SearchResult<ChildDto>()
         {
             TotalAmount = totalAmount,
-            Entities = mapper.Map<List<ChildDto>>(children),
+            Entities = children.ToDto(),
         };
 
         return searchResult;
@@ -423,7 +392,7 @@ public class ChildService : IChildService
             throw new ArgumentException($"Forbidden to update child which related to the parent.");
         }
 
-        mapper.Map(childUpdateDto, child);
+        childUpdateDto.SetToModel(child);
 
         await UpdateSocialGroups(child, childUpdateDto.SocialGroupIds).ConfigureAwait(false);
 
@@ -431,7 +400,7 @@ public class ChildService : IChildService
 
         logger.LogDebug("Child with Id = {ChildId} was updated successfully", child.Id);
 
-        return mapper.Map<ChildDto>(child);
+        return child.ToDto();
     }
 
     /// <inheritdoc/>
@@ -490,7 +459,7 @@ public class ChildService : IChildService
                     }
                     else
                     {
-                        string phoneNumber = word.Where(c => char.IsNumber(c)).ToString();
+                        var phoneNumber = word.Where(c => char.IsNumber(c)).ToString();
                         if (phoneNumber.Length > 0)
                         {
                             tempPredicate = tempPredicate.Or(
@@ -525,22 +494,14 @@ public class ChildService : IChildService
         }
     }
 
-    private void ValidateOffsetFilter(OffsetFilter offsetFilter) =>
-        ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+    private void ValidateOffsetFilter(OffsetFilter offsetFilter) 
+        => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 
     private void ValidateUserId(string userId)
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
             throw new ArgumentException($"The {nameof(userId)} parameter cannot be null, empty or white space.");
-        }
-    }
-
-    private void ValidateId(long id)
-    {
-        if (id < 1)
-        {
-            throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
         }
     }
 

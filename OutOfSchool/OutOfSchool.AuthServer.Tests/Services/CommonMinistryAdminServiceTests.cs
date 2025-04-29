@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +23,12 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using System;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.AuthCommon.Services.Tests;
 
 [TestFixture]
 public class CommonMinistryAdminServiceTests
 {
-    private Mock<IMapper> fakeMapper;
     private AreaAdminRepository areaAdminRepository;
     private Mock<UserManager<User>> fakeUserManager;
     private OutOfSchoolDbContext context;
@@ -41,7 +40,6 @@ public class CommonMinistryAdminServiceTests
     [SetUp]
     public async Task SetUp()
     {
-        fakeMapper = new Mock<IMapper>();
         fakeUrlHelper = new Mock<IUrlHelper>();
         fakeUserManager = new Mock<UserManager<User>>(
              new Mock<IUserStore<User>>().Object,
@@ -66,7 +64,6 @@ public class CommonMinistryAdminServiceTests
         fakeHostsConfig.Setup(x => x.Value).Returns(config);
 
         areaCommonMinistryAdminService = new CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>(
-            fakeMapper.Object,
             areaAdminRepository,
             new Mock<ILogger<CommonMinistryAdminService<long, AreaAdmin, AreaAdminBaseDto, AreaAdminRepository>>>().Object,
             new Mock<IEmailSenderService>().Object,
@@ -83,22 +80,24 @@ public class CommonMinistryAdminServiceTests
     public async Task Create_WhenParametersIsValid_ReturnsOkResponse()
     {
         // Arrange
-        var user = UserGenerator.Generate();
-        var areaAdminBaseDto = AdminGenerator.GenerateAreaAdminBaseDto(); 
         var areaAdmin = AdminGenerator.GenerateAreaAdmin();
+        var areaAdminBaseDto = AdminGenerator.GenerateAreaAdminBaseDto(); 
+        var user = areaAdminBaseDto.ToUser();
         var role = Role.AreaAdmin;
         var userId = string.Empty;
         var userRole = "areaadmin";
-        IUrlHelper url = fakeUrlHelper.Object;
-        fakeMapper.Setup(x => x.Map<User>(areaAdminBaseDto)).Returns(user);
-        fakeUserManager.Setup(x => x.CreateAsync(user, It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
-        fakeUserManager.Setup(x => x.AddToRoleAsync(user, userRole)).ReturnsAsync(IdentityResult.Success);
-        fakeMapper.Setup(x => x.Map<AreaAdmin>(areaAdminBaseDto)).Returns(areaAdmin);
+        var url = fakeUrlHelper.Object;
+        var capturedUsers = new List<User>();
+        fakeUserManager.Setup(x => x.CreateAsync(Capture.In(capturedUsers), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+        fakeUserManager.Setup(x => x.AddToRoleAsync(Capture.In(capturedUsers), userRole))
+            .ReturnsAsync(IdentityResult.Success);
 
         // Act
         var result = await areaCommonMinistryAdminService.CreateMinistryAdminAsync(areaAdminBaseDto, role, url, userId);
 
         // Assert
+        capturedUsers.Should().HaveCount(2);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.IsSuccess);
         Assert.AreEqual(HttpStatusCode.OK, result.HttpStatusCode);

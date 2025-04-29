@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -11,40 +10,21 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 
-
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class MinistryAdminService : CommunicationService, IMinistryAdminService, ISensitiveMinistryAdminService
+public class MinistryAdminService(
+    IHttpClientFactory httpClientFactory,
+    IOptions<AuthorizationServerConfig> authorizationServerConfig,
+    IOptions<CommunicationConfig> communicationConfig,
+    IInstitutionAdminRepository institutionAdminRepository,
+    ILogger<MinistryAdminService> logger,
+    IEntityRepositorySoftDeleted<string, User> userRepository,
+    ICurrentUserService currentUserService,
+    IApiErrorService apiErrorService,
+    ISearchStringService searchStringService
+) : CommunicationService(httpClientFactory, communicationConfig, logger), IMinistryAdminService, ISensitiveMinistryAdminService
 {
-    private readonly AuthorizationServerConfig authorizationServerConfig;
-    private readonly IInstitutionAdminRepository institutionAdminRepository;
-    private readonly IEntityRepositorySoftDeleted<string, User> userRepository;
-    private readonly IMapper mapper;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IApiErrorService apiErrorService;
-    private readonly ISearchStringService searchStringService;
-
-    public MinistryAdminService(
-        IHttpClientFactory httpClientFactory,
-        IOptions<AuthorizationServerConfig> authorizationServerConfig,
-        IOptions<CommunicationConfig> communicationConfig,
-        IInstitutionAdminRepository institutionAdminRepository,
-        ILogger<MinistryAdminService> logger,
-        IEntityRepositorySoftDeleted<string, User> userRepository,
-        IMapper mapper,
-        ICurrentUserService currentUserService,
-        IApiErrorService apiErrorService,
-        ISearchStringService searchStringService)
-        : base(httpClientFactory, communicationConfig, logger)
-    {
-        this.authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
-        this.institutionAdminRepository = institutionAdminRepository ?? throw new ArgumentNullException(nameof(institutionAdminRepository));
-        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        this.apiErrorService = apiErrorService;
-        this.searchStringService = searchStringService ?? throw new ArgumentNullException(nameof(searchStringService));
-    }
+    private readonly AuthorizationServerConfig authorizationServerConfig = (authorizationServerConfig ?? throw new ArgumentNullException(nameof(authorizationServerConfig))).Value;
 
     public async Task<MinistryAdminDto> GetByIdAsync(string id)
     {
@@ -59,14 +39,14 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
 
         Logger.LogInformation("Successfully got a InstitutionAdmin with Id = {Id}", id);
 
-        return mapper.Map<MinistryAdminDto>(institutionAdmin);
+        return institutionAdmin.ToMinistryAdminDto();
     }
 
     public async Task<MinistryAdminDto> GetByUserId(string id)
     {
         Logger.LogInformation("Getting MinistryAdmin by UserId started. Looking UserId is {Id}", id);
 
-        InstitutionAdmin ministryAdmin = (await institutionAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false)).FirstOrDefault();
+        var ministryAdmin = (await institutionAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false)).FirstOrDefault();
 
         if (ministryAdmin == null)
         {
@@ -76,7 +56,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
 
         Logger.LogInformation("Successfully got a MinistryAdmin with UserId = {Id}", id);
 
-        return mapper.Map<MinistryAdminDto>(ministryAdmin);
+        return ministryAdmin.ToMinistryAdminDto();
     }
 
     public async Task<Either<ErrorResponse, MinistryAdminBaseDto>> CreateMinistryAdminAsync(string userId, MinistryAdminBaseDto ministryAdminBaseDto, string token)
@@ -158,7 +138,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
             }
         }
 
-        int count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
+        var count = await institutionAdminRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<InstitutionAdmin, object>>, SortDirection>
         {
@@ -183,7 +163,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
             "All {Count} records were successfully received from the Parent table",
             institutionAdmins.Count);
 
-        var ministryAdminsDto = institutionAdmins.Select(admin => mapper.Map<MinistryAdminDto>(admin)).ToList();
+        var ministryAdminsDto = institutionAdmins.ToMinistryAdminDto();
 
         var result = new SearchResult<MinistryAdminDto>()
         {
@@ -222,7 +202,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
             HttpMethodType = HttpMethodType.Put,
             Url = new Uri(authorizationServerConfig.Authority, CommunicationConstants.UpdateMinistryAdmin + updateMinistryAdminDto.Id),
             Token = token,
-            Data = mapper.Map<MinistryAdminBaseUpdateDto>(updateMinistryAdminDto),
+            Data = updateMinistryAdminDto.ToMinistryAdminDto(),
         };
 
         Logger.LogDebug(
@@ -243,7 +223,7 @@ public class MinistryAdminService : CommunicationService, IMinistryAdminService,
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? mapper.Map<MinistryAdminDto>(JsonConvert.DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString()))
+                ? JsonConvert.DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString()).ToMinistryAdminDto()
                 : null);
     }
 

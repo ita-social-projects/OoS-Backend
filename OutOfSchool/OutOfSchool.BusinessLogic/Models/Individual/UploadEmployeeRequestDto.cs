@@ -35,3 +35,15 @@ public class UploadEmployeeRequestDto
     [EnumDataType(typeof(PositionType), ErrorMessage = Constants.EnumErrorMessage)]
     public PositionType PositionType { get; set; } = PositionType.Employee;
 }
+
+public static class UploadEmployeeRequestDtoExtensions
+{
+    public static OutOfSchool.Services.Models.Individual ToModel(this UploadEmployeeRequestDto dto)
+        => new()
+        {
+            FirstName = dto.FirstName,
+            MiddleName = dto.MiddleName,
+            LastName = dto.LastName,
+            Rnokpp = dto.Rnokpp,            
+        };
+}

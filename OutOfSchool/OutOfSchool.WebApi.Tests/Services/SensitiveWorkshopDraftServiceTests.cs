@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,14 +11,12 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -36,7 +33,6 @@ public class SensitiveWorkshopDraftServiceTests
 {
     private ISensitiveWorkshopDraftService service;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMock;
-    private IMapper mapper;
 
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -55,13 +51,6 @@ public class SensitiveWorkshopDraftServiceTests
     public void SetUp()
     {
         workshopDraftRepoMock = new Mock<IWorkshopDraftRepository>();
-
-        var config = new MapperConfiguration(cfg =>
-            cfg.UseProfile<CommonProfile>()
-               .UseProfile<MappingProfile>()
-               .UseProfile<WorkshopDraftMappingProfile>());
-
-        mapper = config.CreateMapper();
 
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
@@ -87,7 +76,6 @@ public class SensitiveWorkshopDraftServiceTests
         service = new WorkshopDraftService(
                    logger.Object,
                    workshopDraftRepoMock.Object,
-                   mapper,
                    workshopDraftImagesService.Object,
                    providerServiceMock.Object,
                    currentUserServiceMock.Object,
@@ -175,8 +163,8 @@ public class SensitiveWorkshopDraftServiceTests
         string[] searchWords = null)
     {
         var workshops = WorkshopV2DtoGenerator.Generate(5).ToList();
-        var workshopDrafts = mapper.Map<List<WorkshopDraft>>(workshops);
-        var workshopDraftDtos = mapper.Map<List<WorkshopDraftResponseDto>>(workshopDrafts);
+        var workshopDrafts = workshops.ToDraft();
+        var workshopDraftDtos = workshopDrafts.ToResponseDto();
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
         SetUpWorkshopsRepository(workshopDrafts, filter);

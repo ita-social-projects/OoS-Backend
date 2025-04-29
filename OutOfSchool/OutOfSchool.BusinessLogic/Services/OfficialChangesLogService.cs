@@ -3,15 +3,8 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class OfficialChangesLogService : IOfficialChangesLogService
+public class OfficialChangesLogService(IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository) : IOfficialChangesLogService
 {
-    private readonly IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository;
-
-    public OfficialChangesLogService(IEntityAddOnlyRepository<long, EmployeeChangesLog> employeeChangesLogRepository)
-    {
-        this.employeeChangesLogRepository = employeeChangesLogRepository;
-    }
-
     public async Task<int> SaveChangesLogAsync(
         Official entity,
         string userId,

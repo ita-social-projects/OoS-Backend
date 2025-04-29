@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +12,6 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
@@ -29,24 +25,18 @@ public class AreaAdminControllerTests
 {
     private AreaAdminController areaAdminController;
     private Mock<IAreaAdminService> areaAdminServiceMock;
-    private IMapper mapper;
-    private AreaAdmin areaAdmin;
     private List<AreaAdmin> areaAdmins;
     private AreaAdminDto areaAdminDto;
-    private List<AreaAdminDto> areaAdminDtos;
     private HttpContext fakeHttpContext;
 
     [SetUp]
     public void Setup()
     {
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, MappingProfile>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         areaAdminController =
             new AreaAdminController(areaAdminServiceMock.Object, new Mock<ILogger<AreaAdminController>>().Object);
-        areaAdmin = AdminGenerator.GenerateAreaAdmin();
         areaAdmins = AdminGenerator.GenerateAreaAdmins(10);
         areaAdminDto = AdminGenerator.GenerateAreaAdminDto();
-        areaAdminDtos = AdminGenerator.GenerateAreaAdminsDtos(10);
         fakeHttpContext = GetFakeHttpContext();
         areaAdminController.ControllerContext.HttpContext = fakeHttpContext;
     }
@@ -91,7 +81,7 @@ public class AreaAdminControllerTests
         var expected = new SearchResult<AreaAdminDto>
         {
             TotalAmount = 10,
-            Entities = areaAdmins.Select(x => mapper.Map<AreaAdminDto>(x)).ToList(),
+            Entities = areaAdmins.ToDto(),
         };
 
         areaAdminServiceMock.Setup(x => x.GetByFilter(It.IsAny<AreaAdminFilter>()))

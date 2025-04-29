@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -9,29 +8,16 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for the CompanyInformation entities (AboutPortal, SupportInformation and LawsAndRegulations).
 /// </summary>
-public class CompanyInformationService : ICompanyInformationService
+/// <param name="companyInformationRepository">CompanyInformation repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="mapper">Mapper.</param>
+public class CompanyInformationService(
+    ISensitiveEntityRepository<CompanyInformation> companyInformationRepository,
+    ILogger<CompanyInformationService> logger
+) : ICompanyInformationService
 {
     private const int LimitOfItems = 10;
     private const int MainLimit = 1;
-    private readonly ISensitiveEntityRepository<CompanyInformation> companyInformationRepository;
-    private readonly ILogger<CompanyInformationService> logger;
-    private readonly IMapper mapper;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CompanyInformationService"/> class.
-    /// </summary>
-    /// <param name="companyInformationRepository">CompanyInformation repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Mapper.</param>
-    public CompanyInformationService(
-        ISensitiveEntityRepository<CompanyInformation> companyInformationRepository,
-        ILogger<CompanyInformationService> logger,
-        IMapper mapper)
-    {
-        this.companyInformationRepository = companyInformationRepository ?? throw new ArgumentNullException(nameof(companyInformationRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
 
     /// <inheritdoc/>
     public async Task<CompanyInformationDto> GetByType(CompanyInformationType type)
@@ -42,7 +28,7 @@ public class CompanyInformationService : ICompanyInformationService
 
         logger.LogDebug("Get CompanyInformation is finished.");
 
-        return mapper.Map<CompanyInformationDto>(companyInformation);
+        return companyInformation?.ToDto();
     }
 
     /// <inheritdoc/>
@@ -55,7 +41,7 @@ public class CompanyInformationService : ICompanyInformationService
         }
 
         var itemsCount = companyInformationDto.CompanyInformationItems.Count();
-        bool isMain = type == CompanyInformationType.Main;
+        var isMain = type == CompanyInformationType.Main;
         if (itemsCount > LimitOfItems || (isMain && itemsCount > MainLimit))
         {
             throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
@@ -85,7 +71,7 @@ public class CompanyInformationService : ICompanyInformationService
         }
         else
         {
-            var items = mapper.Map<List<CompanyInformationItem>>(companyInformationDto.CompanyInformationItems);
+            var items = companyInformationDto.CompanyInformationItems.ToModel();
 
             // Clear CompanyInformationItemId because we will replace items for the CompanyInformation (old items will be deleted automatically by the EF)
             foreach (var item in items)
@@ -99,7 +85,7 @@ public class CompanyInformationService : ICompanyInformationService
 
         await companyInformationRepository.SaveChangesAsync().ConfigureAwait(false);
 
-        return mapper.Map<CompanyInformationDto>(companyInformation);
+        return companyInformation.ToDto();
     }
 
     private Task<CompanyInformation> Create(CompanyInformationDto companyInformationDto)
@@ -120,6 +106,6 @@ public class CompanyInformationService : ICompanyInformationService
 
     private async Task<CompanyInformation> CreateAsync(CompanyInformationDto companyInformationDto)
     {
-        return await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
+        return await companyInformationRepository.Create(companyInformationDto.ToModel()).ConfigureAwait(false);
     }
 }

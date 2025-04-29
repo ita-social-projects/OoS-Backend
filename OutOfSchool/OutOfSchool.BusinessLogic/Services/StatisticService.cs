@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Common.Enums;
@@ -11,45 +10,21 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the operations to get popular workshops and categories.
 /// </summary>
-public class StatisticService : IStatisticService
+/// <param name="applicationRepository">Application repository.</param>
+/// <param name="workshopRepository">Workshop repository.</param>
+/// <param name="directionRepository">Direction repository.</param>
+/// <param name="logger">Logger.</param>
+/// <param name="cache">Redis cache service.</param>
+/// /// <param name="averageRatingService">Average rating service.</param>
+public class StatisticService(
+    IApplicationRepository applicationRepository,
+    IWorkshopRepository workshopRepository,
+    IEntityRepositorySoftDeleted<long, Direction> directionRepository,
+    ILogger<StatisticService> logger,
+    ICacheService cache,
+    IAverageRatingService averageRatingService
+) : IStatisticService
 {
-    private readonly IApplicationRepository applicationRepository;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepositorySoftDeleted<long, Direction> directionRepository;
-    private readonly ILogger<StatisticService> logger;
-    private readonly IMapper mapper;
-
-    // TODO: Maybe, we have to use an IMemoryCacheService.
-    private readonly ICacheService cache;
-    private readonly IAverageRatingService averageRatingService;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StatisticService"/> class.
-    /// </summary>
-    /// <param name="applicationRepository">Application repository.</param>
-    /// <param name="workshopRepository">Workshop repository.</param>
-    /// <param name="directionRepository">Direction repository.</param>
-    /// <param name="logger">Logger.</param>
-    /// <param name="mapper">Automapper DI service.</param>
-    /// <param name="cache">Redis cache service.</param>
-    /// /// <param name="averageRatingService">Average rating service.</param>
-    public StatisticService(
-        IApplicationRepository applicationRepository,
-        IWorkshopRepository workshopRepository,
-        IEntityRepositorySoftDeleted<long, Direction> directionRepository,
-        ILogger<StatisticService> logger,
-        IMapper mapper,
-        ICacheService cache,
-        IAverageRatingService averageRatingService)
-    {
-        this.applicationRepository = applicationRepository;
-        this.workshopRepository = workshopRepository;
-        this.directionRepository = directionRepository;
-        this.logger = logger;
-        this.mapper = mapper;
-        this.cache = cache;
-        this.averageRatingService = averageRatingService;
-    }
 
     // Return categories with 1 SQL query
 
@@ -135,19 +110,20 @@ public class StatisticService : IStatisticService
                 x => x.localDirectionsWithCounts,
                 (x, y) => new
                 {
-                    Direction = mapper.Map<DirectionDto>(x.direction).WithCount(y.WorkshopsCount ?? 0),
+                    Direction = x.direction.ToDto(y.WorkshopsCount ?? 0),
                     ApplicationsCount = y.ApplicationsCount ?? 0,
                 });
 
         var sortedStatistics = await statistics
             .OrderByDescending(s => s.ApplicationsCount)
             .Take(limit)
+            .Select(s => s.Direction)
             .ToListAsync()
             .ConfigureAwait(false);
 
         logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
 
-        return sortedStatistics.Select(s => s.Direction);
+        return sortedStatistics;
     }
 
     /// <inheritdoc/>
@@ -155,7 +131,7 @@ public class StatisticService : IStatisticService
     {
         logger.LogInformation("Getting popular workshops started.");
 
-        string cacheKey = $"GetPopularWorkshops_{limit}_{catottgId}";
+        var cacheKey = $"GetPopularWorkshops_{limit}_{catottgId}";
 
         var workshopsResult = await cache.GetOrAddAsync(cacheKey, () =>
             GetPopularWorkshopsFromDatabase(limit, catottgId)).ConfigureAwait(false);
@@ -202,7 +178,7 @@ public class StatisticService : IStatisticService
 
         logger.LogInformation($"All {popularWorkshopsList.Count} records were successfully received");
 
-        var workshopsCard = mapper.Map<List<WorkshopCard>>(popularWorkshopsList);
+        var workshopsCard = popularWorkshopsList.ToCard();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForCards(workshopsCard, applicationRepository);
 

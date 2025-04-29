@@ -4,15 +4,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using AutoMapper;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
@@ -30,7 +27,6 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class WorkshopServicesCombinerTests
 {
     private Mock<IWorkshopService> workshopService;
-    private IMapper mapper;
     private Mock<INotificationService> notificationServiceMock;
     private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
     private Mock<IApplicationRepository> applicationRepository;
@@ -44,7 +40,6 @@ public class WorkshopServicesCombinerTests
     {
         workshopService = new Mock<IWorkshopService>();
         elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, TestMappingProfile, MappingProfile>();
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         applicationRepository = new Mock<IApplicationRepository>();
@@ -68,8 +63,7 @@ public class WorkshopServicesCombinerTests
             ministryAdminService.Object,
             regionAdminService.Object,
             codeficatorService.Object,
-            esProvider.Object,
-            mapper);
+            esProvider.Object);
     }
 
     #region GetById
@@ -117,8 +111,8 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         var createdWorkshop = WorkshopGenerator.Generate();
-        var workshopCreateRequestDto = mapper.Map<WorkshopCreateRequestDto>(createdWorkshop);
-        var workshopDto = mapper.Map<WorkshopDto>(createdWorkshop);
+        var workshopDto = createdWorkshop.ToDto();
+        var workshopCreateRequestDto = new WorkshopCreateRequestDto();// mapper.Map<WorkshopCreateRequestDto>(createdWorkshop);
         workshopDto.AvailableSeats = 10;
 
         workshopService.Setup(x => x.Create(workshopCreateRequestDto))
@@ -168,10 +162,13 @@ public class WorkshopServicesCombinerTests
         currentWorkshopDto.TakenSeats = 4;
         var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
         newWorkshopCreateUpdateDto.AvailableSeats = 10;
+        newWorkshopCreateUpdateDto.ProviderTitle = currentWorkshopDto.ProviderTitle;
         workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
 
-        var updatedWorkshopDto = mapper.Map<WorkshopDto>(newWorkshopCreateUpdateDto);
+        var updatedWorkshopDto = newWorkshopCreateUpdateDto.ToModel().ToDto();
+        newWorkshopCreateUpdateDto.ProviderTitle = updatedWorkshopDto.ProviderTitle;
+        newWorkshopCreateUpdateDto.TagIds = updatedWorkshopDto.Tags.Select(x => x.Id).ToList();
         workshopService.Setup(x => x.Update(newWorkshopCreateUpdateDto))
             .ReturnsAsync(updatedWorkshopDto);
 
@@ -289,9 +286,8 @@ public class WorkshopServicesCombinerTests
             Status = WorkshopStatus.Closed,
         };
 
-        var workshopDto = mapper.Map<WorkshopDto>(workshop);
-        var workshopDtoWithTitle = mapper.Map<WorkshopStatusWithTitleDto>(workshopStatusDto);
-        workshopDtoWithTitle.Title = workshop.Title;
+        var workshopDto = workshop.ToDto();
+        var workshopDtoWithTitle = workshopStatusDto.ToWorkshopStatusWithTitleDto(workshop.Title);
 
         workshopService.Setup(x => x.GetById(workshopDto.Id, It.IsAny<bool>())).ReturnsAsync(workshopDto);
         workshopService.Setup(x => x.UpdateStatus(workshopStatusDto)).ReturnsAsync(workshopDtoWithTitle);
@@ -371,7 +367,7 @@ public class WorkshopServicesCombinerTests
 
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),

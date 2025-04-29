@@ -11,17 +11,15 @@ public interface ITagService
     /// <summary>
     /// Get all entities.
     /// </summary>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>List of all Tag.</returns>
-    Task<IEnumerable<TagDto>> GetAll(LocalizationType localization = LocalizationType.Ua);
+    Task<IEnumerable<TagDto>> GetAll();
 
     /// <summary>
     /// Get entity by it's key.
     /// </summary>
     /// /// <param name="id">Key in the table.</param>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param> 
     /// <returns>Tag.</returns>
-    Task<TagDto> GetById(long id, LocalizationType localization = LocalizationType.Ua);
+    Task<TagDto> GetById(long id);
 
     /// <summary>
     /// Add entity.

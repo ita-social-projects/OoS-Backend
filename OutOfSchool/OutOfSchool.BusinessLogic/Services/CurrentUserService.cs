@@ -1,6 +1,5 @@
 #nullable enable
 
-using AutoMapper;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Common.Models;
@@ -10,36 +9,17 @@ using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService(
+    ICurrentUser currentUser,
+    IWorkshopRepository workshopRepository,
+    IParentRepository parentRepository,
+    IEntityRepositorySoftDeleted<Guid, Child> childRepository,
+    ILogger<CurrentUserService> logger,
+    ICacheService cache,
+    IOptions<AppDefaultsConfig> options
+) : ICurrentUserService
 {
-    private readonly ICurrentUser currentUser;
-    private readonly IParentRepository parentRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, Child> childRepository;
-    private readonly IWorkshopRepository workshopRepository;
-    private readonly ILogger<CurrentUserService> logger;
-    private readonly ICacheService cache;
-    private readonly AppDefaultsConfig options;
-    private readonly IMapper mapper;
-
-    public CurrentUserService(
-        ICurrentUser currentUser,
-        IWorkshopRepository workshopRepository,
-        IParentRepository parentRepository,
-        IEntityRepositorySoftDeleted<Guid, Child> childRepository,
-        ILogger<CurrentUserService> logger,
-        ICacheService cache,
-        IOptions<AppDefaultsConfig> options,
-        IMapper mapper)
-    {
-        this.currentUser = currentUser;
-        this.workshopRepository = workshopRepository;
-        this.parentRepository = parentRepository;
-        this.childRepository = childRepository;
-        this.logger = logger;
-        this.cache = cache;
-        this.options = options.Value;
-        this.mapper = mapper;
-    }
+    private readonly AppDefaultsConfig options = options.Value;
 
     public Guid ProviderId
     {
@@ -65,8 +45,8 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated => currentUser.IsAuthenticated;
 
-    public bool HasClaim(string type, Func<string, bool>? valueComparer = null) =>
-        currentUser.HasClaim(type, valueComparer);
+    public bool HasClaim(string type, Func<string, bool>? valueComparer = null) 
+        => currentUser.HasClaim(type, valueComparer);
     
     public string? GetClaimValue(string claimType) => currentUser.GetClaimValue(claimType);
 
@@ -170,7 +150,7 @@ public class CurrentUserService : ICurrentUserService
             {
                 var parents = await parentRepository
                     .GetByFilter(p => p.UserId == UserId && p.Id == parentId);
-                return parents?.Select(mapper.Map<ParentDTO>).FirstOrDefault();
+                return parents?.FirstOrDefault()?.ToDto();
             },
             TimeSpan.FromMinutes(5.0));
 
@@ -186,7 +166,7 @@ public class CurrentUserService : ICurrentUserService
                 {
                     var children = await childRepository
                         .GetByFilter(child => child.Id == childId && child.ParentId == parentId);
-                    return children?.Select(mapper.Map<ChildDto>).FirstOrDefault();
+                    return children?.FirstOrDefault()?.ToDto();
                 },
                 TimeSpan.FromMinutes(5.0));
 

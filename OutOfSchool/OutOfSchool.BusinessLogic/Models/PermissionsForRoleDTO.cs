@@ -16,3 +16,27 @@ public class PermissionsForRoleDTO
     [MaxLength(100)]
     public string Description { get; set; } = default;
 }
+
+public static class PermissionsForRoleDTOExtensions
+{
+    public static PermissionsForRole ToModel(this PermissionsForRoleDTO dto)
+        => new()
+        {
+            Id = dto.Id,
+            RoleName = dto.RoleName,
+            PackedPermissions = dto.Permissions?.PackPermissionsIntoString(),
+            Description = dto.Description,
+        };
+
+    public static PermissionsForRoleDTO ToDto(this PermissionsForRole model)
+        => new()
+        {
+            Id = model.Id,
+            RoleName = model.RoleName,
+            Permissions = model.PackedPermissions?.UnpackPermissionsFromString(),
+            Description = model.Description,
+        };
+
+    public static List<PermissionsForRoleDTO> ToDto(this IEnumerable<PermissionsForRole> list)
+        => list.MapToList(ToDto);
+}

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -9,27 +8,13 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <summary>
 /// Implements the interface with CRUD functionality for Favorite entity.
 /// </summary>
-public class FavoriteService : IFavoriteService
+public class FavoriteService(
+    IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
+    ILogger<FavoriteService> logger,
+    IStringLocalizer<SharedResource> localizer,
+    IWorkshopService workshopService
+) : IFavoriteService
 {
-    private readonly IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository;
-    private readonly IWorkshopService workshopService;
-    private readonly ILogger<FavoriteService> logger;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly IMapper mapper;
-
-    public FavoriteService(
-        IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
-        ILogger<FavoriteService> logger,
-        IStringLocalizer<SharedResource> localizer,
-        IWorkshopService workshopService,
-        IMapper mapper)
-    {
-        this.favoriteRepository = favoriteRepository ?? throw new ArgumentNullException(nameof(favoriteRepository));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-        this.workshopService = workshopService ?? throw new ArgumentNullException(nameof(workshopService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<FavoriteDto>> GetAll()
@@ -42,7 +27,7 @@ public class FavoriteService : IFavoriteService
             ? "Favorites table is empty."
             : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
-        return favorites.Select(favorite => mapper.Map<FavoriteDto>(favorite)).ToList();
+        return favorites.ToDto();
     }
 
     /// <inheritdoc/>
@@ -61,7 +46,7 @@ public class FavoriteService : IFavoriteService
 
         logger.LogInformation($"Successfully got a Favorite with Id = {id}.");
 
-        return mapper.Map<FavoriteDto>(favorite);
+        return favorite.ToDto();
     }
 
     /// <inheritdoc/>
@@ -80,7 +65,7 @@ public class FavoriteService : IFavoriteService
             favorites.Count,
             userId);
 
-        return favorites.Select(x => mapper.Map<FavoriteDto>(x));
+        return favorites.ToDto();
     }
 
     /// <inheritdoc/>
@@ -120,13 +105,11 @@ public class FavoriteService : IFavoriteService
     {
         logger.LogInformation("Favorite creating was started.");
 
-        var favorite = mapper.Map<Favorite>(dto);
-
-        var newFavorite = await favoriteRepository.Create(favorite).ConfigureAwait(false);
+        var newFavorite = await favoriteRepository.Create(dto.ToModel()).ConfigureAwait(false);
 
         logger.LogInformation($"Favorite with Id = {newFavorite?.Id} created successfully.");
 
-        return mapper.Map<FavoriteDto>(newFavorite);
+        return newFavorite.ToDto();
     }
 
     /// <inheritdoc/>
@@ -145,12 +128,11 @@ public class FavoriteService : IFavoriteService
             throw new DbUpdateConcurrencyException(message);
         }
 
-        mapper.Map(dto, favorite);
-        favorite = await favoriteRepository.Update(favorite).ConfigureAwait(false);
+        favorite = await favoriteRepository.Update(dto.SetToModel(favorite)).ConfigureAwait(false);
 
         logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
 
-        return mapper.Map<FavoriteDto>(favorite);
+        return favorite.ToDto();
     }
 
     /// <inheritdoc/>

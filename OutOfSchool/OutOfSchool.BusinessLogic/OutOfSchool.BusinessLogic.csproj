@@ -27,12 +27,10 @@
     <PackageReference Include="Elastic.Transport" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
-    <PackageReference Include="AutoMapper" />
     <!-- TODO: Check who is using Protobuf -->
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="H3Lib" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="OpenIddict.Client.AspNetCore" />
         <PackageReference Include="IdentityModel" />

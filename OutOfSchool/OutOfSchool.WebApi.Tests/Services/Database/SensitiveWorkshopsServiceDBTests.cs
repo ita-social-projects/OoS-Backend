@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,8 +15,6 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Workshops;
-using OutOfSchool.BusinessLogic.Util;
-using OutOfSchool.BusinessLogic.Util.Mapping;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -25,7 +22,6 @@ using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -40,7 +36,6 @@ public class SensitiveWorkshopsServiceDBTests
 
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
-    private IMapper mapper;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -64,7 +59,6 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
-        mapper = TestHelper.CreateMapperInstanceOfProfileTypes<CommonProfile, ContactsProfile, MappingProfile>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
@@ -84,7 +78,6 @@ public class SensitiveWorkshopsServiceDBTests
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
                 new Mock<ITeacherService>().Object,
                 new Mock<ILogger<WorkshopService>>().Object,
-                mapper,
                 new Mock<IImageDependentEntityImagesInteractionService<Workshop>>().Object,
                 new Mock<IAverageRatingService>().Object,
                 new Mock<IProviderRepository>().Object,
@@ -611,6 +604,6 @@ public class SensitiveWorkshopsServiceDBTests
     private async Task<List<WorkshopDto>> MapWorkshopsToDtos()
     {
         var workshops = await SeedWorkshops();
-        return mapper.Map<List<WorkshopDto>>(workshops);
+        return workshops.ToDto();
     }
 }
