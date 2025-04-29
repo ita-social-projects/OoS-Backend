@@ -40,6 +40,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [Required]
     public int CoverageId { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
     [MaxLength(2000)]
@@ -60,7 +61,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    public Guid? OrganizerOfTheEventId { get; set; }
+    public Guid OrganizerOfTheEventId { get; set; }
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
@@ -86,8 +87,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [MaxLength(Constants.DisabilityOptionsLength)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public Guid? InstitutionHierarchyId { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
@@ -103,4 +102,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public List<long> SubDirectionIds { get; set; } = [];
 }

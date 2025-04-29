@@ -34,16 +34,13 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
           .HasForeignKey(d => d.CompetitiveEventId)
           .IsRequired(false)
           .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(c => c.InstitutionHierarchy)
-           .WithMany()
-           .HasForeignKey(c => c.InstitutionHierarchyId)
-           .IsRequired(false)
-           .OnDelete(DeleteBehavior.SetNull);
         
         builder.HasOne(c => c.OrganizerOfTheEvent)
             .WithMany()
             .HasForeignKey(c => c.OrganizerOfTheEventId)
             .IsRequired();
+
+        builder.HasMany(c => c.SubDirections)
+            .WithMany(s => s.CompetitiveEvents);
     }
 }

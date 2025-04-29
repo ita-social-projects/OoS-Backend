@@ -5,12 +5,11 @@ namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
 public class CompetitiveEventDto : CompetitiveEventBaseDto
 {
-    public Guid Id { get; set; }
     public bool IsDeleted { get; set; }
     public uint Rating { get; set; } = 0;
     public uint NumberOfRatings { get; set; } = 0;
-    public string InstitutionHierarchy { get; set; }
-    public List<long> DirectionIds { get; set; }
+    public List<long> DirectionIds { get; set; } = [];
+    public string SubDirections { get; set; }
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
@@ -51,15 +50,15 @@ public static class CompetitiveEventDtoExtensions
             Benefits = model.Benefits,
             OptionsForPeopleWithDisabilities = model.OptionsForPeopleWithDisabilities,
             DescriptionOfOptionsForPeopleWithDisabilities = model.DescriptionOfOptionsForPeopleWithDisabilities,
-            InstitutionHierarchyId = model.InstitutionHierarchyId,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,
             CompetitiveSelection = model.CompetitiveSelection,
             NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
             Contacts = model.Contacts?.ToDto(),
-            InstitutionHierarchy = model.InstitutionHierarchy?.Title,
-            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList(),
+            SubDirections = string.Join(',', model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Title).ToList()),
+            SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList(),
+            DirectionIds = model.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).Distinct().ToList(),
             Coverage = model.Coverage?.ToDto(),
         };
 

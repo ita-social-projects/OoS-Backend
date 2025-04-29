@@ -6,7 +6,6 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -18,6 +17,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class CompetitiveEventService(
     ICompetitiveEventRepository competitiveEventRepository,
     IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository,
+    IEntityRepository<long, SubDirection> subDirectionRepository,
     ILogger<CompetitiveEventService> logger,
     IStringLocalizer<SharedResource> localizer,
     ICurrentUserService currentUserService,
@@ -26,7 +26,8 @@ public class CompetitiveEventService(
 ) : ICompetitiveEventService, ICompetitiveEventServiceV2
 {
     private readonly ICompetitiveEventRepository competitiveEventRepository = competitiveEventRepository ?? throw new ArgumentNullException(nameof(competitiveEventRepository));
-    private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentException(nameof(descriptionItemRepository));
+    private readonly IEntityRepository<Guid, CompetitiveEventDescriptionItem> descriptionItemRepository = descriptionItemRepository ?? throw new ArgumentNullException(nameof(descriptionItemRepository));
+    private readonly IEntityRepository<long, SubDirection> subDirectionRepository = subDirectionRepository ?? throw new ArgumentNullException(nameof(subDirectionRepository));
     private readonly ILogger<CompetitiveEventService> logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IStringLocalizer<SharedResource> localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
 
@@ -35,7 +36,7 @@ public class CompetitiveEventService(
     /// </summary>
     private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> includeFunc =
     query => query
-        .Include(e => e.InstitutionHierarchy)
+        .Include(e => e.SubDirections)
         .Include(e => e.CompetitiveEventDescriptionItems)
         .Include(e => e.Coverage)
         .IncludeContactsWithCodeficatorHierarchy();
@@ -63,21 +64,14 @@ public class CompetitiveEventService(
     /// Thrown when <see cref="CompetitiveEventCreateUpdateDto"/> is null.</exception>
     public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateUpdateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-
         logger.LogDebug("CompetitiveEvent creating was started.");
 
-        var competitiveEvent = dto.ToModel();
+        var createdCompetitiveEvent = await CheckAndPrepareCompetitiveEventForCreating(dto);
 
-        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty())
-        {
-            competitiveEvent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToModel();
-        }
-
-        contactsService.PrepareNewContacts(competitiveEvent, dto);
-       
         var newCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
-        await competitiveEventRepository.Create(competitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
+            await competitiveEventRepository.Create(createdCompetitiveEvent).ConfigureAwait(false)).ConfigureAwait(false);
+
+        logger.LogDebug("Competitive event with Id = {newCompetitiveEventId} created successfully.", newCompetitiveEvent.Id);
 
         return newCompetitiveEvent.ToDto();
     }
@@ -85,29 +79,17 @@ public class CompetitiveEventService(
     /// <inheritdoc/>
     public async Task<CompetitiveEventDto> Update(CompetitiveEventCreateUpdateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-
-        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
-
-        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
-                dto.Id, String.Empty, includeFunc).ConfigureAwait(false);
-
-        if (competitiveEvent is null)
-        {
-            var message = $"Updating failed. CompetitiveEvent with Id = {dto.Id} doesn't exist in the system.";
-            logger.LogError(message);
-            throw new DbUpdateConcurrencyException(message);
-        }
-
-        await ChangeCompetitiveEventDescriptionItems(competitiveEvent, dto.CompetitiveEventDescriptionItems
-            ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
-
-        contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
-
-        dto.SetToModel(competitiveEvent);
+        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
         var updatedCompetitiveEvent = await competitiveEventRepository.RunInTransaction(async () =>
         {
+            await ChangeCompetitiveEventDescriptionItems(competitiveEvent, dto.CompetitiveEventDescriptionItems
+            ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+
+            contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
+
+            dto.SetToModel(competitiveEvent);
+
             return await competitiveEventRepository.Update(competitiveEvent).ConfigureAwait(false);
         }).ConfigureAwait(false);
 
@@ -146,7 +128,7 @@ public class CompetitiveEventService(
             logger.LogWarning("ProviderId is empty. Unable to retrieve competitive events.");
             throw new ArgumentException("ProviderId cannot be empty.", nameof(id));
         }
-      
+
         await currentUserService.UserHasRights(new ProviderRights(id));
 
         logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {Id}.", id);
@@ -190,7 +172,7 @@ public class CompetitiveEventService(
         return await competitiveEventRepository.GetByIds(ids).ConfigureAwait(false);
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) 
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
         => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
@@ -278,26 +260,98 @@ public class CompetitiveEventService(
     /// <param name="dto">The DTO used to create the competitive event</param>
     /// <returns>A prepared <see cref="CompetitiveEvent"/> entity ready to be saved</returns>
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the specified parent event does not exist</exception>
-    private async Task<CompetitiveEvent> CheckDtoAndPrepareCreatedCompetitiveEvent(CompetitiveEventCreateUpdateDto dto)
+    /// <exception cref="UnauthorizedAccessException">Thrown if the User has no rights to perform operation</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the created CompetitiveEvent does not contain any existing SubDirection.</exception>
+    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForCreating(CompetitiveEventCreateUpdateDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
 
+        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId));
+
+        // TODO: Use this code when the CompetitiveEvent entity will have hierarchy.
         //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
         //{
         //    var errorMessage = $"The parent competitive event (ID = {dto.ParentId}) does not exist.";
         //    throw new InvalidOperationException(errorMessage);
         //}
 
-        var createdEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
+        var competitiveEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
             ? v2Dto.ToModel()
             : dto.ToModel();
 
+        //fill in SubDirections
+        if (!dto.SubDirectionIds.IsNullOrEmpty())
+        {
+            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id))).ToList();
+        }
+
+        if (competitiveEvent.SubDirections.IsNullOrEmpty())
+        {
+            var errorMessage = "Failed to create CompetitiveEvent. The created CompetitiveEvent does not contain any existing SubDirection.";
+            logger.LogError(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
+
         //configure additional default value by the logic 
+        if (!dto.CompetitiveEventDescriptionItems.IsNullOrEmpty())
+        {
+            dto.CompetitiveEventDescriptionItems.ForEach(e => e.Id = Guid.Empty);
+            competitiveEvent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToModel();
+        }
 
-        contactsService.PrepareNewContacts(createdEvent, dto);
+        contactsService.PrepareNewContacts(competitiveEvent, dto);
 
-        return createdEvent;
+        return competitiveEvent;
+    }
+
+    /// <summary>
+    /// Validates the incoming DTO and prepares a <see cref="CompetitiveEvent"/> entity for updating.
+    /// Checks for the existence of the parent event, maps the DTO to the entity, and prepares contacts
+    /// </summary>
+    /// <param name="dto">The DTO used to update the competitive event</param>
+    /// <returns>A prepared <see cref="CompetitiveEvent"/> entity ready to be saved</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the DTO is null</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the User has no rights to perform operation</exception>
+    /// <exception cref="DbUpdateConcurrencyException">Thrown if the CompetitiveEvent with Id = {dto.Id} doesn't exist in the DB.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the the updated CompetitiveEvent does not contain any existing SubDirection.</exception>
+    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForUpdating(CompetitiveEventCreateUpdateDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId));
+
+        logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
+
+        // TODO: Use this code when the CompetitiveEvent entity will have hierarchy.
+        //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
+        //{
+        //    var errorMessage = $"The parent competitive event (ID = {dto.ParentId}) does not exist.";
+        //    throw new InvalidOperationException(errorMessage);
+        //}
+
+        var competitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
+        dto.Id, string.Empty, includeFunc).ConfigureAwait(false);
+
+        if (competitiveEvent is null)
+        {
+            var message = $"Updating failed. CompetitiveEvent with Id = {dto.Id} doesn't exist in the DB.";
+            logger.LogError("Updating failed. CompetitiveEvent with Id = {dtoId} doesn't exist in the DB.", dto.Id);
+            throw new DbUpdateConcurrencyException(message);
+        }
+
+        if (!dto.SubDirectionIds.IsNullOrEmpty())
+        {
+            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id))).ToList();
+        }
+
+        if (competitiveEvent.SubDirections.IsNullOrEmpty())
+        {
+            var errorMessage = "Failed to update CompetitiveEvent. The passed CompetitiveEvent dto does not contain any existing SubDirection.";
+            logger.LogError(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        return competitiveEvent;
     }
 
     /// <summary>
@@ -313,7 +367,7 @@ public class CompetitiveEventService(
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, $"Updating a competitive event failed. Exception: {ex.Message}");
+            logger.LogError(ex, "Updating a competitive event failed. Exception: {exceptionMessage}", ex.Message);
             throw;
         }
     }
@@ -327,21 +381,19 @@ public class CompetitiveEventService(
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
     public async Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2CreateRequestDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
         logger.LogDebug("CompetitiveEvent creating was started.");
 
-        var createdEvent = await CheckDtoAndPrepareCreatedCompetitiveEvent(dto);
+        var createdCompetitiveEvent = await CheckAndPrepareCompetitiveEventForCreating(dto);
 
         async Task<(CompetitiveEvent newEvent, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateCompetitiveEventAndDependencies()
         {
-            var competitiveEvent = await competitiveEventRepository.Create(createdEvent).ConfigureAwait(false);
+            var competitiveEvent = await competitiveEventRepository.Create(createdCompetitiveEvent).ConfigureAwait(false);
 
             MultipleImageUploadingResult imagesUploadingResult = null;
 
             if (dto.ImageFiles?.Count > 0)
             {
-                competitiveEvent.Images = new List<Image<CompetitiveEvent>>();
+                competitiveEvent.Images = [];
                 imagesUploadingResult = await competitiveImagesService.AddManyImagesAsync(competitiveEvent, dto.ImageFiles)
                     .ConfigureAwait(false);
             }
@@ -362,7 +414,7 @@ public class CompetitiveEventService(
         var (lastCompetitiveEvent, imagesUploadResult, coverImageUploadResult) = await competitiveEventRepository
            .RunInTransaction(CreateCompetitiveEventAndDependencies).ConfigureAwait(false);
 
-        logger.LogInformation($"Competitive event with Id = {lastCompetitiveEvent.Id} created successfully.");
+        logger.LogDebug("Competitive event with Id = {lastCompetitiveEventId} created successfully.", lastCompetitiveEvent.Id);
 
         return new CompetitiveEventResultDto
         {
@@ -382,40 +434,29 @@ public class CompetitiveEventService(
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
     public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto)
     {
-        _ = dto ?? throw new ArgumentNullException(nameof(dto));
-        logger.LogInformation($"Updating {nameof(CompetitiveEvent)} with Id = {dto.Id} started.");
+        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
         async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,
            ImageChangingResult changingCoverImageResult)> UpdateCompetitiveEventWithDependencies()
         {
-            var currentCompetitiveEvent = await competitiveEventRepository.GetByIdWithDetails(
-               dto.Id, String.Empty, includeFunc).ConfigureAwait(false);
+            await ChangeCompetitiveEventDescriptionItems(competitiveEvent, dto.CompetitiveEventDescriptionItems
+            ?? []).ConfigureAwait(false);
 
-            if (currentCompetitiveEvent is null)
-            {
-                var message = $"Updating failed. CompetitiveEvent with Id = {dto.Id} doesn't exist in the system.";
-                logger.LogError(message);
-                throw new DbUpdateConcurrencyException(message);
-            }
+            contactsService.PrepareUpdatedContacts(competitiveEvent, dto);
 
-            await ChangeCompetitiveEventDescriptionItems(currentCompetitiveEvent, dto.CompetitiveEventDescriptionItems
-                ?? new List<CompetitiveEventDescriptionItemDto>()).ConfigureAwait(false);
+            dto.SetToModel(competitiveEvent);
 
-            dto.ImageIds ??= new List<string>();
+            dto.ImageIds ??= [];
             var multipleImageChangingResult = await competitiveImagesService
-                .ChangeImagesAsync(currentCompetitiveEvent, dto.ImageIds, dto.ImageFiles)
+                .ChangeImagesAsync(competitiveEvent, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
 
-            contactsService.PrepareUpdatedContacts(currentCompetitiveEvent, dto);
-
-            dto.SetToModel(currentCompetitiveEvent);
-
             var changingCoverImageResult = await competitiveImagesService
-                .ChangeCoverImageAsync(currentCompetitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+                .ChangeCoverImageAsync(competitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
             await UpdateCompetitiveEvent().ConfigureAwait(false);
 
-            return (currentCompetitiveEvent, multipleImageChangingResult, changingCoverImageResult);
+            return (competitiveEvent, multipleImageChangingResult, changingCoverImageResult);
         }
 
         var (updatedCompetitiveEvent, multipleImageChangeResult, changeCoverImageResult) = await competitiveEventRepository
@@ -461,7 +502,7 @@ public class CompetitiveEventService(
 
         await competitiveEventRepository.RunInTransaction(TransactionOperation).ConfigureAwait(false);
 
-        logger.LogInformation($"{nameof(CompetitiveEvent)} with Id = {id} successfully deleted.");     
+        logger.LogInformation($"{nameof(CompetitiveEvent)} with Id = {id} successfully deleted.");
     }
 
     #endregion
