@@ -73,7 +73,7 @@ public class DirectorManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Transfer(Guid providerId, [FromBody] TransferDirectorRequestDto request)
     {
-        try // need try-catch & we hav middleware exception?
+        try
         {
             var result = await directorService.TransferDirectorPosition(providerId, request);
             return Ok(result);
