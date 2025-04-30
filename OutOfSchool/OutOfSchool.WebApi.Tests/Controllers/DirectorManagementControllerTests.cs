@@ -75,9 +75,6 @@ class DirectorManagementControllerTests
         Assert.AreEqual(response.FullName, actualResponse.FullName);
     }
 
-
-   
-
     [Test]
     public async Task Promote_ReturnsForbid_WhenUnauthorizedAccessExceptionThrown()
     {
@@ -95,7 +92,6 @@ class DirectorManagementControllerTests
         // Assert
         Assert.IsInstanceOf<ForbidResult>(result);
     }
-
 
     [Test]
     public async Task Promote_ReturnsBadRequest_WhenInvalidOperationExceptionThrown()
@@ -118,7 +114,6 @@ class DirectorManagementControllerTests
         Assert.AreEqual(errorMessage, badRequestResult.Value);
     }
 
-
     [Test]
     public async Task Promote_ReturnsNotFound_WhenKeyNotFoundExceptionThrown()
     {
@@ -139,7 +134,6 @@ class DirectorManagementControllerTests
         Assert.IsNotNull(notFoundResult);
         Assert.AreEqual(errorMessage, notFoundResult.Value);
     }
-
 
     [Test]
     public async Task Transfer_ReturnsOk_WhenTransferSucceeds()
@@ -188,5 +182,55 @@ class DirectorManagementControllerTests
         Assert.IsInstanceOf<ForbidResult>(result);
     }
 
+    [Test]
+    public async Task Transfer_ReturnsBadRequest_WhenInvalidOperationExceptionThrown()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = Guid.NewGuid(),
+            ToOfficialId = Guid.NewGuid()
+        };
 
+        var exceptionMessage = "Invalid transfer operation.";
+
+        _directorServiceMock
+            .Setup(s => s.TransferDirectorPosition(providerId, request))
+            .ThrowsAsync(new InvalidOperationException(exceptionMessage));
+
+        // Act
+        var result = await _controller.Transfer(providerId, request);
+
+        // Assert
+        var badRequestResult = result as BadRequestObjectResult;
+        Assert.IsNotNull(badRequestResult);
+        Assert.AreEqual(exceptionMessage, badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task Transfer_ReturnsNotFound_WhenKeyNotFoundExceptionThrown()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = Guid.NewGuid(),
+            ToOfficialId = Guid.NewGuid()
+        };
+
+        var exceptionMessage = "One or both officials not found.";
+
+        _directorServiceMock
+            .Setup(s => s.TransferDirectorPosition(providerId, request))
+            .ThrowsAsync(new KeyNotFoundException(exceptionMessage));
+
+        // Act
+        var result = await _controller.Transfer(providerId, request);
+
+        // Assert
+        var notFoundResult = result as NotFoundObjectResult;
+        Assert.IsNotNull(notFoundResult);
+        Assert.AreEqual(exceptionMessage, notFoundResult.Value);
+    }
 }
