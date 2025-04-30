@@ -247,29 +247,10 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         // Arrange
         var existingEventId = Guid.NewGuid();
-        var competitiveEvent = new CompetitiveEvent
-        {
-            Id = existingEventId,
-            Title = "Old Title",
-            SubDirections = new List<SubDirection>(),
-            CompetitiveEventDescriptionItems =
-            [
-                new CompetitiveEventDescriptionItem
-                {
-                    Id = Guid.NewGuid(),
-                    Description = "Description 1",
-                    SectionName = "Section 1"
-                }
-            ]
-        };
         var newCompetitiveEvent = new CompetitiveEvent
         {
             Id = existingEventId,
             Title = "New Title",
-            SubDirections = new List<SubDirection>()
-            {
-                new() { Id = 1, DirectionId = 1, IsDeleted = false, Direction = new() { Id = 1, IsDeleted = false } }
-            },
             CompetitiveEventDescriptionItems =
             [
                 new CompetitiveEventDescriptionItem
@@ -280,13 +261,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 }
             ]
         };
-
         var updateDto = new CompetitiveEventCreateUpdateDto
         {
             Id = existingEventId,
             Title = "New Title",
             SubDirectionIds = [1],
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
+            CompetitiveEventDescriptionItems = []
         };
 
         mockCompetitiveEventRepository
@@ -294,7 +274,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
                existingEventId,
                string.Empty,
                It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
-           .ReturnsAsync(competitiveEvent)
+           .ReturnsAsync(newCompetitiveEvent)
            .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
@@ -305,14 +285,14 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 It.IsAny<Expression<Func<SubDirection, bool>>>(),
                 string.Empty,
                 It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
-            .ReturnsAsync(new List<SubDirection>() { new() { Id = 1 } })
+            .ReturnsAsync([new() { Id = 1, DirectionId = 1, IsDeleted = false, Direction = new() { Id = 1, IsDeleted = false } }])
             .Verifiable(Times.Once);
         contactsService
             .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventCreateUpdateDto>()))
             .Verifiable(Times.Once);
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(newCompetitiveEvent)
+            .Returns<Func<Task<CompetitiveEvent>>>(f => f())
             .Verifiable(Times.Once);
 
         // Act
@@ -385,7 +365,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var updateDto = CreateUpdateDto(eventId, existingDescriptionItemId, newDescriptionItemId);
 
         SetupMocksForUpdateTest(competitiveEvent, updatedCompetitiveEvent, eventId);
-
 
         // Act
         var result = await service.Update(updateDto);

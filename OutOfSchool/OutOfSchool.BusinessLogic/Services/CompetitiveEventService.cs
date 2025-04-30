@@ -250,7 +250,7 @@ public class CompetitiveEventService(
     /// <returns>True if the event exists, otherwise - false</returns>
     private Task<bool> Exists(Guid id)
     {
-        logger.LogInformation($"Checking if Competitive event exists by Id started. Looking Id = {id}.");
+        logger.LogInformation("Checking if Competitive event exists by Id started. Looking Id = {id}.", id);
 
         return competitiveEventRepository.Any(x => x.Id == id);
     }
@@ -284,7 +284,7 @@ public class CompetitiveEventService(
         //fill in SubDirections
         if (!dto.SubDirectionIds.IsNullOrEmpty())
         {
-            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)).ToList();
+            competitiveEvent.SubDirections = [.. await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)];
         }
 
         if (competitiveEvent.SubDirections.IsNullOrEmpty())
@@ -343,7 +343,7 @@ public class CompetitiveEventService(
 
         if (!dto.SubDirectionIds.IsNullOrEmpty())
         {
-            competitiveEvent.SubDirections = (await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id))).ToList();
+            competitiveEvent.SubDirections = [.. await subDirectionRepository.GetByFilter(sd => dto.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)];
         }
 
         if (competitiveEvent.SubDirections.IsNullOrEmpty())
@@ -504,7 +504,7 @@ public class CompetitiveEventService(
 
         await competitiveEventRepository.RunInTransaction(TransactionOperation).ConfigureAwait(false);
 
-        logger.LogInformation($"{nameof(CompetitiveEvent)} with Id = {id} successfully deleted.");
+        logger.LogInformation("{EntityType} with Id = {id} successfully deleted.", nameof(CompetitiveEvent), id);
     }
 
     #endregion
