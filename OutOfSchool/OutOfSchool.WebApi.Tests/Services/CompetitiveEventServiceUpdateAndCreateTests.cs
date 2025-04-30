@@ -218,20 +218,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>(),
             SubDirectionIds = []
         };
-        var competitiveEvent = new CompetitiveEvent
-        {
-            Title = "Title",
-            SubDirections = new List<SubDirection>(),
-            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItem>()
-            {
-                new CompetitiveEventDescriptionItem
-                {
-                    Id = Guid.NewGuid(),
-                    Description = "Description 1",
-                    SectionName = "Section 1"
-                }
-            }
-        };
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<InvalidOperationException>(
@@ -414,6 +400,59 @@ class CompetitiveEventServiceUpdateAndCreateTests
             async () => await service.Update(updateDto));
         Assert.That(ex.Message, Does.Contain("Failed to update CompetitiveEvent. The passed CompetitiveEvent dto does not contain any existing SubDirection."));
         Mock.VerifyAll();
+    }
+    #endregion
+
+    #region Ctor
+    [Test]
+    public void Ctor_WhenCompetitiveEventRepositoryNotSet_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => new CompetitiveEventService(
+            null,
+            mockDescriptionItemRepository.Object,
+            mockSubDirectionRepository.Object,
+            mockLogger.Object,
+            mockLocalizer.Object,
+            userService.Object,
+            contactsService.Object,
+            competitiveImagesService.Object));
+
+        Assert.That(ex.Message, Does.Contain("Value cannot be null. (Parameter 'competitiveEventRepository')"));
+    }
+
+    [Test]
+    public void Ctor_WhenDescriptionItemRepositoryNotSet_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => new CompetitiveEventService(
+            mockCompetitiveEventRepository.Object,
+            null,
+            mockSubDirectionRepository.Object,
+            mockLogger.Object,
+            mockLocalizer.Object,
+            userService.Object,
+            contactsService.Object,
+            competitiveImagesService.Object));
+
+        Assert.That(ex.Message, Does.Contain("Value cannot be null. (Parameter 'descriptionItemRepository')"));
+    }
+
+    [Test]
+    public void Ctor_WhenSubDirectionRepositoryNotSet_ThrowsArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => new CompetitiveEventService(
+            mockCompetitiveEventRepository.Object,
+            mockDescriptionItemRepository.Object,
+            null,
+            mockLogger.Object,
+            mockLocalizer.Object,
+            userService.Object,
+            contactsService.Object,
+            competitiveImagesService.Object));
+
+        Assert.That(ex.Message, Does.Contain("Value cannot be null. (Parameter 'subDirectionRepository')"));
     }
     #endregion
 
