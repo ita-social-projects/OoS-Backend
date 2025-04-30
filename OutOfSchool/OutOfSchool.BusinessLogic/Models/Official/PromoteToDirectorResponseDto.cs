@@ -14,7 +14,7 @@ namespace OutOfSchool.BusinessLogic.Models.Official
     }
 }
 
-public static class OfficialExtensions
+public static class PromoteToDirectorExtension
 {
     public static PromoteToDirectorResponseDto ToPromoteDto(
         this OutOfSchool.Services.Models.Official official,
