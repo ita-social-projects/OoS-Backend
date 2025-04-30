@@ -4,7 +4,6 @@ using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -90,21 +89,7 @@ public class DirectorManagementService : IDirectorManagementService
                 await _positionRepository.Update(official.Position);
 
                 // 2. Create a new position for the director
-                var createDto = new PositionCreateUpdateDto
-                {
-                    FullName = "Директор ЗО",
-                    ShortName = "Директор",
-                    GenitiveName = "Директору",
-                    SeatsAmount = official.Position.SeatsAmount,
-                    Language = official.Position.Language,
-                    Rate = official.Position.Rate,
-                    Tariff = official.Position.Tariff,
-                    ClassifierType = official.Position.ClassifierType,
-                    Department = official.Position.Department,
-                    IsForRuralAreas = official.Position.IsForRuralAreas,
-                    IsTeachingPosition = false,
-                    PositionType = PositionType.Director,
-                };
+               var createDto = official.Position.ToDirectorCreateDto();
                 var newDirectorPosition = await _positionService.CreateAsync(createDto, providerId);
 
                 // Connect new position to the official
@@ -121,14 +106,8 @@ public class DirectorManagementService : IDirectorManagementService
 
                 _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
                             official.Id, providerId, newDirectorPosition.Id);
-                return new PromoteToDirectorResponseDto
-                {
-                    OfficialId = official.Id,
-                    PositionId = newDirectorPosition.Id,
-                    ActiveFrom = newDirectorPosition.ActiveFrom,
-                    PositionType = newDirectorPosition.PositionType,
-                    FullName = newDirectorPosition.FullName,
-                };
+
+                return official.ToPromoteDto(newDirectorPosition);
             });
         }
         catch (Exception ex)
