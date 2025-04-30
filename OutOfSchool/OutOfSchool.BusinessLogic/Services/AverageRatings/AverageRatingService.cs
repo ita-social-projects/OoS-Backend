@@ -1,5 +1,4 @@
-﻿using NuGet.Packaging;
-using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Common.QuartzConstants;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
@@ -27,7 +26,7 @@ public class AverageRatingService(
 
         logger.LogInformation("Getting the average rating by workshop's or provider's id finished.");
 
-        return rating.ToDto();
+        return rating?.ToDto();
     }
 
     /// <inheritdoc/>
