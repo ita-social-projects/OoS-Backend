@@ -228,6 +228,7 @@ public class CompetitiveEventService(
                 else
                 {
                     var newDescItem = descItemDto.ToModel();
+                    newDescItem.Id = Guid.Empty;
                     newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
                     await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);
                 }
