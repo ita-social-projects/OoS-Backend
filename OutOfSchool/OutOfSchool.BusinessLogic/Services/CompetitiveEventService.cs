@@ -228,6 +228,7 @@ public class CompetitiveEventService(
                 else
                 {
                     var newDescItem = descItemDto.ToModel();
+                    // Ensure new items always have empty GUID regardless of what the DTO provided
                     newDescItem.Id = Guid.Empty;
                     newDescItem.CompetitiveEventId = currentCompetitiveEvent.Id;
                     await descriptionItemRepository.Create(newDescItem).ConfigureAwait(false);

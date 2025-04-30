@@ -342,8 +342,8 @@ class CompetitiveEventServiceUpdateAndCreateTests
                 new CompetitiveEventDescriptionItem
                 {
                     Id = Guid.NewGuid(),
-                    Description = "Description 1",
-                    SectionName = "Section 1"
+                    Description = "Updated Description",
+                    SectionName = "Updated Section"
                 }
             ]
         };
@@ -540,12 +540,20 @@ class CompetitiveEventServiceUpdateAndCreateTests
     {
         Assert.IsNotNull(result);
         Assert.AreEqual("Updated Event", result.Title);
+
         // Validate SubDirections were properly updated
         Assert.IsTrue(result.SubDirectionIds.Contains(1), "SubDirection was not properly updated");
+
         // Validate DescriptionItems were properly updated
         Assert.IsTrue(result.CompetitiveEventDescriptionItems.Count > 0, "Description items should not be empty");
         Assert.IsFalse(result.CompetitiveEventDescriptionItems.Any(d => d.Id == mustBeDeletedId),
         "Description item that should have been deleted still exists");
+
+        // Validate description item content
+        var descItem = result.CompetitiveEventDescriptionItems.First();
+        Assert.AreEqual("Updated Description", descItem.Description, "Description content was not updated correctly");
+        Assert.AreEqual("Updated Section", descItem.SectionName, "Section name was not updated correctly");
+
         Mock.VerifyAll();
     }
 }
