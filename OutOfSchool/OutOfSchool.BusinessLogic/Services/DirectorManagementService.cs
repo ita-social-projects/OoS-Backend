@@ -172,14 +172,7 @@ public class DirectorManagementService : IDirectorManagementService
                 _logger.LogDebug("Transferred director from {From} to {To} for provider {ProviderId}",
                  request.FromOfficialId, request.ToOfficialId, providerId);
 
-                return new TransferDirectorResponseDto
-                {
-                    ProviderId = providerId,
-                    PreviousDirectorIndividualId = fromOfficial.IndividualId,
-                    PreviousDirectorFullName = $"{fromOfficial.Individual.LastName} {fromOfficial.Individual.FirstName}",
-                    NewDirectorIndividualId = toOfficial.IndividualId,
-                    NewDirectorFullName = $"{toOfficial.Individual.LastName} {toOfficial.Individual.FirstName}"
-                };
+                return fromOfficial.ToTransferDirectorDto(toOfficial, providerId);
             });
         }
         catch (Exception ex)
