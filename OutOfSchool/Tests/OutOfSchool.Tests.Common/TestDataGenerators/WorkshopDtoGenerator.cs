@@ -3,6 +3,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.Tag;
+using System;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -21,6 +22,11 @@ public static class WorkshopDtoGenerator
         Id = f.Random.Long(1, 100),
         Name = f.Commerce.ProductName()
     }))
+    .RuleFor(x => x.StudyPeriodDates, f => new StudyPeriodDatesDto
+    {
+        StartDate = new DateOnly(2025, 9, 1),
+        EndDate = new DateOnly(2026, 5, 31),
+    })
     .CustomInstantiator(f =>
     {
         var dto = new WorkshopDto();
