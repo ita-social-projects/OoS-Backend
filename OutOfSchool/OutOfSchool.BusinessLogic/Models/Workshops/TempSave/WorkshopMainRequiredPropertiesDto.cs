@@ -42,6 +42,8 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [CollectionNotEmpty(ErrorMessage = "At least one DateTime range is required")]
     public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [Required(ErrorMessage = "Study period dates is required")]
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
     [Required(ErrorMessage = "Form of learning is required")]
@@ -97,7 +99,7 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
         if (StudyPeriodDates != null && StudyPeriodDates.StartDate > StudyPeriodDates.EndDate)
         {
             yield return new ValidationResult(
-                "StudyPeriodStartDate must be earlier than StudyPeriodEndDate.",
+                "Study period start date must be earlier than study period end date.",
                 [nameof(StudyPeriodDates)]);
         }
     }

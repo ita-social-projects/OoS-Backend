@@ -38,7 +38,9 @@ public static class WorkshopCreateRequestDtoExtensions
             PayRate = dto.PayRate ?? default,
             AreThereBenefits = dto.AreThereBenefits,
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
-           
+            StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
+            StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
+
             WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel(),
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
             Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),

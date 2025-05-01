@@ -31,6 +31,8 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel() ?? [];
+        model.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
+        model.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
         model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
@@ -85,6 +87,8 @@ public static class WorkshopCreateUpdateDtoExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             EducationalShift = EducationalShift.First,
             LanguageOfEducationId = dto.LanguageOfEducationId,
+            StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
+            StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
             AgeComposition = AgeComposition.SameAge,
             Coverage = dto.Coverage,
             WorkshopType = dto.WorkshopType,

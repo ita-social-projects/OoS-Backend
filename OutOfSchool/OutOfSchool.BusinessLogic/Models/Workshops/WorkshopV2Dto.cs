@@ -36,6 +36,8 @@ public static class WorkshopV2DtoExtensions
             ProviderTitle = dto.ProviderTitle,
             ProviderTitleEn = dto.ProviderTitleEn,
             IsPaid = dto.IsPaid,
+            StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
+            StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
             Keywords = dto.Keywords,
             Address = dto.Address?.ToDraft(),
             OwnershipType = dto.ProviderOwnership,
@@ -124,6 +126,7 @@ public static class WorkshopV2DtoExtensions
             PreferentialTermsOfParticipation = draft.WorkshopDraftContent?.PreferentialTermsOfParticipation,
             EducationalShift = draft.WorkshopDraftContent?.EducationalShift ?? default,
             LanguageOfEducationId = draft.WorkshopDraftContent?.LanguageOfEducationId ?? default,
+            StudyPeriodDates = draft.WorkshopDraftContent?.ToStudyPeriodDatesDto(),
             AgeComposition = draft.WorkshopDraftContent?.AgeComposition ?? default,
             Coverage = draft.WorkshopDraftContent?.Coverage ?? default,
             WorkshopType = draft.WorkshopDraftContent?.WorkshopType ?? default,
@@ -165,6 +168,8 @@ public static class WorkshopV2DtoExtensions
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel();
+        model.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
+        model.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
         model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
@@ -232,6 +237,7 @@ public static class WorkshopV2DtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             EducationalShift = model.EducationalShift,
             LanguageOfEducationId = model.LanguageOfEducationId,
+            StudyPeriodDates = model.ToStudyPeriodDatesDto(),
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
             WorkshopType = model.WorkshopType,
