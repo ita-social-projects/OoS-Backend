@@ -9,7 +9,6 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class DirectorManagementController : ControllerBase
 {
     private readonly IDirectorManagementService directorService;
-    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<DirectorManagementController> logger;
 
     public DirectorManagementController(
@@ -18,7 +17,6 @@ public class DirectorManagementController : ControllerBase
         ILogger<DirectorManagementController> logger)
     {
         this.directorService = directorService;
-        this.currentUserService = currentUserService;
         this.logger = logger;
     }
 

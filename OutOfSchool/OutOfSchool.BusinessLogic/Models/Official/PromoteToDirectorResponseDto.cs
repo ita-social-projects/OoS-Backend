@@ -1,19 +1,15 @@
-﻿
-using OutOfSchool.BusinessLogic.Models.Official;
-using OutOfSchool.Common.Enums;
+﻿using OutOfSchool.Common.Enums;
 
-namespace OutOfSchool.BusinessLogic.Models.Official
+namespace OutOfSchool.BusinessLogic.Models.Official;
+
+public class PromoteToDirectorResponseDto
 {
-    public class PromoteToDirectorResponseDto
-    {
-        public Guid OfficialId { get; set; }
-        public Guid PositionId { get; set; }
-        public DateOnly ActiveFrom { get; set; }
-        public PositionType PositionType { get; set; }
-        public string FullName { get; set; }
-    }
+    public Guid OfficialId { get; set; }
+    public Guid PositionId { get; set; }
+    public DateOnly ActiveFrom { get; set; }
+    public PositionType PositionType { get; set; }
+    public string FullName { get; set; }
 }
-
 public static class PromoteToDirectorExtension
 {
     public static PromoteToDirectorResponseDto ToPromoteDto(
@@ -30,3 +26,5 @@ public static class PromoteToDirectorExtension
         };
     }
 }
+
+
