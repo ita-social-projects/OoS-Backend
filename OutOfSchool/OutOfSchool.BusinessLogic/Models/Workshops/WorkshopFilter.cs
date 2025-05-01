@@ -83,6 +83,18 @@ public class WorkshopFilter : OffsetFilter
     public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
 
     public PayRateType PayRate { get; set; } = PayRateType.None;
+
+    [Range(1, 31, ErrorMessage = "Day must be in range from 1 to 31")]
+    public int? StudyPeriodStartDay { get; set; }
+
+    [Range(1, 31, ErrorMessage = "Day must be in range from 1 to 31")]
+    public int? StudyPeriodEndDay { get; set; }
+
+    [Range(1, 12, ErrorMessage = "Month must be in range from 1 to 12")]
+    public int? StudyPeriodStartMonth { get; set; }
+
+    [Range(1, 12, ErrorMessage = "Month must be in range from 1 to 12")]
+    public int? StudyPeriodEndMonth { get; set; }
 }
 
 public static class WorkshopFilterExtensions
@@ -124,5 +136,9 @@ public static class WorkshopFilterExtensions
             AreThereBenefits = dto.AreThereBenefits,
             Coverage = dto.Coverage,
             PayRate = dto.PayRate,
+            StudyPeriodStartDay = dto.StudyPeriodStartDay,
+            StudyPeriodEndDay = dto.StudyPeriodEndDay,
+            StudyPeriodStartMonth = dto.StudyPeriodStartMonth,
+            StudyPeriodEndMonth = dto.StudyPeriodEndMonth
         };
 }

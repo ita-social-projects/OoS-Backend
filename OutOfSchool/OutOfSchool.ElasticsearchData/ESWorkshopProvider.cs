@@ -136,6 +136,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddIsInclusiveQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
         AddPayRateTypeQuery(query, filter);
+        AddStudyPeriodDatesQuery(query, filter);
 
         return query;
     }
@@ -561,6 +562,41 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.PayRate))
             {
                 Value = filter.PayRate.ToString(),
+            });
+        }
+    }
+
+    private void AddStudyPeriodDatesQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.StudyPeriodStartDay.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodStartDay))
+            {
+                Value = filter.StudyPeriodStartDay.Value,
+            });
+        }
+
+        if (filter.StudyPeriodEndDay.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodEndDay))
+            {
+                Value = filter.StudyPeriodEndDay.Value,
+            });
+        }
+
+        if (filter.StudyPeriodStartMonth.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodStartMonth))
+            {
+                Value = filter.StudyPeriodStartMonth.Value,
+            });
+        }
+
+        if (filter.StudyPeriodEndMonth.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodEndMonth))
+            {
+                Value = filter.StudyPeriodEndMonth.Value,
             });
         }
     }

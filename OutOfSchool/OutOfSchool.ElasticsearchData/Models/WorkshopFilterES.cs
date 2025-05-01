@@ -78,4 +78,12 @@ public class WorkshopFilterES
     public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
 
     public PayRateType PayRate { get; set; } = PayRateType.None;
+
+    public int? StudyPeriodStartDay { get; set; }
+
+    public int? StudyPeriodEndDay { get; set; }
+
+    public int? StudyPeriodEndMonth { get; set; }
+
+    public int? StudyPeriodStartMonth { get; set; }
 }

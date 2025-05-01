@@ -40,5 +40,9 @@ public static class WorkshopFilterWithSettlementsExtensions
             AreThereBenefits = filter.AreThereBenefits,
             Coverage = filter.Coverage,
             PayRate = filter.PayRate,
+            StudyPeriodStartDay = filter.StudyPeriodStartDay,
+            StudyPeriodEndDay = filter.StudyPeriodEndDay,
+            StudyPeriodStartMonth = filter.StudyPeriodStartMonth,
+            StudyPeriodEndMonth = filter.StudyPeriodEndMonth,
         };
 }
