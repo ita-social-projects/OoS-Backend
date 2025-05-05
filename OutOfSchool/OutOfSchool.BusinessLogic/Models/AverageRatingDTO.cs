@@ -15,7 +15,12 @@ public static class AverageRatingDtoExtensions
     {
         if (averageRating is null)
         {
-            return null;
+            return new AverageRatingDto
+            {
+                Rate = 0,
+                RateQuantity = 0,
+                EntityId = Guid.Empty
+            };
         }
         return new()
         {
