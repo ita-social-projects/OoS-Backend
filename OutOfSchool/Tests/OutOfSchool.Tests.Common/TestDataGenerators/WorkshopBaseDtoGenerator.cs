@@ -34,7 +34,12 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
-        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>());
+        .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>())
+        .RuleFor(x => x.StudyPeriodDates, f => new StudyPeriodDatesDto
+        {
+            StartDate = new DateOnly(2025, 9, 1),
+            EndDate = new DateOnly(2026, 5, 31),
+        });
 
     public static WorkshopBaseDto Generate() => Faker.Generate();
 

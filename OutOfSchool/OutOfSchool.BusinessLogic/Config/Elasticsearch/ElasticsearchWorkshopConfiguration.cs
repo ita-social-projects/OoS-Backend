@@ -53,6 +53,10 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
                     .Boolean(n => n.AreThereBenefits)
                     .Text(n => n.PreferentialTermsOfParticipation)
                     .Keyword(n => n.Coverage)
-                    .Keyword(n => n.Tags)));
+                    .Keyword(n => n.Tags)
+                    .IntegerNumber(n => n.StudyPeriodStartDay)
+                    .IntegerNumber(n => n.StudyPeriodEndDay)
+                    .IntegerNumber(n => n.StudyPeriodStartMonth)
+                    .IntegerNumber(n => n.StudyPeriodEndMonth)));
     }
 }

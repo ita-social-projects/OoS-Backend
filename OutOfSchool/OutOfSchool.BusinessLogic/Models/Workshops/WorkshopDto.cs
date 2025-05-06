@@ -104,6 +104,10 @@ public static class WorkshopDtoExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             Coverage = dto.Coverage,
             Tags = dto.Tags?.Select(x => x.Name).ToList() ?? [],
+            StudyPeriodStartDay = dto.StudyPeriodDates.StartDate.Day,
+            StudyPeriodStartMonth = dto.StudyPeriodDates.StartDate.Month,
+            StudyPeriodEndDay = dto.StudyPeriodDates.EndDate.Day,
+            StudyPeriodEndMonth = dto.StudyPeriodDates.EndDate.Month,
         };
     }
 
@@ -150,6 +154,7 @@ public static class WorkshopDtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             EducationalShift = model.EducationalShift,
             LanguageOfEducationId = model.LanguageOfEducationId,
+            StudyPeriodDates = model.ToStudyPeriodDatesDto(),
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
             WorkshopType = model.WorkshopType,

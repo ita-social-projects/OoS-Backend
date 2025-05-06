@@ -36,6 +36,7 @@ public static class WorkshopCreateRequestDtoGenerator
             CompetitiveSelection = model.CompetitiveSelection,
             CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
             ProviderId = model.ProviderId,
+            StudyPeriodDates = model.ToStudyPeriodDatesDto(),
 
             WorkshopType = model.WorkshopType,
             ParentWorkshopId = model.ParentWorkshopId,

@@ -65,6 +65,12 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Language of education is required")]
     public uint LanguageOfEducationId { get; set; } = 1;
 
+    [Required(ErrorMessage = "Study period start date is required")]
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    [Required(ErrorMessage = "Study period end date is required")]
+    public DateOnly StudyPeriodEndDate { get; set; }
+
     #endregion
 
     [MaxLength(500)]

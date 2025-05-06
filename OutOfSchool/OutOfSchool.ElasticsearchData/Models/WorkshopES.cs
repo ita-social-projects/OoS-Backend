@@ -62,6 +62,14 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
+    public int? StudyPeriodStartDay { get; set; }
+
+    public int? StudyPeriodEndDay { get; set; }
+
+    public int? StudyPeriodEndMonth { get; set; }
+
+    public int? StudyPeriodStartMonth { get; set; }
+
     public WorkshopStatus Status { get; set; }
 
     public bool IsBlocked { get; set; }
