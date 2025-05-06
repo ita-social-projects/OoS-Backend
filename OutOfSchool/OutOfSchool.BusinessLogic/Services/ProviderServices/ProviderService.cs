@@ -190,7 +190,7 @@ public class ProviderService(
         }
 
         Func<IQueryable<Provider>, IQueryable<Provider>> includeFunc =
-            p => p.Include(p => p.ProviderSectionItems)
+            p => p.Include(p => p.ProviderSectionItems.OrderBy(psi => psi.Name))
                   .Include(p => p.Type)
                   .Include(p => p.Institution)
                   .Include(p => p.Images)
