@@ -50,8 +50,6 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
             Contacts = model.Contacts?.ToDto(),
-            DirectionIds = model.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).Distinct().ToList() ?? [],
-            SubDirections = string.Join(',', model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Title) ?? []),
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
             Coverage = model.Coverage?.ToDto(),
         };

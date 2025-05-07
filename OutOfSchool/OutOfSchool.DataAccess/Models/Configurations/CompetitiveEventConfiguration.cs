@@ -41,6 +41,6 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
             .IsRequired();
 
         builder.HasMany(c => c.SubDirections)
-            .WithMany(s => s.CompetitiveEvents);
+            .WithMany();
     }
 }

@@ -1,5 +1,4 @@
-﻿using OutOfSchool.Services.Models.CompetitiveEvents;
-using OutOfSchool.Services.Models.SubordinationStructure;
+﻿using OutOfSchool.Services.Models.SubordinationStructure;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,6 +25,4 @@ public class SubDirection : IKeyedEntity<long>, ISoftDeleted
     public virtual Direction Direction { get; set; }
 
     public virtual ICollection<InstitutionHierarchy> InstitutionHierarchies { get; set; }
-
-    public virtual List<CompetitiveEvent> CompetitiveEvents { get; set; } = [];
 }
