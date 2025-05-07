@@ -32,10 +32,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public float Rating { get; set; } = 0;
     public int NumberOfRatings { get; set; } = 0;
-    
-    public string Institution { get; set; }
-
-    public string InstitutionHierarchy { get; set; }
 
     public List<long> DirectionIds { get; set; }
     
@@ -121,11 +117,9 @@ public static class CompetitiveEventInfoDtoExtensions
             ScheduledEndTime = model.ScheduledEndTime,
             NumberOfSeats = model.NumberOfSeats,
             NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
-            OrganizerOfTheEventId = model.OrganizerOfTheEventId ?? default,
-            Institution = model.InstitutionHierarchy?.Institution?.Title,
-            InstitutionHierarchy = model.InstitutionHierarchy?.Title,
-            DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).ToList(),
-            SubDirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(x => x.Id).ToList(),
+            OrganizerOfTheEventId = model.OrganizerOfTheEventId,
+            DirectionIds = model.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).Distinct().ToList() ?? [],
+            SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
             Coverage = model.Coverage?.ToInfoDto(),
             RegistrationStartTime = model.RegistrationStartTime,
             RegistrationEndTime = model.RegistrationEndTime,

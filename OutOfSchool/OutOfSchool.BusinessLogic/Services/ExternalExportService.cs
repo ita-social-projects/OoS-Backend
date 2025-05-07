@@ -58,8 +58,7 @@ public class ExternalExportService(
                     .Include(ce => ce.Parent)
                     .Include(ce => ce.CompetitiveEventAccountingType)
                     .Include(ce => ce.Coverage)
-                    .Include(ce => ce.InstitutionHierarchy)
-                    .ThenInclude(i => i.SubDirections)
+                    .Include(ce => ce.SubDirections)
                     .ThenInclude(s => s.Direction)
                     .IncludeContactsWithCodeficatorHierarchy();
 

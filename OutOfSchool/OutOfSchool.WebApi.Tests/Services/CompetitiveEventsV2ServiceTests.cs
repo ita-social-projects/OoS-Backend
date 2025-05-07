@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -14,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
@@ -31,6 +33,7 @@ public class CompetitiveEventsV2ServiceTests
     private Mock<ICurrentUserService> currentUserMock;
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> imageServiceMock;
+    private Mock<IEntityRepository<long, SubDirection>> mockSubDirectionRepository;
 
     private CompetitiveEventService service;
 
@@ -41,12 +44,15 @@ public class CompetitiveEventsV2ServiceTests
         loggerMock = new Mock<ILogger<CompetitiveEventService>>();
         localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         currentUserMock = new Mock<ICurrentUserService>();
+        currentUserMock.Setup(u => u.UserHasRights(It.IsAny<IUserRights>())).Returns(Task.CompletedTask);
         contactsServiceMock = new Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>>();
         imageServiceMock = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>>();
+        mockSubDirectionRepository = new Mock<IEntityRepository<long, SubDirection>>();
 
         service = new CompetitiveEventService(
             repoMock.Object,
             Mock.Of<IEntityRepository<Guid, CompetitiveEventDescriptionItem>>(),
+            mockSubDirectionRepository.Object,
             loggerMock.Object,
             localizerMock.Object,
             currentUserMock.Object,
@@ -57,44 +63,87 @@ public class CompetitiveEventsV2ServiceTests
     [Test]
     public async Task CreateV2_ReturnsMappedDto_WhenSuccessful()
     {
-        // Arrange
-        var entity = new CompetitiveEvent { Id = Guid.NewGuid() };
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var createdEntity = new CompetitiveEvent
+        {
+            Id = Guid.NewGuid(),
+            Title = "New Title",
+            SubDirections = new List<SubDirection>()
+            {
+                new() { Id = 1, DirectionId = 1, IsDeleted = false, Direction = new() { Id = 1, IsDeleted = false } }
+            },
+            CompetitiveEventDescriptionItems =
+            [
+                new CompetitiveEventDescriptionItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Description 1",
+                    SectionName = "Section 1"
+                }
+            ]
+        };
 
-        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>())).ReturnsAsync(entity);
+        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
+        var expectedDto = new CompetitiveEventV2Dto { Id = createdEntity.Id };
+
+        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
+            .ReturnsAsync(createdEntity)
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
-            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f())
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.CreateV2(dto);
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(entity.Id, result.CompetitiveEventV2.Id);
+        Assert.AreEqual(createdEntity.Id, result.CompetitiveEventV2.Id);
+        Mock.VerifyAll();
     }
 
     [Test]
     public async Task CreateV2_HandlesNullImagesCorrectly()
     {
+        // Arrange
         var id = Guid.NewGuid();
         var dto = new CompetitiveEventV2CreateRequestDto
         {
             ImageFiles = null,
-            CoverImage = null
+            CoverImage = null,
+            SubDirectionIds = [1]
         };
         var entity = new CompetitiveEvent { Id = id };
         var resultDto = new CompetitiveEventV2Dto { Id = id };
 
+        mockSubDirectionRepository
+            .Setup(m => m.GetByFilter(
+                It.IsAny<Expression<Func<SubDirection, bool>>>(),
+                string.Empty,
+                It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
+            .Verifiable(Times.Once);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>()))
-            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f());
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageUploadingResult, Result<string>)>>>(f => f())
+            .Verifiable(Times.Once);
+        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
+            .ReturnsAsync(entity)
+            .Verifiable(Times.Once);
 
-        repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>())).ReturnsAsync(entity);
-
+        // Act
         var result = await service.CreateV2(dto);
 
+        // Assert
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.CompetitiveEventV2);
         Assert.That(result.CompetitiveEventV2.Id, Is.EqualTo(id));
+        Mock.VerifyAll();
     }
 
     [Test]

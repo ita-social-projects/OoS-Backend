@@ -49,7 +49,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
             Benefits = dto.Benefits,
             OptionsForPeopleWithDisabilities = dto.OptionsForPeopleWithDisabilities ?? false,
             DescriptionOfOptionsForPeopleWithDisabilities = dto.DescriptionOfOptionsForPeopleWithDisabilities,
-            InstitutionHierarchyId = dto.InstitutionHierarchyId,
             MinimumAge = dto.MinimumAge,
             MaximumAge = dto.MaximumAge ?? 0,
             Price = dto.Price ?? 0,
@@ -86,7 +85,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
         model.Benefits = dto.Benefits;
         model.OptionsForPeopleWithDisabilities = dto.OptionsForPeopleWithDisabilities ?? model.OptionsForPeopleWithDisabilities;
         model.DescriptionOfOptionsForPeopleWithDisabilities = dto.DescriptionOfOptionsForPeopleWithDisabilities;
-        model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
         model.Price = dto.Price ?? model.Price;

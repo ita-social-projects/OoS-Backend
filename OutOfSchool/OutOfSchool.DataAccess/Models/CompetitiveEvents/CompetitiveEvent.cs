@@ -6,7 +6,6 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
@@ -76,7 +75,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(2000)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    public Guid? OrganizerOfTheEventId { get; set; }
+    public Guid OrganizerOfTheEventId { get; set; }
 
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
@@ -103,8 +102,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(2000)]
     public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
-    public Guid? InstitutionHierarchyId { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
@@ -123,7 +120,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     //nav props
     public virtual List<Image<CompetitiveEvent>> Images { get; set; }
-    public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
     public virtual ICollection<Judge> Judges { get; set; }
     public virtual CompetitiveEventCoverage Coverage { get; set; }
 
@@ -131,4 +127,5 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public virtual ICollection<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
     public virtual CompetitiveEventAccountingType CompetitiveEventAccountingType { get; set; }
 
+    public virtual List<SubDirection> SubDirections { get; set; } = [];
 }
