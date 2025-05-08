@@ -1,4 +1,4 @@
-﻿
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Official;
 using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Common.Enums;
@@ -116,9 +116,11 @@ public class DirectorManagementService : IDirectorManagementService
             throw;
         }
     }
-    public async Task<TransferDirectorResponseDto> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
+
+    public async Task<Result<TransferDirectorResponseDto>> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
     {
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
+
         try
         {
             return await _officialRepository.RunInTransaction(async () =>
@@ -130,9 +132,26 @@ public class DirectorManagementService : IDirectorManagementService
                     request.ToOfficialId,
                     includeExpression: _includeOfficialFunc);
 
-                ValidateOfficialsExist(fromOfficial, toOfficial);
-                ValidateSameProvider(fromOfficial, toOfficial, providerId);
-                ValidateCurrentUserIsDirector(fromOfficial, _currentUserService.UserId);
+                var validationResult = ValidateOfficialsExist(fromOfficial, toOfficial);
+                if (!validationResult.Succeeded)
+                {
+                    _logger.LogWarning("Validation failed: {Error}", validationResult.ToString());
+                    return Result<TransferDirectorResponseDto>.Failed(validationResult.Errors.ToArray());
+                }
+
+                validationResult = ValidateSameProvider(fromOfficial, toOfficial, providerId);
+                if (!validationResult.Succeeded)
+                {
+                    _logger.LogWarning("Validation failed: {Error}", validationResult.ToString());
+                    return Result<TransferDirectorResponseDto>.Failed(validationResult.Errors.ToArray());
+                }
+
+                validationResult = ValidateCurrentUserIsDirector(fromOfficial, _currentUserService.UserId);
+                if (!validationResult.Succeeded)
+                {
+                    _logger.LogWarning("Validation failed: {Error}", validationResult.ToString());
+                    return Result<TransferDirectorResponseDto>.Failed(validationResult.Errors.ToArray());
+                }
 
                 var now = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -167,44 +186,73 @@ public class DirectorManagementService : IDirectorManagementService
                     fromOfficial.Position.PositionType.ToString(),
                     PositionType.Director.ToString());
 
-                _logger.LogDebug("Transferred director from {From} to {To} for provider {ProviderId}",
-                 request.FromOfficialId, request.ToOfficialId, providerId);
+                _logger.LogInformation("Transferred director from {From} to {To} for provider {ProviderId}",
+                    request.FromOfficialId, request.ToOfficialId, providerId);
 
-                return fromOfficial.ToTransferDirectorDto(toOfficial, providerId);
+                var dto = fromOfficial.ToTransferDirectorDto(toOfficial, providerId);
+                return Result<TransferDirectorResponseDto>.Success(dto);
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to transfer Director position. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.FromOfficialId);
-            throw;
+            _logger.LogError(ex, "Unexpected error during director transfer. ProviderId: {ProviderId}, FromOfficialId: {FromOfficialId}",
+                providerId, request.FromOfficialId);
+            return Result<TransferDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "TransferFailed",
+                Description = "An unexpected error occurred during the transfer process."
+            });
         }
     }
-    private void ValidateOfficialsExist(Official from, Official to)
+
+    private static OperationResult ValidateOfficialsExist(Official from, Official to)
     {
         if (from == null || to == null)
         {
-            throw new KeyNotFoundException("One or both officials not found.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "OfficialsNotFound",
+                Description = "One or both officials were not found."
+            });
         }
+
+        return OperationResult.Success;
     }
 
-    private void ValidateSameProvider(Official from, Official to, Guid providerId)
+    private static OperationResult ValidateSameProvider(Official from, Official to, Guid providerId)
     {
         if (from.Position.ProviderId != providerId || to.Position.ProviderId != providerId)
         {
-            throw new InvalidOperationException("Officials must belong to the same provider.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "DifferentProvider",
+                Description = "Officials must belong to the same provider."
+            });
         }
+
+        return OperationResult.Success;
     }
 
-    private void ValidateCurrentUserIsDirector(Official from, string currentUserId)
+    private static OperationResult ValidateCurrentUserIsDirector(Official from, string currentUserId)
     {
         if (from.Individual.UserId != currentUserId)
         {
-            throw new UnauthorizedAccessException("Only the current director can initiate a transfer.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "Unauthorized",
+                Description = "Only the current director can initiate a transfer."
+            });
         }
 
         if (from.Position.PositionType != PositionType.Director)
         {
-            throw new InvalidOperationException("Only a director can transfer the director position.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "NotDirector",
+                Description = "Only a director can transfer the director position."
+            });
         }
+
+        return OperationResult.Success;
     }
 }

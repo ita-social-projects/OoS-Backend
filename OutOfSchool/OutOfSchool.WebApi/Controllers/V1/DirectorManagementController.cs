@@ -71,25 +71,23 @@ public class DirectorManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Transfer(Guid providerId, [FromBody] TransferDirectorRequestDto request)
     {
-        try
+        var result = await directorService.TransferDirectorPosition(providerId, request);
+        if (result.Succeeded)
         {
-            var result = await directorService.TransferDirectorPosition(providerId, request);
-            return Ok(result);
+            return Ok(result.Value);
         }
-        catch (UnauthorizedAccessException ex)
+        
+        var errorsCodes = result.OperationResult.Errors.Select(x => x.Code).ToList();
+        if (errorsCodes.Contains("Unauthorized"))
         {
-            logger.LogWarning(ex, "Unauthorized transfer attempt.");
             return Forbid();
         }
-        catch (InvalidOperationException ex)
+
+        if (errorsCodes.Contains("OfficialsNotFound"))
         {
-            logger.LogWarning(ex, "Invalid transfer operation.");
-            return BadRequest(ex.Message);
+            return NotFound(result.OperationResult.Errors);
         }
-        catch (KeyNotFoundException ex)
-        {
-            logger.LogWarning(ex, "One or both officials not found.");
-            return NotFound(ex.Message);
-        }
+
+        return BadRequest(result.OperationResult.Errors);
     }
 }
