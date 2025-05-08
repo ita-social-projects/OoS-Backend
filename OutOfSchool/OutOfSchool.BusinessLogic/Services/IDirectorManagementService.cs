@@ -16,7 +16,7 @@ public interface IDirectorManagementService
     /// <param name="providerId">ID of the provider for which the promotion is requested.</param>
     /// <param name="request">DTO containing the ID of the official to promote.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<PromoteToDirectorResponseDto> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request);
+    Task<Result<PromoteToDirectorResponseDto>> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request);
 
     /// <summary>
     /// Transfers the director position from the current director to another employee within the same provider.

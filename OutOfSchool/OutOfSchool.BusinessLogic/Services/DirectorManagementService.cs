@@ -43,7 +43,7 @@ public class DirectorManagementService : IDirectorManagementService
         this._logger = logger;
     }
 
-    public async Task<PromoteToDirectorResponseDto> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request)
+    public async Task<Result<PromoteToDirectorResponseDto>> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request)
     {
         // check if the current user is a deputy director of the provider
         await _currentUserService.UserHasRights(new DeputyDirectorRights(providerId));
@@ -51,7 +51,11 @@ public class DirectorManagementService : IDirectorManagementService
         if (await _positionRepository.DirectorExistsAsync(providerId))
         {
             _logger.LogWarning("Attempted to promote new director for provider {ProviderId}, but one already exists.", providerId);
-            throw new InvalidOperationException($"Director already exists for provider with ID: {providerId}");
+            return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "DirectorAlreadyExists",
+                Description = $"Director already exists for provider with ID: {providerId}"
+            });
         }
         // Check if the current user is a deputy director of the provider
         var userId = _currentUserService.UserId;
@@ -60,7 +64,11 @@ public class DirectorManagementService : IDirectorManagementService
             (initiator.Position.PositionType != PositionType.DeputyDirector))
         {
             _logger.LogWarning("User {UserId} attempted unauthorized promotion. Not Deputy or wrong provider.", userId);
-            throw new UnauthorizedAccessException("Only Director or Deputy of this provider can promote.");
+            return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "Unauthorized",
+                Description = "Only Director or Deputy of this provider can promote."
+            });
         }
 
         // Get the official to be promoted
@@ -68,12 +76,20 @@ public class DirectorManagementService : IDirectorManagementService
         if (official == null)
         {
             _logger.LogWarning("Promotion failed: official with ID {OfficialId} not found.", request.OfficialId);
-            throw new KeyNotFoundException($"Official with ID {request.OfficialId} not found");
+            return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "OfficialNotFound",
+                Description = $"Official with ID {request.OfficialId} not found"
+            });
         }
         if (official.Position?.ProviderId != providerId)
         {
             _logger.LogWarning("Official {OfficialId} does not belong to provider {ProviderId}.", official.Id, providerId);
-            throw new InvalidOperationException("Official does not belong to the specified provider.");
+            return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "WrongProvider",
+                Description = "Official does not belong to the specified provider."
+            });
         }
 
 
@@ -82,14 +98,14 @@ public class DirectorManagementService : IDirectorManagementService
 
         try
         {
-            return await _transactionManagerService.ExecuteInTransactionAsync(async () =>
+            var result = await _transactionManagerService.ExecuteInTransactionAsync(async () =>
             {
                 // Close the old position
                 official.Position.ActiveTo = now;
                 await _positionRepository.Update(official.Position);
 
                 // 2. Create a new position for the director
-               var createDto = official.Position.ToDirectorCreateDto();
+                var createDto = official.Position.ToDirectorCreateDto();
                 var newDirectorPosition = await _positionService.CreateAsync(createDto, providerId);
 
                 // Connect new position to the official
@@ -109,11 +125,16 @@ public class DirectorManagementService : IDirectorManagementService
 
                 return official.ToPromoteDto(newDirectorPosition);
             });
+            return Result<PromoteToDirectorResponseDto>.Success(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to promote employee to Director. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.OfficialId);
-            throw;
+            return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
+            {
+                Code = "PromotionFailed",
+                Description = "An unexpected error occurred during the promotion process."
+            });
         }
     }
 

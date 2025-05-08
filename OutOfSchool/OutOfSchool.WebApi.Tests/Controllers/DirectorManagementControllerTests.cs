@@ -59,7 +59,7 @@ class DirectorManagementControllerTests
 
         _directorServiceMock
             .Setup(s => s.PromoteEmployeeToDirector(providerId, request))
-            .ReturnsAsync(response);
+            .ReturnsAsync(Result<PromoteToDirectorResponseDto>.Success(response));
 
         // Act
         var result = await _controller.Promote(providerId, request);
@@ -78,15 +78,21 @@ class DirectorManagementControllerTests
     }
 
     [Test]
-    public async Task Promote_ReturnsForbid_WhenUnauthorizedAccessExceptionThrown()
+    public async Task Promote_ReturnsForbid_When_Unauthorized()
     {
         // Arrange
         var providerId = Guid.NewGuid();
         var request = new PromoteToDirectorRequestDto { OfficialId = Guid.NewGuid() };
 
+        var error = new OperationError
+        {
+            Code = "Unauthorized",
+            Description = "Only Director or Deputy of this provider can promote."
+        };
+
         _directorServiceMock
             .Setup(s => s.PromoteEmployeeToDirector(providerId, request))
-            .ThrowsAsync(new UnauthorizedAccessException());
+            .ReturnsAsync(Result<PromoteToDirectorResponseDto>.Failed(error));
 
         // Act
         var result = await _controller.Promote(providerId, request);
@@ -95,17 +101,23 @@ class DirectorManagementControllerTests
         Assert.IsInstanceOf<ForbidResult>(result);
     }
 
+
     [Test]
-    public async Task Promote_ReturnsBadRequest_WhenInvalidOperationExceptionThrown()
+    public async Task Promote_ReturnsBadRequest_When_BusinessRule_Violated()
     {
         // Arrange
         var providerId = Guid.NewGuid();
         var request = new PromoteToDirectorRequestDto { OfficialId = Guid.NewGuid() };
-        var errorMessage = "Business rule violated.";
+
+        var error = new OperationError
+        {
+            Code = "SomeBusinessRule",
+            Description = "Business rule violated."
+        };
 
         _directorServiceMock
             .Setup(s => s.PromoteEmployeeToDirector(providerId, request))
-            .ThrowsAsync(new InvalidOperationException(errorMessage));
+            .ReturnsAsync(Result<PromoteToDirectorResponseDto>.Failed(error));
 
         // Act
         var result = await _controller.Promote(providerId, request);
@@ -113,20 +125,28 @@ class DirectorManagementControllerTests
         // Assert
         var badRequestResult = result as BadRequestObjectResult;
         Assert.IsNotNull(badRequestResult);
-        Assert.AreEqual(errorMessage, badRequestResult.Value);
+
+        var errors = badRequestResult.Value as IEnumerable<OperationError>;
+        Assert.IsNotNull(errors);
+        Assert.IsTrue(errors.Any(e => e.Description == "Business rule violated."));
     }
 
     [Test]
-    public async Task Promote_ReturnsNotFound_WhenKeyNotFoundExceptionThrown()
+    public async Task Promote_ReturnsNotFound_When_Official_Not_Found()
     {
         // Arrange
         var providerId = Guid.NewGuid();
         var request = new PromoteToDirectorRequestDto { OfficialId = Guid.NewGuid() };
-        var errorMessage = "Official not found.";
+
+        var error = new OperationError
+        {
+            Code = "OfficialNotFound",
+            Description = "Official not found."
+        };
 
         _directorServiceMock
             .Setup(s => s.PromoteEmployeeToDirector(providerId, request))
-            .ThrowsAsync(new KeyNotFoundException(errorMessage));
+            .ReturnsAsync(Result<PromoteToDirectorResponseDto>.Failed(error));
 
         // Act
         var result = await _controller.Promote(providerId, request);
@@ -134,8 +154,12 @@ class DirectorManagementControllerTests
         // Assert
         var notFoundResult = result as NotFoundObjectResult;
         Assert.IsNotNull(notFoundResult);
-        Assert.AreEqual(errorMessage, notFoundResult.Value);
+
+        var errors = notFoundResult.Value as IEnumerable<OperationError>;
+        Assert.IsNotNull(errors);
+        Assert.IsTrue(errors.Any(e => e.Code == "OfficialNotFound" && e.Description == "Official not found."));
     }
+
 
     [Test]
     public async Task Transfer_ReturnsOk_WhenTransferSucceeds()

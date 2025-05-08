@@ -34,26 +34,25 @@ public class DirectorManagementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Promote(Guid providerId, [FromBody] PromoteToDirectorRequestDto request)
     {
-        try
+        var result = await directorService.PromoteEmployeeToDirector(providerId, request);
+
+        if (result.Succeeded)
         {
-            var result = await directorService.PromoteEmployeeToDirector(providerId, request);
-            return Ok(result);
+            return Ok(result.Value);
         }
-        catch (UnauthorizedAccessException ex)
+        var errorCodes = result.OperationResult.Errors.Select(e => e.Code).ToList();
+
+        if (errorCodes.Contains("Unauthorized"))
         {
-            logger.LogWarning(ex, "Unauthorized access during promotion.");
             return Forbid();
         }
-        catch (InvalidOperationException ex)
+
+        if (errorCodes.Contains("OfficialNotFound"))
         {
-            logger.LogWarning(ex, "Business rule violation during promotion.");
-            return BadRequest(ex.Message);
+            return NotFound(result.OperationResult.Errors);
         }
-        catch (KeyNotFoundException ex)
-        {
-            logger.LogWarning(ex, "Official not found.");
-            return NotFound(ex.Message);
-        }
+
+        return BadRequest(result.OperationResult.Errors);
     }
 
     /// <summary>

@@ -60,7 +60,7 @@ public class DirectorManagementServiceTests
 
     #region PromoteEmployee
     [Test]
-    public async Task Promote_Should_Throw_KeyNotFoundException_When_Official_Not_Found()
+    public async Task Promote_Should_Fail_When_Official_Not_Found()
     {
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
@@ -69,15 +69,16 @@ public class DirectorManagementServiceTests
            .Setup(x => x.GetById(requestDto.OfficialId))
            .ReturnsAsync((Official)null!);
 
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result =  await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
-        await act.Should()
-        .ThrowAsync<KeyNotFoundException>()
-        .WithMessage($"Official with ID {requestDto.OfficialId} not found");
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e =>
+            e.Code == "OfficialNotFound" &&
+            e.Description == $"Official with ID {requestDto.OfficialId} not found");
     }
 
     [Test]
-    public async Task Promote_Should_Throw_Error_When_Director_Already_Exists()
+    public async Task Promote_Should_Fail_When_Director_Already_Exists()
     {
         var official = SetupOfficial();
         var requestDto = CreatePromoteRequestDto(official.Id);
@@ -85,12 +86,12 @@ public class DirectorManagementServiceTests
         SetupUserHasRightsAsDeputy();
         SetupExistingDirectorForСurrentProvider();
 
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
-        await act.Should()
-        .ThrowAsync<InvalidOperationException>()
-        .WithMessage($"Director already exists for provider with ID: {_providerId}");
-
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e =>
+            e.Code == "DirectorAlreadyExists" &&
+            e.Description == $"Director already exists for provider with ID: {_providerId}");
     }
 
     [Test]
@@ -111,7 +112,7 @@ public class DirectorManagementServiceTests
     }
 
     [Test]
-    public async Task Promote_Should_Throw_UnauthorizedAccessException_When_Initiator_Is_Not_Deputy()
+    public async Task Promote_Should_Fail_When_Initiator_Is_Not_Deputy()
     {
         // Arrange
         var official = SetupOfficial(); // canditate for promotion
@@ -120,16 +121,17 @@ public class DirectorManagementServiceTests
         SetupUserHasRightsButNotDeputy();
 
         // Act
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
         // Assert
-        await act.Should()
-            .ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Only Director or Deputy of this provider can promote.");
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e =>
+            e.Code == "Unauthorized" &&
+            e.Description == "Only Director or Deputy of this provider can promote.");
     }
 
     [Test]
-    public async Task Promote_Should_Throw_InvalidOperationException_When_Official_Not_From_This_Provider()
+    public async Task Promote_Should_Fail_When_Official_Not_From_This_Provider()
     {
         // Arrange
         var wrongProviderId = Guid.NewGuid(); // wrong providerId
@@ -141,12 +143,13 @@ public class DirectorManagementServiceTests
         SetupNoDirectorForProvider(wrongProviderId);
 
         // Act
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
         // Assert
-        await act.Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage("Official does not belong to the specified provider.");
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e =>
+            e.Code == "WrongProvider" &&
+            e.Description == "Official does not belong to the specified provider.");
     }
 
     [Test]
@@ -225,11 +228,11 @@ public class DirectorManagementServiceTests
         var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
         // Assert
-        result.Should().NotBeNull();
-        result.OfficialId.Should().Be(official.Id);
-        result.PositionId.Should().Be(createdPositionId);
-        result.PositionType.Should().Be(PositionType.Director);
-        result.ActiveFrom.Should().Be(now);
+        result.Value.Should().NotBeNull();
+        result.Value.OfficialId.Should().Be(official.Id);
+        result.Value.PositionId.Should().Be(createdPositionId);
+        result.Value.PositionType.Should().Be(PositionType.Director);
+        result.Value.ActiveFrom.Should().Be(now);
 
         _positionServiceMock.Verify(x => x.CreateAsync(It.IsAny<PositionCreateUpdateDto>(), _providerId), Times.Once);
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
@@ -253,15 +256,15 @@ public class DirectorManagementServiceTests
             .ThrowsAsync(new Exception("Something went wrong"));
 
         // Act
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>()
-            .WithMessage("Something went wrong");
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e => e.Description.Contains("unexpected error"));
 
         _transactionManagerServiceMock.Verify(x =>
-            x.ExecuteInTransactionAsync(It.IsAny<Func<Task<PromoteToDirectorResponseDto>>>()),
-            Times.Once);
+             x.ExecuteInTransactionAsync(It.IsAny<Func<Task<PromoteToDirectorResponseDto>>>()),
+             Times.Once);
     }
 
     [Test]
@@ -280,20 +283,20 @@ public class DirectorManagementServiceTests
             .ThrowsAsync(new Exception("Transaction failed"));
 
         // Act
-        Func<Task> act = async () => await _service.PromoteEmployeeToDirector(_providerId, requestDto);
+        var result =  await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
-        await act.Should().ThrowAsync<Exception>()
-            .WithMessage("Transaction failed");
+        result.Succeeded.Should().BeFalse();
+        result.OperationResult.Errors.Should().ContainSingle(e => e.Description.Contains("unexpected error"));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Failed to promote employee to Director")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
+               LogLevel.Error,
+               It.IsAny<EventId>(),
+               It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Failed to promote employee to Director")),
+               It.Is<Exception>(ex => ex.Message == "Transaction failed"),
+               It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
     }
     #endregion PromoteEmployee
 
