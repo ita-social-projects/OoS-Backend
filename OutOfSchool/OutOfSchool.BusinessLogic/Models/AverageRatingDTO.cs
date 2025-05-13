@@ -12,12 +12,23 @@ public class AverageRatingDto
 public static class AverageRatingDtoExtensions
 {
     public static AverageRatingDto ToDto(this OutOfSchool.Services.Models.AverageRating averageRating)
-        => new()
+    {
+        if (averageRating is null)
         {
-            Rate = (float) averageRating.Rate,
+            return new AverageRatingDto
+            {
+                Rate = 0,
+                RateQuantity = 0,
+                EntityId = Guid.Empty
+            };
+        }
+        return new()
+        {
+            Rate = (float)averageRating.Rate,
             RateQuantity = averageRating.RateQuantity,
             EntityId = averageRating.EntityId
         };
+    }
 
     public static List<AverageRatingDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.AverageRating> list)
         => list.MapToList(ToDto);
