@@ -48,7 +48,7 @@ public static class WorkshopV2DtoExtensions
             FormOfLearning = dto.FormOfLearning,
             WorkshopStatus = dto.Status,
             ProviderLicenseStatus = dto.ProviderLicenseStatus,
-            Price = dto.Price ?? default,
+            Price = dto.IsPaid ? dto.Price ?? default : 0,
             PayRate = dto.PayRate ?? default,
             AreThereBenefits = dto.AreThereBenefits,
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
