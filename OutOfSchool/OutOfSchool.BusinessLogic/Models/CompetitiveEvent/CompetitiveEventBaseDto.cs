@@ -32,10 +32,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     public DateTimeOffset? RegistrationEndTime { get; set; }
 
     public Guid? ParentId { get; set; }
-
-    public Guid? BuildingHoldingId { get; set; }
-
-    public Guid? ChildParticipantId { get; set; }
     
     [Required]
     public int CoverageId { get; set; }
@@ -66,8 +62,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
-    public Guid? VenueId { get; set; }
-
     [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; }
 
@@ -97,8 +91,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     public int? Price { get; set; }
 
     public bool? CompetitiveSelection { get; set; }
-
-    public uint? NumberOfOccupiedSeats { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }

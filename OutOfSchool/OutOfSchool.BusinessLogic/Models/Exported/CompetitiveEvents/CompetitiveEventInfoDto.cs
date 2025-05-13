@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
-using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
@@ -44,8 +43,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     public DateTimeOffset? RegistrationEndTime { get; set; }
 
     public Guid? ParentEventId { get; set; }
-
-    public Guid? BuildingHoldingId { get; set; }
 
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
@@ -116,7 +113,7 @@ public static class CompetitiveEventInfoDtoExtensions
             ScheduledStartTime = model.ScheduledStartTime,
             ScheduledEndTime = model.ScheduledEndTime,
             NumberOfSeats = model.NumberOfSeats,
-            NumberOfOccupiedSeats = model.NumberOfOccupiedSeats,
+            NumberOfOccupiedSeats = 0,
             OrganizerOfTheEventId = model.OrganizerOfTheEventId,
             DirectionIds = model.SubDirections?.Where(x => !x.IsDeleted && !x.Direction.IsDeleted).Select(d => d.DirectionId).Distinct().ToList() ?? [],
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
@@ -124,7 +121,6 @@ public static class CompetitiveEventInfoDtoExtensions
             RegistrationStartTime = model.RegistrationStartTime,
             RegistrationEndTime = model.RegistrationEndTime,
             ParentEventId = model.ParentId,
-            BuildingHoldingId = model.BuildingHoldingId,
             CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
             AccountingType = model.CompetitiveEventAccountingType?.ToInfoDto(),
             DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,

@@ -60,7 +60,7 @@ public static class CompetitiveEventESExtensions
             Coverage = dto.Coverage.Title,
             Price = dto.Price,
             CompetitiveSelection = dto.CompetitiveSelection,
-            NumberOfOccupiedSeats = dto.NumberOfOccupiedSeats,
+            NumberOfOccupiedSeats = 0,
         };
 
     public static List<CompetitiveEventES> ToES(this IEnumerable<CompetitiveEvent> list)
