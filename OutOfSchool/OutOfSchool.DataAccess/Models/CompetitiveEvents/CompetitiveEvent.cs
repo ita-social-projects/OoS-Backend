@@ -35,21 +35,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [ForeignKey(nameof(ParentId))]
     public virtual CompetitiveEvent Parent { get; set; }
 
-    public Guid? BuildingHoldingId { get; set; }
-
-    //[ForeignKey(nameof(BuildingHoldingId))]
-    //public Building BuildingHolding { get; set; }
-
-    public Guid? ChildParticipantId { get; set; }
-
-    //[ForeignKey(nameof(ChildParticipantId))]
-    //public virtual Individual ChildParticipant { get; set; }
-
-    //public Guid ChiefJudgeId { get; set; }
-
-    //[ForeignKey(nameof(ChiefJudgeId))]
-    //public virtual Individual ChiefJudgeId { get; set; }
-
     [MaxLength(2000)]
     public string AdditionalDescription { get; set; }
 
@@ -79,12 +64,8 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
-    public Guid? VenueId { get; set; }
-
     [MaxLength(200)]
     public string VenueName { get; set; }
-    //[ForeignKey(nameof(VenueId))]
-    //public virtual Premises Venue { get; set; }
 
     [MaxLength(2000)]
     public string TermsOfParticipation { get; set; }
@@ -112,8 +93,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public int Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }
-
-    public uint NumberOfOccupiedSeats { get; set; }
 
     // owned entities
     public List<Contacts> Contacts { get; set; } = [];
