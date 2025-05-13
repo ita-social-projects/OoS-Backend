@@ -149,6 +149,8 @@ public class AuthController : Controller
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [Route("~/login")]
     [HttpPost]
+    [Obsolete("Password login API is no longer supported. Exists only for testing purposes.")]
+    [FeatureGate(AuthServerConstants.FeatureManagement.PasswordLogin)]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         logger.LogDebug("Login started");
@@ -168,7 +170,7 @@ public class AuthController : Controller
 
         if (user != null)
         {
-            if (user.IsBlocked && !user.Role.Equals(Role.Provider.ToString(), StringComparison.InvariantCultureIgnoreCase))
+            if (user.IsBlocked && !user.Role.Equals(nameof(Role.Provider), StringComparison.InvariantCultureIgnoreCase))
             {
                 logger.LogInformation("User is blocked. Login was failed");
 
@@ -195,9 +197,21 @@ public class AuthController : Controller
 
             // To mirror new production logic
             // Check if user has provider or employee role and add appropriate claims
-            if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
-                Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+            if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
+                nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
             {
+                var checkPasswordResult = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                if (!checkPasswordResult.Succeeded)
+                {
+                    logger.LogInformation("Login was failed");
+
+                    ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
+                    return View(new LoginViewModel
+                    {
+                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                        ReturnUrl = model.ReturnUrl,
+                    });
+                }
                 var individual = await GetIndividualByUserIdAsync(user.Id);
 
                 if (individual != null)
@@ -207,7 +221,7 @@ public class AuthController : Controller
                     if (positions.Count > 0)
                     {
                         // Process provider-specific logic
-                        if (Role.Provider.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                        if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
                         {
                             var directorPosition =
                                 positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
@@ -224,7 +238,7 @@ public class AuthController : Controller
                             }
                         }
                         // Process employee-specific logic
-                        else if (Role.Employee.ToString().Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                        else if (nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
                         {
                             var employeePosition = positions.FirstOrDefault(p =>
                                 p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
