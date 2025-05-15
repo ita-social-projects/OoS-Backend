@@ -12,6 +12,7 @@ using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
@@ -31,6 +32,8 @@ public class ExternalAuthController : Controller
     private readonly OutOfSchoolDbContext dbContext;
     private readonly IAikomProviderService aikomProviderService;
     private readonly OpenIddictClientService openIddictClientService;
+    private readonly IEntityRepositorySoftDeleted<Guid, Moderator> moderatorRepository;
+    private readonly IEntityRepositorySoftDeleted<Guid, TechAdmin> techAdminRepository;
 
     public ExternalAuthController(
         SignInManager<User> signInManager,
@@ -42,7 +45,9 @@ public class ExternalAuthController : Controller
         IGovIdentityCommunicationService communicationService,
         OutOfSchoolDbContext dbContext,
         IAikomProviderService aikomProviderService,
-        OpenIddictClientService openIddictClientService)
+        OpenIddictClientService openIddictClientService,
+        IEntityRepositorySoftDeleted<Guid, Moderator> moderatorRepository,
+        IEntityRepositorySoftDeleted<Guid, TechAdmin> techAdminRepository)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -54,6 +59,8 @@ public class ExternalAuthController : Controller
         this.dbContext = dbContext;
         this.aikomProviderService = aikomProviderService;
         this.openIddictClientService = openIddictClientService;
+        this.moderatorRepository = moderatorRepository;
+        this.techAdminRepository = techAdminRepository;
     }
 
     [Route("~/external-login")]
@@ -80,9 +87,9 @@ public class ExternalAuthController : Controller
             _ => authServerConfig.ExternalLogin.Parameters.AuthType.Personal
         };
         properties.Parameters.Add(authServerConfig.ExternalLogin.Parameters.AuthType.Key, allowedAuthTypes);
-        
+
         var registration = await openIddictClientService.GetClientRegistrationByProviderNameAsync(provider).ConfigureAwait(true);
-        
+
         properties.Items.Add(OpenIddictClientAspNetCoreConstants.Properties.RegistrationId, registration.RegistrationId);
 
         return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
@@ -144,19 +151,27 @@ public class ExternalAuthController : Controller
 
             // We can create User as it is tied to log in attempt
             var user = await GetOrCreateUserAsync(userInfo, selectedRole);
-            
+
             // TODO: while AIKOM is not operational, we forbid new registrations.
             // Only people who are in DB are allowed to log in.
             var individual = await GetIndividualAsync(userInfo, user);
 
             if (individual == null)
             {
-                return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
+                var errorMessage = selectedRole switch
+                {
+                    _ when Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when Role.TechAdmin.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForAdminNotFound",
+                    _ when Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForModeratorNotFound",
+                    _ => string.Empty
+                };
+                return await GetErrorMessageResult(result, localizer[errorMessage]);
             }
 
             List<Claim> claims = [];
-            
-            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) || 
+
+            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
                 Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
                 // For provider role, verify director access before proceeding to database operations.
@@ -165,12 +180,12 @@ public class ExternalAuthController : Controller
                 // usage is in VerifyProviderAccessAsync docs.
 
                 var positions = await GetPositionsForProviderAndIndividual(userInfo, individual.Id);
-                
+
                 if (positions.Count == 0)
                 {
                     return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
                 }
-                
+
                 // Process provider-specific logic
                 if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
@@ -183,7 +198,7 @@ public class ExternalAuthController : Controller
                 // Process employee-specific logic
                 else if (Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
-                    
+
                     var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
                     if (employeePosition == null)
                     {
@@ -192,8 +207,30 @@ public class ExternalAuthController : Controller
                 }
                 var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
                 var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
-                
+
                 claims = BuildProviderClaims(individual, userInfo, result, providerId, isDeputy, externalProviderId);
+            }
+            else if (Role.TechAdmin.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                if ((await techAdminRepository.GetById(individual.Id)) is null)
+                {
+                    return await GetErrorMessageResult(result, localizer["TechAdminNotFound"]);
+                }
+
+                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+            }
+            else if (Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                if ((await moderatorRepository.GetById(individual.Id)) is null)
+                {
+                    return await GetErrorMessageResult(result, localizer["ModeratorNotFound"]);
+                }
+
+                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+            }
+            else
+            {
+                return await GetErrorMessageResult(result, localizer["UserRoleNotFound"]);
             }
 
             var properties = await SignInWithClaimsAsync(result, claims);
@@ -364,14 +401,14 @@ public class ExternalAuthController : Controller
         {
             return [];
         }
-        
+
         // Get the Positions for the given provider, that have officials linked to the individual
         var positions = await dbContext.Positions
             .Include(p => p.Provider)
             .Where(x => !x.IsDeleted && (!x.Provider.IsDeleted && x.Provider.Edrpou == userInfo.EdrpouCode) && x.Officials.Any(o => o.IndividualId == individualId && !o.IsDeleted))
             .Select(p => new PositionProjection(p.Provider.FullTitle, p.ProviderId, p.PositionType))
             .ToListAsync();
-            
+
         return positions;
     }
 
@@ -404,12 +441,37 @@ public class ExternalAuthController : Controller
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString(), ClaimValueTypes.Boolean),
         };
-            
+
         if (externalProviderId.HasValue)
         {
-            claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId, 
+            claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId,
                 externalProviderId.Value.ToString()));
         }
+
+        return claims;
+    }
+
+    /// <summary>
+    /// Builds claims list for the user (with role - Admin or Moderator) based on authentication result and user info.
+    /// </summary>
+    /// <param name="individual">Individual entity.</param>
+    /// <param name="userInfo">User information from external provider.</param>
+    /// <param name="result">Authentication result.</param>
+    /// <returns>List of <see cref="Claim"/> for the user.</returns>
+    private static List<Claim> BuildAdminModeratorClaims(
+        Individual individual,
+        UserInfoResponse userInfo,
+        AuthenticateResult result)
+    {
+        var claims = new List<Claim>
+        {
+            new(OpenIddictConstants.Claims.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, userInfo.Email),
+            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
+            new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
+        };
 
         return claims;
     }
@@ -434,7 +496,7 @@ public class ExternalAuthController : Controller
         User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
         return properties;
     }
-    
+
     /// <summary>
     /// Creates an error result with a custom message and returns the login view.
     /// </summary>
@@ -451,6 +513,6 @@ public class ExternalAuthController : Controller
             ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
         });
     }
-    
+
     private record PositionProjection(string ProviderTitle, Guid ProviderId, PositionType PositionType);
 }

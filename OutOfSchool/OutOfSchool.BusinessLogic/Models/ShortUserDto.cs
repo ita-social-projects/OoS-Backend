@@ -7,8 +7,6 @@ namespace OutOfSchool.BusinessLogic.Models;
 
 public class ShortUserDto : BaseUserDto
 {
-    public string UserName { get; set; }
-
     public string Role { get; set; }
 
     public bool IsRegistered { get; set; }
@@ -36,7 +34,6 @@ public static class ShortUserDtoExtensions
         LastName = user.LastName,
         MiddleName = user.MiddleName ?? string.Empty,
         FirstName = user.FirstName,
-        UserName = user.UserName,
         Role = user.Role,
         IsRegistered = user.IsRegistered,
         EmailConfirmed = user.EmailConfirmed,
@@ -51,7 +48,6 @@ public static class ShortUserDtoExtensions
         LastName = parent.User?.LastName,
         MiddleName = parent.User?.MiddleName ?? string.Empty,
         FirstName = parent.User?.FirstName,
-        UserName = parent.User?.UserName,
         Role = parent.User?.Role,
         IsRegistered = parent.User?.IsRegistered ?? default,
         EmailConfirmed = parent.User?.EmailConfirmed ?? default,
