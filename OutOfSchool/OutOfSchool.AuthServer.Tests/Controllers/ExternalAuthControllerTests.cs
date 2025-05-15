@@ -173,6 +173,8 @@ public class ExternalAuthControllerTests
         var moderator = new Moderator
         {
             Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
         };
         dbContext.Moderators.Add(moderator);
 
@@ -180,6 +182,8 @@ public class ExternalAuthControllerTests
         var techAdmin = new TechAdmin
         {
             Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
         };
         dbContext.TechAdmins.Add(techAdmin);
 
