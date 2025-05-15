@@ -146,6 +146,10 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<SubDirection> SubDirections { get; set; }
 
+    public DbSet<Moderator> Moderators { get; set; }
+
+    public DbSet<TechAdmin> TechAdmins { get; set; }
+
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     public int Complete() => this.SaveChanges();
@@ -212,6 +216,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new CompanyInformationConfiguration());
         builder.ApplyConfiguration(new CompanyInformationItemConfiguration());
         builder.ApplyConfiguration(new ElasticsearchSyncRecordConfiguration());
+        builder.ApplyConfiguration(new ModeratorConfiguration());
+        builder.ApplyConfiguration(new TechAdminConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

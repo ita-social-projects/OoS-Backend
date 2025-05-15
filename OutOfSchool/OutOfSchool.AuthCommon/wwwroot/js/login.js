@@ -1,13 +1,51 @@
-$(function() {
-    $('#role').val($('.login-role-select--active').data('value'));
-
-    $('.login-role-select__option').on('click', function() {
-        $('.login-role-select__option').removeClass('login-role-select--active');
+$(function () {
+    $('#login_role_select_provider').on('click', function () {
+        $('#login_role_select_employee').removeClass('login-role-select--active');
         $(this).addClass('login-role-select--active');
 
         // Update the hidden input with the selected value
         let selectedValue = $(this).data('value');
         $('#role').val(selectedValue);
+    });
+
+    $('#login_role_select_employee').on('click', function () {
+        $('#login_role_select_provider').removeClass('login-role-select--active');
+        $(this).addClass('login-role-select--active');
+
+        // Update the hidden input with the selected value
+        let selectedValue = $(this).data('value');
+        $('#role').val(selectedValue);
+    });
+
+    $('#login_role_select_moderator').on('click', function () {
+        $('#login_role_select_techadmin').removeClass('login-role-select--active');
+        $(this).addClass('login-role-select--active');
+
+        // Update the hidden input with the selected value
+        let selectedValue = $(this).data('value');
+        $('#technical-staff-role').val(selectedValue);
+    });
+
+    $('#login_role_select_techadmin').on('click', function () {
+        $('#login_role_select_moderator').removeClass('login-role-select--active');
+        $(this).addClass('login-role-select--active');
+
+        // Update the hidden input with the selected value
+        let selectedValue = $(this).data('value');
+        $('#technical-staff-role').val(selectedValue);
+    });
+
+    $("#switch-user-type").on("click", function () {
+        var x = document.getElementById("for_technical_staff");
+        var y = document.getElementById("for_providers");
+
+        if (x.style.display === "none") {
+            x.style.display = "block";
+            y.style.display = "none";
+        } else {
+            x.style.display = "none";
+            y.style.display = "block";
+        }
     });
 
     let check_loginPasswordEye = false;

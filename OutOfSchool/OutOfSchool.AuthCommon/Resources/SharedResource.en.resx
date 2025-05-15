@@ -117,6 +117,118 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Change email alert" xml:space="preserve">
+    <value>Note that after changing your email, you will not be able to log in with your old email</value>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Change password</value>
+    <comment>Change password</comment>
+  </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
+  </data>
+  <data name="Date of birth is required" xml:space="preserve">
+    <value>Date of birth is required</value>
+  </data>
+  <data name="Date of birth" xml:space="preserve">
+    <value>Date of birth</value>
+  </data>
+  <data name="Change password invalid token" xml:space="preserve">
+    <value>Token is not valid</value>
+  </data>
+  <data name="You must be at least 18 years old." xml:space="preserve">
+    <value>You must be at least 18 years old.</value>
+  </data>
+  <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
+    <value>Check the entered data. This field DateOfBirth is required.</value>
+  </data>
+  <data name="ExternalAuthenticationError" xml:space="preserve">
+    <value>Error processing your information with external provider, please try again or contact support</value>
+  </data>
+  <data name="Login to Extracurricular activities" xml:space="preserve">
+    <value>Login to Extracurricular activities</value>
+  </data>
+  <data name="Please select your role below to continue." xml:space="preserve">
+    <value>Please select your role below to continue.</value>
+  </data>
+  <data name="Please select your technical staff role below to continue." xml:space="preserve">
+    <value>Please select your technical staff role below to continue.</value>
+  </data>
+  <data name="For personal accounts" xml:space="preserve">
+    <value>For personal accounts</value>
+  </data>
+  <data name="For employees of state and municipal institutions" xml:space="preserve">
+    <value>For employees of state and municipal institutions</value>
+  </data>
+  <data name="Log in with {0}" xml:space="preserve">
+    <value>Log in with {0}</value>
+  </data>
+  <data name="LoginWithRoleNotSupported" xml:space="preserve">
+    <value>Login in with this role is not supported.</value>
+  </data>
+  <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
+    <value>The external authorization data cannot be used for authentication.</value>
+  </data>
+  <data name="ExternalProviderVerificationFailed" xml:space="preserve">
+    <value>Failed to verify your organization in the external registry. Please try again later or contact support if the problem persists.</value>
+  </data>
+  <data name="NotAProviderDirector" xml:space="preserve">
+    <value>You are not registered as a director of this organization. Only organization directors can sign in with the Provider role.</value>
+  </data>
+  <data name="Employee" xml:space="preserve">
+    <value>Employee of EI</value>
+  </data>
+  <data name="For directors of state and municipal institutions" xml:space="preserve">
+    <value>For directors of state and municipal institutions</value>
+  </data>
+  <data name="IndividualOrProviderNotFound" xml:space="preserve">
+    <value>Your information or educational institution was not found. Please contact the director of the EI or the system administrator.</value>
+  </data>
+  <data name="IndividualIsNotProviderDirector" xml:space="preserve">
+    <value>You are not listed as the director of the "{0}" organization. If this is an error, please contact your system administrator.</value>
+  </data>
+  <data name="IndividualIsNotProviderEmployee" xml:space="preserve">
+    <value>You are not listed as an employee of the "{0}" organization. Please contact the organization's director.</value>
+  </data>
+  <data name="Techadmin" xml:space="preserve">
+    <value>Technical administrator</value>
+  </data>
+  <data name="Moderator" xml:space="preserve">
+    <value>Moderator</value>
+  </data>
+  <data name="For moderators of providers and workshops" xml:space="preserve">
+    <value>For moderators of providers and workshops</value>
+  </data>
+  <data name="For techadmins" xml:space="preserve">
+    <value>For techadmins</value>
+  </data>
+  <data name="TechAdminNotFound" xml:space="preserve">
+    <value>Your information about Tech Admin was not found. Please contact the existing System Administrator.</value>
+  </data>
+  <data name="IndividualForAdminNotFound" xml:space="preserve">
+    <value>Your information about Individual  for the Technical Administrator role was not found. Please contact your existing System Administrator.</value>
+  </data>
+  <data name="IndividualForModeratorNotFound" xml:space="preserve">
+    <value>Your information about Individual  for the Moderator role was not found. Please contact your existing System Administrator.</value>
+  </data>
+  <data name="UserRoleNotFound" xml:space="preserve">
+    <value>Your information about User Role was not found. Please contact your existing System Administrator.</value>
+  </data>
+  <data name="ModeratorNotFound" xml:space="preserve">
+    <value>Your information about Moderator was not found. Please contact the existing System Administrator.</value>
+  </data>
+  <data name="Log out" xml:space="preserve">
+    <value>Log out</value>
+  </data>
+  <data name="Reset password confirmation" xml:space="preserve">
+    <value>Reset password confirmation</value>
+  </data>
+  <data name="Login with changing password" xml:space="preserve">
+    <value>Login with changing password</value>
+  </data>
+  <data name="Switch user type" xml:space="preserve">
+    <value>Switch user type</value>
+  </data>
   <data name="Already registered?" xml:space="preserve">
     <value>Already registered?</value>
   </data>
@@ -210,16 +322,9 @@
   <data name="Enter new email message" xml:space="preserve">
     <value>Enter your new email to which change email instructions will be sent</value>
   </data>
-  <data name="Change email alert" xml:space="preserve">
-    <value>Note that after changing your email, you will not be able to log in with your old email</value>
-  </data>
   <data name="Confirm email change" xml:space="preserve">
     <value>Confirm email change</value>
     <comment>Confirm email change</comment>
-  </data>
-  <data name="Change password" xml:space="preserve">
-    <value>Change password</value>
-    <comment>Change password</comment>
   </data>
   <data name="Old password" xml:space="preserve">
     <value>Old password</value>
@@ -242,9 +347,6 @@
   </data>
   <data name="Check your email for instructions" xml:space="preserve">
     <value>Check your email for instructions</value>
-  </data>
-  <data name="Reset password confirmation" xml:space="preserve">
-    <value>Reset password confirmation</value>
   </data>
   <data name="Your password has been reset" xml:space="preserve">
     <value>Your password has been reset</value>
@@ -291,9 +393,6 @@
   <data name="Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&amp;)" xml:space="preserve">
     <value>The password must be at least 8 characters long and include upper and lower case letters, digits and special characters (@$!%*?&amp;)</value>
   </data>
-  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
-    <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
-  </data>
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Passwords doesn't match</value>
   </data>
@@ -336,17 +435,11 @@
   <data name="Change password email message" xml:space="preserve">
     <value>Confirm password change</value>
   </data>
-  <data name="Change password invalid token" xml:space="preserve">
-    <value>Token is not valid</value>
-  </data>
   <data name="Change password failed" xml:space="preserve">
     <value>Change password failed. Please contact administrator.</value>
   </data>
   <data name="User is not allowed to change password login action" xml:space="preserve">
     <value>User is not allowed to change password login action</value>
-  </data>
-  <data name="Login with changing password" xml:space="preserve">
-    <value>Login with changing password</value>
   </data>
   <data name="Gender Male" xml:space="preserve">
     <value>Male</value>
@@ -366,15 +459,6 @@
   <data name="Enter your email to send password recovery instructions" xml:space="preserve">
     <value>Enter your email to send password recovery instructions</value>
   </data>
-  <data name="Date of birth" xml:space="preserve">
-    <value>Date of birth</value>
-  </data>
-  <data name="Date of birth is required" xml:space="preserve">
-    <value>Date of birth is required</value>
-  </data>
-  <data name="You must be at least 18 years old." xml:space="preserve">
-    <value>You must be at least 18 years old.</value>
-  </data>
   <data name="Email '{0}' is already used" xml:space="preserve">
     <value>Email '{0}' is already used</value>
   </data>
@@ -386,9 +470,6 @@
   </data>
   <data name="Terms of use Title" xml:space="preserve">
     <value>Terms of use</value>
-  </data>
-  <data name="Check the entered data. This field DateOfBirth is required." xml:space="preserve">
-    <value>Check the entered data. This field DateOfBirth is required.</value>
   </data>
   <data name="Remember me?" xml:space="preserve">
     <value>Remember me?</value>
@@ -402,58 +483,10 @@
   <data name="Getting out of Extracurricular activities" xml:space="preserve">
     <value>Getting out of Extracurricular activities</value>
   </data>
-  <data name="Log out" xml:space="preserve">
-    <value>Log out</value>
-  </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
-  </data>
-  <data name="ExternalAuthenticationError" xml:space="preserve">
-    <value>Error processing your information with external provider, please try again or contact support</value>
-  </data>
-  <data name="Login to Extracurricular activities" xml:space="preserve">
-    <value>Login to Extracurricular activities</value>
-  </data>
-  <data name="Please select your role below to continue." xml:space="preserve">
-    <value>Please select your role below to continue.</value>
-  </data>
-  <data name="For personal accounts" xml:space="preserve">
-    <value>For personal accounts</value>
-  </data>
-  <data name="For employees of state and municipal institutions" xml:space="preserve">
-    <value>For employees of state and municipal institutions</value>
-  </data>
-  <data name="Log in with {0}" xml:space="preserve">
-    <value>Log in with {0}</value>
-  </data>
-  <data name="LoginWithRoleNotSupported" xml:space="preserve">
-    <value>Login in with this role is not supported.</value>
-  </data>
-  <data name="ExternalAuthorizationDataInvalid" xml:space="preserve">
-    <value>The external authorization data cannot be used for authentication.</value>
-  </data>
-  <data name="ExternalProviderVerificationFailed" xml:space="preserve">
-    <value>Failed to verify your organization in the external registry. Please try again later or contact support if the problem persists.</value>
-  </data>
-  <data name="NotAProviderDirector" xml:space="preserve">
-    <value>You are not registered as a director of this organization. Only organization directors can sign in with the Provider role.</value>
-  </data>
-  <data name="Employee" xml:space="preserve">
-    <value>Employee of EI</value>
-  </data>
-  <data name="For directors of state and municipal institutions" xml:space="preserve">
-    <value>For directors of state and municipal institutions</value>
-  </data>
-  <data name="IndividualOrProviderNotFound" xml:space="preserve">
-    <value>Your information or educational institution was not found. Please contact the director of the EI or the system administrator.</value>
-  </data>
-  <data name="IndividualIsNotProviderDirector" xml:space="preserve">
-    <value>You are not listed as the director of the "{0}" organization. If this is an error, please contact your system administrator.</value>
-  </data>
-  <data name="IndividualIsNotProviderEmployee" xml:space="preserve">
-    <value>You are not listed as an employee of the "{0}" organization. Please contact the organization's director.</value>
   </data>
 </root>

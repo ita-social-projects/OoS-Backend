@@ -464,6 +464,11 @@ input.registration_input::-ms-reveal {
   color: #444444;
 }
 
+.registration_switch {
+    background: #13993b;
+    color: #ffffff;
+}
+
 .registration_privacy_password,
 .registration_privacy_confirm_password,
 .login_privacy_password {
