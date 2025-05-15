@@ -150,10 +150,22 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<TechAdmin> TechAdmins { get; set; }
 
-    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+    /// <summary>
+/// Asynchronously saves all changes made in this context to the database.
+/// </summary>
+/// <returns>The number of state entries written to the database.</returns>
+public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
-    public int Complete() => this.SaveChanges();
+    /// <summary>
+/// Saves all changes made in the context to the database.
+/// </summary>
+/// <returns>The number of state entries written to the database.</returns>
+public int Complete() => this.SaveChanges();
 
+    /// <summary>
+    /// Configures the entity mappings and constraints for the database context, applying all entity configurations and seeding initial data.
+    /// </summary>
+    /// <param name="builder">The model builder used to configure entity mappings.</param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

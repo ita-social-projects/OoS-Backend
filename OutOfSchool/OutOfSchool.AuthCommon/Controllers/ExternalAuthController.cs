@@ -35,6 +35,9 @@ public class ExternalAuthController : Controller
     private readonly IEntityRepositorySoftDeleted<Guid, Moderator> moderatorRepository;
     private readonly IEntityRepositorySoftDeleted<Guid, TechAdmin> techAdminRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExternalAuthController"/> class for handling external authentication flows, including support for provider, employee, tech admin, and moderator roles.
+    /// </summary>
     public ExternalAuthController(
         SignInManager<User> signInManager,
         UserManager<User> userManager,
@@ -63,6 +66,13 @@ public class ExternalAuthController : Controller
         this.techAdminRepository = techAdminRepository;
     }
 
+    /// <summary>
+    /// Initiates an external authentication challenge for the specified provider and role.
+    /// </summary>
+    /// <param name="provider">The external authentication provider to use.</param>
+    /// <param name="role">The user role for which authentication is requested.</param>
+    /// <param name="returnUrl">The URL to redirect to after authentication.</param>
+    /// <returns>A challenge result to start the external authentication flow, or the login view with an error if the role is not supported.</returns>
     [Route("~/external-login")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ExternalLogin(string provider, string role, string returnUrl)
@@ -139,7 +149,12 @@ public class ExternalAuthController : Controller
     /// </summary>
     /// <param name="userInfo">User information received from external auth provider.</param>
     /// <param name="result">Authentication result from external provider.</param>
-    /// <returns><see cref="IActionResult"/> redirecting to appropriate page based on sign in result.</returns>
+    /// <summary>
+    /// Signs in a user based on external authentication and user information, verifying role eligibility and building appropriate claims.
+    /// </summary>
+    /// <param name="userInfo">User information retrieved from the external authentication provider.</param>
+    /// <param name="result">The result of the external authentication process.</param>
+    /// <returns>An <see cref="IActionResult"/> redirecting to the appropriate page based on the sign-in outcome, or an error view if sign-in fails.</returns>
     private async Task<IActionResult> SignInUserAsync(
         UserInfoResponse userInfo,
         AuthenticateResult result)
@@ -391,7 +406,12 @@ public class ExternalAuthController : Controller
     /// </summary>
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="individualId">Existing Individual id.</param>
-    /// <returns><see cref="List{T}"/> of short Positions or empty list if combination was not found.</returns>
+    /// <summary>
+    /// Retrieves all positions associated with the specified individual and provider, identified by the provider's EDRPOU code in the user info.
+    /// </summary>
+    /// <param name="userInfo">External user information containing the provider's EDRPOU code.</param>
+    /// <param name="individualId">The unique identifier of the individual.</param>
+    /// <returns>A list of <see cref="PositionProjection"/> representing the individual's positions with the provider, or an empty list if none are found.</returns>
     private async Task<List<PositionProjection>> GetPositionsForProviderAndIndividual(UserInfoResponse userInfo, Guid individualId)
     {
         // Provider does not exist, no need to do big JOIN
@@ -421,6 +441,15 @@ public class ExternalAuthController : Controller
     /// <param name="providerId">Internal provider ID.</param>
     /// <param name="isDeputy">Boolean flag to show if individual has deputy director position</param>
     /// <param name="externalProviderId">Optional external provider ID for provider role.</param>
+    /// <summary>
+    /// Builds a list of claims for a user with a provider or employee role based on individual and external authentication data.
+    /// </summary>
+    /// <param name="individual">The individual entity associated with the user.</param>
+    /// <param name="userInfo">User information retrieved from the external provider.</param>
+    /// <param name="result">The authentication result containing selected role and properties.</param>
+    /// <param name="providerId">The unique identifier of the provider organization.</param>
+    /// <param name="isDeputy">Indicates whether the user is a deputy director.</param>
+    /// <param name="externalProviderId">Optional external provider identifier from AIKOM.</param>
     /// <returns>List of <see cref="Claim"/> for the user.</returns>
     private List<Claim> BuildProviderClaims(
         Individual individual,
@@ -457,7 +486,13 @@ public class ExternalAuthController : Controller
     /// <param name="individual">Individual entity.</param>
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="result">Authentication result.</param>
-    /// <returns>List of <see cref="Claim"/> for the user.</returns>
+    /// <summary>
+    /// Builds a list of claims for a user with the TechAdmin or Moderator role based on individual and external authentication data.
+    /// </summary>
+    /// <param name="individual">The individual entity associated with the user.</param>
+    /// <param name="userInfo">External user information retrieved from the authentication provider.</param>
+    /// <param name="result">The authentication result containing selected role information.</param>
+    /// <returns>A list of claims representing the user's identity and role.</returns>
     private static List<Claim> BuildAdminModeratorClaims(
         Individual individual,
         UserInfoResponse userInfo,
@@ -481,7 +516,12 @@ public class ExternalAuthController : Controller
     /// </summary>
     /// <param name="result">Authentication result.</param>
     /// <param name="claims">Claims to associate with the sign in.</param>
-    /// <returns><see cref="AuthenticationProperties"/> containing redirect URI.</returns>
+    /// <summary>
+    /// Signs in a user with the specified claims and returns authentication properties containing the redirect URI.
+    /// </summary>
+    /// <param name="result">The external authentication result containing properties and redirect URI.</param>
+    /// <param name="claims">The list of claims to associate with the user during sign-in.</param>
+    /// <returns>Authentication properties with the redirect URI for post-sign-in redirection.</returns>
     private async Task<AuthenticationProperties> SignInWithClaimsAsync(AuthenticateResult result, List<Claim> claims)
     {
         var properties = new AuthenticationProperties
@@ -502,6 +542,11 @@ public class ExternalAuthController : Controller
     /// </summary>
     /// <param name="result">The authentication result containing redirect URI information.</param>
     /// <param name="message">The error message to display to the user.</param>
+    /// <summary>
+    /// Returns the login view with an error message and available external authentication providers.
+    /// </summary>
+    /// <param name="result">The authentication result containing redirect information.</param>
+    /// <param name="message">The error message to display on the login page.</param>
     /// <returns>A view result with the login page and error message.</returns>
     private async Task<IActionResult> GetErrorMessageResult(AuthenticateResult result, string message)
     {
