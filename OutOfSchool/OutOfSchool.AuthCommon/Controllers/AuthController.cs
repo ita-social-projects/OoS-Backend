@@ -196,9 +196,10 @@ public class AuthController : Controller
             }
 
             // To mirror new production logic
-            // Check if user has provider or employee role and add appropriate claims
-            if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
-                nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+            // Check if user has provider, employee, admin or moderator role and add appropriate claims
+            List<string> supportedRoles =
+                [nameof(Role.Provider), nameof(Role.Employee), nameof(Role.Moderator), nameof(Role.TechAdmin)];
+            if (supportedRoles.Contains(user.Role, StringComparer.OrdinalIgnoreCase))
             {
                 var checkPasswordResult = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (!checkPasswordResult.Succeeded)
@@ -212,66 +213,72 @@ public class AuthController : Controller
                         ReturnUrl = model.ReturnUrl,
                     });
                 }
-                var individual = await GetIndividualByUserIdAsync(user.Id);
 
+                var individual = await GetIndividualByUserIdAsync(user.Id);
                 if (individual != null)
                 {
-                    var positions = await GetPositionsForIndividualAsync(individual.Id);
+                    var claims = this.BuildBaseClaims(individual, user);
 
-                    if (positions.Count > 0)
+                    if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
+                        nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
                     {
-                        // Process provider-specific logic
-                        if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                        var positions = await GetPositionsForIndividualAsync(individual.Id);
+
+                        if (positions.Count > 0)
                         {
-                            var directorPosition =
-                                positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
-                            if (directorPosition == null)
+                            // Process provider-specific logic
+                            if (nameof(Role.Provider).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
                             {
-                                ModelState.AddModelError(string.Empty,
-                                    localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
-
-                                return View(new LoginViewModel
+                                var directorPosition =
+                                    positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
+                                if (directorPosition == null)
                                 {
-                                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                                    ReturnUrl = model.ReturnUrl,
-                                });
+                                    ModelState.AddModelError(string.Empty,
+                                        localizer["IndividualIsNotProviderDirector", positions[0].ProviderTitle]);
+
+                                    return View(new LoginViewModel
+                                    {
+                                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                        ReturnUrl = model.ReturnUrl,
+                                    });
+                                }
                             }
-                        }
-                        // Process employee-specific logic
-                        else if (nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var employeePosition = positions.FirstOrDefault(p =>
-                                p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
-                            if (employeePosition == null)
+                            // Process employee-specific logic
+                            else if (nameof(Role.Employee).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
                             {
-                                ModelState.AddModelError(string.Empty,
-                                    localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
-
-                                return View(new LoginViewModel
+                                var employeePosition = positions.FirstOrDefault(p =>
+                                    p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
+                                if (employeePosition == null)
                                 {
-                                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                                    ReturnUrl = model.ReturnUrl,
-                                });
+                                    ModelState.AddModelError(string.Empty,
+                                        localizer["IndividualIsNotProviderEmployee", positions[0].ProviderTitle]);
+
+                                    return View(new LoginViewModel
+                                    {
+                                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                                        ReturnUrl = model.ReturnUrl,
+                                    });
+                                }
                             }
+
+                            var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
+                            var providerEdrpou = positions.Select(p => p.ProviderEdrpou).FirstOrDefault() ??
+                                                 string.Empty;
+                            var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
+
+                            AddProviderClaims(claims, providerId, providerEdrpou, isDeputy);
                         }
-
-                        var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
-                        var providerEdrpou = positions.Select(p => p.ProviderEdrpou).FirstOrDefault() ??
-                                             string.Empty;
-                        var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
-
-                        var claims = BuildProviderClaims(individual, user, providerId, providerEdrpou, isDeputy);
-
-                        var properties = new AuthenticationProperties
-                        {
-                            RedirectUri = model.ReturnUrl,
-                            IsPersistent = model.RememberMe,
-                        };
-
-                        await signInManager.SignInWithClaimsAsync(user, properties, claims.Where(c => c.Type != OpenIddictConstants.Claims.Role));
-                        User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
-                        return Redirect(model.ReturnUrl);
                     }
+                    
+                    var properties = new AuthenticationProperties
+                    {
+                        RedirectUri = model.ReturnUrl,
+                        IsPersistent = model.RememberMe,
+                    };
+
+                    await signInManager.SignInWithClaimsAsync(user, properties, claims.Where(c => c.Type != OpenIddictConstants.Claims.Role));
+                    User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
+                    return Redirect(model.ReturnUrl);
                 }
 
                 ModelState.AddModelError(string.Empty, localizer["IndividualOrProviderNotFound"]);
@@ -604,34 +611,49 @@ public class AuthController : Controller
     }
 
     /// <summary>
-    /// Builds claims list for the user based on individual and user info.
+    /// Adds provider-specific claims to the base claims collection for a user.
     /// </summary>
-    /// <param name="individual">Individual entity.</param>
-    /// <param name="user">User entity.</param>
-    /// <param name="providerId">Provider ID.</param>
-    /// <param name="providerEdrpou">Provider's Edrpou</param>
-    /// <param name="isDeputy">Boolean flag to show if individual has deputy director position.</param>
-    /// <returns>List of claims for the user.</returns>
-    private List<Claim> BuildProviderClaims(
-        Individual individual,
-        User user,
+    /// <param name="baseClaims">The list of claims to which provider claims will be added.</param>
+    /// <param name="providerId">The unique identifier of the provider associated with the user.</param>
+    /// <param name="providerEdrpou">The EDRPOU code of the provider.</param>
+    /// <param name="isDeputy">Indicates whether the user holds a deputy director position for the provider.</param>
+    /// <remarks>
+    /// This method is used during authentication to enrich the user's claims with provider-related information, enabling role-based authorization for provider and employee roles.
+    /// </remarks>
+    private void AddProviderClaims(
+        List<Claim> baseClaims,
         Guid providerId,
         string providerEdrpou,
         bool isDeputy)
     {
-        var claims = new List<Claim>
-        {
+        baseClaims.AddRange([
+            new(Constants.ClaimTypes.Edrpou, providerEdrpou),
+            new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
+            new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString()),
+        ]);
+    }
+
+    /// <summary>
+    /// Builds the base set of claims for a user based on their individual and user entity information.
+    /// </summary>
+    /// <param name="individual">The <see cref="Individual"/> entity representing the user's personal data.</param>
+    /// <param name="user">The <see cref="User"/> entity representing the authenticated user.</param>
+    /// <returns>A list of <see cref="Claim"/> objects containing the user's role, name, email, and RNOKPP identifier.</returns>
+    /// <remarks>
+    /// This method is used to construct the essential claims required for user authentication and identity, before any provider-specific claims are added.
+    /// </remarks>
+    private List<Claim> BuildBaseClaims(
+        Individual individual,
+        User user)
+    {
+        return
+        [
             new(OpenIddictConstants.Claims.Role, user.Role),
             new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
             new(OpenIddictConstants.Claims.Email, user.Email),
-            new(Constants.ClaimTypes.Edrpou, providerEdrpou),
-            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
-            new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
-            new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString()),
-        };
-
-        return claims;
+            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp)
+        ];
     }
 
     private record PositionProjection(string ProviderTitle, Guid ProviderId, string ProviderEdrpou, PositionType PositionType);
