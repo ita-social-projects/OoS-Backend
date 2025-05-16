@@ -33,12 +33,13 @@
                 }
                 else
                 {
-                    <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" role="form">
+                    <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" aria-label="For provider role">
                         <div asp-validation-summary="ModelOnly"></div>
                         <div>
                             <div>
                                 <label class="login__label">
                                     @SharedLocalizer["Please select your role below to continue."]
+                                    <input type="hidden" name="role" id="role" value="provider">
                                 </label>
                                 <div class="login-role-select">
                                     <div class="login-role-select__option login-role-select__option-left login-role-select--active" data-value="provider" id="login_role_select_provider">
@@ -71,7 +72,6 @@
                                     </div>
                                     <div class="login-role-select__divider"></div>
                                 </div>
-                                <input type="hidden" name="role" id="role" value="provider">
                             </div>
                             <p>
                                 @foreach (var provider in loginProviders)
@@ -98,12 +98,13 @@
                 }
                 else
                 {
-                    <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" role="form">
+                    <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" aria-label="For provider role">
                         <div asp-validation-summary="ModelOnly"></div>
                         <div>
                             <div>
                                 <label class="login__label">
                                     @SharedLocalizer["Please select your technical staff role below to continue."]
+                                    <input type="hidden" name="role" id="technical-staff-role" value="moderator">
                                 </label>
                                 <div class="login-role-select">
                                     <div class="login-role-select__option login-role-select__option-left login-role-select--active" data-value="moderator" id="login_role_select_moderator">
@@ -134,7 +135,6 @@
                                     </div>
                                     <div class="login-role-select__divider"></div>
                                 </div>
-                                <input type="hidden" name="role" id="technical-staff-role" value="moderator">
                             </div>
                             <p>
                                 @foreach (var provider in loginProviders)

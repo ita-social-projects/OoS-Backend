@@ -169,7 +169,7 @@ public class ExternalAuthController : Controller
                 return await GetErrorMessageResult(result, localizer[errorMessage]);
             }
 
-            List<Claim> claims = [];
+            List<Claim> claims;
 
             if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
                 Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
