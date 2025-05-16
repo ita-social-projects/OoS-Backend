@@ -98,3 +98,7 @@
     border-radius: 0 20px 20px 0;
     border-left: none;
 }
+
+.hidden {
+    display: none;
+}
