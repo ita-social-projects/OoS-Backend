@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
@@ -25,6 +25,11 @@ public class ShortUserDto : BaseUserDto
 
 public static class ShortUserDtoExtensions
 {
+    /// <summary>
+    /// Converts a <see cref="User"/> object to a <see cref="ShortUserDto"/> with selected user details.
+    /// </summary>
+    /// <param name="user">The user entity to convert.</param>
+    /// <returns>A <see cref="ShortUserDto"/> containing basic information from the user.</returns>
     public static ShortUserDto ToShortUser(this User user)
     => new()
     {
@@ -39,6 +44,11 @@ public static class ShortUserDtoExtensions
         EmailConfirmed = user.EmailConfirmed,
     };
 
+    /// <summary>
+    /// Converts a <see cref="Parent"/> object to a <see cref="ShortUserDto"/>, mapping user and parent properties.
+    /// </summary>
+    /// <param name="parent">The parent object to convert.</param>
+    /// <returns>A <see cref="ShortUserDto"/> populated with data from the parent and its associated user.</returns>
     public static ShortUserDto ToShortUser(this OutOfSchool.Services.Models.Parent parent)
     => new()
     {
