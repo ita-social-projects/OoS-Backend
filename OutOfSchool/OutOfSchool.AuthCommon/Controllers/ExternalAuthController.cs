@@ -208,7 +208,6 @@ public class ExternalAuthController : Controller
                 // Process employee-specific logic
                 else if (Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
-
                     var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
                     if (employeePosition == null)
                     {
