@@ -173,6 +173,8 @@ public class ExternalAuthControllerTests
         var moderator = new Moderator
         {
             Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
         };
         dbContext.Moderators.Add(moderator);
 
@@ -180,6 +182,8 @@ public class ExternalAuthControllerTests
         var techAdmin = new TechAdmin
         {
             Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
         };
         dbContext.TechAdmins.Add(techAdmin);
 
@@ -349,14 +353,15 @@ public class ExternalAuthControllerTests
 
     [TestCase("techadmin")]
     [TestCase("moderator")]
-    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechAdminOrModeratorButUserNotTechAdmin_ReturnsErrorViewResult(string role)
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechnicalStaffButUserNotTechnicalStaff_ReturnsErrorViewResult(string role)
     {
         //Arrange
         var user = GetUser();
         SetupSuccessAuth(role);
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
+        techAdminRepository.Setup(t => t.GetById(individualId)).ReturnsAsync((TechAdmin)null);
+        moderatorRepository.Setup(t => t.GetById(individualId)).ReturnsAsync((Moderator)null);
 
-        //techAdminRepository.Setup(t => t.GetById(individualId)).ReturnsAsync((TechAdmin) null);
 
         // Act
         var result = await controller.ExternalLoginCallback();
@@ -370,7 +375,8 @@ public class ExternalAuthControllerTests
 
     [TestCase("techadmin")]
     [TestCase("moderator")]
-    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechAdminOrModeratorButIndividualNoExist_ReturnsErrorViewResult(string role)
+    [TestCase("wrongRole")]
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechnicalStaffButIndividualNoExist_ReturnsErrorViewResult(string role)
     {
         //Arrange
         var user = GetUser();

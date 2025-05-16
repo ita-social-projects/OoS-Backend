@@ -145,11 +145,6 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Signs in a user based on external authentication result and user info.
-    /// </summary>
-    /// <param name="userInfo">User information received from external auth provider.</param>
-    /// <param name="result">Authentication result from external provider.</param>
-    /// <summary>
     /// Signs in a user based on external authentication and user information, verifying role eligibility and building appropriate claims.
     /// </summary>
     /// <param name="userInfo">User information retrieved from the external authentication provider.</param>
@@ -184,7 +179,7 @@ public class ExternalAuthController : Controller
                 return await GetErrorMessageResult(result, localizer[errorMessage]);
             }
 
-            List<Claim> claims = [];
+            List<Claim> claims;
 
             if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
                 Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
@@ -232,7 +227,7 @@ public class ExternalAuthController : Controller
                     return await GetErrorMessageResult(result, localizer["TechAdminNotFound"]);
                 }
 
-                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
             }
             else if (Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
@@ -241,7 +236,7 @@ public class ExternalAuthController : Controller
                     return await GetErrorMessageResult(result, localizer["ModeratorNotFound"]);
                 }
 
-                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
             }
             else
             {
@@ -402,11 +397,6 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Gets existing Positions for given Individual DRFO and Provider EDRPOU.
-    /// </summary>
-    /// <param name="userInfo">User information from external provider.</param>
-    /// <param name="individualId">Existing Individual id.</param>
-    /// <summary>
     /// Retrieves all positions associated with the specified individual and provider, identified by the provider's EDRPOU code in the user info.
     /// </summary>
     /// <param name="userInfo">External user information containing the provider's EDRPOU code.</param>
@@ -432,15 +422,6 @@ public class ExternalAuthController : Controller
         return positions;
     }
 
-    /// <summary>
-    /// Builds claims list for the user based on authentication result and user info.
-    /// </summary>
-    /// <param name="individual">Individual entity.</param>
-    /// <param name="userInfo">User information from external provider.</param>
-    /// <param name="result">Authentication result.</param>
-    /// <param name="providerId">Internal provider ID.</param>
-    /// <param name="isDeputy">Boolean flag to show if individual has deputy director position</param>
-    /// <param name="externalProviderId">Optional external provider ID for provider role.</param>
     /// <summary>
     /// Builds a list of claims for a user with a provider or employee role based on individual and external authentication data.
     /// </summary>
@@ -481,19 +462,13 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Builds claims list for the user (with role - Admin or Moderator) based on authentication result and user info.
-    /// </summary>
-    /// <param name="individual">Individual entity.</param>
-    /// <param name="userInfo">User information from external provider.</param>
-    /// <param name="result">Authentication result.</param>
-    /// <summary>
     /// Builds a list of claims for a user with the TechAdmin or Moderator role based on individual and external authentication data.
     /// </summary>
     /// <param name="individual">The individual entity associated with the user.</param>
     /// <param name="userInfo">External user information retrieved from the authentication provider.</param>
     /// <param name="result">The authentication result containing selected role information.</param>
     /// <returns>A list of claims representing the user's identity and role.</returns>
-    private static List<Claim> BuildAdminModeratorClaims(
+    private static List<Claim> BuildTechnicalStaffClaims(
         Individual individual,
         UserInfoResponse userInfo,
         AuthenticateResult result)
@@ -505,17 +480,11 @@ public class ExternalAuthController : Controller
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
             new(OpenIddictConstants.Claims.Email, userInfo.Email),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
-            new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
         };
 
         return claims;
     }
 
-    /// <summary>
-    /// Signs in the user with specified claims.
-    /// </summary>
-    /// <param name="result">Authentication result.</param>
-    /// <param name="claims">Claims to associate with the sign in.</param>
     /// <summary>
     /// Signs in a user with the specified claims and returns authentication properties containing the redirect URI.
     /// </summary>
@@ -537,11 +506,6 @@ public class ExternalAuthController : Controller
         return properties;
     }
 
-    /// <summary>
-    /// Creates an error result with a custom message and returns the login view.
-    /// </summary>
-    /// <param name="result">The authentication result containing redirect URI information.</param>
-    /// <param name="message">The error message to display to the user.</param>
     /// <summary>
     /// Returns the login view with an error message and available external authentication providers.
     /// </summary>
