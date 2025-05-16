@@ -88,8 +88,7 @@
         </section>
         <section class="icon_wrapper" id="for_technical_staff" style="display:none">
             @{
-                var loginAdminProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-                if (loginAdminProviders.Count == 0)
+                if (loginProviders.Count == 0)
                 {
                     <div>
                         <p>
@@ -138,7 +137,7 @@
                                 <input type="hidden" name="role" id="technical-staff-role" value="moderator">
                             </div>
                             <p>
-                                @foreach (var provider in loginAdminProviders)
+                                @foreach (var provider in loginProviders)
                                 {
                                     <button type="submit" class="registration_submit registration_button" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
                                         @SharedLocalizer["Log in with {0}", @provider.DisplayName]
