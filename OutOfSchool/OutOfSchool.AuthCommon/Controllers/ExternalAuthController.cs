@@ -217,7 +217,7 @@ public class ExternalAuthController : Controller
                     return await GetErrorMessageResult(result, localizer["TechAdminNotFound"]);
                 }
 
-                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
             }
             else if (Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
@@ -226,7 +226,7 @@ public class ExternalAuthController : Controller
                     return await GetErrorMessageResult(result, localizer["ModeratorNotFound"]);
                 }
 
-                claims = BuildAdminModeratorClaims(individual, userInfo, result);
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
             }
             else
             {
@@ -458,7 +458,7 @@ public class ExternalAuthController : Controller
     /// <param name="userInfo">User information from external provider.</param>
     /// <param name="result">Authentication result.</param>
     /// <returns>List of <see cref="Claim"/> for the user.</returns>
-    private static List<Claim> BuildAdminModeratorClaims(
+    private static List<Claim> BuildTechnicalStaffClaims(
         Individual individual,
         UserInfoResponse userInfo,
         AuthenticateResult result)
