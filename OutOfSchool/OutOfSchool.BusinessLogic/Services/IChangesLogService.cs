@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -59,4 +60,40 @@ public interface IChangesLogService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{ParentBlockedByAdminChangesLogDto}"/> that contains found elements.</returns>
     Task<SearchResult<ParentBlockedByAdminChangesLogDto>> GetParentBlockedByAdminChangesLogAsync(ParentBlockedByAdminChangesLogRequest request);
+
+    /// <summary>
+    /// Retrieves a paginated list of changes for workshop drafts, filtered and scoped to the current user.
+    /// </summary>
+    /// <param name="request">Search and pagination parameters.</param>
+    /// <returns>Search result containing change log entries for workshop drafts.</returns>
+    Task<SearchResult<WorkshopDraftChangesLogDto>> GetWorkshopDraftChangesLogAsync(WorkshopDraftChangesLogRequest request);
+
+    /// <summary>
+    /// Logs changes between the old and new versions of a workshop draft content object.
+    /// Handles both scalar properties and description item collections.
+    /// </summary>
+    /// <param name="oldContent">The original content before update.</param>
+    /// <param name="newContent">The updated content after modification.</param>
+    /// <param name="draftId">The ID of the modified workshop draft.</param>
+    /// <param name="userId">The ID of the user who performed the change.</param>
+    void LogWorkshopDraftChanges(
+        WorkshopDraftContent oldContent,
+        WorkshopDraftContent newContent,
+        Guid draftId,
+        string userId);
+
+    /// <summary>
+    /// Logs the deletion of one or more images from a workshop draft.
+    /// </summary>
+    /// <param name="oldImageIds">List of image IDs before deletion.</param>
+    /// <param name="newImageIds">List of image IDs after deletion.</param>
+    /// <param name="entityId">The ID of the entity (e.g., WorkshopDraft).</param>
+    /// <param name="entityType">The type of the entity.</param>
+    /// <param name="userId">The ID of the user who removed the images.</param>
+    void LogImageDeletions(
+        IEnumerable<string> oldImageIds,
+        IEnumerable<string> newImageIds,
+        Guid entityId,
+        string entityType,
+        string userId);
 }

@@ -35,4 +35,15 @@ public interface IChangesLogRepository : IEntityRepository<long, ChangesLog>
         TEntity entity,
         string userId)
         where TEntity : class, IKeyedEntity, new();
+
+    /// <summary>
+    /// Adds a collection of <see cref="ChangesLog"/> entries to the EF Core DbContext
+    /// for tracking but does not persist them immediately to the database.
+    /// </summary>
+    /// <param name="logs">The collection of <see cref="ChangesLog"/> records to add.</param>
+    /// <remarks>
+    /// This method only registers the logs in the current unit of work.
+    /// To persist them, <c>SaveChangesAsync()</c> must be called externally.
+    /// </remarks>
+    void AddChangeLogsToDbContext(IEnumerable<ChangesLog> logs);
 }
