@@ -19,6 +19,7 @@ using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
+using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
@@ -500,6 +501,9 @@ public static class Startup
         services.AddTransient<ICompetitiveEventService, CompetitiveEventService>();
 
         services.AddTransient<IApiErrorService, ApiErrorService>();
+
+        services.AddScoped<INestedObjectChangeLogger, NestedObjectChangeLogger>();
+        services.AddScoped<ICollectionChangeLogger, CollectionChangeLogger>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

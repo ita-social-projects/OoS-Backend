@@ -1,4 +1,6 @@
 ﻿using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -12,6 +14,7 @@ public class ValueProjector : IValueProjector
         {
             { typeof(ContactsAddress), ProjectAddress },
             { typeof(Institution), ProjectInstitution },
+            { typeof(Image<WorkshopDraft>), ProjectWorkshopDraftImage }
         };
     }
 
@@ -61,4 +64,15 @@ public class ValueProjector : IValueProjector
     private string ProjectInstitution(object obj) => obj is Institution institution
         ? institution.Title
         : null;
+
+    /// <summary>
+    /// Extracts the external storage ID from a <see cref="Image{WorkshopDraft}"/> object.
+    /// Used to convert image references into a comparable string format for logging purposes.
+    /// </summary>
+    /// <param name="obj">The object to extract the image ID from.</param>
+    /// <returns>The external storage ID if the object is a valid image; otherwise, <c>null</c>.</returns>
+    private static string ProjectWorkshopDraftImage(object obj)
+        => obj is Image<WorkshopDraft> image
+            ? image.ExternalStorageId
+            : null;
 }
