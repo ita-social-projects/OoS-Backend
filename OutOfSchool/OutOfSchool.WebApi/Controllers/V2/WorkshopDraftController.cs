@@ -21,19 +21,24 @@ public class WorkshopDraftController : ControllerBase
 {
     private readonly IProviderService providerService;
     private readonly IWorkshopDraftService workshopDraftService;
+    private readonly ISensitiveWorkshopDraftService sensitiveWorkshopDraftService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopDraftController"/> class.
     /// </summary>
     /// <param name="providerService">Service for Provider model</param>
     /// <param name="workshopDraftService">Service for WorkshopDraft model.</param>
+    /// <param name="sensitiveWorkshopDraftService">Service for SensitiveWorkshopDraft model.</param>"
 
     public WorkshopDraftController(
         IProviderService providerService,
-        IWorkshopDraftService workshopDraftService)
+        IWorkshopDraftService workshopDraftService,
+        ISensitiveWorkshopDraftService sensitiveWorkshopDraftService)
+     
     {
         this.providerService = providerService;
         this.workshopDraftService = workshopDraftService;
+        this.sensitiveWorkshopDraftService = sensitiveWorkshopDraftService;
     }
 
 
@@ -267,5 +272,126 @@ public class WorkshopDraftController : ControllerBase
     {
         var result = await workshopDraftService.GetWorkshopDraftIdByWorkshopId(workshopId);
         return result.HasValue ? Ok(result) : NoContent();
+    }
+
+    /// <summary>
+    /// Updates a workshop draft on behalf of a moderator. Only allowed in specific statuses.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft to update.</param>
+    /// <param name="moderatorId">The ID of the moderator performing the update.</param>
+    /// <param name="dto">The updated content provided by the moderator.</param>
+    /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> if successful.</returns>
+    /// <response code="200">The draft was successfully updated.</response>
+    /// <response code="400">Invalid input data.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">The specified draft was not found.</response>
+    /// <response code="409">The draft cannot be edited in its current status.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpPut("/api/v{version:apiVersion}/workshop-drafts/{draftId}/moderator-edit")]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [Consumes("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateAsModerator(Guid draftId, Guid moderatorId, [FromBody] ModeratorWorkshopDraftEditDto dto)
+    {
+        var result = await sensitiveWorkshopDraftService.UpdateDraftAsModeratorAsync(draftId, moderatorId, dto);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>
+    /// Deletes the cover image from the specified workshop draft on behalf of a moderator.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft to update.</param>
+    /// <param name="moderatorId">The ID of the moderator performing the deletion.</param>
+    /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with the cover image removed if successful.</returns>
+    /// <response code="200">Cover image deleted successfully.</response>
+    /// <response code="400">The draft does not have a cover image.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">The specified draft was not found.</response>
+    /// <response code="409">The draft is not editable.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpDelete("/api/v{version:apiVersion}/workshop-drafts/{draftId}/moderator/cover-image")]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteCoverImageAsModerator(Guid draftId, Guid moderatorId)
+    {
+        var result = await sensitiveWorkshopDraftService.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>
+    /// Deletes a specific image from a workshop draft on behalf of a moderator.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft.</param>
+    /// <param name="moderatorId">The ID of the moderator performing the deletion.</param>
+    /// <param name="imageId">The ID of the image to delete (externalStorageId).</param>
+    /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with the image removed if successful.</returns>
+    /// <response code="200">Image was successfully deleted.</response>
+    /// <response code="400">Image ID is missing or invalid.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">Draft or image not found.</response>
+    /// <response code="409">The draft is not editable.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpDelete("/api/v{version:apiVersion}/workshop-drafts/{draftId}/moderator/image/{imageId}")]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteImageAsModerator(Guid draftId, Guid moderatorId, string imageId)
+    {
+
+        var result = await sensitiveWorkshopDraftService.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>
+    /// Deletes multiple images from a workshop draft on behalf of a moderator.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft.</param>
+    /// <param name="moderatorId">The ID of the moderator performing the deletion.</param>
+    /// <param name="imageIds">A list of image IDs (externalStorageId) to delete.</param>
+    /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with multiple images removed if successful.</returns>
+    /// <response code="200">Images deleted successfully.</response>
+    /// <response code="400">No image IDs were provided.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">Draft not found or images not present in draft.</response>
+    /// <response code="409">The draft is not editable.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpDelete("/api/v{version:apiVersion}/workshop-drafts/{draftId}/moderator/images")]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteManyImagesAsModerator(Guid draftId, Guid moderatorId, [FromBody] List<string> imageIds)
+    {
+        var result = await sensitiveWorkshopDraftService.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds);
+
+        return this.ToActionResult(result);
     }
 }
