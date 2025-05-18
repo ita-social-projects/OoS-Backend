@@ -7,5 +7,6 @@ public enum WorkshopDraftStatus
 {
     Draft = 1,
     PendingModeration,
-    Rejected
+    Rejected,
+    EditedByModerator
 }
