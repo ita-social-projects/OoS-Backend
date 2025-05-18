@@ -34,4 +34,18 @@ public static class ChangesLogFilterExtensions
 
     public static List<ChangesLogFilter> ToFilter(this IEnumerable<ProviderChangesLogRequest> list)
         => list.MapToList(ToFilter);
+
+    public static ChangesLogFilter ToFilter(this WorkshopDraftChangesLogRequest request)
+    => new()
+    {
+        EntityId = request.EntityId,
+        PropertyName = request.PropertyName,
+        DateFrom = request.DateFrom,
+        DateTo = request.DateTo,
+        EntityType = "WorkshopDraft",
+        SearchString = request.SearchString,
+        From = request.From,
+        Size = request.Size
+    };
+
 }
