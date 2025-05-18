@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
@@ -17,8 +20,11 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -44,8 +50,14 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMock;
     private Mock<ICodeficatorRepository> codeficatorRepository;
+    private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
 
     private string userId;
+    private WorkshopDraft validWorkshopDraft;
+    private Guid draftId;
+    private Guid moderatorId;
+    private ModeratorWorkshopDraftEditDto validEditDto;
 
     [SetUp]
     public void SetUp()
@@ -62,13 +74,14 @@ public class SensitiveWorkshopDraftServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         institutionHierarchyRepositoryMock = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepository = new Mock<ICodeficatorRepository>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
+        workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
         options.Setup(o => o.Value).Returns(settings);
 
         var logger = new Mock<ILogger<WorkshopDraftService>>();
-        var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
 
         userId = "someUserId";
@@ -76,7 +89,7 @@ public class SensitiveWorkshopDraftServiceTests
         service = new WorkshopDraftService(
                    logger.Object,
                    workshopDraftRepoMock.Object,
-                   workshopDraftImagesService.Object,
+                   workshopDraftImagesServiceMock.Object,
                    providerServiceMock.Object,
                    currentUserServiceMock.Object,
                    teacherDraftImagesService.Object,
@@ -88,7 +101,10 @@ public class SensitiveWorkshopDraftServiceTests
                    codeficatorServiceMock.Object,
                    searchStringServiceMock.Object,
                    institutionHierarchyRepositoryMock.Object,
-                   codeficatorRepository.Object);
+                   codeficatorRepository.Object,
+                   changesLogServiceMock.Object);
+
+        SetupModeratorTestData();
     }
 
     #region FetchByFilterForAdmins    
@@ -146,8 +162,605 @@ public class SensitiveWorkshopDraftServiceTests
         result.Should()
             .BeEquivalentTo(resultExpected);
 
-        searchStringServiceMock.VerifyAll();
-        workshopDraftRepoMock.VerifyAll();
+        searchStringServiceMock.Verify(
+            s => s.SplitSearchString(It.Is<string>(x => x == filterWorkshop.SearchString)),
+            Times.Once);
+    }
+
+    #endregion
+
+    #region UpdateDraftAsModeratorAsync
+
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_WithNullDto_ReturnsFailed()
+    {
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, null);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+        Assert.AreEqual("DTO must not be null.", result.OperationResult.Errors.First().Description);
+    }
+
+    [Test]
+    public void UpdateDraftAsModeratorAsync_WithNonExistentDraft_ThrowsException()
+    {
+        // Arrange
+        var nonExistentDraftId = Guid.NewGuid();
+
+        // Setup to match the exact exception that would be thrown
+        workshopDraftRepoMock.Setup(repo => repo.GetById(nonExistentDraftId))
+            .ThrowsAsync(new ArgumentException(
+                "id",
+                $"There are no records in workshopDrafts table with such id - {nonExistentDraftId}."));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.UpdateDraftAsModeratorAsync(nonExistentDraftId, moderatorId, validEditDto));
+
+        // Verify the exception message contains the ID
+        Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
+    }
+
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_WithNonEditableStatus_ReturnsFailed()
+    {
+        // Arrange
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Rejected;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("409", result.OperationResult.Errors.First().Code);
+        Assert.That(result.OperationResult.Errors.First().Description,
+            Does.Contain("not editable in its current status"));
+    }
+
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_ValidRequest_UpdatesAndLogsChanges()
+    {
+        // Arrange
+        workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify draft status was updated
+        workshopDraftRepoMock.Verify(repo => repo.Update(
+            It.Is<WorkshopDraft>(w => w.DraftStatus == WorkshopDraftStatus.EditedByModerator)),
+            Times.Once);
+
+        // Verify changes were logged
+        changesLogServiceMock.Verify(service => service.LogWorkshopDraftChanges(
+            It.IsAny<WorkshopDraftContent>(),
+            It.IsAny<WorkshopDraftContent>(),
+            draftId,
+            userId),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_EditedByModeratorStatus_UpdatesSuccessfully()
+    {
+        // Arrange
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+        workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+        workshopDraftRepoMock.Verify(repo => repo.Update(It.IsAny<WorkshopDraft>()), Times.Once);
+    }
+
+    #endregion
+
+    #region DeleteCoverImageAsModeratorAsync
+
+    [Test]
+    public void DeleteCoverImageAsModeratorAsync_WithNonExistentDraft_ThrowsException()
+    {
+        // Arrange
+        var nonExistentDraftId = Guid.NewGuid();
+
+        // Setup to throw the expected exception for nonexistent ID
+        workshopDraftRepoMock.Setup(repo => repo.GetById(nonExistentDraftId))
+            .ThrowsAsync(new ArgumentException(
+                "id",
+                $"There are no records in workshopDrafts table with such id - {nonExistentDraftId}."));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.DeleteCoverImageAsModeratorAsync(nonExistentDraftId, moderatorId));
+
+        // Verify the exception message contains the ID
+        Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
+    }
+
+    [Test]
+    public async Task DeleteCoverImageAsModeratorAsync_WithNonEditableStatus_ReturnsFailed()
+    {
+        // Arrange
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("409", result.OperationResult.Errors.First().Code);
+    }
+
+    [Test]
+    public async Task DeleteCoverImageAsModeratorAsync_WithNoCoverImage_ReturnsFailed()
+    {
+        // Arrange
+        validWorkshopDraft.CoverImageId = null;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+        Assert.That(result.OperationResult.Errors.First().Description,
+            Does.Contain("No cover image exists"));
+    }
+
+    [Test]
+    public async Task DeleteCoverImageAsModeratorAsync_ValidRequest_DeletesAndUpdatesStatus()
+    {
+        // Arrange
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync(OperationResult.Success);
+
+        workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify cover image was removed
+        workshopDraftImagesServiceMock.Verify(service =>
+            service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()), Times.Once);
+
+        // Verify draft status was updated
+        workshopDraftRepoMock.Verify(repo => repo.Update(
+            It.Is<WorkshopDraft>(w => w.DraftStatus == WorkshopDraftStatus.EditedByModerator)),
+            Times.Once);
+
+        // Verify changes were logged
+        changesLogServiceMock.Verify(service =>
+            service.AddEntityChangesToDbContext(It.IsAny<WorkshopDraft>(), userId),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteCoverImageAsModeratorAsync_ExceptionThrown_ReturnsFailed()
+    {
+        // Arrange
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("500", result.OperationResult.Errors.First().Code);
+    }
+
+    #endregion
+
+    #region DeleteImageAsModeratorAsync
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_WithNullImageId_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, null);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+    }
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_WithEmptyImageId_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, string.Empty);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+    }
+
+    [Test]
+    public void DeleteImageAsModeratorAsync_WithNonExistentDraft_ThrowsException()
+    {
+        // Arrange
+        var nonExistentDraftId = Guid.NewGuid();
+
+        // Setup to throw the expected exception for nonexistent ID
+        workshopDraftRepoMock.Setup(repo => repo.GetById(nonExistentDraftId))
+            .ThrowsAsync(new ArgumentException(
+                "id",
+                $"There are no records in workshopDrafts table with such id - {nonExistentDraftId}."));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.DeleteImageAsModeratorAsync(nonExistentDraftId, moderatorId, "image-123"));
+
+        // Verify the exception message contains the ID
+        Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
+    }
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_WithNonExistentImage_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, "nonexistent-image");
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("404", result.OperationResult.Errors.First().Code);
+        Assert.That(result.OperationResult.Errors.First().Description,
+            Does.Contain("Image with ID nonexistent-image not found"));
+    }
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_ValidRequest_DeletesAndUpdatesStatus()
+    {
+        // Arrange
+        const string imageId = "image-123";
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), imageId))
+            .ReturnsAsync(OperationResult.Success);
+
+        workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify image was removed
+        workshopDraftImagesServiceMock.Verify(service =>
+            service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), imageId), Times.Once);
+
+        // Verify changes were saved
+        workshopDraftRepoMock.Verify(repo => repo.SaveChangesAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Verify changes were logged
+        changesLogServiceMock.Verify(service =>
+            service.LogImageDeletions(
+                It.IsAny<List<string>>(),
+                It.IsAny<List<string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_WithUrlEncodedImageId_CorrectlyDecodesAndDeletes()
+    {
+        // Arrange
+        const string encodedImageId = "image%2F123";
+        const string decodedImageId = "image/123";
+
+        // Add the encoded image to the workshop draft
+        validWorkshopDraft.Images.Add(new Image<WorkshopDraft> { ExternalStorageId = decodedImageId });
+
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), decodedImageId))
+            .ReturnsAsync(OperationResult.Success);
+
+        workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, encodedImageId);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify the decoded image ID was used
+        workshopDraftImagesServiceMock.Verify(service =>
+            service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), decodedImageId), Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteImageAsModeratorAsync_ExceptionThrown_ReturnsFailed()
+    {
+        // Arrange
+        const string imageId = "image-123";
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), imageId))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("500", result.OperationResult.Errors.First().Code);
+    }
+
+    #endregion
+
+    #region DeleteManyImagesAsModeratorAsync
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_WithNullImageIds_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, null);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_WithEmptyImageIds_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, new List<string>());
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("400", result.OperationResult.Errors.First().Code);
+    }
+
+    [Test]
+    public void DeleteManyImagesAsModeratorAsync_WithNonExistentDraft_ThrowsException()
+    {
+        // Arrange
+        var nonExistentDraftId = Guid.NewGuid();
+
+        // Setup to throw the expected exception for nonexistent ID
+        workshopDraftRepoMock.Setup(repo => repo.GetById(nonExistentDraftId))
+            .ThrowsAsync(new ArgumentException(
+                "id",
+                $"There are no records in workshopDrafts table with such id - {nonExistentDraftId}."));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.DeleteManyImagesAsModeratorAsync(
+                nonExistentDraftId, moderatorId, new List<string> { "image-123" }));
+
+        // Verify the exception message contains the ID
+        Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_WithNonExistentImages_ReturnsFailed()
+    {
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(
+            draftId, moderatorId, new List<string> { "nonexistent-image-1", "nonexistent-image-2" });
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("404", result.OperationResult.Errors.First().Code);
+        Assert.That(result.OperationResult.Errors.First().Description,
+            Does.Contain("None of the specified images were found"));
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_ValidRequest_DeletesAndUpdatesStatus()
+    {
+        // Arrange
+        var imageIds = new List<string> { "image-123", "image-456" };
+
+        var multipleImageResult = new MultipleImageRemovingResult
+        {
+            RemovedIds = imageIds,
+            MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult
+            {
+                GeneralResultMessage = "Success"
+            }
+        };
+
+        // Add a successful result to the dictionary
+        multipleImageResult.MultipleKeyValueOperationResult.Results.Add(0, OperationResult.Success);
+
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveManyImagesAsync(It.IsAny<WorkshopDraft>(), It.IsAny<IList<string>>()))
+            .ReturnsAsync(multipleImageResult);
+
+        workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify images were removed
+        workshopDraftImagesServiceMock.Verify(service =>
+            service.RemoveManyImagesAsync(
+                It.IsAny<WorkshopDraft>(),
+                It.Is<IList<string>>(ids => ids.Count == 2)),
+            Times.Once);
+
+        // Verify changes were saved
+        workshopDraftRepoMock.Verify(repo => repo.SaveChangesAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Verify changes were logged
+        changesLogServiceMock.Verify(service =>
+            service.LogImageDeletions(
+                It.IsAny<List<string>>(),
+                It.IsAny<List<string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_WithMixedUrlEncodedImageIds_CorrectlyDecodesAndDeletes()
+    {
+        // Arrange
+        var encodedImageIds = new List<string> { "image-123", "image%2F456" };
+        var decodedImageIds = new List<string> { "image-123", "image/456" };
+
+        validWorkshopDraft.Images.Add(new Image<WorkshopDraft> { ExternalStorageId = "image/456" });
+
+        var multipleImageResult = new MultipleImageRemovingResult
+        {
+            RemovedIds = decodedImageIds,
+            MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult
+            {
+                GeneralResultMessage = "Success"
+            }
+        };
+
+        // Add a successful result to the dictionary
+        multipleImageResult.MultipleKeyValueOperationResult.Results.Add(0, OperationResult.Success);
+
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveManyImagesAsync(It.IsAny<WorkshopDraft>(), It.IsAny<IList<string>>()))
+            .ReturnsAsync(multipleImageResult);
+
+        workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, encodedImageIds);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify removal was called with decoded image IDs
+        workshopDraftImagesServiceMock.Verify(service =>
+            service.RemoveManyImagesAsync(
+                It.IsAny<WorkshopDraft>(),
+                It.IsAny<IList<string>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModeratorAsync_ExceptionThrown_ReturnsFailed()
+    {
+        // Arrange
+        var imageIds = new List<string> { "image-123", "image-456" };
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveManyImagesAsync(It.IsAny<WorkshopDraft>(), It.IsAny<IList<string>>()))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("500", result.OperationResult.Errors.First().Code);
+    }
+
+    #endregion
+
+    #region ValidateDraftForModerator
+
+    [Test]
+    public void ValidateDraftForModerator_UserNotAuthorized_ThrowsException()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(service =>
+            service.UserHasRights(It.IsAny<ModeratorRights>(), It.IsAny<TechAdminRights>()))
+            .ThrowsAsync(new UnauthorizedAccessException("User is not authorized"));
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId));
+    }
+
+    [Test]
+    public async Task ValidateDraftForModerator_DraftNotInEditableStatus_ReturnsFailed()
+    {
+        // Arrange - set status to one that's not editable
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual("409", result.OperationResult.Errors.First().Code);
+        Assert.That(result.OperationResult.Errors.First().Description,
+            Does.Contain("not editable in its current status"));
+    }
+
+    [Test]
+    public async Task ValidateDraftForModerator_ValidDraftWithPendingModerationStatus_PassesValidation()
+    {
+        // Arrange
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync(OperationResult.Success);
+
+        workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+    }
+
+    [Test]
+    public async Task ValidateDraftForModerator_ValidDraftWithEditedByModeratorStatus_PassesValidation()
+    {
+        // Arrange
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        workshopDraftImagesServiceMock.Setup(service =>
+            service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync(OperationResult.Success);
+
+        workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
+            .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        // Act
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
     }
     #endregion
 
@@ -224,5 +837,77 @@ public class SensitiveWorkshopDraftServiceTests
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
                     It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null)))
             .Returns(workshopDraftsReturned.AsTestAsyncEnumerableQuery());
+    }
+
+    private void SetupModeratorTestData()
+    {
+        draftId = Guid.NewGuid();
+        moderatorId = Guid.NewGuid();
+
+        // Initialize a valid workshop draft for testing
+        validWorkshopDraft = new WorkshopDraft
+        {
+            Id = draftId,
+            DraftStatus = WorkshopDraftStatus.PendingModeration,
+            WorkshopDraftContent = new WorkshopDraftContent
+            {
+                Title = "Original Title",
+                ShortTitle = "Original Short",
+                CompetitiveSelectionDescription = "Original Competitive",
+                PreferentialTermsOfParticipation = "Original Terms",
+                EnrollmentProcedureDescription = "Original Enrollment",
+                InstitutionHierarchyId = Guid.NewGuid(),
+                WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>
+                {
+                    new WorkshopDescriptionItemDraft
+                    {
+                        SectionName = "Original Section",
+                        Description = "Original Description"
+                    }
+                }
+            },
+            CoverImageId = "cover-123",
+            Images = new List<Image<WorkshopDraft>>
+            {
+                new Image<WorkshopDraft>
+                {
+                    ExternalStorageId = "image-123"
+                },
+                new Image<WorkshopDraft>
+                {
+                    ExternalStorageId = "image-456"
+                }
+            }
+        };
+
+        // Initialize a valid edit DTO
+        validEditDto = new ModeratorWorkshopDraftEditDto
+        {
+            Title = "Updated Title",
+            ShortTitle = "Updated Short",
+            CompetitiveSelectionDescription = "Updated Competitive",
+            PreferentialTermsOfParticipation = "Updated Terms",
+            EnrollmentProcedureDescription = "Updated Enrollment",
+            InstitutionHierarchyId = Guid.NewGuid(),
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDto>
+            {
+                new WorkshopDescriptionItemDto
+                {
+                    SectionName = "Updated Section",
+                    Description = "Updated Description"
+                }
+            }
+        };
+
+        // Setup workshop draft repository mock for valid draft ID
+        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(validWorkshopDraft);
+
+        // Setup current user service mock to allow moderator rights
+        currentUserServiceMock.Setup(service => service.UserHasRights(It.IsAny<ModeratorRights>(), It.IsAny<TechAdminRights>()))
+            .Returns(Task.CompletedTask);
+
+        currentUserServiceMock.Setup(service => service.UserId)
+            .Returns(userId);
     }
 }

@@ -12,12 +12,12 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -41,6 +41,7 @@ public class ChangeLogControllerTests
             new Mock<IChangesLogRepository>().Object,
             new Mock<IProviderRepository>().Object,
             new Mock<IApplicationRepository>().Object,
+            new Mock<IWorkshopDraftRepository>().Object,
             new Mock<IEntityRepository<long, EmployeeChangesLog>>().Object,
             parentBlockedByAdminLogRepository,
             new Mock<ILogger<ChangesLogService>>().Object,
@@ -49,7 +50,10 @@ public class ChangeLogControllerTests
             new Mock<IMinistryAdminService>().Object,
             new Mock<IRegionAdminService>().Object,
             new Mock<IAreaAdminService>().Object,
-            new Mock<ICodeficatorService>().Object);
+            new Mock<ICodeficatorService>().Object,
+            new Mock<INestedObjectChangeLogger>().Object,
+            new Mock<ICollectionChangeLogger>().Object
+            );
         changesLogControllerWithRealService = new ChangesLogController(changesLogService);
     }
 

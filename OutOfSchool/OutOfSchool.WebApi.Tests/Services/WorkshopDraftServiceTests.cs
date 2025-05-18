@@ -44,6 +44,7 @@ public class WorkshopDraftServiceTests
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Moq;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
+    private Mock<IChangesLogService> changesLogServiceMock;
 
     private string userId;
 
@@ -58,6 +59,7 @@ public class WorkshopDraftServiceTests
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -88,7 +90,8 @@ public class WorkshopDraftServiceTests
                    codeficatorService.Object,
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
-                   codeficatorRepositoryMoq.Object);
+                   codeficatorRepositoryMoq.Object,
+                   changesLogServiceMock.Object);
     }
 
     #region Create
