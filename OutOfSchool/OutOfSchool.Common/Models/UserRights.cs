@@ -20,3 +20,9 @@ public record ProviderRights(Guid providerId)
 
 public record EmployeeWorkshopRights(Guid workshopId = default)
     : IUserRights;
+
+public record TechAdminRights(Guid techAdminId)
+    : IUserRights;
+
+public record ModeratorRights(Guid moderatorId)
+    : IUserRights;

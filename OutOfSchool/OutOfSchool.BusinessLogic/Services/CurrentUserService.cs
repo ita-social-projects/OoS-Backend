@@ -85,6 +85,8 @@ public class CurrentUserService(
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
             var employee = userTypes.OfType<EmployeeRights>().FirstOrDefault();
             var employeeWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
+            var moderator = userTypes.OfType<ModeratorRights>().FirstOrDefault();
+            var techAdmin = userTypes.OfType<TechAdminRights>().FirstOrDefault();
 
             var result = await Task.WhenAll(
                 new List<Task<bool>>
@@ -93,6 +95,8 @@ public class CurrentUserService(
                         UserHasRights(provider),
                         UserHasRights(employee),
                         UserHasRights(employeeWorkshop),
+                        UserHasRights(moderator),
+                        UserHasRights(techAdmin),
                     }
                     .Select(Execute));
             userHasRights = result.Any(hasRight => hasRight);
@@ -133,6 +137,8 @@ public class CurrentUserService(
             DeputyDirectorRights deputy => DeputyDirectorHasRights(deputy.providerId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
             EmployeeWorkshopRights employeeWorkshop => EmployeeWorkshopRights(employeeWorkshop.workshopId),
+            ModeratorRights moderator => ModeratorHasRights(moderator.moderatorId),
+            TechAdminRights techAdmin => TechAdminHasRights(techAdmin.techAdminId),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type"),
         };
@@ -287,5 +293,45 @@ public class CurrentUserService(
         }
 
         return isUserRelatedEmployee;
+    }
+
+    private Task<bool> ModeratorHasRights(Guid moderatorId)
+    {
+        if (!IsModerator())
+        {
+            return Task.FromResult(false);
+        }
+
+        var result = UserId == moderatorId.ToString();
+
+        if (!result && options.AccessLogEnabled)
+        {
+            logger.LogWarning(
+                "Unauthorized access: User ({UserId}) tried to access data as Moderator ({ModeratorId})",
+                UserId,
+                moderatorId);
+        }
+
+        return Task.FromResult(result);
+    }
+
+    private Task<bool> TechAdminHasRights(Guid techAdminId)
+    {
+        if (!IsTechAdmin())
+        {
+            return Task.FromResult(false);
+        }
+
+        var result = UserId == techAdminId.ToString();
+
+        if (!result && options.AccessLogEnabled)
+        {
+            logger.LogWarning(
+                "Unauthorized access: User ({UserId}) tried to access data as TechAdmin ({TechAdminId})",
+                UserId,
+                techAdminId);
+        }
+
+        return Task.FromResult(result);
     }
 }
