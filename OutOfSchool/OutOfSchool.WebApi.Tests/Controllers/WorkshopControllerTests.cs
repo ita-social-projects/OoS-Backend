@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -41,6 +42,7 @@ public class WorkshopControllerTests
     private static ProviderDto provider;
 
     private WorkshopController controller;
+    private Mock<IFeatureManager> featureManagerMoq;
     private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<IUserService> userServiceMoq;
@@ -87,6 +89,7 @@ public class WorkshopControllerTests
         providerServiceMoq = new Mock<IProviderService>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
+        featureManagerMoq = new Mock<IFeatureManager>();
         currentUserServiceMoq = new Mock<ICurrentUserService>();
 
         controller = new WorkshopController(
@@ -94,6 +97,7 @@ public class WorkshopControllerTests
             providerServiceMoq.Object,
             userServiceMoq.Object,
             currentUserServiceMoq.Object,
+            featureManagerMoq.Object,
             loggerMoq.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
