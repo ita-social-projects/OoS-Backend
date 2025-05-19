@@ -70,7 +70,7 @@ public class PositionServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(positions.Count, result.TotalAmount);
-        Assert.AreEqual(1, result.Entities.Count); // Only one position matches the filter
+        Assert.AreEqual(2, result.Entities.Count);
         Assert.AreEqual("jdcdkc", result.Entities.First().FullName);
     }
 
@@ -141,6 +141,75 @@ public class PositionServiceTests
         Assert.IsNotNull(result);
         Assert.AreEqual(mockPositions.Count, result.TotalAmount);
         Assert.IsTrue(result.Entities.All(e => e.ProviderId == providerId));
+    }
+
+    [Test]
+    public async Task GetByFilter_FilterByPropertyAndSearchString_ReturnsMatchingResults()
+    {
+        // Arrange
+        var filter = new PositionsFilter()
+        {
+            FilterByProperty = "Tariff",
+            Order = false, // descending order
+            SearchString = "jdcdkc"
+        };
+
+        var mockPositions = Positions().Where(p => p.ProviderId == providerId).ToList();
+
+        _mockCurrentUserService
+            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
+            .Returns(Task.CompletedTask);
+
+        _mockRepository
+            .Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
+            .ReturnsAsync(mockPositions.Count(p => (
+                p.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase) ||
+                p.ShortName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)) &&
+                !p.IsDeleted && p.ProviderId == providerId));
+
+        _mockRepository
+            .Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Position, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>()))
+            .Returns((int skip, int take, Expression<Func<Position, bool>> predicate,      
+                     Dictionary<Expression<Func<Position, dynamic>>, SortDirection> orderBy) =>
+                     {
+                         var query = mockPositions.AsQueryable().Where(predicate.Compile());
+                         if (orderBy != null && orderBy.Any())
+                         {
+                             foreach (var sort in orderBy)
+                             {
+                                 query = sort.Value == SortDirection.Ascending
+                                             ? query.OrderBy(sort.Key.Compile())
+                                             : query.OrderByDescending(sort.Key.Compile());
+                             }
+                         }
+                         return query.Skip(skip).Take(take).BuildMock();
+                     }
+            );
+
+
+        // Act
+        var result = await _service.GetByFilter(providerId, filter);
+        
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Entities.All(e =>
+            e.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase) ||
+            e.ShortName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)));
+
+        var expected = mockPositions
+            .Where(p =>
+                (p.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase) ||
+                 p.ShortName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase)) &&
+                !p.IsDeleted && p.ProviderId == providerId)
+            .OrderByDescending(p => p.Tariff)
+            .ToList();
+
+        Assert.AreEqual(expected.Count, result.Entities.Count);
+        Assert.AreEqual(expected.First().Tariff, result.Entities.First().Tariff);
     }
     #endregion
 
@@ -408,7 +477,28 @@ public class PositionServiceTests
                 IsForRuralAreas = true,
                 SeatsAmount = 20,
                 Rate = 42,
-                Tariff = 55,
+                Tariff = 500,
+                ClassifierType = "type",
+                ContactId = Guid.Empty,
+                IsDeleted = false,
+                IsTeachingPosition = true,
+                PositionType = PositionType.Employee
+            },
+
+            new Position ()
+            {
+                Id = new Guid(),
+                ProviderId = providerId,
+                FullName = "jdcdkc",
+                ShortName = "shhhs",
+                GenitiveName = "llll",
+                Language = "aaa",
+                Department = "ppp",
+                Description = "uuu",
+                IsForRuralAreas = true,
+                SeatsAmount = 10,
+                Rate = 42,
+                Tariff = 600,
                 ClassifierType = "type",
                 ContactId = Guid.Empty,
                 IsDeleted = false,
