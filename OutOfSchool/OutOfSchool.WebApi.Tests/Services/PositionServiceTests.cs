@@ -51,9 +51,7 @@ public class PositionServiceTests
         {
             SearchString = "jdcdkc", // Matches FullName of one position
             From = 0,
-            Size = 10,
-            OrderByFullName = true,
-            OrderByCreatedAt = true
+            Size = 10,            
         };
 
         _mockRepository.Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
