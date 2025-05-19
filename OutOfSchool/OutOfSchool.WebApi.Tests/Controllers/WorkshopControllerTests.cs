@@ -1162,6 +1162,45 @@ public class WorkshopControllerTests
 
     #endregion
 
+    #region FeatureFlagBehavior
+
+    [Test]
+    public async Task Create_WhenRelease2FeatureFlagEnabled_ShouldReturnGoneResult()
+    {
+        // Arrange
+        featureManagerMoq.Setup(f => f.IsEnabledAsync("Release2"))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status410Gone, result.StatusCode);
+        Assert.AreEqual("Workshop API v1 is deprecated. Please use API v2 via draft creation.", result.Value);
+        workshopServiceMoq.Verify(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Update_WhenRelease2FeatureFlagEnabled_ShouldReturnGoneResult()
+    {
+        // Arrange
+        featureManagerMoq.Setup(f => f.IsEnabledAsync("Release2"))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status410Gone, result.StatusCode);
+        Assert.AreEqual("Workshop API v1 is deprecated. Please use API v2 via draft creation.", result.Value);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
+    }
+
+
+    #endregion
+
     private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
     {
         return new WorkshopStatusDto()
