@@ -36,6 +36,10 @@ public class JobMonitoringListener : IJobListener
         return Task.CompletedTask;
     }
 
+    // TODO: Investigate adding logic to populate RetryCount and job/trigger parameters inside the jobs themselves.
+    // Currently, these values are either null or empty in Redis logs, because jobs do not explicitly handle or expose them.
+    // Consider extending job implementations to provide meaningful retry info and execution parameters for monitoring purposes.
+
     /// <summary>
     /// Called after the job has been executed (successfully or not).
     /// Logs the job execution details to the configured logger.
