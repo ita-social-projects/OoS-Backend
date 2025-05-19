@@ -854,6 +854,10 @@ public class ChangesLogServiceTests
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>>()))
             .Returns(changeLogsQueryable);
 
+        changesLogRepository
+           .Setup(r => r.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
+           .ReturnsAsync(changesLogs.Count);
+
         workshopDraftRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -904,6 +908,10 @@ public class ChangesLogServiceTests
                 It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>>()))
             .Returns(changeLogsQueryable);
+
+        changesLogRepository
+           .Setup(r => r.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
+           .ReturnsAsync(changesLogs.Count);
 
         workshopDraftRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),

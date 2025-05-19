@@ -62,10 +62,10 @@ public static class ControllerExtension
         {
             return error.Code switch
             {
-                "400" => controller.BadRequest(error.Description),
+                "400" => controller.BadRequest(error.Description ?? "Bad Request"),
                 "403" => controller.Forbid(),
-                "404" => controller.NotFound(error.Description),
-                "409" => controller.Conflict(error.Description),
+                "404" => controller.NotFound(error.Description ?? "Not Found"),
+                "409" => controller.Conflict(error.Description ?? "Conflict"),
                 _ => controller.StatusCode(500, error.Description ?? "Unexpected error")
             };
         }

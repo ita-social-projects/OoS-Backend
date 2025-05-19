@@ -28,6 +28,11 @@ public class NestedObjectChangeLogger : INestedObjectChangeLogger
                 $"Use CollectionChangeLogger instead.");
         }
 
+        if (trackedProperties == null || !trackedProperties.Any())
+        {
+            throw new ArgumentException("Tracked properties cannot be null or empty.", nameof(trackedProperties));
+        }
+
         var logs = new List<ChangesLog>();
         if (oldObj == null || newObj == null) return logs;
 

@@ -1110,15 +1110,6 @@ public class WorkshopDraftService(
         await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
 
         var workshopDraft = await GetWorkshopDraftById(draftId);
-        if (workshopDraft is null)
-        {
-            logger.LogWarning("WorkshopDraft not found. Id = {Id}.", draftId);
-            return Result<WorkshopDraft>.Failed(new OperationError
-            {
-                Code = "404",
-                Description = $"WorkshopDraft with ID {draftId} not found."
-            });
-        }
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)

@@ -294,24 +294,64 @@ public class NestedObjectChangeLoggerTests
     }
 
     [Test]
-    public void CompareAndLogChanges_WithStringType_DoesNotThrow()
+    public void CompareAndLogChanges_WithStringType_ThrowsArgumentException()
     {
         // Arrange
         string oldString = "Hello";
         string newString = "World";
 
-        // Act
-        var result = _logger.CompareAndLogChanges(
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => _logger.CompareAndLogChanges(
             oldString,
             newString,
             _entityId,
             _entityType,
             _userId,
-            new List<string>()); // No properties to track for string
+            new List<string>()));
+    }
 
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Count); // String has no properties
+    [Test]
+    public void CompareAndLogChanges_WhenTrackedPropertiesIsNull_ThrowsArgumentException()
+    {
+        // Arrange
+        IEnumerable<string> trackedProperties = null;
+
+        var oldObj = new TestPerson { Name = null, Age = 30 };
+        var newObj = new TestPerson { Name = "John", Age = 30 };
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => _logger.CompareAndLogChanges(
+            oldObj,
+            newObj,
+            _entityId,
+            _entityType,
+            _userId,
+            trackedProperties));
+
+        Assert.That(ex.Message, Contains.Substring("Tracked properties cannot be null or empty."));
+        Assert.That(ex.ParamName, Is.EqualTo("trackedProperties"));
+    }
+
+    [Test]
+    public void CompareAndLogChanges_WhenTrackedPropertiesIsEmpty_ThrowsArgumentException()
+    {
+        // Arrange
+        var trackedProperties = new List<string>();
+
+        var oldObj = new TestPerson { Name = null, Age = 30 };
+        var newObj = new TestPerson { Name = "John", Age = 30 };
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => _logger.CompareAndLogChanges(
+            oldObj,
+            newObj,
+            _entityId,
+            _entityType,
+            _userId,
+            trackedProperties));
+
+        Assert.That(ex.Message, Contains.Substring("Tracked properties cannot be null or empty."));
+        Assert.That(ex.ParamName, Is.EqualTo("trackedProperties"));
     }
 
     [Test]
