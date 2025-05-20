@@ -211,6 +211,50 @@ public class PositionServiceTests
         Assert.AreEqual(expected.Count, result.Entities.Count);
         Assert.AreEqual(expected.First().Tariff, result.Entities.First().Tariff);
     }
+
+    [TestCase(nameof(Position.FullName))]
+    [TestCase(nameof(Position.Rate))]
+    [TestCase(nameof(Position.SeatsAmount))]
+    [TestCase(nameof(Position.Tariff))]
+    [TestCase(nameof(Position.CreatedAt))]
+    [TestCase(null)] // covers default case
+    public async Task GetByFilter_SortByDifferentProperties_CoversSwitchCases(string sortByProperty)
+    {
+        // Arrange
+        var filter = new PositionsFilter()
+        {
+            FilterByProperty = sortByProperty,
+            Order = true,
+            SearchString = "JD",
+            From = 0,
+            Size = 5
+        };
+
+        var mockPositions = Positions().Where(p => p.ProviderId == providerId).ToList();
+
+        _mockCurrentUserService
+            .Setup(s => s.UserHasRights(It.IsAny<ProviderRights>()))
+            .Returns(Task.CompletedTask);
+
+        _mockRepository
+            .Setup(r => r.Count(It.IsAny<Expression<Func<Position, bool>>>()))
+            .ReturnsAsync(mockPositions.Count);
+
+        _mockRepository
+            .Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Position, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Position, dynamic>>, SortDirection>>()))
+            .Returns(mockPositions.AsQueryable().BuildMock());
+
+        // Act
+        var result = await _service.GetByFilter(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(mockPositions.Count, result.Entities.Count);
+    }
     #endregion
 
     #region GetById
