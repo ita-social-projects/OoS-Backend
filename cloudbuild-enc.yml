@@ -10,10 +10,10 @@ steps:
     - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-encr:$SHORT_SHA-${_COMMIT_DATE}
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:encr
     - --builder=paketobuildpacks/builder-jammy-base:latest
-    - --buildpack=paketo-buildpacks/environment-variables
+    - --buildpack=docker.io/paketobuildpacks/environment-variables
     - --buildpack=file://./buildpacks/iit
     - --buildpack=file://./buildpacks/cert
-    - --buildpack=paketo-buildpacks/dotnet-core
+    - --buildpack=docker.io/paketobuildpacks/dotnet-core
     - --extension=file://./buildpacks/unzip
     - --env=BP_NUGET_RESTORE_MSBUILD_ARGS=/p:Configuration=Release
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.Encryption/
