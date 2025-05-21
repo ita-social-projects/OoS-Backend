@@ -18,6 +18,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 
@@ -42,6 +43,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="searchStringService">Service for handling the search string.</param>
 /// <param name="institutionHierarchyRepository">Repository for InstitutionHierarchy.</param>
 /// <param name="codeficatorRepository">Repository for CATOTTG.</param>
+/// <param name="changesLogService">Service for changes log.</param>
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
     IWorkshopDraftRepository workshopDraftRepository,
@@ -57,7 +59,8 @@ public class WorkshopDraftService(
     ICodeficatorService codeficatorService,
     ISearchStringService searchStringService,
     IInstitutionHierarchyRepository institutionHierarchyRepository,
-    ICodeficatorRepository codeficatorRepository
+    ICodeficatorRepository codeficatorRepository,
+    IChangesLogService changesLogService
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -476,6 +479,256 @@ public class WorkshopDraftService(
         return workshopDraft.Id;
     }
 
+    /// <inheritdoc/>
+    public async Task<Result<WorkshopDraftResponseDto>> UpdateDraftAsModeratorAsync(
+        Guid draftId,
+        Guid moderatorId,
+        ModeratorWorkshopDraftEditDto dto)
+    {
+        if (dto == null)
+        {
+            logger.LogError("Parameter '{ParameterName}' is null.", nameof(dto));
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "DTO must not be null."
+            });
+        }
+
+        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+
+        logger.LogDebug("Updating WorkshopDraft as moderator started. DraftId = {Id}.", draftId);
+
+        var workshopDraft = await GetWorkshopDraftById(draftId);
+
+        if (workshopDraft is null)
+        {
+            logger.LogWarning("WorkshopDraft not found. Id = {Id}.", draftId);
+            return NotFoundResult<WorkshopDraftResponseDto>(draftId);
+        }
+
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
+        {
+            logger.LogWarning("WorkshopDraft with Id = {Id} is not editable in current status: {Status}.", draftId, workshopDraft.DraftStatus);
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "409",
+                Description = "WorkshopDraft is not editable in its current status."
+            });
+        }
+
+        var originalContent = workshopDraft.WorkshopDraftContent.DeepCopyModeratorEditable();
+
+        workshopDraft = dto.ToDraft(workshopDraft);
+
+        workshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+
+        changesLogService.LogWorkshopDraftChanges(
+            originalContent,
+            workshopDraft.WorkshopDraftContent,
+            workshopDraft.Id,
+            currentUserService.UserId);
+
+        await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
+
+        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);
+
+        return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+    }
+    
+    /// <inheritdoc/>
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId, Guid moderatorId)
+    {
+        logger.LogDebug("Deleting cover image as moderator started. WorkshopDraft Id = {Id}.", draftId);
+
+        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<WorkshopDraftResponseDto>();
+        }
+
+        var workshopDraft = validation.Value;
+
+        if (workshopDraft.CoverImageId == null)
+        {
+            logger.LogWarning("WorkshopDraft with Id = {Id} doesn't have a cover image to delete.", draftId);
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "No cover image exists for this workshop draft."
+            });
+        }
+
+        try
+        {
+            await workshopDraftImagesService.RemoveCoverImageAsync(workshopDraft);
+            workshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+
+            changesLogService.AddEntityChangesToDbContext(workshopDraft, currentUserService.UserId);
+
+            await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
+
+            logger.LogInformation("Cover image successfully deleted from WorkshopDraft. Id = {Id}.", draftId);
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while deleting cover image for draft with ID {DraftId}.", draftId);
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while deleting the cover image."
+            });
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteImageAsModeratorAsync(Guid draftId, Guid moderatorId, string imageId)
+    {
+        logger.LogDebug("Deleting image as moderator started. WorkshopDraft Id = {Id}, Image Id = {ImageId}.", draftId, imageId);
+
+        if (string.IsNullOrEmpty(imageId))
+        {
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Image Id must be provided."
+            });
+        }
+
+        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<WorkshopDraftResponseDto>();
+        }
+
+        var workshopDraft = validation.Value;
+
+        imageId = Uri.UnescapeDataString(imageId);
+
+        var image = workshopDraft.Images?.FirstOrDefault(i => i.ExternalStorageId == imageId);
+        if (image is null)
+        {
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = $"Image with ID {imageId} not found in this workshop draft."
+            });
+        }
+
+        var oldImageIds = workshopDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+        try
+        {
+            await workshopDraftImagesService.RemoveImageAsync(workshopDraft, imageId);
+
+            workshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+
+            var newImageIds = workshopDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+            changesLogService.LogImageDeletions(
+                oldImageIds,
+                newImageIds,
+                workshopDraft.Id,
+                "WorkshopDraft",
+                currentUserService.UserId);
+
+            await workshopDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("Image successfully deleted from WorkshopDraft. Image Id = {ImageId}, Draft Id = {DraftId}.",
+                imageId, draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while deleting image for draft with ID {DraftId}.", draftId);
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while deleting the image."
+            });
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteManyImagesAsModeratorAsync(
+        Guid draftId,
+        Guid moderatorId,
+        IEnumerable<string> imageIds)
+    {
+        logger.LogDebug("Deleting multiple images as moderator started. WorkshopDraft Id = {Id}.", draftId);
+
+        if (imageIds == null || !imageIds.Any())
+        {
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "At least one Image Id must be provided."
+            });
+        }
+
+        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<WorkshopDraftResponseDto>();
+        }
+
+        var workshopDraft = validation.Value;
+
+        var decodedImageIds = imageIds.Select(Uri.UnescapeDataString).ToList();
+
+        var imagesToDelete = workshopDraft.Images
+            .Where(i => decodedImageIds.Contains(i.ExternalStorageId))
+            .ToList();
+
+        if (imagesToDelete.Count == 0)
+        {
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "None of the specified images were found in this workshop draft."
+            });
+        }
+
+        var oldImageIds = workshopDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+        try
+        {
+            await workshopDraftImagesService.RemoveManyImagesAsync(workshopDraft, decodedImageIds);
+
+            var newImageIds = workshopDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+            workshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
+
+            changesLogService.LogImageDeletions(
+            oldImageIds,
+            newImageIds,
+            workshopDraft.Id,
+            "WorkshopDraft",
+            currentUserService.UserId);
+
+            await workshopDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("{Count} images successfully deleted from WorkshopDraft. Draft Id = {DraftId}.",
+                imagesToDelete.Count, draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while deleting images for draft with ID {DraftId}.", draftId);
+            return Result<WorkshopDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while deleting the images."
+            });
+        }
+    }
+
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -486,7 +739,7 @@ public class WorkshopDraftService(
         {
             throw new ArgumentException(
             nameof(id),
-                paramName: $"There are no recors in workshopDrafts table with such id - {id}.");
+                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
         }
 
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
@@ -840,5 +1093,36 @@ public class WorkshopDraftService(
 
             return newValue != oldValue;
         });
+    }
+
+    /// <summary>
+    /// Validates whether the specified moderator or tech admin is allowed to access and modify the given workshop draft.
+    /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
+    /// </summary>
+    /// <param name="draftId">The ID of the workshop draft to validate.</param>
+    /// <param name="moderatorId">The ID of the moderator performing the operation.</param>
+    /// <returns>
+    /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
+    /// or a failed result with appropriate error code and description.
+    /// </returns>
+    private async Task<Result<WorkshopDraft>> ValidateDraftForModerator(Guid draftId, Guid moderatorId)
+    {
+        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+
+        var workshopDraft = await GetWorkshopDraftById(draftId);
+
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
+        {
+            logger.LogWarning("WorkshopDraft with Id = {Id} is not editable in current status: {Status}.",
+                draftId, workshopDraft.DraftStatus);
+            return Result<WorkshopDraft>.Failed(new OperationError
+            {
+                Code = "409",
+                Description = "WorkshopDraft is not editable in its current status."
+            });
+        }
+
+        return Result<WorkshopDraft>.Success(workshopDraft);
     }
 }

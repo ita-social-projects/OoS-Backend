@@ -101,6 +101,15 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         return Create(changesLog);
     }
 
+    /// <inheritdoc/>
+    public void AddChangeLogsToDbContext(IEnumerable<ChangesLog> logs)
+    {
+        if (logs is null || !logs.Any())
+            return;
+
+        dbContext.AddRange(logs);
+    }
+
     // TODO: logging of the Institution changes is yet to be configured
     private IEnumerable<(string PropertyName, string OldValue, string NewValue)> GetChangedValues(
         EntityEntry entityEntry,
