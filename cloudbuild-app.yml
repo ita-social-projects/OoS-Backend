@@ -10,8 +10,8 @@ steps:
     - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-api:$SHORT_SHA-${_COMMIT_DATE}
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:api
     - --builder=paketobuildpacks/builder-jammy-base:latest
-    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
-    - --buildpack=gcr.io/paketo-buildpacks/environment-variables
+    - --buildpack=paketo-buildpacks/dotnet-core
+    - --buildpack=paketo-buildpacks/environment-variables
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish
