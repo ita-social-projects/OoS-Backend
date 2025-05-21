@@ -476,6 +476,20 @@ public class ApplicationService : IApplicationService
         return result;
     }
 
+    /// <inheritdoc/>
+    public async Task<int> CountApplicationsByParentAndProvider(Guid parentId, Guid providerId)
+    {
+        logger.LogDebug("Getting applications count by parent and provider started.");
+
+        var count = await applicationRepository.Get(
+            whereExpression: a => (a.ParentId == parentId || a.Child.ParentId == parentId) && a.Workshop.ProviderId == providerId)
+            .AsNoTracking().CountAsync().ConfigureAwait(false);
+
+        logger.LogDebug("Number of matching applications that was retrieved is {count}", count);
+
+        return count;
+    }
+
     private void UpdateStatus(ApplicationUpdate applicationDto, Application application)
     {
         if (application.Status == applicationDto.Status)

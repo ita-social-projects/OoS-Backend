@@ -94,4 +94,12 @@ public interface IApplicationService
     /// </summary>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<int> ChangeApprovedStatusesToStudying();
+
+    /// <summary>
+    /// Retrieves a total number of applications with matching parent's id and provider's id.
+    /// </summary>
+    /// <param name="parentId">Parent's id.</param>
+    /// <param name="providerId">Provider's id.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<int> CountApplicationsByParentAndProvider(Guid parentId, Guid providerId);
 }

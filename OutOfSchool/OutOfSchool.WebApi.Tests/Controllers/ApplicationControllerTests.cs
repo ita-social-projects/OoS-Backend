@@ -656,6 +656,44 @@ public class ApplicationControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
+    [Test]
+    public async Task Count_WhenProviderIdIsInvalid_ShouldReturnBadRequest()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        Guid parentId = Guid.NewGuid();
+
+        providerService.Setup(s => s.Exists(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.Count(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+    }
+
+    [Test]
+    public async Task Count_WhenIdsAreValid_ShouldReturnOkResult()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        Guid parentId = Guid.NewGuid();
+
+        providerService.Setup(s => s.Exists(providerId))
+            .ReturnsAsync(true);
+
+        applicationService.Setup(s => s.CountApplicationsByParentAndProvider(parentId, providerId))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await controller.Count(parentId, providerId).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.EqualTo(1));
+    }
+
     private WorkshopV2Dto FakeWorkshop()
     {
         return new WorkshopV2Dto()
