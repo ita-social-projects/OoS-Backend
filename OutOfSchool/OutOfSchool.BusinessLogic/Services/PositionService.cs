@@ -132,21 +132,21 @@ public class PositionService(
     {
         var sortExpression = new Dictionary<Expression<Func<Position, object>>, SortDirection>();
 
-        switch (filter.FilterByProperty)
+        switch (filter.FilterByProperty?.ToLower())
         {
-            case nameof(Position.FullName):
+            case string property when property.Equals(nameof(Position.FullName).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.FullName, filter.Order? SortDirection.Ascending : SortDirection.Descending); break;
 
-            case nameof(Position.Rate):
+            case string property when property.Equals(nameof(Position.Rate).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.Rate, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
 
-            case nameof(Position.SeatsAmount):
+            case string property when property.Equals(nameof(Position.SeatsAmount).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.SeatsAmount, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
 
-            case nameof(Position.Tariff):
+            case string property when property.Equals(nameof(Position.Tariff).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.Tariff, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
 
-            case nameof(Position.CreatedAt):
+            case string property when property.Equals(nameof(Position.CreatedAt).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.CreatedAt, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
             
             default:
