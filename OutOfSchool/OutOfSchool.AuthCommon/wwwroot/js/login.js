@@ -17,7 +17,7 @@ $(function () {
     setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator', '#technical-staff-role');
 
     $("#switch-user-type").on("click", function () {
-        $("#for_technical_staff, #for_providers").toggleClass("hidden");
+        $("#role-select-provider, #role-select-technical").toggleClass("hidden");
     });
 
     let check_loginPasswordEye = false;
