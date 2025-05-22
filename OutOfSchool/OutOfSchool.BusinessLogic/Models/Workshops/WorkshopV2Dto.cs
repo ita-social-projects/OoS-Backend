@@ -69,12 +69,11 @@ public static class WorkshopV2DtoExtensions
             Instagram = dto.Instagram,
         };
 
-    public static OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
+    public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
     {
         model.ProviderId = dto.ProviderId;
         model.WorkshopId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
-
-        return model;
+        model.WorkshopDraftContent = dto.ToDraftContent();
     }
 
     public static OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft ToDraft(this WorkshopV2Dto dto)
