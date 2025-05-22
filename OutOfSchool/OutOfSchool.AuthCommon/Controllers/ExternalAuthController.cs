@@ -32,8 +32,8 @@ public class ExternalAuthController : Controller
     private readonly OutOfSchoolDbContext dbContext;
     private readonly IAikomProviderService aikomProviderService;
     private readonly OpenIddictClientService openIddictClientService;
-    private readonly IEntityRepositorySoftDeleted<Guid, Moderator> moderatorRepository;
-    private readonly IEntityRepositorySoftDeleted<Guid, TechAdmin> techAdminRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Moderator> moderatorRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<TechAdmin> techAdminRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExternalAuthController"/> class for handling external authentication flows, including support for provider, employee, tech admin, and moderator roles.
@@ -49,8 +49,8 @@ public class ExternalAuthController : Controller
         OutOfSchoolDbContext dbContext,
         IAikomProviderService aikomProviderService,
         OpenIddictClientService openIddictClientService,
-        IEntityRepositorySoftDeleted<Guid, Moderator> moderatorRepository,
-        IEntityRepositorySoftDeleted<Guid, TechAdmin> techAdminRepository)
+        ISensitiveEntityRepositorySoftDeleted<Moderator> moderatorRepository,
+        ISensitiveEntityRepositorySoftDeleted<TechAdmin> techAdminRepository)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -170,19 +170,19 @@ public class ExternalAuthController : Controller
             {
                 var errorMessage = selectedRole switch
                 {
-                    _ when Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
-                    _ when Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
-                    _ when Role.TechAdmin.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForAdminNotFound",
-                    _ when Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForModeratorNotFound",
+                    _ when nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when nameof(Role.TechAdmin).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForAdminNotFound",
+                    _ when nameof(Role.Moderator).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForModeratorNotFound",
                     _ => string.Empty
                 };
                 return await GetErrorMessageResult(result, localizer[errorMessage]);
             }
 
-            List<Claim> claims;
+            List<Claim> claims = [];
 
-            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
-                Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            if (nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
+                nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
                 // For provider role, verify director access before proceeding to database operations.
                 long? externalProviderId = null;
@@ -197,7 +197,7 @@ public class ExternalAuthController : Controller
                 }
 
                 // Process provider-specific logic
-                if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                if (nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
                     var directorPosition = positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
                     if (directorPosition == null)
@@ -206,7 +206,7 @@ public class ExternalAuthController : Controller
                     }
                 }
                 // Process employee-specific logic
-                else if (Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                else if (nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
                     var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
                     if (employeePosition == null)
@@ -219,18 +219,18 @@ public class ExternalAuthController : Controller
 
                 claims = BuildProviderClaims(individual, userInfo, result, providerId, isDeputy, externalProviderId);
             }
-            else if (Role.TechAdmin.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            else if (nameof(Role.TechAdmin).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
-                if ((await techAdminRepository.GetById(individual.Id)) is null)
+                if (!await techAdminRepository.Any(t => t.Id == individual.Id))
                 {
                     return await GetErrorMessageResult(result, localizer["TechAdminNotFound"]);
                 }
 
                 claims = BuildTechnicalStaffClaims(individual, userInfo, result);
             }
-            else if (Role.Moderator.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            else if (nameof(Role.Moderator).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
-                if ((await moderatorRepository.GetById(individual.Id)) is null)
+                if (!await moderatorRepository.Any(m => m.Id == individual.Id))
                 {
                     return await GetErrorMessageResult(result, localizer["ModeratorNotFound"]);
                 }

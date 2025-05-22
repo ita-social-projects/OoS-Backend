@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,8 +59,8 @@ public class ExternalAuthControllerTests
     private Mock<IAuthenticationService> authenticationService;
     private AuthorizationServerConfig authServerConfig;
     private ExternalAuthController controller;
-    private Mock<IEntityRepositorySoftDeleted<Guid, Moderator>> moderatorRepository;
-    private Mock<IEntityRepositorySoftDeleted<Guid, TechAdmin>> techAdminRepository;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Moderator>> moderatorRepository;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<TechAdmin>> techAdminRepository;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -92,8 +93,8 @@ public class ExternalAuthControllerTests
         aikomProviderService = new Mock<IAikomProviderService>();
         authServerOptions = new Mock<IOptions<AuthorizationServerConfig>>();
         openIddictClientService = new Mock<OpenIddictClientService>(new Mock<IServiceProvider>().Object);
-        moderatorRepository = new Mock<IEntityRepositorySoftDeleted<Guid, Moderator>>();
-        techAdminRepository = new Mock<IEntityRepositorySoftDeleted<Guid, TechAdmin>>();
+        moderatorRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<Moderator>>();
+        techAdminRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<TechAdmin>>();
 
         authServerOptions.Setup(o => o.Value).Returns(authServerConfig);
 
@@ -324,7 +325,7 @@ public class ExternalAuthControllerTests
         var user = GetUser();
         SetupSuccessAuth("techadmin");
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
-        techAdminRepository.Setup(t => t.GetById(individualId)).ReturnsAsync(new TechAdmin());
+        techAdminRepository.Setup(t => t.Any(It.IsAny<Expression<Func<TechAdmin, bool>>>())).ReturnsAsync(true);
 
         // Act
         var result = await controller.ExternalLoginCallback();
@@ -342,7 +343,7 @@ public class ExternalAuthControllerTests
         var user = GetUser();
         SetupSuccessAuth("moderator");
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
-        moderatorRepository.Setup(t => t.GetById(individualId)).ReturnsAsync(new Moderator());
+        moderatorRepository.Setup(t => t.Any(It.IsAny<Expression<Func<Moderator, bool>>>())).ReturnsAsync(true);
 
         // Act
         var result = await controller.ExternalLoginCallback();
@@ -359,9 +360,8 @@ public class ExternalAuthControllerTests
         var user = GetUser();
         SetupSuccessAuth(role);
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
-        techAdminRepository.Setup(t => t.GetById(individualId)).ReturnsAsync((TechAdmin)null);
-        moderatorRepository.Setup(t => t.GetById(individualId)).ReturnsAsync((Moderator)null);
-
+        techAdminRepository.Setup(t => t.Any(It.IsAny<Expression<Func<TechAdmin, bool>>>())).ReturnsAsync(false);
+        moderatorRepository.Setup(t => t.Any(It.IsAny<Expression<Func<Moderator, bool>>>())).ReturnsAsync(false);
 
         // Act
         var result = await controller.ExternalLoginCallback();
