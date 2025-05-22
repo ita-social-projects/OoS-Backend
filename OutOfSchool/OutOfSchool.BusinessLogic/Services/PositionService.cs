@@ -41,7 +41,9 @@ public class PositionService(
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
             predicate = predicate.And(p =>
-                p.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase));
+                                      p.FullName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase) ||
+                                      p.ShortName.Contains(filter.SearchString, StringComparison.OrdinalIgnoreCase));
+
         }
 
         // Filter out deleted positions and take only positions for given provider
@@ -130,20 +132,25 @@ public class PositionService(
     {
         var sortExpression = new Dictionary<Expression<Func<Position, object>>, SortDirection>();
 
-        if (filter.OrderByFullName != null)
+        switch (filter.FilterByProperty?.ToLower())
         {
-            sortExpression.Add(
-                a => a.FullName,
-                filter.OrderByFullName.Value ? SortDirection.Ascending : SortDirection.Descending
-            );
-        }
+            case string property when property.Equals(nameof(Position.FullName).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.FullName, filter.Order? SortDirection.Ascending : SortDirection.Descending); break;
 
-        if (filter.OrderByCreatedAt != null)
-        {
-            sortExpression.Add(
-                a => a.CreatedAt,
-                filter.OrderByCreatedAt.Value ? SortDirection.Ascending : SortDirection.Descending
-            );
+            case string property when property.Equals(nameof(Position.Rate).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.Rate, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
+
+            case string property when property.Equals(nameof(Position.SeatsAmount).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.SeatsAmount, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
+
+            case string property when property.Equals(nameof(Position.Tariff).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.Tariff, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
+
+            case string property when property.Equals(nameof(Position.CreatedAt).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.CreatedAt, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
+            
+            default:
+                sortExpression.Add(a => a.CreatedAt, SortDirection.Descending); break;
         }
 
         return sortExpression;
