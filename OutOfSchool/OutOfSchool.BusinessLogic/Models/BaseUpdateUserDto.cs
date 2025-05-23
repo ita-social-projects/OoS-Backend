@@ -29,8 +29,10 @@ public static class BaseUpdateUserDtoExtensions
 
     public static User SetToModel(this BaseUpdateUserDto dto, User model)
     {
-        model.Id = dto.Id;
-        model.Email = dto.Email;
+        if (!String.IsNullOrWhiteSpace(dto.Email))
+        {
+            model.Email = dto.Email;
+        }
         model.PhoneNumber = dto.PhoneNumber;
 
         return model;
