@@ -32,11 +32,12 @@
         {
             <form asp-controller="ExternalAuth" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" aria-label="For provider role">
                 <div asp-validation-summary="ModelOnly"></div>
+                <label class="login__label">
+                    @selectRoleLabel
+                    <input type="hidden" name="role" id="role" value="provider">
+                </label>
+                
                 <div id="role-select-provider" class="role-select-block">
-                    <label class="login__label">
-                        @selectRoleLabel
-                        <input type="hidden" name="role" id="role" value="provider">
-                    </label>
                     <div class="login-role-select">
                         <div class="login-role-select__option login-role-select__option-left login-role-select--active"
                              data-value="provider" id="login_role_select_provider">
@@ -72,10 +73,6 @@
                     </div>
                 </div>
                 <div id="role-select-technical" class="role-select-block hidden">
-                    <label class="login__label">
-                        @selectRoleLabel
-                        <input type="hidden" name="role" id="technical-staff-role" value="moderator">
-                    </label>
                     <div class="login-role-select">
                         <div class="login-role-select__option login-role-select__option-left login-role-select--active"
                              data-value="moderator" id="login_role_select_moderator">

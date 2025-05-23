@@ -10,14 +10,34 @@ $(function () {
         });
     }
 
-    // Setup role selections
+    // All selections now update the same #role input
     setupRoleSelection('#login_role_select_provider', '#login_role_select_employee', '#role');
     setupRoleSelection('#login_role_select_employee', '#login_role_select_provider', '#role');
-    setupRoleSelection('#login_role_select_moderator', '#login_role_select_techadmin', '#technical-staff-role');
-    setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator', '#technical-staff-role');
+    setupRoleSelection('#login_role_select_moderator', '#login_role_select_techadmin', '#role');
+    setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator', '#role');
 
     $("#switch-user-type").on("click", function () {
-        $("#role-select-provider, #role-select-technical").toggleClass("hidden");
+        const $providerSection = $("#role-select-provider");
+        const $technicalSection = $("#role-select-technical");
+        const $roleInput = $("#role");
+        
+        // Toggle visibility
+        $providerSection.toggleClass("hidden");
+        $technicalSection.toggleClass("hidden");
+        
+        if ($providerSection.hasClass("hidden")) {
+            // Technical section is now visible, default to moderator
+            $roleInput.val("moderator");
+
+            $("#login_role_select_moderator").addClass("login-role-select--active");
+            $("#login_role_select_techadmin").removeClass("login-role-select--active");
+        } else {
+            // Provider section is now visible, default to provider
+            $roleInput.val("provider");
+
+            $("#login_role_select_provider").addClass("login-role-select--active");
+            $("#login_role_select_employee").removeClass("login-role-select--active");
+        }
     });
 
     let check_loginPasswordEye = false;
