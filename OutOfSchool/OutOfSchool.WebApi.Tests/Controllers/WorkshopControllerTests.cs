@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -41,6 +42,7 @@ public class WorkshopControllerTests
     private static ProviderDto provider;
 
     private WorkshopController controller;
+    private Mock<IFeatureManager> featureManagerMoq;
     private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<IUserService> userServiceMoq;
@@ -87,6 +89,7 @@ public class WorkshopControllerTests
         providerServiceMoq = new Mock<IProviderService>();
         userServiceMoq = new Mock<IUserService>();
         loggerMoq = new Mock<ILogger<WorkshopController>>();
+        featureManagerMoq = new Mock<IFeatureManager>();
         currentUserServiceMoq = new Mock<ICurrentUserService>();
 
         controller = new WorkshopController(
@@ -94,6 +97,7 @@ public class WorkshopControllerTests
             providerServiceMoq.Object,
             userServiceMoq.Object,
             currentUserServiceMoq.Object,
+            featureManagerMoq.Object,
             loggerMoq.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
@@ -1155,6 +1159,45 @@ public class WorkshopControllerTests
               .Should()
               .Be(StatusCodes.Status200OK);
     }
+
+    #endregion
+
+    #region FeatureFlagBehavior
+
+    [Test]
+    public async Task Create_WhenRelease2FeatureFlagEnabled_ShouldReturnGoneResult()
+    {
+        // Arrange
+        featureManagerMoq.Setup(f => f.IsEnabledAsync("Release2"))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Create(workshopCreateRequestDto) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status410Gone, result.StatusCode);
+        Assert.AreEqual("Workshop API v1 is deprecated. Please use API v2 via draft creation.", result.Value);
+        workshopServiceMoq.Verify(x => x.Create(It.IsAny<WorkshopCreateRequestDto>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Update_WhenRelease2FeatureFlagEnabled_ShouldReturnGoneResult()
+    {
+        // Arrange
+        featureManagerMoq.Setup(f => f.IsEnabledAsync("Release2"))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Update(workshopUpdateDto) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(StatusCodes.Status410Gone, result.StatusCode);
+        Assert.AreEqual("Workshop API v1 is deprecated. Please use API v2 via draft creation.", result.Value);
+        workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopCreateUpdateDto>()), Times.Never);
+    }
+
 
     #endregion
 
