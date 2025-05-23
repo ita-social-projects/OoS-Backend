@@ -1,20 +1,21 @@
 $(function () {
-    function setupRoleSelection(selector, oppositeSelector, inputId) {
+    function setupRoleSelection(selector, oppositeSelector) {
         $(selector).on('click', function () {
+            const $roleInput = $("#role");
             $(oppositeSelector).removeClass('login-role-select--active');
             $(this).addClass('login-role-select--active');
 
             // Update the hidden input with the selected value
             let selectedValue = $(this).data('value');
-            $(inputId).val(selectedValue);
+            $($roleInput).val(selectedValue);
         });
     }
 
     // All selections now update the same #role input
-    setupRoleSelection('#login_role_select_provider', '#login_role_select_employee', '#role');
-    setupRoleSelection('#login_role_select_employee', '#login_role_select_provider', '#role');
-    setupRoleSelection('#login_role_select_moderator', '#login_role_select_techadmin', '#role');
-    setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator', '#role');
+    setupRoleSelection('#login_role_select_provider', '#login_role_select_employee');
+    setupRoleSelection('#login_role_select_employee', '#login_role_select_provider');
+    setupRoleSelection('#login_role_select_moderator', '#login_role_select_techadmin');
+    setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator');
 
     $("#switch-user-type").on("click", function () {
         const $providerSection = $("#role-select-provider");

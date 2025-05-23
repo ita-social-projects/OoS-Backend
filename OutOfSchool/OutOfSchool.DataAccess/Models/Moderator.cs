@@ -1,5 +1,4 @@
-﻿
-namespace OutOfSchool.Services.Models;
+﻿namespace OutOfSchool.Services.Models;
 
 public class Moderator : TechnicalStaff
 {
