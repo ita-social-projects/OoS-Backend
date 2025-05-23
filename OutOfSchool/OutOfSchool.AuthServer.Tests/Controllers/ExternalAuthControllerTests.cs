@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +26,13 @@ using OutOfSchool.AuthCommon;
 using OutOfSchool.AuthCommon.Config;
 using OutOfSchool.AuthCommon.Controllers;
 using OutOfSchool.AuthCommon.Services.Interfaces;
+using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.AuthServer.Tests.Controllers;
@@ -42,6 +45,7 @@ public class ExternalAuthControllerTests
     private const string TestRnkopp = "1234567";
     private const string TestEdrpou = "0987654321";
     private const long TestExternalProviderId = 12345;
+    private readonly Guid individualId = Guid.NewGuid();
     private Mock<FakeSignInManager> signInManager;
     private Mock<FakeUserManager> userManager;
     private Mock<FakeRoleManager> roleManager;
@@ -55,6 +59,8 @@ public class ExternalAuthControllerTests
     private Mock<IAuthenticationService> authenticationService;
     private AuthorizationServerConfig authServerConfig;
     private ExternalAuthController controller;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<Moderator>> moderatorRepository;
+    private Mock<ISensitiveEntityRepositorySoftDeleted<TechAdmin>> techAdminRepository;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -87,6 +93,8 @@ public class ExternalAuthControllerTests
         aikomProviderService = new Mock<IAikomProviderService>();
         authServerOptions = new Mock<IOptions<AuthorizationServerConfig>>();
         openIddictClientService = new Mock<OpenIddictClientService>(new Mock<IServiceProvider>().Object);
+        moderatorRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<Moderator>>();
+        techAdminRepository = new Mock<ISensitiveEntityRepositorySoftDeleted<TechAdmin>>();
 
         authServerOptions.Setup(o => o.Value).Returns(authServerConfig);
 
@@ -109,7 +117,9 @@ public class ExternalAuthControllerTests
             communicationService.Object,
             dbContext,
             aikomProviderService.Object,
-            openIddictClientService.Object);
+            openIddictClientService.Object,
+            moderatorRepository.Object,
+            techAdminRepository.Object);
 
         controller.ControllerContext.HttpContext = httpContext;
         controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
@@ -118,27 +128,27 @@ public class ExternalAuthControllerTests
             .BuildServiceProvider();
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
-        
+
         // Create Individual
         var individual = new Individual
         {
-            Id = Guid.NewGuid(),
+            Id = individualId,
             FirstName = "Test",
             LastName = "Test",
             Rnokpp = TestRnkopp,
         };
         dbContext.Individuals.Add(individual);
-        
+
         // Create Provider
-        var provider = new Provider 
-        { 
-            Id = Guid.NewGuid(), 
+        var provider = new Provider
+        {
+            Id = Guid.NewGuid(),
             Edrpou = TestEdrpou,
             FullTitle = "Test Provider",
             IsDeleted = false
         };
         dbContext.Providers.Add(provider);
-        
+
         // Create Position
         var position = new Position
         {
@@ -149,7 +159,7 @@ public class ExternalAuthControllerTests
             IsDeleted = false
         };
         dbContext.Positions.Add(position);
-        
+
         // Create Official to link Individual to Position
         var official = new Official
         {
@@ -159,7 +169,25 @@ public class ExternalAuthControllerTests
             IsDeleted = false
         };
         dbContext.Officials.Add(official);
-        
+
+        // Create Moderator associated with Individual
+        var moderator = new Moderator
+        {
+            Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
+        };
+        dbContext.Moderators.Add(moderator);
+
+        // Create TechAdmin associated with Individual
+        var techAdmin = new TechAdmin
+        {
+            Id = individual.Id,
+            IsDeleted = false,
+            Individual = individual
+        };
+        dbContext.TechAdmins.Add(techAdmin);
+
         dbContext.SaveChanges();
     }
 
@@ -185,7 +213,65 @@ public class ExternalAuthControllerTests
 
         // Assert
         Assert.IsInstanceOf<ChallengeResult>(result);
-        var challengeResult = (ChallengeResult) result;
+        var challengeResult = (ChallengeResult)result;
+        Assert.AreEqual(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
+            challengeResult.AuthenticationSchemes.First());
+        var role = challengeResult.Properties?.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
+        Assert.AreEqual(expectedRole, role);
+    }
+
+    [Test]
+    public async Task ExternalLogin_WithExistingRoleTechAdmin_ReturnsChallengeResult()
+    {
+        // Arrange
+        var expectedRole = "techadmin";
+        var externalAuthProvider = "test";
+        var returnUrl = "https://example.com";
+        roleManager.Setup(r => r.RoleExistsAsync(expectedRole)).ReturnsAsync(true);
+        signInManager.Setup(s => s.ConfigureExternalAuthenticationProperties(externalAuthProvider, returnUrl, null))
+            .Returns(new AuthenticationProperties());
+        openIddictClientService.Setup(o =>
+                o.GetClientRegistrationByProviderNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OpenIddictClientRegistration()
+            {
+                RegistrationId = "test"
+            });
+
+        // Act
+        var result = await controller.ExternalLogin(externalAuthProvider, expectedRole, returnUrl);
+
+        // Assert
+        Assert.IsInstanceOf<ChallengeResult>(result);
+        var challengeResult = (ChallengeResult)result;
+        Assert.AreEqual(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
+            challengeResult.AuthenticationSchemes.First());
+        var role = challengeResult.Properties?.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
+        Assert.AreEqual(expectedRole, role);
+    }
+
+    [Test]
+    public async Task ExternalLogin_WithExistingRoleModerator_ReturnsChallengeResult()
+    {
+        // Arrange
+        var expectedRole = "moderator";
+        var externalAuthProvider = "test";
+        var returnUrl = "https://example.com";
+        roleManager.Setup(r => r.RoleExistsAsync(expectedRole)).ReturnsAsync(true);
+        signInManager.Setup(s => s.ConfigureExternalAuthenticationProperties(externalAuthProvider, returnUrl, null))
+            .Returns(new AuthenticationProperties());
+        openIddictClientService.Setup(o =>
+                o.GetClientRegistrationByProviderNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OpenIddictClientRegistration()
+            {
+                RegistrationId = "test"
+            });
+
+        // Act
+        var result = await controller.ExternalLogin(externalAuthProvider, expectedRole, returnUrl);
+
+        // Assert
+        Assert.IsInstanceOf<ChallengeResult>(result);
+        var challengeResult = (ChallengeResult)result;
         Assert.AreEqual(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme,
             challengeResult.AuthenticationSchemes.First());
         var role = challengeResult.Properties?.Items[AuthServerConstants.ExternalAuthSelectedRoleKey];
@@ -203,7 +289,7 @@ public class ExternalAuthControllerTests
 
         // Assert
         Assert.IsInstanceOf<ViewResult>(result);
-        var viewResult = (ViewResult) result;
+        var viewResult = (ViewResult)result;
         Assert.AreEqual(LoginViewCshtml, viewResult.ViewName);
         Assert.NotNull(viewResult.Model);
     }
@@ -213,7 +299,7 @@ public class ExternalAuthControllerTests
     {
         //Arrange
         var user = GetUser();
-        SetupSuccessAuth();
+        SetupSuccessAuth("provider");
         SetupSuccessProviderVerification();
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
 
@@ -233,16 +319,95 @@ public class ExternalAuthControllerTests
     }
 
     [Test]
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechAdmin_ReturnsRedirectResult()
+    {
+        //Arrange
+        var user = GetUser();
+        SetupSuccessAuth("techadmin");
+        userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
+        techAdminRepository.Setup(t => t.Any(It.IsAny<Expression<Func<TechAdmin, bool>>>())).ReturnsAsync(true);
+
+        // Act
+        var result = await controller.ExternalLoginCallback();
+
+        // Assert
+        Assert.IsInstanceOf<RedirectResult>(result);
+        var viewResult = (RedirectResult)result;
+        Assert.AreEqual(RedirectUrl, viewResult.Url);
+    }
+
+    [Test]
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForModerator_ReturnsRedirectResult()
+    {
+        //Arrange
+        var user = GetUser();
+        SetupSuccessAuth("moderator");
+        userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
+        moderatorRepository.Setup(t => t.Any(It.IsAny<Expression<Func<Moderator, bool>>>())).ReturnsAsync(true);
+
+        // Act
+        var result = await controller.ExternalLoginCallback();
+        Assert.IsInstanceOf<RedirectResult>(result);
+        var viewResult = (RedirectResult)result;
+        Assert.AreEqual(RedirectUrl, viewResult.Url);
+    }
+
+    [TestCase("techadmin")]
+    [TestCase("moderator")]
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechnicalStaffButUserNotTechnicalStaff_ReturnsErrorViewResult(string role)
+    {
+        //Arrange
+        var user = GetUser();
+        SetupSuccessAuth(role);
+        userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
+        techAdminRepository.Setup(t => t.Any(It.IsAny<Expression<Func<TechAdmin, bool>>>())).ReturnsAsync(false);
+        moderatorRepository.Setup(t => t.Any(It.IsAny<Expression<Func<Moderator, bool>>>())).ReturnsAsync(false);
+
+        // Act
+        var result = await controller.ExternalLoginCallback();
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
+        var viewResult = (ViewResult)result;
+        var model = (LoginViewModel)viewResult.Model;
+        Assert.AreEqual(RedirectUrl, model.ReturnUrl);
+    }
+
+    [TestCase("techadmin")]
+    [TestCase("moderator")]
+    [TestCase("wrongRole")]
+    public async Task ExternalLoginCallback_WithCorrectAuthFlowForTechnicalStaffButIndividualNoExist_ReturnsErrorViewResult(string role)
+    {
+        //Arrange
+        var user = GetUser();
+        var userInfo = GetUserInfoResponse();
+        userInfo.DrfoCode = "7654321";
+        SetupSuccessAuth(role);
+        userManager.Setup(u => u.FindByNameAsync(userInfo.DrfoCode)).ReturnsAsync(user);
+
+        communicationService.Setup(c => c.GetUserInfo("test", "secret"))
+                    .ReturnsAsync(userInfo);
+        // Act
+        var result = await controller.ExternalLoginCallback();
+
+        // Assert
+        Assert.IsInstanceOf<ViewResult>(result);
+        var viewResult = (ViewResult)result;
+        var model = (LoginViewModel)viewResult.Model;
+        Assert.AreEqual(RedirectUrl, model.ReturnUrl);
+    }
+
+    [Test]
     public async Task ExternalLoginCallback_WhenUserNotExist_CreateUser()
     {
         //Arrange
         var user = GetUser();
 
-        SetupSuccessAuth();
+        SetupSuccessAuth("provider");
         SetupSuccessProviderVerification();
 
         userManager.SetupSequence(u => u.FindByNameAsync(TestRnkopp))
-            .ReturnsAsync((User) null)
+            .ReturnsAsync((User)null)
             .ReturnsAsync(user);
         userManager.Setup(u => u.CreateAsync(It.IsAny<User>())).ReturnsAsync(IdentityResult.Success);
 
@@ -254,7 +419,7 @@ public class ExternalAuthControllerTests
         userManager.Verify(u => u.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Once);
 
         Assert.IsInstanceOf<RedirectResult>(result);
-        var viewResult = (RedirectResult) result;
+        var viewResult = (RedirectResult)result;
         Assert.AreEqual(RedirectUrl, viewResult.Url);
     }
 
@@ -278,11 +443,11 @@ public class ExternalAuthControllerTests
 
         // Assert
         Assert.IsInstanceOf<ViewResult>(result);
-        var viewResult = (ViewResult) result;
+        var viewResult = (ViewResult)result;
         Assert.AreEqual(LoginViewCshtml, viewResult.ViewName);
         Assert.NotNull(viewResult.Model);
     }
-    
+
     [Test]
     public async Task ExternalLogin_WithNullRole_ReturnsViewResult()
     {
@@ -312,12 +477,12 @@ public class ExternalAuthControllerTests
         // Assert
         Assert.IsInstanceOf<ViewResult>(result);
     }
-    
+
     [Test]
     public async Task ExternalLoginCallback_WhenUserCreationFails_ReturnsViewResult()
     {
         // Arrange
-        SetupSuccessAuth();
+        SetupSuccessAuth("provider");
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp))
             .ReturnsAsync((User)null);
         userManager.Setup(u => u.CreateAsync(It.IsAny<User>()))
@@ -336,7 +501,7 @@ public class ExternalAuthControllerTests
     {
         //Arrange
         var user = GetUser();
-        SetupSuccessAuth();
+        SetupSuccessAuth("provider");
         SetupFailedProviderVerification();
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
 
@@ -356,7 +521,7 @@ public class ExternalAuthControllerTests
     {
         //Arrange
         var user = GetUser();
-        SetupSuccessAuth();
+        SetupSuccessAuth("provider");
         SetupErrorProviderVerification();
         userManager.Setup(u => u.FindByNameAsync(TestRnkopp)).ReturnsAsync(user);
 
@@ -379,8 +544,8 @@ public class ExternalAuthControllerTests
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options);
     }
-    
-    private void SetupSuccessAuth()
+
+    private void SetupSuccessAuth(string role)
     {
         var principal = new ClaimsPrincipal();
         principal.AddIdentity(new ClaimsIdentity());
@@ -393,7 +558,7 @@ public class ExternalAuthControllerTests
             Items =
             {
                 {".Token." + OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken, "secret"},
-                {AuthServerConstants.ExternalAuthSelectedRoleKey, "provider"}
+                {AuthServerConstants.ExternalAuthSelectedRoleKey, role}
             },
         };
         var ticket = new AuthenticationTicket(principal, properties,
@@ -480,7 +645,7 @@ public class ExternalAuthControllerTests
     private void SetupErrorProviderVerification()
     {
         var error = new ErrorResponse { Message = "Test error" };
-        
+
         aikomProviderService
             .Setup(x => x.VerifyProviderAndDirectorAccess(TestEdrpou, TestRnkopp, null, null))
             .ReturnsAsync(error);

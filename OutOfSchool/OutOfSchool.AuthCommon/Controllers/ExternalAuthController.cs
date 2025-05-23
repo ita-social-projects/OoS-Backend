@@ -12,6 +12,7 @@ using OutOfSchool.AuthCommon.ViewModels;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models.ExternalAuth;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.AuthCommon.Controllers;
 
@@ -31,7 +32,12 @@ public class ExternalAuthController : Controller
     private readonly OutOfSchoolDbContext dbContext;
     private readonly IAikomProviderService aikomProviderService;
     private readonly OpenIddictClientService openIddictClientService;
+    private readonly ISensitiveEntityRepositorySoftDeleted<Moderator> moderatorRepository;
+    private readonly ISensitiveEntityRepositorySoftDeleted<TechAdmin> techAdminRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExternalAuthController"/> class for handling external authentication flows, including support for provider, employee, tech admin, and moderator roles.
+    /// </summary>
     public ExternalAuthController(
         SignInManager<User> signInManager,
         UserManager<User> userManager,
@@ -42,7 +48,9 @@ public class ExternalAuthController : Controller
         IGovIdentityCommunicationService communicationService,
         OutOfSchoolDbContext dbContext,
         IAikomProviderService aikomProviderService,
-        OpenIddictClientService openIddictClientService)
+        OpenIddictClientService openIddictClientService,
+        ISensitiveEntityRepositorySoftDeleted<Moderator> moderatorRepository,
+        ISensitiveEntityRepositorySoftDeleted<TechAdmin> techAdminRepository)
     {
         this.signInManager = signInManager;
         this.userManager = userManager;
@@ -54,8 +62,17 @@ public class ExternalAuthController : Controller
         this.dbContext = dbContext;
         this.aikomProviderService = aikomProviderService;
         this.openIddictClientService = openIddictClientService;
+        this.moderatorRepository = moderatorRepository;
+        this.techAdminRepository = techAdminRepository;
     }
 
+    /// <summary>
+    /// Initiates an external authentication challenge for the specified provider and role.
+    /// </summary>
+    /// <param name="provider">The external authentication provider to use.</param>
+    /// <param name="role">The user role for which authentication is requested.</param>
+    /// <param name="returnUrl">The URL to redirect to after authentication.</param>
+    /// <returns>A challenge result to start the external authentication flow, or the login view with an error if the role is not supported.</returns>
     [Route("~/external-login")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ExternalLogin(string provider, string role, string returnUrl)
@@ -80,9 +97,9 @@ public class ExternalAuthController : Controller
             _ => authServerConfig.ExternalLogin.Parameters.AuthType.Personal
         };
         properties.Parameters.Add(authServerConfig.ExternalLogin.Parameters.AuthType.Key, allowedAuthTypes);
-        
+
         var registration = await openIddictClientService.GetClientRegistrationByProviderNameAsync(provider).ConfigureAwait(true);
-        
+
         properties.Items.Add(OpenIddictClientAspNetCoreConstants.Properties.RegistrationId, registration.RegistrationId);
 
         return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
@@ -128,11 +145,11 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Signs in a user based on external authentication result and user info.
+    /// Signs in a user based on external authentication and user information, verifying role eligibility and building appropriate claims.
     /// </summary>
-    /// <param name="userInfo">User information received from external auth provider.</param>
-    /// <param name="result">Authentication result from external provider.</param>
-    /// <returns><see cref="IActionResult"/> redirecting to appropriate page based on sign in result.</returns>
+    /// <param name="userInfo">User information retrieved from the external authentication provider.</param>
+    /// <param name="result">The result of the external authentication process.</param>
+    /// <returns>An <see cref="IActionResult"/> redirecting to the appropriate page based on the sign-in outcome, or an error view if sign-in fails.</returns>
     private async Task<IActionResult> SignInUserAsync(
         UserInfoResponse userInfo,
         AuthenticateResult result)
@@ -144,20 +161,28 @@ public class ExternalAuthController : Controller
 
             // We can create User as it is tied to log in attempt
             var user = await GetOrCreateUserAsync(userInfo, selectedRole);
-            
+
             // TODO: while AIKOM is not operational, we forbid new registrations.
             // Only people who are in DB are allowed to log in.
             var individual = await GetIndividualAsync(userInfo, user);
 
             if (individual == null)
             {
-                return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
+                var errorMessage = selectedRole switch
+                {
+                    _ when nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualOrProviderNotFound",
+                    _ when nameof(Role.TechAdmin).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForAdminNotFound",
+                    _ when nameof(Role.Moderator).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) => "IndividualForModeratorNotFound",
+                    _ => string.Empty
+                };
+                return await GetErrorMessageResult(result, localizer[errorMessage]);
             }
 
             List<Claim> claims = [];
-            
-            if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase) || 
-                Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+
+            if (nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase) ||
+                nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
             {
                 // For provider role, verify director access before proceeding to database operations.
                 long? externalProviderId = null;
@@ -165,14 +190,14 @@ public class ExternalAuthController : Controller
                 // usage is in VerifyProviderAccessAsync docs.
 
                 var positions = await GetPositionsForProviderAndIndividual(userInfo, individual.Id);
-                
+
                 if (positions.Count == 0)
                 {
                     return await GetErrorMessageResult(result, localizer["IndividualOrProviderNotFound"]);
                 }
-                
+
                 // Process provider-specific logic
-                if (Role.Provider.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                if (nameof(Role.Provider).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
                     var directorPosition = positions.FirstOrDefault(p => p.PositionType == PositionType.Director);
                     if (directorPosition == null)
@@ -181,9 +206,8 @@ public class ExternalAuthController : Controller
                     }
                 }
                 // Process employee-specific logic
-                else if (Role.Employee.ToString().Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+                else if (nameof(Role.Employee).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
                 {
-                    
                     var employeePosition = positions.FirstOrDefault(p => p.PositionType is PositionType.Employee or PositionType.DeputyDirector);
                     if (employeePosition == null)
                     {
@@ -192,8 +216,30 @@ public class ExternalAuthController : Controller
                 }
                 var providerId = positions.Select(p => p.ProviderId).FirstOrDefault();
                 var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
-                
+
                 claims = BuildProviderClaims(individual, userInfo, result, providerId, isDeputy, externalProviderId);
+            }
+            else if (nameof(Role.TechAdmin).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!await techAdminRepository.Any(t => t.Id == individual.Id))
+                {
+                    return await GetErrorMessageResult(result, localizer["TechAdminNotFound"]);
+                }
+
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
+            }
+            else if (nameof(Role.Moderator).Equals(selectedRole, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!await moderatorRepository.Any(m => m.Id == individual.Id))
+                {
+                    return await GetErrorMessageResult(result, localizer["ModeratorNotFound"]);
+                }
+
+                claims = BuildTechnicalStaffClaims(individual, userInfo, result);
+            }
+            else
+            {
+                return await GetErrorMessageResult(result, localizer["UserRoleNotFound"]);
             }
 
             var properties = await SignInWithClaimsAsync(result, claims);
@@ -350,11 +396,11 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Gets existing Positions for given Individual DRFO and Provider EDRPOU.
+    /// Retrieves all positions associated with the specified individual and provider, identified by the provider's EDRPOU code in the user info.
     /// </summary>
-    /// <param name="userInfo">User information from external provider.</param>
-    /// <param name="individualId">Existing Individual id.</param>
-    /// <returns><see cref="List{T}"/> of short Positions or empty list if combination was not found.</returns>
+    /// <param name="userInfo">External user information containing the provider's EDRPOU code.</param>
+    /// <param name="individualId">The unique identifier of the individual.</param>
+    /// <returns>A list of <see cref="PositionProjection"/> representing the individual's positions with the provider, or an empty list if none are found.</returns>
     private async Task<List<PositionProjection>> GetPositionsForProviderAndIndividual(UserInfoResponse userInfo, Guid individualId)
     {
         // Provider does not exist, no need to do big JOIN
@@ -364,26 +410,26 @@ public class ExternalAuthController : Controller
         {
             return [];
         }
-        
+
         // Get the Positions for the given provider, that have officials linked to the individual
         var positions = await dbContext.Positions
             .Include(p => p.Provider)
             .Where(x => !x.IsDeleted && (!x.Provider.IsDeleted && x.Provider.Edrpou == userInfo.EdrpouCode) && x.Officials.Any(o => o.IndividualId == individualId && !o.IsDeleted))
             .Select(p => new PositionProjection(p.Provider.FullTitle, p.ProviderId, p.PositionType))
             .ToListAsync();
-            
+
         return positions;
     }
 
     /// <summary>
-    /// Builds claims list for the user based on authentication result and user info.
+    /// Builds a list of claims for a user with a provider or employee role based on individual and external authentication data.
     /// </summary>
-    /// <param name="individual">Individual entity.</param>
-    /// <param name="userInfo">User information from external provider.</param>
-    /// <param name="result">Authentication result.</param>
-    /// <param name="providerId">Internal provider ID.</param>
-    /// <param name="isDeputy">Boolean flag to show if individual has deputy director position</param>
-    /// <param name="externalProviderId">Optional external provider ID for provider role.</param>
+    /// <param name="individual">The individual entity associated with the user.</param>
+    /// <param name="userInfo">User information retrieved from the external provider.</param>
+    /// <param name="result">The authentication result containing selected role and properties.</param>
+    /// <param name="providerId">The unique identifier of the provider organization.</param>
+    /// <param name="isDeputy">Indicates whether the user is a deputy director.</param>
+    /// <param name="externalProviderId">Optional external provider identifier from AIKOM.</param>
     /// <returns>List of <see cref="Claim"/> for the user.</returns>
     private List<Claim> BuildProviderClaims(
         Individual individual,
@@ -404,10 +450,10 @@ public class ExternalAuthController : Controller
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString(), ClaimValueTypes.Boolean),
         };
-            
+
         if (externalProviderId.HasValue)
         {
-            claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId, 
+            claims.Add(new Claim(Constants.ClaimTypes.AikomProviderId,
                 externalProviderId.Value.ToString()));
         }
 
@@ -415,11 +461,35 @@ public class ExternalAuthController : Controller
     }
 
     /// <summary>
-    /// Signs in the user with specified claims.
+    /// Builds a list of claims for a user with the TechAdmin or Moderator role based on individual and external authentication data.
     /// </summary>
-    /// <param name="result">Authentication result.</param>
-    /// <param name="claims">Claims to associate with the sign in.</param>
-    /// <returns><see cref="AuthenticationProperties"/> containing redirect URI.</returns>
+    /// <param name="individual">The individual entity associated with the user.</param>
+    /// <param name="userInfo">External user information retrieved from the authentication provider.</param>
+    /// <param name="result">The authentication result containing selected role information.</param>
+    /// <returns>A list of claims representing the user's identity and role.</returns>
+    private static List<Claim> BuildTechnicalStaffClaims(
+        Individual individual,
+        UserInfoResponse userInfo,
+        AuthenticateResult result)
+    {
+        var claims = new List<Claim>
+        {
+            new(OpenIddictConstants.Claims.Role, result.Properties.Items[AuthServerConstants.ExternalAuthSelectedRoleKey]),
+            new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
+            new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
+            new(OpenIddictConstants.Claims.Email, userInfo.Email),
+            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
+        };
+
+        return claims;
+    }
+
+    /// <summary>
+    /// Signs in a user with the specified claims and returns authentication properties containing the redirect URI.
+    /// </summary>
+    /// <param name="result">The external authentication result containing properties and redirect URI.</param>
+    /// <param name="claims">The list of claims to associate with the user during sign-in.</param>
+    /// <returns>Authentication properties with the redirect URI for post-sign-in redirection.</returns>
     private async Task<AuthenticationProperties> SignInWithClaimsAsync(AuthenticateResult result, List<Claim> claims)
     {
         var properties = new AuthenticationProperties
@@ -434,12 +504,12 @@ public class ExternalAuthController : Controller
         User.SetClaim(OpenIddictConstants.Claims.Role, claims.First(c => c.Type == OpenIddictConstants.Claims.Role).Value);
         return properties;
     }
-    
+
     /// <summary>
-    /// Creates an error result with a custom message and returns the login view.
+    /// Returns the login view with an error message and available external authentication providers.
     /// </summary>
-    /// <param name="result">The authentication result containing redirect URI information.</param>
-    /// <param name="message">The error message to display to the user.</param>
+    /// <param name="result">The authentication result containing redirect information.</param>
+    /// <param name="message">The error message to display on the login page.</param>
     /// <returns>A view result with the login page and error message.</returns>
     private async Task<IActionResult> GetErrorMessageResult(AuthenticateResult result, string message)
     {
@@ -451,6 +521,6 @@ public class ExternalAuthController : Controller
             ReturnUrl = result.Properties?.RedirectUri ?? $"~/{AuthServerConstants.LoginPath}",
         });
     }
-    
+
     private record PositionProjection(string ProviderTitle, Guid ProviderId, PositionType PositionType);
 }
