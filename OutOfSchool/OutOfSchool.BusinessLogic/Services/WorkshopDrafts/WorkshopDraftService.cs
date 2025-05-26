@@ -35,6 +35,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
 /// <param name="options">Provides configuration settings for upload concurrency.</param>    
 /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
+/// <param name="languageService"> Service for  language managing</param>
 /// <param name="currentUserService">Service for managing current user.</param>
 /// <param name="regionAdminService">Service for region admin.</param>
 /// <param name="ministryAdminService"> Service for ministry admin.</param>
@@ -44,6 +45,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="codeficatorRepository">Repository for CATOTTG.</param>
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
+    ILanguageService languageService,
     IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
     IProviderService providerService,
@@ -90,15 +92,16 @@ public class WorkshopDraftService(
         {
             var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
 
-            if (existingWorkshop == null) 
-            { 
+            if (existingWorkshop == null)
+            {
                 workshopV2Dto.Id = Guid.Empty;
             }
             else
             {
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
             }
-        }       
+        }
+        await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
 
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
         // The result is the created draft with all its related teachers.
@@ -133,7 +136,7 @@ public class WorkshopDraftService(
     // <inheritdoc/>
     public async Task<WorkshopDraftResultDto> Update(WorkshopDraftUpdateDto workshopDraftUpdateDto)
     {
-        if (workshopDraftUpdateDto == null || 
+        if (workshopDraftUpdateDto == null ||
             workshopDraftUpdateDto.WorkshopV2Dto == null)
         {
             throw new ArgumentNullException(nameof(workshopDraftUpdateDto));
@@ -144,7 +147,7 @@ public class WorkshopDraftService(
         async Task<(WorkshopDraft updatedDraft, ImageChangingResult coverImageResult,
             MultipleImageChangingResult imagesResult, List<TeacherCreateUpdateResultDto> teachersResult)> UpdateDraftWithDependencies()
         {
-            var workshopDraft = await GetWorkshopDraftById(workshopDraftUpdateDto.Id);            
+            var workshopDraft = await GetWorkshopDraftById(workshopDraftUpdateDto.Id);
 
             await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
             await currentUserService.UserHasRights(new ProviderRights(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId), new EmployeeRights(workshopDraftUpdateDto.WorkshopV2Dto.ProviderId)).ConfigureAwait(false);
@@ -167,7 +170,7 @@ public class WorkshopDraftService(
             {
                 throw new ArgumentException("This WorkshopDraft can`t be updated.");
             }
-
+            await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
@@ -252,7 +255,7 @@ public class WorkshopDraftService(
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
         await workshopDraftRepository.Update(workshopDraft);
-        logger.LogDebug("Draft was successfully sent for moderation. Draft Id = {DraftId}.", id);        
+        logger.LogDebug("Draft was successfully sent for moderation. Draft Id = {DraftId}.", id);
     }
 
     // <inheritdoc/>
@@ -261,7 +264,7 @@ public class WorkshopDraftService(
         //TODO: Check if we can add RunInTransaction later
 
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
-                
+
         var workshopDraft = await GetWorkshopDraftById(id);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
@@ -282,7 +285,7 @@ public class WorkshopDraftService(
 
         await workshopDraftRepository.Delete(workshopDraft);
 
-        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);   
+        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
     }
 
     // <inheritdoc/>
@@ -299,9 +302,9 @@ public class WorkshopDraftService(
 
         workshopDraft.DraftStatus = WorkshopDraftStatus.Rejected;
         workshopDraft.RejectionMessage = rejectionMessage;
-        
+
         await workshopDraftRepository.Update(workshopDraft);
-        logger.LogDebug("Draft was successfully rejected. Draft Id = {DraftId}.", id);        
+        logger.LogDebug("Draft was successfully rejected. Draft Id = {DraftId}.", id);
     }
 
     // <inheritdoc/>
@@ -321,7 +324,7 @@ public class WorkshopDraftService(
 
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
-                take: filter.Size,               
+                take: filter.Size,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
                     : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
@@ -332,12 +335,12 @@ public class WorkshopDraftService(
             .ToListAsync();
 
         var workshopDraftResponseDtos = new List<WorkshopDraftViewCardDto>();
-        
+
         foreach (var draft in workshopDrafts)
         {
             var responseDto = draft.ToCardDto();
             responseDto.DirectionIds = institutionHierarchies
-                .FirstOrDefault(i => 
+                .FirstOrDefault(i =>
                     i.Id == draft.WorkshopDraftContent.InstitutionHierarchyId)
                 ?.SubDirections
                 .Select(d => d.DirectionId)
@@ -347,8 +350,8 @@ public class WorkshopDraftService(
         }
 
         logger.LogDebug(
-            "From Workshop Drafts table for provider {Id} were successfully received {Count} records", 
-            id, 
+            "From Workshop Drafts table for provider {Id} were successfully received {Count} records",
+            id,
             workshopDraftResponseDtos.Count);
 
         return new SearchResult<WorkshopDraftViewCardDto>()
@@ -403,14 +406,14 @@ public class WorkshopDraftService(
             .ConfigureAwait(false);
 
         logger.LogDebug("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopDraftsCount);
-      
+
         return new SearchResult<WorkshopDraftResponseDto>()
         {
             TotalAmount = workshopDraftsCount,
             Entities = await MapWorkshopDraftsCollectionWithDetails(workshopDrafts),
         };
     }
-       
+
     // <inheritdoc/>
     public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
     {
@@ -419,7 +422,7 @@ public class WorkshopDraftService(
         if (!currentUserService.IsAdmin())
         {
             await currentUserService.UserHasRights(new ProviderRights(draft.ProviderId), new EmployeeRights(draft.ProviderId)).ConfigureAwait(false);
-        }        
+        }
 
         return await MapWorkshopDraftWithDetails(draft);
     }
@@ -441,7 +444,7 @@ public class WorkshopDraftService(
 
         var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();        
+            .FirstOrDefaultAsync();
 
         if (draft != null)
         {
@@ -454,7 +457,7 @@ public class WorkshopDraftService(
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
-            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;            
+            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
@@ -529,7 +532,7 @@ public class WorkshopDraftService(
                         teacherUploadImagesResults,
                         semaphore));
             }
-        }        
+        }
 
         var workshopImagesUploadingTasks = Task.FromResult<MultipleImageUploadingResult>(null);
 
@@ -618,7 +621,7 @@ public class WorkshopDraftService(
         return task.Result;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter) 
+    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
         => ModelValidationHelper.ValidateExcludedIdFilter(filter);
 
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
@@ -663,10 +666,10 @@ public class WorkshopDraftService(
         predicate = predicate.And(x => x.DraftStatus == filter.WorkshopDraftStatus);
 
         if (adminInstitutionId != Guid.Empty)
-        {          
+        {
             predicate = predicate.And(x => EF.Functions.JsonUnquote(x.WorkshopDraftContent.InstitutionId.ToString()) == adminInstitutionId.ToString());
         }
-        
+
         if (filter.InstitutionId != Guid.Empty)
         {
             predicate = predicate.And(x => EF.Functions.JsonUnquote(x.WorkshopDraftContent.InstitutionId.ToString()) == filter.InstitutionId.ToString());
@@ -705,7 +708,7 @@ public class WorkshopDraftService(
 
         return predicate;
     }
-   
+
     private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
     {
         var institutionHierarchyId = workshopDraft.WorkshopDraftContent.InstitutionHierarchyId;
@@ -716,7 +719,7 @@ public class WorkshopDraftService(
         }
 
         var institutionHierarchyDto = await institutionHierarchyRepository.GetByIdWithDetails(
-            id: (Guid) workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
+            id: (Guid)workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
 
         return institutionHierarchyDto.SubDirections.Select(d => d.DirectionId).ToList();
@@ -805,7 +808,7 @@ public class WorkshopDraftService(
     }
 
     private static bool AreModeratedFieldsChanged(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
-    {             
+    {
         if (workshopV2Dto.CoverImage != null ||
             workshopV2Dto.ImageFiles != null)
         {
@@ -825,7 +828,7 @@ public class WorkshopDraftService(
         }
 
         var stringFieldsToCompare = new List<Func<WorkshopDto, string>>
-        { 
+        {
             w => w.CompetitiveSelectionDescription,
             w => w.EnrollmentProcedureDescription,
             w => w.PreferentialTermsOfParticipation,
@@ -840,5 +843,17 @@ public class WorkshopDraftService(
 
             return newValue != oldValue;
         });
+    }
+    private async Task SetLanguageNameOrThrow(WorkshopV2Dto dto)
+    {
+        var language = await languageService.GetById(dto.LanguageOfEducationId).ConfigureAwait(false);
+        if (language is null)
+        {
+            var errorMessage = $"Language with ID = {dto.LanguageOfEducationId} was not found.";
+            logger.LogWarning(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
+        dto.LanguageOfEducationName = language.Name;
+
     }
 }

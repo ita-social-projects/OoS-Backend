@@ -54,6 +54,7 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
                     .Text(n => n.PreferentialTermsOfParticipation)
                     .Keyword(n => n.Coverage)
                     .Keyword(n => n.Tags)
+                    .LongNumber(n => n.LanguageOfEducationId)
                     .IntegerNumber(n => n.StudyPeriodStartDay)
                     .IntegerNumber(n => n.StudyPeriodEndDay)
                     .IntegerNumber(n => n.StudyPeriodStartMonth)

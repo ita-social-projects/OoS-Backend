@@ -31,6 +31,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <param name="teacherService">Teacher service.</param>
 /// <param name="logger">Logger.</param>
 /// <param name="workshopImagesService">Workshop images mediator.</param>
+/// <param name="languageService">Service for Language entity.</param>
 /// <param name="employeeRepository">Repository for employees.</param>
 /// <param name="averageRatingService">Average rating service.</param>
 /// <param name="providerRepository">Repository for providers.</param>
@@ -42,6 +43,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <param name="tagService">Service for Tag entity.</param>
 public class WorkshopService(
     IWorkshopRepository workshopRepository,
+    ILanguageService languageService,
     IEntityRepository<long, Tag> tagRepository,
     IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
     IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
@@ -68,7 +70,8 @@ public class WorkshopService(
         w => w.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
-              .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG);
+              .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
+              .Include(w => w.LanguageOfEducation);
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreateUpdateDto"/> is null.</exception>
@@ -77,6 +80,7 @@ public class WorkshopService(
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
 
+        await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the dto properties with Id to the default value.
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
@@ -103,6 +107,7 @@ public class WorkshopService(
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
+        await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
 
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
@@ -327,7 +332,7 @@ public class WorkshopService(
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
-
+        await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
         async Task<Workshop> UpdateWorkshopLocally()
         {
             await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
@@ -439,6 +444,7 @@ public class WorkshopService(
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
+        await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
 
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
@@ -1030,6 +1036,11 @@ public class WorkshopService(
         {
             predicate = predicate.And(x => x.PayRate == filter.PayRate);
         }
+        
+        if (filter.LanguageOfEducationId > 0)
+        {
+            predicate = predicate.And(x => x.LanguageOfEducationId == filter.LanguageOfEducationId);
+        }
 
         return predicate;
     }
@@ -1240,6 +1251,17 @@ public class WorkshopService(
         contactsService.PrepareNewContacts(createdWorkshop, dto);
 
         return createdWorkshop;
+    }
+
+    private async Task ValidateLanguageExists(long LanguageOfEducationId)
+    {
+        var language = await languageService.GetById(LanguageOfEducationId).ConfigureAwait(false);
+        if (language is null)
+        {
+            var errorMessage = $"Language with ID = {LanguageOfEducationId} was not found.";
+            logger.LogWarning(errorMessage);
+            throw new InvalidOperationException(errorMessage);
+        }
     }
 
     private async Task SetIdsToDefaultValue(WorkshopCreateRequestDto dto)

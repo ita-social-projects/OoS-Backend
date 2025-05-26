@@ -60,10 +60,12 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     [Required(ErrorMessage = "Property IsPaid is required")]
     public bool IsPaid { get; set; } = false;
-    
-    // TODO: Return to this when languages are implemented
+
     [Required(ErrorMessage = "Language of education is required")]
-    public uint LanguageOfEducationId { get; set; } = 1;
+    [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
+    public long LanguageOfEducationId { get; set; }
+
+    public virtual Language LanguageOfEducation { get; set; }
 
     [Required(ErrorMessage = "Study period start date is required")]
     public DateOnly StudyPeriodStartDate { get; set; }

@@ -19,7 +19,9 @@ public class WorkshopDraftContent :
 
     public int MaxAge { get; set; }
 
-    public uint LanguageOfEducationId { get; set; }
+    public long LanguageOfEducationId { get; set; }
+
+    public string LanguageOfEducationName { get; set; } = string.Empty;
 
     public List<DateTimeRangeDraft> DateTimeRanges { get; set; } = new ();
 
