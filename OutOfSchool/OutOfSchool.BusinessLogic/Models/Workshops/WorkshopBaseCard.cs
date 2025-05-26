@@ -64,6 +64,8 @@ public class WorkshopBaseCard : IHasRating
     public int NumberOfRatings { get; set; }
 
     public uint TakenSeats { get; set; } = 0;
+    public long LanguageOfEducationId { get; set; }
+    public string LanguageOfEducationName { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;

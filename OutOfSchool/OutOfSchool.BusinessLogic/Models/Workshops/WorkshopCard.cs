@@ -39,7 +39,9 @@ public static class WorkshopCardExtensions
             AvailableSeats = workshop.AvailableSeats,
             TakenSeats = workshop.TakenSeats,
             ProviderLicenseStatus = workshop.ProviderLicenseStatus,
-            FormOfLearning = workshop.FormOfLearning,            
+            FormOfLearning = workshop.FormOfLearning,
+            LanguageOfEducationId = workshop.LanguageOfEducationId,
+            LanguageOfEducationName = workshop.LanguageOfEducationName,
         };
 
     public static List<WorkshopCard> ToCard(this IEnumerable<WorkshopES> list)
@@ -68,6 +70,8 @@ public static class WorkshopCardExtensions
             InstitutionId = workshop.InstitutionHierarchy?.Institution?.Id,
             Institution = workshop.InstitutionHierarchy?.Institution?.Title,
             AvailableSeats = workshop.AvailableSeats,
+            LanguageOfEducationId = workshop.LanguageOfEducationId,
+            LanguageOfEducationName = workshop.LanguageOfEducation?.Name,
         };
 
     public static List<WorkshopCard> ToCard(this IEnumerable<Workshop> list)

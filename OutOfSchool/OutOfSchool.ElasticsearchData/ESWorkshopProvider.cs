@@ -137,7 +137,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         AddAreThereBenefitsQuery(query, filter);
         AddPayRateTypeQuery(query, filter);
         AddStudyPeriodDatesQuery(query, filter);
-
+        AddLanguageQuery(query, filter);
         return query;
     }
 
@@ -219,7 +219,6 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
 
         return sorts;
     }
-
     private void AddSearchTextQuery(BoolQuery query, WorkshopFilterES filter)
     {
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
@@ -242,6 +241,17 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 // Query allows results where up to 2 chars may differ from the search keyword
                 Query = $"{filter.SearchText}* OR {filter.SearchText}~",
                 AllowLeadingWildcard = false,
+            });
+        }
+    }
+
+    private void AddLanguageQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.LanguageOfEducationId > 0)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.LanguageOfEducationId))
+            {
+                Value = filter.LanguageOfEducationId,
             });
         }
     }

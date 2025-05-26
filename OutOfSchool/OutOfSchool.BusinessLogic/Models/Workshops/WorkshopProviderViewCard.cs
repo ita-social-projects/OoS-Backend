@@ -38,7 +38,8 @@ public static class WorkshopProviderViewCardExtensions
             ProviderId = model.ProviderId,
             Address = defaultContact?.Address?.ToDto(),
             ProviderLicenseStatus = model.Provider?.LicenseStatus ?? default,
-
+            LanguageOfEducationId = model.LanguageOfEducationId,
+            LanguageOfEducationName = model.LanguageOfEducation?.Name,
             AvailableSeats = model.AvailableSeats,
             Status = model.Status,
         };

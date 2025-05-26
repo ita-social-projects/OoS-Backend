@@ -22,7 +22,9 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
     [Required(ErrorMessage = "Language of education is required")]
-    public uint LanguageOfEducationId { get; set; } = 0;
+    [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
+    public long LanguageOfEducationId { get; set; }
+
 
     [Required(ErrorMessage = "Type of age composition is required")]
     [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
