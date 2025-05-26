@@ -1,74 +1,84 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common.DbContextTests;
+using NUnit.Framework;
 
 namespace OutOfSchool.WebApi.Tests.Services;
+
 [TestFixture]
 public class LanguageServiceTests
 {
-    private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
-    private LanguageService service;
-    private IEntityRepository<long, Language> repository;
-    private Mock<ILogger<LanguageService>> logger;
+    private readonly LanguageService service;
+    private readonly Mock<IEntityRepository<long, Language>> repositoryMock;
+    private readonly Mock<ILogger<LanguageService>> loggerMock;
 
-    [SetUp]
-    public void SetUp()
+    public LanguageServiceTests()
     {
-        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-            databaseName: "OutOfSchoolTestDB");
-
-        options = builder.Options;
-        context = new TestOutOfSchoolDbContext(options);
-
-        repository = new EntityRepository<long, Language>(context);
-
-        logger = new Mock<ILogger<LanguageService>>();
-
-        service = new LanguageService(repository, logger.Object);
-
-        SeedDatabase();
+        repositoryMock = new Mock<IEntityRepository<long, Language>>();
+        loggerMock = new Mock<ILogger<LanguageService>>();
+        service = new LanguageService(repositoryMock.Object, loggerMock.Object);
     }
 
     [Test]
-    public async Task GetAll_ReturnsAllLanguages_WhenLanguagesExist()
+    public async Task GetAll_ShouldReturnAllLanguages()
     {
         // Arrange
-        List<Language> expected;
-        using var ctx = new TestOutOfSchoolDbContext(options);
+        var languages = new List<Language>
         {
-            expected = ctx.Languages.ToList();
-        }
+            new() { Id = 1, Name = "English" },
+            new() { Id = 2, Name = "Ukrainian" },
+        };
+
+        repositoryMock.Setup(r => r.GetAll()).ReturnsAsync(languages);
 
         // Act
         var result = await service.GetAll();
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.First().Id, Is.EqualTo(expected.First().Id));
-        Assert.That(result.Count(), Is.EqualTo(expected.Count));
-        Assert.IsInstanceOf<IEnumerable<LanguageDto>>(result);
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2);
+        result.Select(x => x.Id).Should().BeEquivalentTo(new[] { 1, 2 });
+        result.Should().AllBeOfType<LanguageDto>();
+
+        repositoryMock.Verify(r => r.GetAll(), Times.Once);
     }
 
-    private void SeedDatabase()
+    [Test]
+    public async Task GetById_WhenLanguageExists_ShouldReturnLanguageDto()
     {
-        using var ctx = new TestOutOfSchoolDbContext(options);
-        {
-            ctx.Database.EnsureDeleted();
-            ctx.Database.EnsureCreated();
+        // Arrange
+        var language = new Language { Id = 10, Name = "Spanish" };
+        repositoryMock.Setup(r => r.GetById(10)).ReturnsAsync(language);
 
-            ctx.SaveChanges();
-        }
+        // Act
+        var result = await service.GetById(10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(10);
+        result.Name.Should().Be("Spanish");
+
+        repositoryMock.Verify(r => r.GetById(10), Times.Once);
+    }
+
+    [Test]
+    public async Task GetById_WhenLanguageDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        repositoryMock.Setup(r => r.GetById(It.IsAny<long>())).ReturnsAsync((Language)null);
+
+        // Act
+        var result = await service.GetById(999);
+
+        // Assert
+        result.Should().BeNull();
+        repositoryMock.Verify(r => r.GetById(999), Times.Once);
     }
 }

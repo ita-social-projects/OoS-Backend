@@ -59,4 +59,48 @@ public class LanguageControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
     }
+
+    [Test]
+    public async Task GetById_ReturnsOk_WhenLanguageExists()
+    {
+        // Arrange
+        var languageId = 1L;
+        var expectedLanguage = new LanguageDto
+        {
+            Id = languageId,
+            Code = "en",
+            Name = "English"
+        };
+
+        service.Setup(s => s.GetById(languageId)).ReturnsAsync(expectedLanguage);
+
+        // Act
+        var result = await controller.GetById(languageId).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.EqualTo(expectedLanguage));
+
+        // Verify that service method was called with correct parameter
+        service.Verify(s => s.GetById(languageId), Times.Once);
+    }
+
+    [Test]
+    public async Task GetById_ReturnsNotFound_WhenLanguageDoesNotExist()
+    {
+        // Arrange
+        var languageId = 999L;
+        service.Setup(s => s.GetById(languageId)).ReturnsAsync((LanguageDto)null);
+
+        // Act
+        var result = await controller.GetById(languageId).ConfigureAwait(false) as NotFoundResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(404));
+
+        // Verify that service method was called with correct parameter
+        service.Verify(s => s.GetById(languageId), Times.Once);
+    }
 }
