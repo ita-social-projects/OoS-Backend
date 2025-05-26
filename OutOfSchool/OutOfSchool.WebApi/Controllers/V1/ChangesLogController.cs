@@ -118,4 +118,34 @@ public class ChangesLogController : ControllerBase
 
         return this.SearchResultToOkOrNoContent(changesLog);
     }
+
+    /// <summary>
+    /// Retrieves the history of changes made WorkshopDraft entities
+    /// that match the specified filter parameters.
+    /// </summary>
+    /// <param name="request">The filter and pagination parameters for the search.</param>
+    /// <returns>
+    /// A <see cref="SearchResult{WorkshopDraftChangesLogDto}"/> containing the matching logs,
+    /// or a no-content response if none are found.
+    /// </returns>
+    /// <response code="200">Returns the list of matching change log entries.</response>
+    /// <response code="204">No matching change logs were found.</response>
+    /// <response code="400">The request parameters are invalid.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user is not authorized to access this resource.</response>
+    /// <response code="500">An unexpected server error occurred.</response>
+    [HasPermission(Permissions.LogDataRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> WorkshopDraft([FromQuery] WorkshopDraftChangesLogRequest request)
+    {
+        var changesLog = await changesLogService.GetWorkshopDraftChangesLogAsync(request).ConfigureAwait(false);
+
+        return this.SearchResultToOkOrNoContent(changesLog);
+    }
 }

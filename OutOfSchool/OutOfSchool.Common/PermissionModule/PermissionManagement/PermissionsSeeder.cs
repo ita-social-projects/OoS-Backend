@@ -134,7 +134,7 @@ public static class PermissionsSeeder
     private static readonly IEnumerable<Permissions> SeedModeratorPermissions = new List<Permissions>
     {
         Permissions.ProviderRead, Permissions.ProviderApprove,
-        Permissions.WorkshopRead, Permissions.WorkshopApprove,
+        Permissions.WorkshopRead, Permissions.WorkshopEdit, Permissions.WorkshopApprove,
         Permissions.PersonalInfo,
     };
 

@@ -13,8 +13,10 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
@@ -29,6 +31,7 @@ public class ChangesLogServiceTests
     private Mock<IChangesLogRepository> changesLogRepository;
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
+    private Mock<IWorkshopDraftRepository> workshopDraftRepositoryMock;
     private Mock<IEntityRepository<long, EmployeeChangesLog>> employeeChangesLogRepository;
     private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
     private Mock<IValueProjector> valueProjector;
@@ -37,6 +40,8 @@ public class ChangesLogServiceTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<INestedObjectChangeLogger> nestedObjectChangeLoggerMock;
+    private Mock<ICollectionChangeLogger> collectionChangeLoggerMock;
 
     private User user;
     private Parent parent;
@@ -77,6 +82,7 @@ public class ChangesLogServiceTests
         changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
+        workshopDraftRepositoryMock = new Mock<IWorkshopDraftRepository>(MockBehavior.Strict);
         employeeChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
         parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
         valueProjector = new Mock<IValueProjector>();
@@ -85,6 +91,8 @@ public class ChangesLogServiceTests
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        nestedObjectChangeLoggerMock = new Mock<INestedObjectChangeLogger>();
+        collectionChangeLoggerMock = new Mock<ICollectionChangeLogger>();
     }
 
     #region AddEntityChangesToDbContext
@@ -778,14 +786,487 @@ public class ChangesLogServiceTests
     }
     #endregion
 
-    private IOptions<ChangesLogConfig> CreateChangesLogOptions() 
-        => Options.Create(new ChangesLogConfig
+    #region GetWorkshopDraftChangesLogAsync
+
+    [Test]
+    public async Task GetWorkshopDraftChangesLogAsync_ValidRequest_ReturnsExpectedResults()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest
+        {
+            From = 0,
+            Size = 10
+        };
+
+        var changesLogs = new List<ChangesLog>
+        {
+            new()
+            {
+                Id = 1,
+                EntityType = "WorkshopDraft",
+                EntityIdGuid = Guid.NewGuid(),
+                PropertyName = "Title",
+                OldValue = "Old Title",
+                NewValue = "New Title",
+                UpdatedDate = DateTime.UtcNow,
+                UserId = "user-id",
+                User = user
+            },
+            new()
+            {
+                Id = 2,
+                EntityType = "WorkshopDraft",
+                EntityIdGuid = Guid.NewGuid(),
+                PropertyName = "Description",
+                OldValue = "Old Description",
+                NewValue = "New Description",
+                UpdatedDate = DateTime.UtcNow,
+                UserId = "user-id",
+                User = user
+            }
+        };
+
+        var workshopDrafts = new List<WorkshopDraft>
+        {
+            new()
+            {
+                Id = changesLogs[0].EntityIdGuid.Value,
+                ProviderId = provider.Id,
+                Provider = provider,
+                WorkshopDraftContent = new WorkshopDraftContent { Title = "Workshop Title 1" }
+            },
+            new()
+            {
+                Id = changesLogs[1].EntityIdGuid.Value,
+                ProviderId = provider.Id,
+                Provider = provider,
+                WorkshopDraftContent = new WorkshopDraftContent { Title = "Workshop Title 2" }
+            }
+        };
+
+        var changeLogsQueryable = changesLogs.AsQueryable().BuildMock();
+        var workshopDraftsQueryable = workshopDrafts.AsQueryable().BuildMock();
+
+        changesLogRepository.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<ChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>>()))
+            .Returns(changeLogsQueryable);
+
+        changesLogRepository
+           .Setup(r => r.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
+           .ReturnsAsync(changesLogs.Count);
+
+        workshopDraftRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDraftsQueryable);
+
+        // Setup current user as non-admin to simplify predicate
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsAreaAdmin()).Returns(false);
+
+        // Mock extension methods
+        var service = GetChangesLogService();
+
+        // Act
+        var result = await service.GetWorkshopDraftChangesLogAsync(request);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(2, result.TotalAmount);
+        Assert.AreEqual(2, result.Entities.Count);
+        Assert.AreEqual(changesLogs[0].EntityIdGuid, result.Entities.ElementAt(0).WorkshopDraftId);
+        Assert.AreEqual(changesLogs[1].EntityIdGuid, result.Entities.ElementAt(1).WorkshopDraftId);
+        Assert.AreEqual("Workshop Title 1", result.Entities.ElementAt(0).WorkshopTitle);
+        Assert.AreEqual("Workshop Title 2", result.Entities.ElementAt(1).WorkshopTitle);
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftChangesLogAsync_EmptyResult_ReturnsEmptyCollection()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest
+        {
+            From = 0,
+            Size = 10
+        };
+
+        var changesLogs = new List<ChangesLog>();
+        var workshopDrafts = new List<WorkshopDraft>();
+
+        var changeLogsQueryable = changesLogs.AsQueryable().BuildMock();
+        var workshopDraftsQueryable = workshopDrafts.AsQueryable().BuildMock();
+
+        changesLogRepository.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<ChangesLog, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>>()))
+            .Returns(changeLogsQueryable);
+
+        changesLogRepository
+           .Setup(r => r.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
+           .ReturnsAsync(changesLogs.Count);
+
+        workshopDraftRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDraftsQueryable);
+
+        // Setup current user as non-admin to simplify predicate
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsAreaAdmin()).Returns(false);
+
+        var service = GetChangesLogService();
+
+        // Act
+        var result = await service.GetWorkshopDraftChangesLogAsync(request);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.IsEmpty(result.Entities);
+    }
+
+    [Test]
+    public void GetWorkshopDraftChangesLogAsync_InvalidRequest_ThrowsArgumentException()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest
+        {
+            From = -1, // Invalid value
+            Size = 10
+        };
+
+        var service = GetChangesLogService();
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(() => service.GetWorkshopDraftChangesLogAsync(request));
+    }
+
+    #endregion
+
+    #region LogWorkshopDraftChanges
+
+    [Test]
+    public void LogWorkshopDraftChanges_WithChanges_LogsSuccessfully()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+
+        var oldContent = new WorkshopDraftContent
+        {
+            Title = "Old Title",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>
+            {
+                new() { SectionName = "Section 1", Description = "Old Description" }
+            }
+        };
+
+        var newContent = new WorkshopDraftContent
+        {
+            Title = "New Title",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>
+            {
+                new() { SectionName = "Section 1", Description = "New Description" },
+                new() { SectionName = "Section 2", Description = "Added Section" }
+            }
+        };
+
+        var nestedChangeLogs = new List<ChangesLog>
+        {
+            new()
+            {
+                EntityType = "WorkshopDraft",
+                EntityIdGuid = draftId,
+                PropertyName = "Title",
+                OldValue = "Old Title",
+                NewValue = "New Title",
+                UserId = userId
+            }
+        };
+
+        var collectionChangeLogs = new List<ChangesLog>
+        {
+            new()
+            {
+                EntityType = "WorkshopDraft",
+                EntityIdGuid = draftId,
+                PropertyName = "WorkshopDescriptionItems[Section 1].Description",
+                OldValue = "Old Description",
+                NewValue = "New Description",
+                UserId = userId
+            },
+            new()
+            {
+                EntityType = "WorkshopDraft",
+                EntityIdGuid = draftId,
+                PropertyName = "WorkshopDescriptionItems.Added",
+                OldValue = null,
+                NewValue = "Section 2",
+                UserId = userId
+            }
+        };
+
+        nestedObjectChangeLoggerMock.Setup(l => l.CompareAndLogChanges(
+                oldContent,
+                newContent,
+                draftId,
+                "WorkshopDraft",
+                userId,
+                It.IsAny<IEnumerable<string>>(),
+                valueProjector.Object))
+            .Returns(nestedChangeLogs);
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                oldContent.WorkshopDescriptionItems ?? new List<WorkshopDescriptionItemDraft>(),
+                newContent.WorkshopDescriptionItems ?? new List<WorkshopDescriptionItemDraft>(),
+                It.IsAny<Func<WorkshopDescriptionItemDraft, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                nameof(WorkshopDraftContent.WorkshopDescriptionItems),
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(collectionChangeLogs);
+
+        changesLogRepository.Setup(r => r.AddChangeLogsToDbContext(It.IsAny<IEnumerable<ChangesLog>>()))
+            .Verifiable();
+
+        var service = GetChangesLogService();
+
+        // Act
+        service.LogWorkshopDraftChanges(oldContent, newContent, draftId, userId);
+
+        // Assert
+        changesLogRepository.Verify(r => r.AddChangeLogsToDbContext(
+            It.Is<IEnumerable<ChangesLog>>(logs => logs.Count() == nestedChangeLogs.Count + collectionChangeLogs.Count)),
+            Times.Once);
+    }
+
+    [Test]
+    public void LogWorkshopDraftChanges_WithoutChanges_DoesNotLogAnything()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+
+        var oldContent = new WorkshopDraftContent
+        {
+            Title = "Same Title",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>()
+        };
+
+        var newContent = new WorkshopDraftContent
+        {
+            Title = "Same Title",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>()
+        };
+
+        nestedObjectChangeLoggerMock.Setup(l => l.CompareAndLogChanges(
+                oldContent,
+                newContent,
+                draftId,
+                "WorkshopDraft",
+                userId,
+                It.IsAny<IEnumerable<string>>(),
+                valueProjector.Object))
+            .Returns(new List<ChangesLog>());
+
+        // Also need to setup the collectionChangeLogger
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.IsAny<IEnumerable<WorkshopDescriptionItemDraft>>(),
+                It.IsAny<IEnumerable<WorkshopDescriptionItemDraft>>(),
+                It.IsAny<Func<WorkshopDescriptionItemDraft, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                nameof(WorkshopDraftContent.WorkshopDescriptionItems),
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(new List<ChangesLog>());
+
+        var service = GetChangesLogService();
+
+        // Act
+        service.LogWorkshopDraftChanges(oldContent, newContent, draftId, userId);
+
+        // Assert
+        changesLogRepository.Verify(r => r.AddChangeLogsToDbContext(It.IsAny<IEnumerable<ChangesLog>>()), Times.Never);
+    }
+
+    #endregion
+
+    #region LogImageDeletions
+
+    [Test]
+    public void LogImageDeletions_WithRemovedImages_LogsSuccessfully()
+    {
+        // Arrange
+        var entityId = Guid.NewGuid();
+        var entityType = "Workshop";
+        var userId = "test-user-id";
+
+        var oldImageIds = new[] { "image1", "image2", "image3" };
+        var newImageIds = new[] { "image1" };
+
+        var service = GetChangesLogService();
+
+        changesLogRepository.Setup(r => r.AddChangeLogsToDbContext(
+                It.IsAny<IEnumerable<ChangesLog>>()))
+            .Verifiable();
+
+        // Act
+        service.LogImageDeletions(oldImageIds, newImageIds, entityId, entityType, userId);
+
+        // Assert
+        changesLogRepository.Verify(r => r.AddChangeLogsToDbContext(
+            It.Is<IEnumerable<ChangesLog>>(logs =>
+                logs.Count() == 2 &&
+                logs.All(l => l.EntityType == entityType && l.EntityIdGuid == entityId))),
+            Times.Once);
+    }
+
+    [Test]
+    public void LogImageDeletions_WithoutRemovedImages_DoesNotLogAnything()
+    {
+        // Arrange
+        var entityId = Guid.NewGuid();
+        var entityType = "Workshop";
+        var userId = "test-user-id";
+
+        var oldImageIds = new[] { "image1", "image2" };
+        var newImageIds = new[] { "image1", "image2" };
+
+        var service = GetChangesLogService();
+
+        // Act
+        service.LogImageDeletions(oldImageIds, newImageIds, entityId, entityType, userId);
+
+        // Assert
+        changesLogRepository.Verify(r => r.AddChangeLogsToDbContext(It.IsAny<IEnumerable<ChangesLog>>()), Times.Never);
+    }
+
+    #endregion
+
+    #region GetWorkshopDraftAccessPredicateAsync
+
+    [Test]
+    public async Task GetWorkshopDraftAccessPredicateAsync_MinistryAdmin_ReturnsCorrectPredicate()
+    {
+        // Arrange
+        var userId = "ministry-admin-id";
+        var institutionId = Guid.NewGuid();
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin()).Returns(true);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsAreaAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.UserId).Returns(userId);
+
+        var ministryAdmin = new MinistryAdminDto
+        {
+            InstitutionId = institutionId
+        };
+
+        ministryAdminServiceMock.Setup(s => s.GetByUserId(userId))
+            .ReturnsAsync(ministryAdmin);
+
+        // Create test data
+        var workshopDrafts = new List<WorkshopDraft>
+        {
+            new() {
+                Id = Guid.NewGuid(),
+                Provider = new Provider { InstitutionId = institutionId }
+            },
+            new() {
+                Id = Guid.NewGuid(),
+                Provider = new Provider { InstitutionId = Guid.NewGuid() }
+            }
+        };
+
+        var mockData = workshopDrafts.AsQueryable().BuildMock();
+
+        // Use private method via reflection to test
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);
+        var predicate = await predicateTask;
+
+        var filteredResult = mockData.Where(predicate).ToList();
+
+        // Assert
+        Assert.IsNotNull(filteredResult);
+        Assert.AreEqual(1, filteredResult.Count);
+        Assert.AreEqual(institutionId, filteredResult[0].Provider.InstitutionId);
+    }
+
+    [Test]
+    public async Task GetWorkshopDraftAccessPredicateAsync_RegionAdmin_ReturnsCorrectPredicate()
+    {
+        // Arrange
+        var userId = "region-admin-id";
+        var institutionId = Guid.NewGuid();
+        var catottgId = 123L;
+        var childCatottgId = 456L;
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin()).Returns(true);
+        currentUserServiceMock.Setup(s => s.IsAreaAdmin()).Returns(false);
+        currentUserServiceMock.Setup(s => s.UserId).Returns(userId);
+
+        var regionAdmin = new RegionAdminDto
+        {
+            InstitutionId = institutionId,
+            CATOTTGId = catottgId
+        };
+
+        regionAdminServiceMock.Setup(s => s.GetByUserId(userId))
+            .ReturnsAsync(regionAdmin);
+
+        codeficatorServiceMock.Setup(s => s.GetAllChildrenIdsByParentIdAsync(catottgId))
+            .ReturnsAsync(new List<long> { childCatottgId });
+
+        // Use private method via reflection to test
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);
+
+        var predicate = await predicateTask;
+
+        // Assert
+        Assert.IsNotNull(predicate);
+    }
+
+    #endregion
+
+    private IOptions<ChangesLogConfig> CreateChangesLogOptions()
+    {
+        return Options.Create(new ChangesLogConfig
         {
             TrackedProperties = new Dictionary<string, string[]>
-            {
-            { "Provider", new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" } },
-            },
+           {
+               { "Provider", new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" } },
+               { "WorkshopDraftContent", new[] { "Title", "ProviderTitle", "WorkshopDescriptionItems" } }
+           },
         });
+    }
 
     private IChangesLogService GetChangesLogService()
         => new ChangesLogService(
@@ -793,6 +1274,7 @@ public class ChangesLogServiceTests
             changesLogRepository.Object,
             providerRepository.Object,
             applicationRepository.Object,
+            workshopDraftRepositoryMock.Object,
             employeeChangesLogRepository.Object,
             parentBlockedByAdminLogRepository.Object,
             logger.Object,
@@ -801,5 +1283,8 @@ public class ChangesLogServiceTests
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
             areaAdminServiceMock.Object,
-            codeficatorServiceMock.Object);
+            codeficatorServiceMock.Object,
+            nestedObjectChangeLoggerMock.Object,
+            collectionChangeLoggerMock.Object
+            );
 }

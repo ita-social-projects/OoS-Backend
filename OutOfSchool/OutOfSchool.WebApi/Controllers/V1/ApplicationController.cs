@@ -392,6 +392,39 @@ public class ApplicationController : ControllerBase
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
     }
 
+    /// <summary>
+    /// Get the count of applications submitted by a parent (or their children) to workshops owned by the specified provider.
+    /// </summary>
+    /// <param name="parentId">Parent's id.</param>
+    /// <param name="providerId">Provider's id.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    /// <response code="200">Count of applications was retrieved.</response>
+    /// <response code="400">If properties are invalid.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user does not have permission.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    [Route("~/api/v{version:apiVersion}/providers/{providerId:guid}/parents/{parentId:guid}/applications/count")]
+    public async Task<IActionResult> Count(Guid parentId, Guid providerId)
+    {
+        if (!await providerService.Exists(providerId).ConfigureAwait(false))
+        {
+            return BadRequest($"There is no provider with Id = {providerId}");
+        }
+
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new EmployeeRights(providerId)).ConfigureAwait(false);
+
+        var count = await applicationService.CountApplicationsByParentAndProvider(parentId, providerId).ConfigureAwait(false);
+
+        return Ok(count);
+    }
+
     private async Task<bool> IsCurrentUserBlocked()
     {
         var userId = GettingUserProperties.GetUserId(User);

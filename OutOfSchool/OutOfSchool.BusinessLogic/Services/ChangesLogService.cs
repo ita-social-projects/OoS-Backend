@@ -3,7 +3,9 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
+using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -14,6 +16,7 @@ public class ChangesLogService(
     IChangesLogRepository changesLogRepository,
     IProviderRepository providerRepository,
     IApplicationRepository applicationRepository,
+    IWorkshopDraftRepository workshopDraftRepository,
     IEntityRepository<long, EmployeeChangesLog> employeeChangesLogRepository,
     IEntityAddOnlyRepository<long, ParentBlockedByAdminLog> parentBlockedByAdminLogRepository,
     ILogger<ChangesLogService> logger,
@@ -22,7 +25,9 @@ public class ChangesLogService(
     IMinistryAdminService ministryAdminService,
     IRegionAdminService regionAdminService,
     IAreaAdminService areaAdminService,
-    ICodeficatorService codeficatorService) : IChangesLogService
+    ICodeficatorService codeficatorService,
+    INestedObjectChangeLogger nestedObjectChangeLogger,
+    ICollectionChangeLogger collectionChangeLogger) : IChangesLogService
 {
     public const char WORD_SEPARATOR_SPACE = ' ';
     public const char WORD_SEPARATOR_COMMA = ',';
@@ -282,6 +287,126 @@ public class ChangesLogService(
         };
     }
 
+    /// <inheritdoc />
+    public async Task<SearchResult<WorkshopDraftChangesLogDto>> GetWorkshopDraftChangesLogAsync(WorkshopDraftChangesLogRequest request)
+    {
+        var changeLogFilter = request.ToFilter();
+
+        ValidateFilter(changeLogFilter);
+
+        var predicate = await GetWorkshopDraftAccessPredicateAsync();
+
+        var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
+
+        var drafts = workshopDraftRepository.Get(whereExpression: predicate).IgnoreQueryFilters();
+
+        var query = changesLog
+                .Join(
+                    drafts,
+                    l => l.EntityIdGuid,
+                    d => d.Id,
+                    (l, draft) => l.ToDto(draft)
+                )
+                .IgnoreQueryFilters();
+
+        var entities = await query.Skip(request.From).Take(request.Size).ToListAsync().ConfigureAwait(false);
+
+        return new SearchResult<WorkshopDraftChangesLogDto>
+        {
+            Entities = entities,
+            TotalAmount = await query.CountAsync(),
+        };
+    }
+
+    /// <inheritdoc />
+    public void LogWorkshopDraftChanges(
+        WorkshopDraftContent oldContent,
+        WorkshopDraftContent newContent,
+        Guid draftId,
+        string userId)
+    {
+        if (!IsLoggingAllowed<WorkshopDraftContent>(out var trackedProperties))
+        {
+            logger.LogDebug("Logging is not allowed for WorkshopDraftContent.");
+            return;
+        }
+
+        // Separate collection and non-collection properties
+        var collectionProperties = new[] { nameof(WorkshopDraftContent.WorkshopDescriptionItems) };
+        var nonCollectionProperties = trackedProperties.Except(collectionProperties).ToList();
+
+        // Log regular properties
+        var nestedLogs = nestedObjectChangeLogger.CompareAndLogChanges(
+            oldContent,
+            newContent,
+            draftId,
+            "WorkshopDraft",
+            userId,
+            nonCollectionProperties,
+            valueProjector);
+
+        // Log collections
+        var collectionLogs = new List<ChangesLog>();
+
+        if (trackedProperties.Contains(nameof(WorkshopDraftContent.WorkshopDescriptionItems)))
+        {
+            collectionLogs = collectionChangeLogger.CompareCollections(
+                oldContent.WorkshopDescriptionItems ?? [],
+                newContent.WorkshopDescriptionItems ?? [],
+                item => item.SectionName,
+                draftId,
+                "WorkshopDraft",
+                userId,
+                nameof(WorkshopDraftContent.WorkshopDescriptionItems),
+                valueProjector,
+                true);
+        }
+
+        // Save combined logs
+        var allLogs = nestedLogs.Concat(collectionLogs).ToList();
+
+        if (allLogs.Count > 0)
+        {
+            changesLogRepository.AddChangeLogsToDbContext(allLogs);
+            logger.LogInformation("Logged {Count} changes for WorkshopDraft {DraftId}.", allLogs.Count, draftId);
+        }
+    }
+
+    /// <inheritdoc />
+    public void LogImageDeletions(
+        IEnumerable<string> oldImageIds,
+        IEnumerable<string> newImageIds,
+        Guid entityId,
+        string entityType,
+        string userId)
+    {
+        var removedImageIds = oldImageIds.Except(newImageIds).ToList();
+
+        if (removedImageIds.Count != 0)
+        {
+            var logs = removedImageIds.Select(id => new ChangesLog
+            {
+                EntityType = entityType,
+                EntityIdGuid = entityId,
+                PropertyName = $"Images.Removed.ExternalStorageId",
+                OldValue = id,
+                NewValue = null,
+                UserId = userId,
+                UpdatedDate = DateTime.UtcNow,
+            }).ToList();
+
+            changesLogRepository.AddChangeLogsToDbContext(logs);
+
+            logger.LogInformation("Logged {Count} image deletions for {EntityType} {EntityId}.",
+                logs.Count, entityType, entityId);
+        }
+        else
+        {
+            logger.LogDebug("No image deletions detected for {EntityType} {EntityId}.",
+                entityType, entityId);
+        }
+    }
+
     private async Task<IQueryable<ChangesLog>> GetChangesLogAsync(ChangesLogFilter filter)
     {
         ValidateFilter(filter);
@@ -474,5 +599,53 @@ public class ChangesLogService(
     private void ValidateFilter(OffsetFilter filter)
     {
         ModelValidationHelper.ValidateOffsetFilter(filter);
+    }
+
+    /// <summary>
+    /// Constructs a dynamic predicate to limit access to workshop drafts
+    /// based on the role and region of the currently authenticated user.
+    /// </summary>
+    /// <returns>An expression used to filter workshop drafts for the current admin user.</returns>
+    private async Task<Expression<Func<WorkshopDraft, bool>>> GetWorkshopDraftAccessPredicateAsync()
+    {
+        var predicate = PredicateBuilder.True<WorkshopDraft>();
+
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var ministryAdmin = await ministryAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(d => d.Provider.InstitutionId == ministryAdmin.InstitutionId);
+        }
+
+        if (currentUserService.IsRegionAdmin())
+        {
+            var regionAdmin = await regionAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(d => d.Provider.InstitutionId == regionAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(regionAdmin.CATOTTGId).ConfigureAwait(false);
+
+            if (subSettlementsIds.Any())
+            {
+                var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
+                foreach (var id in subSettlementsIds)
+                {
+                    tempPredicate = tempPredicate.Or(d => d.Provider.Contacts.Any(c => c.IsDefault && c.Address.CATOTTGId == id));
+                }
+                predicate = predicate.And(tempPredicate);
+            }
+        }
+
+        if (currentUserService.IsAreaAdmin())
+        {
+            var areaAdmin = await areaAdminService.GetByUserId(currentUserService.UserId);
+            predicate = predicate.And(d => d.Provider.InstitutionId == areaAdmin.InstitutionId);
+
+            var subSettlementsIds = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(areaAdmin.CATOTTGId).ConfigureAwait(false);
+
+            predicate = predicate.And(d => d.Provider.Contacts.Any(c => c.IsDefault && subSettlementsIds.Contains(c.Address.CATOTTGId)));
+        }
+
+        return predicate;
     }
 }

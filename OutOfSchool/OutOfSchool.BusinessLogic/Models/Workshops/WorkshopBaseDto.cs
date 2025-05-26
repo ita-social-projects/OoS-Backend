@@ -183,12 +183,5 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         {
             yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
-
-        if (StudyPeriodDates != null && StudyPeriodDates.StartDate > StudyPeriodDates.EndDate)
-        {
-            yield return new ValidationResult(
-                "Study period start date must be earlier than study period end date.",
-                [nameof(StudyPeriodDates)]);
-        }
     }
 }

@@ -20,6 +20,7 @@ public class WorkshopController : ControllerBase
     private readonly IProviderService providerService;
     private readonly IUserService userService;
     private readonly ICurrentUserService currentUserService;
+    private readonly IFeatureManager featureManager;
     private readonly ILogger<WorkshopController> logger;
     private const int DefaultPageSize = 9;
 
@@ -29,18 +30,21 @@ public class WorkshopController : ControllerBase
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
     /// <param name="userService">Service for operations with users.</param>
+    /// <param name="featureManager">Feature manager for feature flags.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
         IUserService userService,
         ICurrentUserService currentUserService,
+        IFeatureManager featureManager,
         ILogger<WorkshopController> logger)
     {
         this.combinedWorkshopService = combinedWorkshopService;
         this.providerService = providerService;
         this.userService = userService;
         this.currentUserService = currentUserService;
+        this.featureManager = featureManager;
         this.logger = logger;
     }
 
@@ -274,6 +278,10 @@ public class WorkshopController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] WorkshopCreateRequestDto dto)
     {
+        if (await featureManager.IsEnabledAsync("Release2"))
+        {
+           return StatusCode(StatusCodes.Status410Gone, "Workshop API v1 is deprecated. Please use API v2 via draft creation.");
+        }
         if (dto == null)
         {
             return BadRequest("Workshop is null.");
@@ -334,6 +342,10 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] WorkshopCreateUpdateDto dto)
     {
+        if (await featureManager.IsEnabledAsync("Release2"))
+        {
+            return StatusCode(StatusCodes.Status410Gone, "Workshop API v1 is deprecated. Please use API v2 via draft creation.");
+        }
         if (dto == null)
         {
             return BadRequest("Workshop is null.");

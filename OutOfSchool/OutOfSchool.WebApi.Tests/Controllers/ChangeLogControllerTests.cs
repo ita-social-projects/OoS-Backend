@@ -241,4 +241,140 @@ public class ChangeLogControllerTests
         Assert.IsInstanceOf<NoContentResult>(result);
     }
     #endregion
+
+    #region WorkshopDraft
+
+    [Test]
+    public async Task WorkshopDraft_ValidRequestWithResults_ReturnsOkWithSearchResult()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest();
+        var expectedResult = new SearchResult<WorkshopDraftChangesLogDto>
+        {
+            TotalAmount = 2,
+            Entities = new List<WorkshopDraftChangesLogDto>
+            {
+                new WorkshopDraftChangesLogDto
+                {
+                    WorkshopDraftId = Guid.NewGuid(),
+                    WorkshopTitle = "Test Workshop",
+                    ProviderTitle = "Test Provider"
+                },
+                new WorkshopDraftChangesLogDto
+                {
+                    WorkshopDraftId = Guid.NewGuid(),
+                    WorkshopTitle = "Another Workshop",
+                    ProviderTitle = "Another Provider"
+                }
+            }
+        };
+
+        changesLogServiceMock
+            .Setup(s => s.GetWorkshopDraftChangesLogAsync(request))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await controller.WorkshopDraft(request);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = (OkObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+
+        var searchResult = (SearchResult<WorkshopDraftChangesLogDto>)okResult.Value;
+        Assert.AreEqual(expectedResult.TotalAmount, searchResult.TotalAmount);
+        Assert.AreEqual(expectedResult.Entities.Count, searchResult.Entities.Count);
+    }
+
+    [Test]
+    public async Task WorkshopDraft_NoResults_ReturnsNoContent()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest();
+        var emptyResult = new SearchResult<WorkshopDraftChangesLogDto>
+        {
+            TotalAmount = 0,
+            Entities = new List<WorkshopDraftChangesLogDto>()
+        };
+
+        changesLogServiceMock
+            .Setup(s => s.GetWorkshopDraftChangesLogAsync(request))
+            .ReturnsAsync(emptyResult);
+
+        // Act
+        var result = await controller.WorkshopDraft(request);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+        var noContentResult = (NoContentResult)result;
+        Assert.AreEqual(StatusCodes.Status204NoContent, noContentResult.StatusCode);
+    }
+
+    [Test]
+    public async Task WorkshopDraft_NullResult_ReturnsNoContent()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest();
+        SearchResult<WorkshopDraftChangesLogDto> nullResult = null;
+
+        changesLogServiceMock
+            .Setup(s => s.GetWorkshopDraftChangesLogAsync(request))
+            .ReturnsAsync(nullResult);
+
+        // Act
+        var result = await controller.WorkshopDraft(request);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+        var noContentResult = (NoContentResult)result;
+        Assert.AreEqual(StatusCodes.Status204NoContent, noContentResult.StatusCode);
+    }
+
+    [Test]
+    public async Task WorkshopDraft_InvalidResult_ReturnsNoContent()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest();
+        var invalidResult = new SearchResult<WorkshopDraftChangesLogDto>
+        {
+            TotalAmount = 1, // Total amount less than the actual count (2)
+            Entities = new List<WorkshopDraftChangesLogDto>
+            {
+                new WorkshopDraftChangesLogDto(),
+                new WorkshopDraftChangesLogDto()
+            }
+        };
+
+        changesLogServiceMock
+            .Setup(s => s.GetWorkshopDraftChangesLogAsync(request))
+            .ReturnsAsync(invalidResult);
+
+        // Act
+        var result = await controller.WorkshopDraft(request);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+        var noContentResult = (NoContentResult)result;
+        Assert.AreEqual(StatusCodes.Status204NoContent, noContentResult.StatusCode);
+    }
+
+    [Test]
+    public void WorkshopDraft_ExceptionThrown_ThrowsException()
+    {
+        // Arrange
+        var request = new WorkshopDraftChangesLogRequest();
+        var expectedException = new InvalidOperationException("Test exception");
+
+        changesLogServiceMock
+            .Setup(s => s.GetWorkshopDraftChangesLogAsync(request))
+            .ThrowsAsync(expectedException);
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await controller.WorkshopDraft(request));
+
+        Assert.AreEqual(expectedException.Message, exception.Message);
+    } 
+
+    #endregion
 }

@@ -50,4 +50,12 @@ public class Result<T>
     /// <param name="errors">Contains all errors that must be returned with the failed result from an operation.</param>
     /// <returns>The <see cref="Result{T}"/> value, marked as Failed.</returns>
     public static Result<T> Failed(params OperationError[] errors) => new Result<T> { OperationResult = OperationResult.Failed(errors) };
+
+    /// <summary>
+    /// Converts this failed result into a failed result of a different generic type,
+    /// preserving the original errors.
+    /// </summary>
+    /// <typeparam name="TOut">The target result type.</typeparam>
+    /// <returns>A failed <see cref="Result{TOut}"/> with the same errors.</returns>
+    public Result<TOut> ToFailedResult<TOut>() => Result<TOut>.Failed([.. OperationResult.Errors]);
 }

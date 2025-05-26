@@ -1,13 +1,44 @@
-$(function() {
-    $('#role').val($('.login-role-select--active').data('value'));
+$(function () {
+    function setupRoleSelection(selector, oppositeSelector) {
+        $(selector).on('click', function () {
+            const $roleInput = $("#role");
+            $(oppositeSelector).removeClass('login-role-select--active');
+            $(this).addClass('login-role-select--active');
 
-    $('.login-role-select__option').on('click', function() {
-        $('.login-role-select__option').removeClass('login-role-select--active');
-        $(this).addClass('login-role-select--active');
+            // Update the hidden input with the selected value
+            let selectedValue = $(this).data('value');
+            $($roleInput).val(selectedValue);
+        });
+    }
 
-        // Update the hidden input with the selected value
-        let selectedValue = $(this).data('value');
-        $('#role').val(selectedValue);
+    // All selections now update the same #role input
+    setupRoleSelection('#login_role_select_provider', '#login_role_select_employee');
+    setupRoleSelection('#login_role_select_employee', '#login_role_select_provider');
+    setupRoleSelection('#login_role_select_moderator', '#login_role_select_techadmin');
+    setupRoleSelection('#login_role_select_techadmin', '#login_role_select_moderator');
+
+    $("#switch-user-type").on("click", function () {
+        const $providerSection = $("#role-select-provider");
+        const $technicalSection = $("#role-select-technical");
+        const $roleInput = $("#role");
+        
+        // Toggle visibility
+        $providerSection.toggleClass("hidden");
+        $technicalSection.toggleClass("hidden");
+        
+        if ($providerSection.hasClass("hidden")) {
+            // Technical section is now visible, default to moderator
+            $roleInput.val("moderator");
+
+            $("#login_role_select_moderator").addClass("login-role-select--active");
+            $("#login_role_select_techadmin").removeClass("login-role-select--active");
+        } else {
+            // Provider section is now visible, default to provider
+            $roleInput.val("provider");
+
+            $("#login_role_select_provider").addClass("login-role-select--active");
+            $("#login_role_select_employee").removeClass("login-role-select--active");
+        }
     });
 
     let check_loginPasswordEye = false;

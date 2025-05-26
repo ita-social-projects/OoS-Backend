@@ -997,6 +997,29 @@ public class ApplicationServiceTests
         emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
     }
 
+    [Test]
+    public async Task CountApplicationsByParentAndProvider_WhenIdsAreValid_ShouldReturnCount()
+    {
+        // Arrange
+        var parentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3");
+        var providerId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174");
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+
+        // Act
+        var result = await service.CountApplicationsByParentAndProvider(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(3));
+    }
+
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
     {
         Assert.Multiple(() =>

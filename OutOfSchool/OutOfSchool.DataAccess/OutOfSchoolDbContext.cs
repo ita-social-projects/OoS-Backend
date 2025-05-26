@@ -146,10 +146,26 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<SubDirection> SubDirections { get; set; }
 
-    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+    public DbSet<Moderator> Moderators { get; set; }
 
-    public int Complete() => this.SaveChanges();
+    public DbSet<TechAdmin> TechAdmins { get; set; }
 
+    /// <summary>
+/// Asynchronously saves all changes made in this context to the database.
+/// </summary>
+/// <returns>The number of state entries written to the database.</returns>
+public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+
+    /// <summary>
+/// Saves all changes made in the context to the database.
+/// </summary>
+/// <returns>The number of state entries written to the database.</returns>
+public int Complete() => this.SaveChanges();
+
+    /// <summary>
+    /// Configures the entity mappings and constraints for the database context, applying all entity configurations and seeding initial data.
+    /// </summary>
+    /// <param name="builder">The model builder used to configure entity mappings.</param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -212,6 +228,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
         builder.ApplyConfiguration(new CompanyInformationConfiguration());
         builder.ApplyConfiguration(new CompanyInformationItemConfiguration());
         builder.ApplyConfiguration(new ElasticsearchSyncRecordConfiguration());
+        builder.ApplyConfiguration(new ModeratorConfiguration());
+        builder.ApplyConfiguration(new TechAdminConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

@@ -45,7 +45,9 @@ public static class AuthCommonServiceExtensions
         services.AddRazorPages();
         services.AddTransient(typeof(IEntityAddOnlyRepository<,>), typeof(EntityRepository<,>));
         services.AddTransient(typeof(IEntityRepository<,>), typeof(EntityRepository<,>));
+        services.AddTransient(typeof(ISensitiveEntityRepository<>), typeof(SensitiveEntityRepository<>));
         services.AddTransient(typeof(IEntityRepositorySoftDeleted<,>), typeof(EntityRepositorySoftDeleted<,>));
+        services.AddTransient(typeof(ISensitiveEntityRepositorySoftDeleted<>), typeof(SensitiveEntityRepositorySoftDeleted<>));
         
         services.AddSingleton<CacheService>();
         services.AddSingleton<ICacheService>(s => s.GetRequiredService<CacheService>());

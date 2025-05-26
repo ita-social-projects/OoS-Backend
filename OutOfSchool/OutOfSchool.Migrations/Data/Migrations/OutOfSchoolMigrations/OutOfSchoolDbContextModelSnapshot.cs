@@ -1700,6 +1700,37 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Moderator", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("Moderators");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2006,7 +2037,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 8L,
                             Description = "moderator permissions",
-                            PackedPermissions = "MjdaXlQ=",
+                            PackedPermissions = "MjdaW15U",
                             RoleName = "Moderator"
                         });
                 });
@@ -3605,6 +3636,37 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Teachers");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.TechAdmin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("TechAdmins");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -4725,6 +4787,17 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Moderator", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Moderator", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Individual");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Official", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
@@ -5096,6 +5169,17 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .WithMany("Teachers")
                         .HasForeignKey("WorkshopId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.TechAdmin", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.TechAdmin", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Individual");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>

@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V2;
 
@@ -33,6 +35,7 @@ public class WorkshopDraftControllerTests
     private WorkshopDraftController controller;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<IWorkshopDraftService> workshopDraftServiceMoq;
+    private Mock<ISensitiveWorkshopDraftService> sensitiveWorkshopDraftServiceMoq;
     private Mock<HttpContext> httpContextMoq;
 
     private string userId;
@@ -65,10 +68,12 @@ public class WorkshopDraftControllerTests
     {
         workshopDraftServiceMoq = new Mock<IWorkshopDraftService>();
         providerServiceMoq = new Mock<IProviderService>();
+        sensitiveWorkshopDraftServiceMoq = new Mock<ISensitiveWorkshopDraftService>();
 
         controller = new WorkshopDraftController(
             providerServiceMoq.Object,
-            workshopDraftServiceMoq.Object)
+            workshopDraftServiceMoq.Object,
+            sensitiveWorkshopDraftServiceMoq.Object)
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
         };
@@ -262,5 +267,301 @@ public class WorkshopDraftControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(NoContent, result.StatusCode);
     }
-    #endregion 
+    #endregion
+
+    #region UpdateAsModerator
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsOkResult_WhenServiceReturnsSuccessResult()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var dto = new ModeratorWorkshopDraftEditDto
+        {
+            Title = "Updated Title",
+            ShortTitle = "Updated Short Title",
+            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDto>()
+        };
+
+        var expectedResponse = new WorkshopDraftResponseDto
+        {
+            WorkshopDraftId = draftId,
+            DraftStatus = WorkshopDraftStatus.EditedByModerator,
+            WorkshopDetails = workshopV2Dto
+        };
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.UpdateDraftAsModeratorAsync(draftId, moderatorId, dto))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Success(expectedResponse));
+
+        // Act
+        var result = await controller.UpdateAsModerator(draftId, moderatorId, dto);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = (OkObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        Assert.AreEqual(expectedResponse, okResult.Value);
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsBadRequest_WhenServiceReturnsBadRequestError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var dto = new ModeratorWorkshopDraftEditDto();
+        var errorMessage = "Invalid input data";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.UpdateDraftAsModeratorAsync(draftId, moderatorId, dto))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "400", Description = errorMessage }));
+
+        // Act
+        var result = await controller.UpdateAsModerator(draftId, moderatorId, dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = (BadRequestObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        Assert.AreEqual(errorMessage, badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsNotFound_WhenServiceReturnsNotFoundError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var dto = new ModeratorWorkshopDraftEditDto();
+        var errorMessage = "Draft not found";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.UpdateDraftAsModeratorAsync(draftId, moderatorId, dto))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "404", Description = errorMessage }));
+
+        // Act
+        var result = await controller.UpdateAsModerator(draftId, moderatorId, dto);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var notFoundResult = (NotFoundObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        Assert.AreEqual(errorMessage, notFoundResult.Value);
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsConflict_WhenServiceReturnsConflictError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var dto = new ModeratorWorkshopDraftEditDto();
+        var errorMessage = "Draft cannot be edited in its current status";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.UpdateDraftAsModeratorAsync(draftId, moderatorId, dto))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "409", Description = errorMessage }));
+
+        // Act
+        var result = await controller.UpdateAsModerator(draftId, moderatorId, dto);
+
+        // Assert
+        Assert.IsInstanceOf<ConflictObjectResult>(result);
+        var conflictResult = (ConflictObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status409Conflict, conflictResult.StatusCode);
+        Assert.AreEqual(errorMessage, conflictResult.Value);
+    }
+
+    #endregion
+
+    #region DeleteCoverImageAsModerator
+
+    [Test]
+    public async Task DeleteCoverImageAsModerator_ReturnsOkResult_WhenServiceReturnsSuccessResult()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var expectedResponse = new WorkshopDraftResponseDto
+        {
+            WorkshopDraftId = draftId,
+            DraftStatus = WorkshopDraftStatus.EditedByModerator,
+            WorkshopDetails = workshopV2Dto
+        };
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteCoverImageAsModeratorAsync(draftId, moderatorId))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Success(expectedResponse));
+
+        // Act
+        var result = await controller.DeleteCoverImageAsModerator(draftId, moderatorId);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = (OkObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        Assert.AreEqual(expectedResponse, okResult.Value);
+    }
+
+    [Test]
+    public async Task DeleteCoverImageAsModerator_ReturnsBadRequest_WhenServiceReturnsBadRequestError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var errorMessage = "Draft does not have a cover image";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteCoverImageAsModeratorAsync(draftId, moderatorId))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "400", Description = errorMessage }));
+
+        // Act
+        var result = await controller.DeleteCoverImageAsModerator(draftId, moderatorId);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = (BadRequestObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        Assert.AreEqual(errorMessage, badRequestResult.Value);
+    }
+
+    #endregion
+
+    #region DeleteImageAsModerator
+
+    [Test]
+    public async Task DeleteImageAsModerator_ReturnsOkResult_WhenServiceReturnsSuccessResult()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var imageId = "image123";
+        var expectedResponse = new WorkshopDraftResponseDto
+        {
+            WorkshopDraftId = draftId,
+            DraftStatus = WorkshopDraftStatus.EditedByModerator,
+            WorkshopDetails = workshopV2Dto
+        };
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Success(expectedResponse));
+
+        // Act
+        var result = await controller.DeleteImageAsModerator(draftId, moderatorId, imageId);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = (OkObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        Assert.AreEqual(expectedResponse, okResult.Value);
+    }
+
+    [Test]
+    public async Task DeleteImageAsModerator_ReturnsNotFound_WhenServiceReturnsNotFoundError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var imageId = "image123";
+        var errorMessage = "Image not found";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "404", Description = errorMessage }));
+
+        // Act
+        var result = await controller.DeleteImageAsModerator(draftId, moderatorId, imageId);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var notFoundResult = (NotFoundObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        Assert.AreEqual(errorMessage, notFoundResult.Value);
+    }
+
+    #endregion
+
+    #region DeleteManyImagesAsModerator
+
+    [Test]
+    public async Task DeleteManyImagesAsModerator_ReturnsOkResult_WhenServiceReturnsSuccessResult()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var imageIds = new List<string> { "image1", "image2", "image3" };
+        var expectedResponse = new WorkshopDraftResponseDto
+        {
+            WorkshopDraftId = draftId,
+            DraftStatus = WorkshopDraftStatus.EditedByModerator,
+            WorkshopDetails = workshopV2Dto
+        };
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Success(expectedResponse));
+
+        // Act
+        var result = await controller.DeleteManyImagesAsModerator(draftId, moderatorId, imageIds);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = (OkObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        Assert.AreEqual(expectedResponse, okResult.Value);
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModerator_ReturnsBadRequest_WhenServiceReturnsBadRequestError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var imageIds = new List<string>();
+        var errorMessage = "No image IDs were provided";
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "400", Description = errorMessage }));
+
+        // Act
+        var result = await controller.DeleteManyImagesAsModerator(draftId, moderatorId, imageIds);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequestResult = (BadRequestObjectResult)result;
+        Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+        Assert.AreEqual(errorMessage, badRequestResult.Value);
+    }
+
+    [Test]
+    public async Task DeleteManyImagesAsModerator_ReturnsForbid_WhenServiceReturnsForbiddenError()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
+        var imageIds = new List<string> { "image1", "image2" };
+
+        sensitiveWorkshopDraftServiceMoq
+            .Setup(s => s.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds))
+            .ReturnsAsync(Result<WorkshopDraftResponseDto>.Failed(
+                new OperationError { Code = "403", Description = "Forbidden" }));
+
+        // Act
+        var result = await controller.DeleteManyImagesAsModerator(draftId, moderatorId, imageIds);
+
+        // Assert
+        Assert.IsInstanceOf<ForbidResult>(result);
+    }
+
+    #endregion
 }
