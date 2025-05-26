@@ -40,6 +40,7 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
@@ -59,7 +60,9 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
+        
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        languageServiceMock = new Mock<ILanguageService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
@@ -73,6 +76,7 @@ public class SensitiveWorkshopsServiceDBTests
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository,
+                languageServiceMock.Object,
                 tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
@@ -90,6 +94,9 @@ public class SensitiveWorkshopsServiceDBTests
                 contactsServiceMock.Object,
                 applicationRepositoryMock.Object,
                 featureManagerMock.Object);
+
+        languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
+                .ReturnsAsync(new LanguageDto { Id = 1, Name = "Ukrainian" });
 
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
@@ -270,6 +277,7 @@ public class SensitiveWorkshopsServiceDBTests
         // Arrange
         var workshopDto = await MapWorkshopsToDtos();
         var expectedList = new List<WorkshopDto>() { workshopDto[6], workshopDto[7], workshopDto[8] };
+
         var filter = new WorkshopFilterAdministration() { SearchString = "writingclub, test  " };
         searchStringServiceMock.Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
             .Returns(["writingclub", "test"]);
@@ -306,6 +314,7 @@ public class SensitiveWorkshopsServiceDBTests
         // Arrange
         await MapWorkshopsToDtos();
         var expectedList = new List<WorkshopDto>();
+
         var userId = Guid.NewGuid().ToString();
         var ministryAdmin = new MinistryAdminDto()
         {
@@ -390,220 +399,102 @@ public class SensitiveWorkshopsServiceDBTests
         codeficatorServiceMock.Setup(c => c.GetAllChildrenIdsByParentIdAsync(
            It.Is<long>(id => id == admin.CATOTTGId))).ReturnsAsync(new List<long>() { 3, 4, 5 });
     }
-
     private async Task<List<Workshop>> SeedWorkshops()
     {
+        var language = new Language
+        {
+            Id = 1,
+            Code = "en",
+            Name = "English"
+        };
+
+        dbContext.Attach(language);
+        await dbContext.SaveChangesAsync();
+
+        var catottgCache = new Dictionary<long, CATOTTG>();
         var workshops = new List<Workshop>();
-        var codeficators = new List<CATOTTG>();
 
-        var institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        var codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 1;
-        var address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "101", Street = "Maple Avenue", CATOTTG = codeficator};
-        var workshop = WorkshopGenerator.Generate()
-            .WithAddress(address)
-            .WithInstitutionHierarchy(institutionHierarch)
-            .WithTeachers();
+        var configs = GetWorkshopConfigs();
 
-        workshop.Title = "Воркшоп з ШІ";
-        workshop.ShortTitle = "Воркшоп ІІ";
-        workshop.ProviderTitle = "Інститут технологій";
-        workshop.ProviderTitleEn = "University of Technology";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
+        foreach (var config in configs)
         {
-            Type = "Test",
-            Address = "ai_workshop@institute.com",
-        });
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("d85a3f07-8d7b-45b1-871d-23c5f4e34b92");
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
+            if (!catottgCache.TryGetValue(config.CATOTTGId, out var catottg))
+            {
+                catottg = CATOTTGGenerator.Generate();
+                catottg.Id = config.CATOTTGId;
+                catottgCache[catottg.Id] = catottg;
+            }
 
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 2;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "57", Street = "Oak Street", CATOTTG = codeficator};
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
+            var institutionHierarchy = InstitutionHierarchyGenerator.Generate();
+            institutionHierarchy.InstitutionId = config.InstitutionId;
 
-        workshop.Title = "Курс з науки про дані, воркшоп";
-        workshop.ShortTitle = "Наука про дані";
-        workshop.ProviderTitle = "УПН";
-        workshop.ProviderTitleEn = "University of Applied Sciences";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "datascience@university.com",
-        });
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("a45f2766-1d63-4027-a9ba-b39b6351faeb");
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
+            var address = new ContactsAddress
+            {
+                CATOTTGId = catottg.Id,
+                BuildingNumber = config.Building,
+                Street = config.Street,
+                CATOTTG = catottg
+            };
 
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 3;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "230", Street = "Pine Crescent", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
+            var workshop = WorkshopGenerator.Generate()
+                .WithAddress(address)
+                .WithInstitutionHierarchy(institutionHierarchy)
+                .WithTeachers();
 
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935");
-        workshop.Title = "Вступ до машинного навчання";
-        workshop.ShortTitle = "Воркшоп даніL";
-        workshop.ProviderTitle = "Академія";
-        workshop.ProviderTitleEn = "Artificial Intelligence Academy";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "ml_basics@aiacademy.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
+            workshop.Title = config.Title;
+            workshop.ShortTitle = config.ShortTitle;
+            workshop.LanguageOfEducationId = language.Id;
+            workshop.LanguageOfEducation = language;
+            workshop.ProviderTitle = config.ProviderTitle;
+            workshop.ProviderTitleEn = config.ProviderTitleEn;
+            workshop.Contacts.FirstOrDefault()?.Emails.Add(new()
+            {
+                Type = "Test",
+                Address = config.Email
+            });
 
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 4;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "12B", Street = "Elm Drive", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
+            workshops.Add(workshop);
+        }
 
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935");
-        workshop.Title = "живопису основи";
-        workshop.ShortTitle = "Живопис";
-        workshop.ProviderTitle = "Школа сучасного живопису";
-        workshop.ProviderTitleEn = "Modern Painting";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new()
-        {
-            Type = "Test",
-            Address = "ml_basics@aiacademy.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 5;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "78", Street = "Birch Lane", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-            .WithAddress(address)
-            .WithInstitutionHierarchy(institutionHierarch)
-            .WithTeachers();
-
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935");
-        workshop.Title = "Основи кібербезпеки";
-        workshop.ShortTitle = "Дані з Кібербезпеки";
-        workshop.ProviderTitle = "Навчальний центр безпеки";
-        workshop.ProviderTitleEn = "Security Training Center";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "cybersecurity@trainingcenter.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 6;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "5A", Street = "Cedar Road", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
-
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("b87f4f9e-453e-4c25-bdc3-ff85425f6b92");
-        workshop.Title = "Просунутий Python-програмування";
-        workshop.ShortTitle = "Python Pro";
-        workshop.ProviderTitle = "Школа програмування";
-        workshop.ProviderTitleEn = "Programming School";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "python_pro@programming.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 7;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "349", Street = "Cherry Street", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
-
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("b87f4f9e-453e-4c25-bdc3-ff85425f6b92");
-        workshop.Title = "Історія";
-        workshop.ShortTitle = "Pro  ";
-        workshop.ProviderTitle = "Школа";
-        workshop.ProviderTitleEn = "School";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "writingclub@historyexplorers.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 8;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "92", Street = "Willow Boulevard", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
-
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("ed1dbb6e-22f7-4e69-8e75-41b9fd489dbd");
-        workshop.Title = "Сучасна література";
-        workshop.ShortTitle = "Python Pro";
-        workshop.ProviderTitle = "Гурток творчого письма";
-        workshop.ProviderTitleEn = "Creative Writing Club";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "fantasymyths@writingclub.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        institutionHierarch = InstitutionHierarchyGenerator.Generate();
-        codeficator = CATOTTGGenerator.Generate();
-        codeficator.Id = 9;
-        address = new ContactsAddress() { CATOTTGId = codeficator.Id, BuildingNumber = "17", Street = "Sycamore Court", CATOTTG = codeficator };
-        workshop = WorkshopGenerator.Generate()
-             .WithAddress(address)
-             .WithInstitutionHierarchy(institutionHierarch)
-             .WithTeachers();
-
-        workshop.InstitutionHierarchy.InstitutionId = Guid.Parse("437fba48-99de-4f85-b4b3-73a098e4e1cc");
-        workshop.Title = "Сучасна музика";
-        workshop.ShortTitle = "Python Pro";
-        workshop.ProviderTitle = "Школа народної музики";
-        workshop.ProviderTitleEn = "Folk Music School";
-        workshop.Contacts.FirstOrDefault()?.Emails.Add(new ()
-        {
-            Type = "Test",
-            Address = "worldmelodies@writingclub.com",
-        });
-        codeficators.Add(codeficator);
-        workshops.Add(workshop);
-
-        await dbContext.AddRangeAsync(codeficators);
+        await dbContext.AddRangeAsync(catottgCache.Values);
         await dbContext.AddRangeAsync(workshops);
         await dbContext.SaveChangesAsync();
 
         return workshops;
     }
 
+    private List<WorkshopSeedConfig> GetWorkshopConfigs()
+    {
+        return new List<WorkshopSeedConfig>
+        {
+            new() { Title = "Воркшоп з ШІ", ShortTitle = "Воркшоп ІІ", ProviderTitle = "Інститут технологій", ProviderTitleEn = "University of Technology", Email = "ai_workshop@institute.com", InstitutionId = Guid.Parse("d85a3f07-8d7b-45b1-871d-23c5f4e34b92"), CATOTTGId = 1, Street = "Maple Avenue", Building = "101" },
+            new() { Title = "Курс з науки про дані, воркшоп", ShortTitle = "Наука про дані", ProviderTitle = "УПН", ProviderTitleEn = "University of Applied Sciences", Email = "datascience@university.com", InstitutionId = Guid.Parse("a45f2766-1d63-4027-a9ba-b39b6351faeb"), CATOTTGId = 2, Street = "Oak Street", Building = "57" },
+            new() { Title = "Вступ до машинного навчання", ShortTitle = "Воркшоп даніL", ProviderTitle = "Академія", ProviderTitleEn = "Artificial Intelligence Academy", Email = "ml_basics@aiacademy.com", InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935"), CATOTTGId = 3, Street = "Pine Crescent", Building = "230" },
+            new() { Title = "живопису основи", ShortTitle = "Живопис", ProviderTitle = "Школа сучасного живопису", ProviderTitleEn = "Modern Painting", Email = "ml_basics@aiacademy.com", InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935"), CATOTTGId = 4, Street = "Elm Drive", Building = "12B" },
+            new() { Title = "Основи кібербезпеки", ShortTitle = "Дані з Кібербезпеки", ProviderTitle = "Навчальний центр безпеки", ProviderTitleEn = "Security Training Center", Email = "cybersecurity@trainingcenter.com", InstitutionId = Guid.Parse("4c865c12-e99a-456b-82b1-7a7c3a2d6935"), CATOTTGId = 5, Street = "Birch Lane", Building = "78" },
+            new() { Title = "Просунутий Python-програмування", ShortTitle = "Python Pro", ProviderTitle = "Школа програмування", ProviderTitleEn = "Programming School", Email = "python_pro@programming.com", InstitutionId = Guid.Parse("b87f4f9e-453e-4c25-bdc3-ff85425f6b92"), CATOTTGId = 6, Street = "Cedar Road", Building = "5A" },
+            new() { Title = "Історія", ShortTitle = "Pro", ProviderTitle = "Школа", ProviderTitleEn = "School", Email = "writingclub@historyexplorers.com", InstitutionId = Guid.Parse("b87f4f9e-453e-4c25-bdc3-ff85425f6b92"), CATOTTGId = 7, Street = "Cherry Street", Building = "349" },
+            new() { Title = "Сучасна література", ShortTitle = "Python Pro", ProviderTitle = "Гурток творчого письма", ProviderTitleEn = "Creative Writing Club", Email = "fantasymyths@writingclub.com", InstitutionId = Guid.Parse("ed1dbb6e-22f7-4e69-8e75-41b9fd489dbd"), CATOTTGId = 8, Street = "Willow Boulevard", Building = "92" },
+            new() { Title = "Сучасна музика", ShortTitle = "Python Pro", ProviderTitle = "Школа народної музики", ProviderTitleEn = "Folk Music School", Email = "worldmelodies@writingclub.com", InstitutionId = Guid.Parse("437fba48-99de-4f85-b4b3-73a098e4e1cc"), CATOTTGId = 9, Street = "Sycamore Court", Building = "17" },
+        };
+    }
+
     private async Task<List<WorkshopDto>> MapWorkshopsToDtos()
     {
         var workshops = await SeedWorkshops();
         return workshops.ToDto();
+    }
+    private class WorkshopSeedConfig
+    {
+        public string Title { get; set; }
+        public string ShortTitle { get; set; }
+        public string ProviderTitle { get; set; }
+        public string ProviderTitleEn { get; set; }
+        public string Email { get; set; }
+        public Guid InstitutionId { get; set; }
+        public int CATOTTGId { get; set; }
+        public string Street { get; set; }
+        public string Building { get; set; }
+        public long LanguageOfEducationId { get; set; } = 1;
     }
 }

@@ -19,7 +19,6 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -40,6 +39,7 @@ public class WorkshopServiceDBTests
     private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -69,6 +69,7 @@ public class WorkshopServiceDBTests
         logger = new Mock<ILogger<WorkshopService>>();
         workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
+        languageServiceMock = new Mock<ILanguageService>();
         providerRepositoryMock = new Mock<IProviderRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -84,6 +85,7 @@ public class WorkshopServiceDBTests
         workshopService =
                 new WorkshopService(
                     workshopRepository,
+                    languageServiceMock.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
                     roomRepository.Object,
@@ -103,6 +105,8 @@ public class WorkshopServiceDBTests
                     featureManagerMock.Object);
 
         Seed();
+        languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
+                .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
     }
 
     [TearDown]

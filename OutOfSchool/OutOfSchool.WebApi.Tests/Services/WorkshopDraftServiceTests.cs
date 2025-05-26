@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
@@ -37,7 +38,7 @@ public class WorkshopDraftServiceTests
 {
     private IWorkshopDraftService service;  
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMoq;
-
+    private Mock<ILanguageService> languageServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<ICurrentUserService> currentUserServiceMoq;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMoq;
@@ -58,7 +59,7 @@ public class WorkshopDraftServiceTests
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
-
+        languageServiceMoq = new Mock<ILanguageService>();
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
         options.Setup(o => o.Value).Returns(settings);
@@ -75,6 +76,7 @@ public class WorkshopDraftServiceTests
 
         service = new WorkshopDraftService(
                    logger.Object,
+                   languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
                    providerServiceMoq.Object,
@@ -106,11 +108,14 @@ public class WorkshopDraftServiceTests
     public async Task Create_WithValidDto_ShouldReturnCreatedObject()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();    
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();    
         var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDraft = workshopV2Dto.ToDraft();
         var workshopResponse = workshopDraft.ToResponseDto();
+
+        languageServiceMoq.Setup(x => x.GetById(workshop.LanguageOfEducationId))
+            .ReturnsAsync(new LanguageDto { Id = workshop.LanguageOfEducationId, Name = workshop.LanguageOfEducation.Name });
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
@@ -137,6 +142,22 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
     }
+    [Test]
+    public void Create_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = workshop.ToV2Dto();
+        workshopV2Dto.LanguageOfEducationId = 123213213; // invalid ID
+
+        languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Create(workshopV2Dto));
+        ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
+    }
+
     #endregion
 
     #region Update
@@ -154,7 +175,7 @@ public class WorkshopDraftServiceTests
     public async Task Update_WithValidDto_ShouldReturnUpdatedObject()
     {
         //Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
         var workshopResponse = workshopDraft.ToResponseDto();
@@ -165,6 +186,8 @@ public class WorkshopDraftServiceTests
             WorkshopV2Dto = workshopV2Dto
         };
 
+        languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
+            .ReturnsAsync(new LanguageDto { Id = workshopV2Dto.LanguageOfEducationId, Name = workshopV2Dto.LanguageOfEducationName });
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopV2Dto);
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -196,6 +219,39 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
     }
+
+    [Test]
+    public void Update_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
+
+        var updateDto = new WorkshopDraftUpdateDto
+        {
+            Id = Guid.NewGuid(),
+            WorkshopV2Dto = workshopV2Dto
+        };
+
+        workshopDraftRepoMoq.Setup(x => x.GetById(updateDto.Id)).ReturnsAsync(workshopDraft);
+
+        workshopDraftRepoMoq
+            .Setup(x => x.RunInTransaction(It.IsAny<Func<Task<(WorkshopDraft, ImageChangingResult, MultipleImageChangingResult, List<TeacherCreateUpdateResultDto>)>>>()))
+            .Returns((Func<Task<(WorkshopDraft, ImageChangingResult, MultipleImageChangingResult, List<TeacherCreateUpdateResultDto>)>> f) => f());
+
+        languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null);
+
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopV2Dto);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Update(updateDto));
+        ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
+    }
+
+
     #endregion
 
     #region Delete
@@ -499,13 +555,16 @@ public class WorkshopDraftServiceTests
     public async Task UpdateWorkshop_WhenModeratedFieldsWasChanged_ShouldCallCreateDraft()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var workshopDto = workshop.ToDto();
         workshopDto.Title = "Changed title";
         var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>();
         var workshopDraft = workshopV2Dto.ToDraft();
+
+        languageServiceMoq.Setup(x => x.GetById(workshop.LanguageOfEducationId))
+            .ReturnsAsync(new LanguageDto { Id = workshop.LanguageOfEducationId, Name = workshop.LanguageOfEducation.Name });
 
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopDto).Verifiable(Times.Exactly(2));

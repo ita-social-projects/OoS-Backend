@@ -20,10 +20,8 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using OutOfSchool.BusinessLogic.Util;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -49,6 +47,7 @@ public class WorkshopServiceTests
     private Mock<IProviderRepository> providerRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ITagService> tagServiceMock;
@@ -75,6 +74,7 @@ public class WorkshopServiceTests
         providerRepositoryMock = new Mock<IProviderRepository>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        languageServiceMock = new Mock<ILanguageService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         tagServiceMock = new Mock<ITagService>();
@@ -90,6 +90,7 @@ public class WorkshopServiceTests
     workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
+                    languageServiceMock.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
                     roomRepository.Object,
@@ -108,6 +109,8 @@ public class WorkshopServiceTests
                     applicationRepository.Object,
                     featureManager.Object
                     );
+        languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
+            .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
     }
 
     #region Create
@@ -177,6 +180,24 @@ public class WorkshopServiceTests
         result.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
         result.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.AvailableSeats.Should().Be(uint.MaxValue);
+    }
+
+    [Test]
+    public async Task Create_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopCreateRequestDtoGenerator.Generate();
+        dto.LanguageOfEducationId = 99999;
+
+        languageServiceMock.Setup(x => x.GetById(dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null); // language not found
+
+        // Act & Assert
+        await workshopService
+           .Invoking(s => s.Create(dto))
+           .Should()
+           .ThrowAsync<InvalidOperationException>()
+           .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
     }
 
     [Test]
@@ -259,6 +280,24 @@ public class WorkshopServiceTests
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateV2_WhenLanguageDoesNotExist_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopV2CreateRequestDtoGenerator.Generate();
+        dto.LanguageOfEducationId = 88888;
+
+        languageServiceMock.Setup(x => x.GetById(dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null);
+
+        // Act & Assert
+        await workshopService
+            .Invoking(s => s.CreateV2(dto))
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
     }
 
     [Test]
@@ -932,6 +971,41 @@ public class WorkshopServiceTests
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
     }
 
+    [Test]
+    public async Task Update_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopCreateUpdateDtoGenerator.Generate();
+        dto.LanguageOfEducationId = 44444;
+
+        languageServiceMock.Setup(x => x.GetById(dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null);
+
+        // Act & Assert
+        await workshopService
+            .Invoking(s => s.Update(dto))
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
+    }
+
+    [Test]
+    public async Task UpdateV2_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopV2DtoGenerator.Generate();
+        dto.LanguageOfEducationId = 77777;
+
+        languageServiceMock.Setup(x => x.GetById(dto.LanguageOfEducationId))
+            .ReturnsAsync((LanguageDto)null);
+
+        // Act & Assert
+        await workshopService
+            .Invoking(s => s.UpdateV2(dto))
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
+    }
     #endregion
 
     #region UpdateStatus
@@ -1244,6 +1318,9 @@ public class WorkshopServiceTests
             .ReturnsAsync(workshop);
         workshopRepository.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(It.IsAny<int>());
+
+        languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
+            .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
 
         var multipleImageUploadingResult = new MultipleImageUploadingResult()
         {

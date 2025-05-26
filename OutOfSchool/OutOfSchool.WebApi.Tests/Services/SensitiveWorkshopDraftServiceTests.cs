@@ -38,6 +38,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -62,6 +63,7 @@ public class SensitiveWorkshopDraftServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         institutionHierarchyRepositoryMock = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepository = new Mock<ICodeficatorRepository>();
+        languageServiceMock = new Mock<ILanguageService>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -75,6 +77,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         service = new WorkshopDraftService(
                    logger.Object,
+                   languageServiceMock.Object,
                    workshopDraftRepoMock.Object,
                    workshopDraftImagesService.Object,
                    providerServiceMock.Object,
