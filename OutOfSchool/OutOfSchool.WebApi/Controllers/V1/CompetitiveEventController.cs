@@ -30,6 +30,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>CompetitiveEvent.</returns>
+    [AllowAnonymous]
     [HasPermission(Permissions.CompetitiveEventRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
