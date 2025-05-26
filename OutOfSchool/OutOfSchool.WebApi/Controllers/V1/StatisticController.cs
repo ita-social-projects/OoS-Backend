@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
@@ -78,6 +79,35 @@ public class StatisticController : ControllerBase
 
         return Ok(popularWorkshops);
     }
+
+    /// <summary>
+    /// Get popular competitive events.
+    /// </summary>
+    /// <param name="limit">The number of entries.</param>
+    /// <param name="catottgId">Codeficator's id.</param>
+    /// <returns>List of popular competitve events.</returns>
+    [HttpGet("competitions")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CompetitiveEventViewCardDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCompetitiveEvents(int limit, [FromQuery] long catottgId)
+    {
+        int newLimit = ValidateNumberOfEntries(limit);
+
+        var popularCompetitions = await service
+            .GetPopularCompetitiveEvents(newLimit, catottgId) //
+            .ConfigureAwait(false);
+
+        if (!popularCompetitions.Any())
+        {
+            return NoContent();
+        }
+
+        return Ok(popularCompetitions);
+    }
+
 
     private static int ValidateNumberOfEntries(int limit)
     {
