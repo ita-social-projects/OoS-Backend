@@ -9,6 +9,7 @@ public class WorkshopDraftStatusValidationAttribute : ValidationAttribute
     private static readonly HashSet<WorkshopDraftStatus> AllowedStatuses = new()
     {
         WorkshopDraftStatus.PendingModeration,
+        WorkshopDraftStatus.EditedByModerator,
         WorkshopDraftStatus.Rejected
     };
 

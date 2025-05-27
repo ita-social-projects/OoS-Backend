@@ -267,7 +267,8 @@ public class WorkshopDraftService(
                 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This WorkshopDraft can`t be approved.");
         }
@@ -295,7 +296,8 @@ public class WorkshopDraftService(
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This WorkshopDraft can`t be rejected.");
         }
