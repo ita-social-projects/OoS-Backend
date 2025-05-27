@@ -175,7 +175,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task UpdateDraftAsModeratorAsync_WithNullDto_ReturnsFailed()
     {
         // Act
-        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, null);
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, null);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -197,7 +197,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.UpdateDraftAsModeratorAsync(nonExistentDraftId, moderatorId, validEditDto));
+            await service.UpdateDraftAsModeratorAsync(nonExistentDraftId, validEditDto));
 
         // Verify the exception message contains the ID
         Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
@@ -212,7 +212,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
-        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, validEditDto);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -229,7 +229,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync((WorkshopDraft draft) => draft);
 
         // Act
-        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, validEditDto);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -259,7 +259,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync((WorkshopDraft draft) => draft);
 
         // Act
-        var result = await service.UpdateDraftAsModeratorAsync(draftId, moderatorId, validEditDto);
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, validEditDto);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -284,7 +284,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.DeleteCoverImageAsModeratorAsync(nonExistentDraftId, moderatorId));
+            await service.DeleteCoverImageAsModeratorAsync(nonExistentDraftId));
 
         // Verify the exception message contains the ID
         Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
@@ -299,7 +299,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -315,7 +315,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -336,7 +336,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync((WorkshopDraft draft) => draft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -365,7 +365,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ThrowsAsync(new Exception("Test exception"));
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -380,7 +380,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteImageAsModeratorAsync_WithNullImageId_ReturnsFailed()
     {
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, null);
+        var result = await service.DeleteImageAsModeratorAsync(draftId, null);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -391,7 +391,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteImageAsModeratorAsync_WithEmptyImageId_ReturnsFailed()
     {
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, string.Empty);
+        var result = await service.DeleteImageAsModeratorAsync(draftId, string.Empty);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -412,7 +412,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
-            await service.DeleteImageAsModeratorAsync(nonExistentDraftId, moderatorId, "image-123"));
+            await service.DeleteImageAsModeratorAsync(nonExistentDraftId, "image-123"));
 
         // Verify the exception message contains the ID
         Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
@@ -422,7 +422,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteImageAsModeratorAsync_WithNonExistentImage_ReturnsFailed()
     {
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, "nonexistent-image");
+        var result = await service.DeleteImageAsModeratorAsync(draftId, "nonexistent-image");
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -444,7 +444,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId);
+        var result = await service.DeleteImageAsModeratorAsync(draftId, imageId);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -485,7 +485,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, encodedImageId);
+        var result = await service.DeleteImageAsModeratorAsync(draftId, encodedImageId);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -505,7 +505,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ThrowsAsync(new Exception("Test exception"));
 
         // Act
-        var result = await service.DeleteImageAsModeratorAsync(draftId, moderatorId, imageId);
+        var result = await service.DeleteImageAsModeratorAsync(draftId, imageId);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -520,7 +520,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteManyImagesAsModeratorAsync_WithNullImageIds_ReturnsFailed()
     {
         // Act
-        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, null);
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, null);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -531,7 +531,7 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteManyImagesAsModeratorAsync_WithEmptyImageIds_ReturnsFailed()
     {
         // Act
-        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, new List<string>());
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, new List<string>());
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -553,7 +553,7 @@ public class SensitiveWorkshopDraftServiceTests
         // Act & Assert
         var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
             await service.DeleteManyImagesAsModeratorAsync(
-                nonExistentDraftId, moderatorId, new List<string> { "image-123" }));
+                nonExistentDraftId, new List<string> { "image-123" }));
 
         // Verify the exception message contains the ID
         Assert.That(ex.Message, Contains.Substring(nonExistentDraftId.ToString()));
@@ -564,7 +564,7 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Act
         var result = await service.DeleteManyImagesAsModeratorAsync(
-            draftId, moderatorId, new List<string> { "nonexistent-image-1", "nonexistent-image-2" });
+            draftId, new List<string> { "nonexistent-image-1", "nonexistent-image-2" });
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -599,7 +599,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds);
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, imageIds);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -654,7 +654,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, encodedImageIds);
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, encodedImageIds);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -677,7 +677,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ThrowsAsync(new Exception("Test exception"));
 
         // Act
-        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, moderatorId, imageIds);
+        var result = await service.DeleteManyImagesAsModeratorAsync(draftId, imageIds);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -698,7 +698,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
-            await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId));
+            await service.DeleteCoverImageAsModeratorAsync(draftId));
     }
 
     [Test]
@@ -710,7 +710,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsFalse(result.Succeeded);
@@ -735,7 +735,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync((WorkshopDraft draft) => draft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
@@ -757,7 +757,7 @@ public class SensitiveWorkshopDraftServiceTests
             .ReturnsAsync((WorkshopDraft draft) => draft);
 
         // Act
-        var result = await service.DeleteCoverImageAsModeratorAsync(draftId, moderatorId);
+        var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
 
         // Assert
         Assert.IsTrue(result.Succeeded);
