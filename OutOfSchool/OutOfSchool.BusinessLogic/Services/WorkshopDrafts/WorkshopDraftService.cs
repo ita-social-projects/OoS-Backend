@@ -1100,7 +1100,6 @@ public class WorkshopDraftService(
     /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
     /// </summary>
     /// <param name="draftId">The ID of the workshop draft to validate.</param>
-    /// <param name="userId">The ID of the user performing the operation.</param>
     /// <returns>
     /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
     /// or a failed result with appropriate error code and description.
