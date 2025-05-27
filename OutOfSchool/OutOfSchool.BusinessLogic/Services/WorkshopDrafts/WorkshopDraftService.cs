@@ -484,7 +484,7 @@ public class WorkshopDraftService(
     /// <inheritdoc/>
     public async Task<Result<WorkshopDraftResponseDto>> UpdateDraftAsModeratorAsync(
         Guid draftId,
-        Guid moderatorId,
+        Guid userId,
         ModeratorWorkshopDraftEditDto dto)
     {
         if (dto == null)
@@ -497,7 +497,7 @@ public class WorkshopDraftService(
             });
         }
 
-        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ModeratorRights(userId), new TechAdminRights(userId)).ConfigureAwait(false);
 
         logger.LogDebug("Updating WorkshopDraft as moderator started. DraftId = {Id}.", draftId);
 
@@ -540,11 +540,11 @@ public class WorkshopDraftService(
     }
     
     /// <inheritdoc/>
-    public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId, Guid moderatorId)
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId, Guid userId)
     {
         logger.LogDebug("Deleting cover image as moderator started. WorkshopDraft Id = {Id}.", draftId);
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId, userId);
         if (!validation.Succeeded)
         {
             return validation.ToFailedResult<WorkshopDraftResponseDto>();
@@ -586,7 +586,7 @@ public class WorkshopDraftService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<WorkshopDraftResponseDto>> DeleteImageAsModeratorAsync(Guid draftId, Guid moderatorId, string imageId)
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteImageAsModeratorAsync(Guid draftId, Guid userId, string imageId)
     {
         logger.LogDebug("Deleting image as moderator started. WorkshopDraft Id = {Id}, Image Id = {ImageId}.", draftId, imageId);
 
@@ -599,7 +599,7 @@ public class WorkshopDraftService(
             });
         }
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId, userId);
 
         if (!validation.Succeeded)
         {
@@ -658,7 +658,7 @@ public class WorkshopDraftService(
     /// <inheritdoc/>
     public async Task<Result<WorkshopDraftResponseDto>> DeleteManyImagesAsModeratorAsync(
         Guid draftId,
-        Guid moderatorId,
+        Guid userId,
         IEnumerable<string> imageIds)
     {
         logger.LogDebug("Deleting multiple images as moderator started. WorkshopDraft Id = {Id}.", draftId);
@@ -672,7 +672,7 @@ public class WorkshopDraftService(
             });
         }
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId, userId);
 
         if (!validation.Succeeded)
         {
@@ -1102,14 +1102,14 @@ public class WorkshopDraftService(
     /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
     /// </summary>
     /// <param name="draftId">The ID of the workshop draft to validate.</param>
-    /// <param name="moderatorId">The ID of the moderator performing the operation.</param>
+    /// <param name="userId">The ID of the user performing the operation.</param>
     /// <returns>
     /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
     /// or a failed result with appropriate error code and description.
     /// </returns>
-    private async Task<Result<WorkshopDraft>> ValidateDraftForModerator(Guid draftId, Guid moderatorId)
+    private async Task<Result<WorkshopDraft>> ValidateDraftForModerator(Guid draftId, Guid userId)
     {
-        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ModeratorRights(userId), new TechAdminRights(userId)).ConfigureAwait(false);
 
         var workshopDraft = await GetWorkshopDraftById(draftId);
 
