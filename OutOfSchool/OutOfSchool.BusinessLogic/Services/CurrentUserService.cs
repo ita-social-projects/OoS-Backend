@@ -16,7 +16,9 @@ public class CurrentUserService(
     IEntityRepositorySoftDeleted<Guid, Child> childRepository,
     ILogger<CurrentUserService> logger,
     ICacheService cache,
-    IOptions<AppDefaultsConfig> options
+    IOptions<AppDefaultsConfig> options,
+    ISensitiveEntityRepositorySoftDeleted<Moderator> moderatorRepository,
+    ISensitiveEntityRepositorySoftDeleted<TechAdmin> techAdminRepository
 ) : ICurrentUserService
 {
     private readonly AppDefaultsConfig options = options.Value;
@@ -137,8 +139,8 @@ public class CurrentUserService(
             DeputyDirectorRights deputy => DeputyDirectorHasRights(deputy.providerId),
             ProviderRights provider => ProviderHasRights(provider.providerId),
             EmployeeWorkshopRights employeeWorkshop => EmployeeWorkshopRights(employeeWorkshop.workshopId),
-            ModeratorRights moderator => ModeratorHasRights(moderator.moderatorId),
-            TechAdminRights techAdmin => TechAdminHasRights(techAdmin.techAdminId),
+            ModeratorRights => ModeratorHasRights(),
+            TechAdminRights => TechAdminHasRights(),
             null => Task.FromResult(false),
             _ => throw new NotImplementedException("Unknown user rights type"),
         };
@@ -295,43 +297,38 @@ public class CurrentUserService(
         return isUserRelatedEmployee;
     }
 
-    private Task<bool> ModeratorHasRights(Guid moderatorId)
+    private async Task<bool> ModeratorHasRights()
     {
         if (!IsModerator())
         {
-            return Task.FromResult(false);
+            return false;
         }
 
-        var result = UserId == moderatorId.ToString();
+        var result = await moderatorRepository.Any(m => m.Individual.UserId == UserId);
 
         if (!result && options.AccessLogEnabled)
         {
             logger.LogWarning(
-                "Unauthorized access: User ({UserId}) tried to access data as Moderator ({ModeratorId})",
-                UserId,
-                moderatorId);
+                "Unauthorized access: User ({UserId}) tried to access data as Moderator)", UserId);
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 
-    private Task<bool> TechAdminHasRights(Guid techAdminId)
+    private async Task<bool> TechAdminHasRights()
     {
         if (!IsTechAdmin())
         {
-            return Task.FromResult(false);
+            return false;
         }
 
-        var result = UserId == techAdminId.ToString();
+        var result = await techAdminRepository.Any(ta => ta.Individual.UserId == UserId);
 
         if (!result && options.AccessLogEnabled)
         {
-            logger.LogWarning(
-                "Unauthorized access: User ({UserId}) tried to access data as TechAdmin ({TechAdminId})",
-                UserId,
-                techAdminId);
+            logger.LogWarning("Unauthorized access: User ({UserId}) tried to access data as TechAdmin)", UserId);
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 }

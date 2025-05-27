@@ -267,7 +267,8 @@ public class WorkshopDraftService(
                 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This WorkshopDraft can`t be approved.");
         }
@@ -295,7 +296,8 @@ public class WorkshopDraftService(
 
         var workshopDraft = await GetWorkshopDraftById(id);
 
-        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
+            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This WorkshopDraft can`t be rejected.");
         }
@@ -419,10 +421,12 @@ public class WorkshopDraftService(
     {
         var draft = await GetWorkshopDraftById(id);
 
-        if (!currentUserService.IsAdmin())
-        {
-            await currentUserService.UserHasRights(new ProviderRights(draft.ProviderId), new EmployeeRights(draft.ProviderId)).ConfigureAwait(false);
-        }        
+        await currentUserService.UserHasRights(
+            new ProviderRights(draft.ProviderId),
+            new EmployeeRights(draft.ProviderId),
+            new ModeratorRights(),
+            new TechAdminRights()
+        ).ConfigureAwait(false);
 
         return await MapWorkshopDraftWithDetails(draft);
     }
@@ -482,7 +486,6 @@ public class WorkshopDraftService(
     /// <inheritdoc/>
     public async Task<Result<WorkshopDraftResponseDto>> UpdateDraftAsModeratorAsync(
         Guid draftId,
-        Guid moderatorId,
         ModeratorWorkshopDraftEditDto dto)
     {
         if (dto == null)
@@ -495,7 +498,7 @@ public class WorkshopDraftService(
             });
         }
 
-        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
         logger.LogDebug("Updating WorkshopDraft as moderator started. DraftId = {Id}.", draftId);
 
@@ -538,11 +541,11 @@ public class WorkshopDraftService(
     }
     
     /// <inheritdoc/>
-    public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId, Guid moderatorId)
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId)
     {
         logger.LogDebug("Deleting cover image as moderator started. WorkshopDraft Id = {Id}.", draftId);
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId);
         if (!validation.Succeeded)
         {
             return validation.ToFailedResult<WorkshopDraftResponseDto>();
@@ -584,7 +587,7 @@ public class WorkshopDraftService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<WorkshopDraftResponseDto>> DeleteImageAsModeratorAsync(Guid draftId, Guid moderatorId, string imageId)
+    public async Task<Result<WorkshopDraftResponseDto>> DeleteImageAsModeratorAsync(Guid draftId, string imageId)
     {
         logger.LogDebug("Deleting image as moderator started. WorkshopDraft Id = {Id}, Image Id = {ImageId}.", draftId, imageId);
 
@@ -597,7 +600,7 @@ public class WorkshopDraftService(
             });
         }
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId);
 
         if (!validation.Succeeded)
         {
@@ -656,7 +659,6 @@ public class WorkshopDraftService(
     /// <inheritdoc/>
     public async Task<Result<WorkshopDraftResponseDto>> DeleteManyImagesAsModeratorAsync(
         Guid draftId,
-        Guid moderatorId,
         IEnumerable<string> imageIds)
     {
         logger.LogDebug("Deleting multiple images as moderator started. WorkshopDraft Id = {Id}.", draftId);
@@ -670,7 +672,7 @@ public class WorkshopDraftService(
             });
         }
 
-        var validation = await ValidateDraftForModerator(draftId, moderatorId);
+        var validation = await ValidateDraftForModerator(draftId);
 
         if (!validation.Succeeded)
         {
@@ -913,7 +915,7 @@ public class WorkshopDraftService(
     {
         var predicate = PredicateBuilder.True<WorkshopDraft>();
 
-        predicate = predicate.And(x => x.DraftStatus == filter.WorkshopDraftStatus);
+        predicate = predicate.And(x => filter.WorkshopDraftStatuses.Contains(x.DraftStatus));
 
         if (adminInstitutionId != Guid.Empty)
         {          
@@ -1100,14 +1102,13 @@ public class WorkshopDraftService(
     /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
     /// </summary>
     /// <param name="draftId">The ID of the workshop draft to validate.</param>
-    /// <param name="moderatorId">The ID of the moderator performing the operation.</param>
     /// <returns>
     /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
     /// or a failed result with appropriate error code and description.
     /// </returns>
-    private async Task<Result<WorkshopDraft>> ValidateDraftForModerator(Guid draftId, Guid moderatorId)
+    private async Task<Result<WorkshopDraft>> ValidateDraftForModerator(Guid draftId)
     {
-        await currentUserService.UserHasRights(new ModeratorRights(moderatorId), new TechAdminRights(moderatorId)).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
         var workshopDraft = await GetWorkshopDraftById(draftId);
 

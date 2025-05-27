@@ -1,12 +1,25 @@
 ﻿using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Services.Enums.WorkshopStatus;
-using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public class WorkshopDraftFilterAdministration : WorkshopFilterAdministration
 {
-    [EnumDataType(typeof(WorkshopDraftStatus), ErrorMessage = Constants.EnumErrorMessage)]
+    private HashSet<WorkshopDraftStatus> workshopDraftStatuses;
+
     [WorkshopDraftStatusValidation]
-    public WorkshopDraftStatus WorkshopDraftStatus { get; set; } = WorkshopDraftStatus.PendingModeration;
+    public HashSet<WorkshopDraftStatus> WorkshopDraftStatuses
+    {
+        get => workshopDraftStatuses ?? GetDefaultStatuses();
+        set => workshopDraftStatuses = value;
+    }
+
+    private static HashSet<WorkshopDraftStatus> GetDefaultStatuses()
+    {
+        return
+        [
+            WorkshopDraftStatus.PendingModeration,
+            WorkshopDraftStatus.EditedByModerator
+        ];
+    }
 }
