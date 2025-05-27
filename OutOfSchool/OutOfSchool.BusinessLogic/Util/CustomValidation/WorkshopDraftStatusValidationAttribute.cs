@@ -5,7 +5,7 @@ namespace OutOfSchool.BusinessLogic.Util.CustomValidation;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class WorkshopDraftStatusValidationAttribute : ValidationAttribute
-{   
+{
     private static readonly HashSet<WorkshopDraftStatus> AllowedStatuses = new()
     {
         WorkshopDraftStatus.PendingModeration,
@@ -15,13 +15,20 @@ public class WorkshopDraftStatusValidationAttribute : ValidationAttribute
 
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if (value is WorkshopDraftStatus status &&            
-            AllowedStatuses.Contains(status))
+        if (value is HashSet<WorkshopDraftStatus> statuses)
         {
+            var invalidStatuses = statuses.Except(AllowedStatuses).ToList();
+
+            if (invalidStatuses.Any())
+            {
+                return new ValidationResult(
+                    $"Invalid statuses: {string.Join(", ", invalidStatuses)}. " +
+                    $"Allowed statuses are: {string.Join(", ", AllowedStatuses)}.");
+            }
+
             return ValidationResult.Success;
         }
 
-        return new ValidationResult(
-            $"The status must be one of the following: {string.Join(", ", AllowedStatuses)}.");
+        return new ValidationResult("Invalid status collection type.");
     }
 }

@@ -915,7 +915,7 @@ public class WorkshopDraftService(
     {
         var predicate = PredicateBuilder.True<WorkshopDraft>();
 
-        predicate = predicate.And(x => x.DraftStatus == filter.WorkshopDraftStatus);
+        predicate = predicate.And(x => filter.WorkshopDraftStatuses.Contains(x.DraftStatus));
 
         if (adminInstitutionId != Guid.Empty)
         {          
