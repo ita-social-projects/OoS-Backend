@@ -278,7 +278,6 @@ public class WorkshopDraftController : ControllerBase
     /// Updates a workshop draft by a user with permission to moderate drafts. Only allowed in specific statuses.
     /// </summary>
     /// <param name="draftId">The ID of the draft to update.</param>
-    /// <param name="userId">The ID of the user performing the update.</param>
     /// <param name="dto">The updated content provided by the moderator.</param>
     /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> if successful.</returns>
     /// <response code="200">The draft was successfully updated.</response>
@@ -298,9 +297,9 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateAsModerator(Guid draftId, Guid userId, [FromBody] ModeratorWorkshopDraftEditDto dto)
+    public async Task<IActionResult> UpdateAsModerator(Guid draftId, [FromBody] ModeratorWorkshopDraftEditDto dto)
     {
-        var result = await sensitiveWorkshopDraftService.UpdateDraftAsModeratorAsync(draftId, userId, dto);
+        var result = await sensitiveWorkshopDraftService.UpdateDraftAsModeratorAsync(draftId, dto);
 
         return this.ToActionResult(result);
     }
@@ -309,7 +308,6 @@ public class WorkshopDraftController : ControllerBase
     /// Deletes the cover image from the specified workshop draft by a user with permission to moderate drafts.
     /// </summary>
     /// <param name="draftId">The ID of the draft to update.</param>
-    /// <param name="userId">The ID of the user performing the deletion.</param>
     /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with the cover image removed if successful.</returns>
     /// <response code="200">Cover image deleted successfully.</response>
     /// <response code="400">The draft does not have a cover image.</response>
@@ -327,9 +325,9 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteCoverImageAsModerator(Guid draftId, Guid userId)
+    public async Task<IActionResult> DeleteCoverImageAsModerator(Guid draftId)
     {
-        var result = await sensitiveWorkshopDraftService.DeleteCoverImageAsModeratorAsync(draftId, userId);
+        var result = await sensitiveWorkshopDraftService.DeleteCoverImageAsModeratorAsync(draftId);
 
         return this.ToActionResult(result);
     }
@@ -338,7 +336,6 @@ public class WorkshopDraftController : ControllerBase
     /// Deletes a specific image from a workshop draft by a user with permission to moderate drafts.
     /// </summary>
     /// <param name="draftId">The ID of the draft.</param>
-    /// <param name="userId">The ID of the user performing the deletion.</param>
     /// <param name="imageId">The ID of the image to delete (externalStorageId).</param>
     /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with the image removed if successful.</returns>
     /// <response code="200">Image was successfully deleted.</response>
@@ -357,10 +354,10 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteImageAsModerator(Guid draftId, Guid userId, string imageId)
+    public async Task<IActionResult> DeleteImageAsModerator(Guid draftId, string imageId)
     {
 
-        var result = await sensitiveWorkshopDraftService.DeleteImageAsModeratorAsync(draftId, userId, imageId);
+        var result = await sensitiveWorkshopDraftService.DeleteImageAsModeratorAsync(draftId, imageId);
 
         return this.ToActionResult(result);
     }
@@ -369,7 +366,6 @@ public class WorkshopDraftController : ControllerBase
     /// Deletes multiple images from a workshop draft by a user with permission to moderate drafts.
     /// </summary>
     /// <param name="draftId">The ID of the draft.</param>
-    /// <param name="userId">The ID of the user performing the deletion.</param>
     /// <param name="imageIds">A list of image IDs (externalStorageId) to delete.</param>
     /// <returns>Returns <see cref="WorkshopDraftResponseDto"/> with multiple images removed if successful.</returns>
     /// <response code="200">Images deleted successfully.</response>
@@ -388,9 +384,9 @@ public class WorkshopDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteManyImagesAsModerator(Guid draftId, Guid userId, [FromBody] List<string> imageIds)
+    public async Task<IActionResult> DeleteManyImagesAsModerator(Guid draftId, [FromBody] List<string> imageIds)
     {
-        var result = await sensitiveWorkshopDraftService.DeleteManyImagesAsModeratorAsync(draftId, userId, imageIds);
+        var result = await sensitiveWorkshopDraftService.DeleteManyImagesAsModeratorAsync(draftId, imageIds);
 
         return this.ToActionResult(result);
     }
