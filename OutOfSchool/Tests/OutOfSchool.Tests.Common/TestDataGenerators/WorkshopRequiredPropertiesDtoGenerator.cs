@@ -13,7 +13,7 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.SpecialNeedsType, f => f.Random.Enum<SpecialNeedsType>())
         .RuleFor(w => w.IsInclusive, f => f.Random.Bool())
         .RuleFor(w => w.EducationalShift, f => f.Random.Enum<EducationalShift>())
-        .RuleFor(w => w.LanguageOfEducationId, f => f.Random.UInt(1, uint.MaxValue))
+        .RuleFor(w => w.LanguageOfEducationId, f => f.Random.Long(1, uint.MaxValue))
         .RuleFor(w => w.AgeComposition, f => f.Random.Enum<AgeComposition>())
         .RuleFor(w => w.WorkshopType, f => f.Random.Enum<WorkshopType>())
         .RuleFor(w => w.ParentWorkshopId, f => null)

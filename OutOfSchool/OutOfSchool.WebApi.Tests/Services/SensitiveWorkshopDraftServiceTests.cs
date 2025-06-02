@@ -108,6 +108,8 @@ public class SensitiveWorkshopDraftServiceTests
                    changesLogServiceMock.Object);
 
         SetupModeratorTestData();
+        languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
+                .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
     }
 
     #region FetchByFilterForAdmins    

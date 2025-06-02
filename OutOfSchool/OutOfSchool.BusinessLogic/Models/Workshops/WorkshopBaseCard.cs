@@ -64,7 +64,11 @@ public class WorkshopBaseCard : IHasRating
     public int NumberOfRatings { get; set; }
 
     public uint TakenSeats { get; set; } = 0;
+
+    [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number greater than 0")]
+
     public long LanguageOfEducationId { get; set; }
+    [MaxLength(Constants.MaxLanguageNameLength)]
     public string LanguageOfEducationName { get; set; }
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]

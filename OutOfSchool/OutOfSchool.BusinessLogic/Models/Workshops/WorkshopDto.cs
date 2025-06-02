@@ -50,6 +50,7 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
     public AddressDto Address { get; set; }
 
+    [MaxLength(Constants.MaxLanguageNameLength)]
     public string LanguageOfEducationName { get; set; }
 }
 
