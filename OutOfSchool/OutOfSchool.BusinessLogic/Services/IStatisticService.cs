@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -8,6 +9,22 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// </summary>
 public interface IStatisticService
 {
+    /// <summary>
+    /// Get popular competitions using Redis.
+    /// </summary>
+    /// <param name="limit">Number of entries to return.</param>
+    /// <param name="catottgId">Codeficator's id.</param>
+    /// <returns>List of popular categories.</returns>
+    Task<IEnumerable<CompetitiveEventViewCardDto>> GetPopularCompetitiveEvents(int lLimit, long catottgId);
+
+    /// <summary>
+    /// Get popular competitions from DB.
+    /// </summary>
+    /// <param name="limit">Number of entries to return.</param>
+    /// <param name="catottgId">Codeficator's id.</param>
+    /// <returns>List of popular categories.</returns>
+    Task<IEnumerable<CompetitiveEventViewCardDto>> GetPopularCompetitiveEventsFromDatabase(int limit, long catottgId);
+
     /// <summary>
     /// Get popular directions using Redis.
     /// </summary>

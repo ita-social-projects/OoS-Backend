@@ -30,7 +30,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="id">CompetitiveEvent id.</param>
     /// <returns>CompetitiveEvent.</returns>
-    [HasPermission(Permissions.CompetitiveEventRead)]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

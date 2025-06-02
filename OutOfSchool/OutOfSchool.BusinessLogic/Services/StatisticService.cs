@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.Common.Enums;
@@ -19,6 +20,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class StatisticService(
     IApplicationRepository applicationRepository,
     IWorkshopRepository workshopRepository,
+    ICompetitiveEventRepository competitiveEventRepository,
     IEntityRepositorySoftDeleted<long, Direction> directionRepository,
     ILogger<StatisticService> logger,
     ICacheService cache,
@@ -199,5 +201,44 @@ public class StatisticService(
         }
 
         return workshopsCards;
+    }
+
+    public async Task<IEnumerable<CompetitiveEventViewCardDto>> GetPopularCompetitiveEvents(int limit, long catottgId)
+    {
+        logger.LogInformation("Getting popular competitive events started.");
+
+        var cacheKey = $"GetPopularCompetitions_{limit}_{catottgId}";
+
+        var competitionsResult = await cache.GetOrAddAsync(cacheKey, () =>
+            GetPopularCompetitiveEventsFromDatabase(limit, catottgId)).ConfigureAwait(false);
+
+        return competitionsResult;
+    }
+
+    public async Task<IEnumerable<CompetitiveEventViewCardDto>> GetPopularCompetitiveEventsFromDatabase(int limit, long catottgId)
+    {
+        var eventsQuery = competitiveEventRepository
+            .Get(whereExpression: e => !e.IsDeleted)
+            .Include(e => e.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
+            .Include(e => e.OrganizerOfTheEvent)
+            .AsQueryable();
+
+        if (catottgId > 0)
+        {
+            eventsQuery = eventsQuery.Where(e =>
+                e.Contacts.Any(c => c.IsDefault &&
+                    (c.Address.CATOTTGId == catottgId ||
+                     (c.Address.CATOTTG.Category == CodeficatorCategory.CityDistrict.Name &&
+                      c.Address.CATOTTG.ParentId == catottgId))));
+        }
+
+        var popularEvents = await eventsQuery
+            .OrderBy(e => e.ScheduledStartTime)
+            .Take(limit)
+            .AsNoTracking().ToListAsync();
+
+        logger.LogInformation($"{popularEvents.Count} competitive events were successfully received from DB");
+
+        return popularEvents.ToViewCardDto();
     }
 }

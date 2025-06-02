@@ -29,6 +29,7 @@ public class StatisticServiceTest
 
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IWorkshopRepository> workshopRepository;
+    private Mock<ICompetitiveEventRepository> competitiveEventRepository;
     private Mock<IEntityRepositorySoftDeleted<long, Direction>> directionRepository;
     private Mock<ICacheService> cache;
     private Mock<IAverageRatingService> averageRatingServiceMock;
@@ -38,6 +39,7 @@ public class StatisticServiceTest
     {
         applicationRepository = new Mock<IApplicationRepository>();
         workshopRepository = new Mock<IWorkshopRepository>();
+        competitiveEventRepository = new Mock<ICompetitiveEventRepository>();
         directionRepository = new Mock<IEntityRepositorySoftDeleted<long, Direction>>();
         var logger = new Mock<ILogger<StatisticService>>();
         cache = new Mock<ICacheService>();
@@ -46,6 +48,7 @@ public class StatisticServiceTest
         service = new StatisticService(
             applicationRepository.Object,
             workshopRepository.Object,
+            competitiveEventRepository.Object,
             directionRepository.Object,
             logger.Object,
             cache.Object,
