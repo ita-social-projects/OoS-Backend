@@ -255,6 +255,10 @@ public class AdminController : Controller
     [Authorize(Roles = "techadmin, moderator")]
     [HasPermission(Permissions.PersonalInfo)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TechnicalStaffDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> Profile()

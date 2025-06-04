@@ -456,13 +456,13 @@ public class AdminControllerTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
-    [TestCase(2)]
-    [TestCase(6)]
-    public async Task Profile_WhenCalled_ReturnsOkResultObject_WithExpectedDto(int role)
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalled_ReturnsOkResultObject_WithExpectedDto(Role role)
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser((Role)role, userId);
+        controller.ControllerContext.HttpContext.SetContextUser(role, userId);
         var shortUserDto = new ShortUserDto
         {
             Email = "techstaff@gmail.com",
@@ -487,9 +487,9 @@ public class AdminControllerTests
         Assert.AreEqual(200, result.StatusCode);
     }
 
-    [TestCase(2)]
-    [TestCase(6)]
-    public async Task Profile_WhenCalledForNotExistUserId_ReturnsBadRequest(int role)
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalledForNotExistUserId_ReturnsBadRequest(Role role)
     {
         // Arrange & Act
         var result = await controller.Profile().ConfigureAwait(false) as BadRequestObjectResult;
@@ -499,13 +499,13 @@ public class AdminControllerTests
         Assert.AreEqual(400, result.StatusCode);
     }
 
-    [TestCase(2)]
-    [TestCase(6)]
-    public async Task Profile_WhenCalledForNotExistUserId_ReturnsNotFound(int role)
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalledForNotExistUserId_ReturnsNotFound(Role role)
     {
         // Arrange
         controller.ControllerContext.HttpContext = fakeHttpContext;
-        controller.ControllerContext.HttpContext.SetContextUser((Role)role, userId);
+        controller.ControllerContext.HttpContext.SetContextUser(role, userId);
 
         userService.Setup(x => x.GetById(userId)).ThrowsAsync(new ArgumentException());
 
