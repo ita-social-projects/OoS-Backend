@@ -127,11 +127,11 @@ public class UserService(
     /// <exception cref="ArgumentException">Thrown if no user with the given ID exists.</exception>
     public async Task<AccountStatus> GetAccountStatus(string id)
     {
-        logger.LogDebug("Getting AccountStatus for the User started. Getting user by Id = {id}.", id);
+        logger.LogDebug("Getting AccountStatus for the User started. Getting user by Id = {Id}.", id);
 
         var user = await repository.GetById(id).ConfigureAwait(false) ?? throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
 
-        logger.LogDebug("Successfully got the AccountStatus for User with Id = {id}.", id);
+        logger.LogDebug("Successfully got the AccountStatus for User with Id = {Id}.", id);
 
         return user.Convert();
     }
