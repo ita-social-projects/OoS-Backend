@@ -1,4 +1,4 @@
-﻿using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -36,13 +36,19 @@ public interface IUserService
     /// Delete entity by id.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns><see cref="Task{TResult}"/>.</returns>
+    /// <summary>
+/// Asynchronously deletes the user identified by the specified ID.
+/// </summary>
     Task Delete(string id);
 
     /// <summary>
     /// Get AccountStatus for the User.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns><see cref="Task{TResult}"/>.</returns>
+    /// <summary>
+/// Retrieves the account status of the user with the specified ID.
+/// </summary>
+/// <param name="id">The unique identifier of the user.</param>
+/// <returns>A task that resolves to the user's account status.</returns>
     Task<AccountStatus> GetAccountStatus(string id);
 }
