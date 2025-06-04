@@ -64,10 +64,10 @@ public class AdminController : Controller
     }
 
     /// <summary>
-/// Determines whether the current user has the "techadmin" role.
-/// </summary>
-/// <returns>True if the user is a technical administrator; otherwise, false.</returns>
-private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
+    /// Determines whether the current user has the "techadmin" role.
+    /// </summary>
+    /// <returns>True if the user is a technical administrator; otherwise, false.</returns>
+    private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
 
     /// <summary>
     /// Get MinistryAdmins that match filter's parameters.
@@ -232,10 +232,6 @@ private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
     }
 
     /// <summary>
-    /// Check providers for existing entities by data from incoming parameter.
-    /// </summary>
-    /// <param name="data">Values for checking.</param>
-    /// <summary>
     /// Validates provider import data and returns the validation result.
     /// </summary>
     /// <param name="data">The import data to validate.</param>
@@ -254,14 +250,10 @@ private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
     }
 
     /// <summary>
-    /// Get all Workshop Drafts from the database by filter.
+    /// Retrieves workshop drafts matching the specified administrative filter.
     /// </summary>
-    /// <param name="filter">Filter to get a part of all workshops that were found.</param>
-    /// <summary>
-         /// Retrieves workshop drafts matching the specified administrative filter.
-         /// </summary>
-         /// <param name="filter">Criteria for filtering workshop drafts.</param>
-         /// <returns>A <see cref="SearchResult{WorkshopDraftResponseDto}"/> containing the total count and list of matching workshop drafts, or 204 No Content if none are found.</returns>
+    /// <param name="filter">Criteria for filtering workshop drafts.</param>
+    /// <returns>A <see cref="SearchResult{WorkshopDraftResponseDto}"/> containing the total count and list of matching workshop drafts, or 204 No Content if none are found.</returns>
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -272,9 +264,6 @@ private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
          await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
-    /// <summary>
-    /// To Get the Profile of authorized Technical Staff (Techadmin and Moderator).
-    /// </summary>
     /// <summary>
     /// Retrieves the profile information and account status of the currently authorized technical staff member.
     /// </summary>

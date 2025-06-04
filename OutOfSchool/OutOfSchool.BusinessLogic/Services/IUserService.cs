@@ -33,22 +33,15 @@ public interface IUserService
     Task<bool> IsBlocked(string id);
 
     /// <summary>
-    /// Delete entity by id.
+    /// Asynchronously deletes the user identified by the specified ID.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <summary>
-/// Asynchronously deletes the user identified by the specified ID.
-/// </summary>
     Task Delete(string id);
 
     /// <summary>
-    /// Get AccountStatus for the User.
+    /// Retrieves the account status of the user with the specified ID.
     /// </summary>
-    /// <param name="id">Key in the table.</param>
-    /// <summary>
-/// Retrieves the account status of the user with the specified ID.
-/// </summary>
-/// <param name="id">The unique identifier of the user.</param>
-/// <returns>A task that resolves to the user's account status.</returns>
+    /// <param name="id">The unique identifier of the user.</param>
+    /// <returns>A task that resolves to the user's account status.</returns>
     Task<AccountStatus> GetAccountStatus(string id);
 }

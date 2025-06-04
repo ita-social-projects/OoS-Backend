@@ -38,9 +38,6 @@ public class MinistryAdminController : Controller
     }
 
     /// <summary>
-    /// To Get the Profile of authorized MinistryAdmin.
-    /// </summary>
-    /// <summary>
     /// Retrieves the profile of the currently authorized MinistryAdmin.
     /// </summary>
     /// <returns>The MinistryAdmin's profile if found; otherwise, a BadRequest or NotFound result.</returns>
