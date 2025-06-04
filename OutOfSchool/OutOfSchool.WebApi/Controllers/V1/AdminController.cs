@@ -29,6 +29,18 @@ public class AdminController : Controller
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
     private readonly IUserService userService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AdminController"/> class with required services for administrative operations.
+    /// </summary>
+    /// <param name="logger">Logger for recording controller operations.</param>
+    /// <param name="ministryAdminService">Service for managing ministry admin entities.</param>
+    /// <param name="directionService">Service for managing direction entities.</param>
+    /// <param name="providerService">Service for managing provider entities.</param>
+    /// <param name="workshopService">Service for managing workshop entities.</param>
+    /// <param name="localizer">Localization service for shared resources.</param>
+    /// <param name="workshopDraftService">Service for managing workshop draft entities.</param>
+    /// <param name="userService">Service for managing user profiles and account status.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any required service is null.</exception>
     public AdminController(
         ILogger<AdminController> logger,
         ISensitiveMinistryAdminService ministryAdminService,
@@ -51,7 +63,11 @@ public class AdminController : Controller
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
-    private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
+    /// <summary>
+/// Determines whether the current user has the "techadmin" role.
+/// </summary>
+/// <returns>True if the user is a technical administrator; otherwise, false.</returns>
+private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
 
     /// <summary>
     /// Get MinistryAdmins that match filter's parameters.
@@ -219,7 +235,11 @@ public class AdminController : Controller
     /// Check providers for existing entities by data from incoming parameter.
     /// </summary>
     /// <param name="data">Values for checking.</param>
-    /// <returns>Crossing data.</returns>
+    /// <summary>
+    /// Validates provider import data and returns the validation result.
+    /// </summary>
+    /// <param name="data">The import data to validate.</param>
+    /// <returns>The validation result for the provided import data.</returns>
     [Authorize(Roles = "techadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidateResponse))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -237,7 +257,11 @@ public class AdminController : Controller
     /// Get all Workshop Drafts from the database by filter.
     /// </summary>
     /// <param name="filter">Filter to get a part of all workshops that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{WorkshopDraftResponseDto}"/> that contains the count of all found workshops and list of workshops that were received.</returns>
+    /// <summary>
+         /// Retrieves workshop drafts matching the specified administrative filter.
+         /// </summary>
+         /// <param name="filter">Criteria for filtering workshop drafts.</param>
+         /// <returns>A <see cref="SearchResult{WorkshopDraftResponseDto}"/> containing the total count and list of matching workshop drafts, or 204 No Content if none are found.</returns>
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -251,7 +275,10 @@ public class AdminController : Controller
     /// <summary>
     /// To Get the Profile of authorized Technical Staff (Techadmin and Moderator).
     /// </summary>
-    /// <returns>Authorized TechnicalStaff's profile.</returns>
+    /// <summary>
+    /// Retrieves the profile information and account status of the currently authorized technical staff member.
+    /// </summary>
+    /// <returns>The technical staff profile as a <see cref="TechnicalStaffDto"/> if found; returns 400 Bad Request if user information is invalid, or 404 Not Found if the user does not exist.</returns>
     [Authorize(Roles = "techadmin, moderator")]
     [HasPermission(Permissions.PersonalInfo)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TechnicalStaffDto))]

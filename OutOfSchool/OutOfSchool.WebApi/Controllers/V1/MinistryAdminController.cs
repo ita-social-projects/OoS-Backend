@@ -1,4 +1,4 @@
-﻿using System.Net.Mime;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -40,7 +40,10 @@ public class MinistryAdminController : Controller
     /// <summary>
     /// To Get the Profile of authorized MinistryAdmin.
     /// </summary>
-    /// <returns>Authorized MinistryAdmin's profile.</returns>
+    /// <summary>
+    /// Retrieves the profile of the currently authorized MinistryAdmin.
+    /// </summary>
+    /// <returns>The MinistryAdmin's profile if found; otherwise, a BadRequest or NotFound result.</returns>
     [HasPermission(Permissions.PersonalInfo)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MinistryAdminDto))]
