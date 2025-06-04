@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -37,4 +38,11 @@ public interface IUserService
     /// <param name="id">Key in the table.</param>
     /// <returns><see cref="Task{TResult}"/>.</returns>
     Task Delete(string id);
+
+    /// <summary>
+    /// Get AccountStatus for the User.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns><see cref="Task{TResult}"/>.</returns>
+    Task<AccountStatus> GetAccountStatus(string id);
 }

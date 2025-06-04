@@ -49,7 +49,7 @@ public class MinistryAdminController : Controller
     {
         if (userId == null)
         {
-            BadRequest("Invalid user information.");
+            return BadRequest("Invalid user information.");
         }
 
         try

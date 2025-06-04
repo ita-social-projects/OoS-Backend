@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
@@ -20,14 +21,13 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class AdminController : Controller
 {
     private readonly IStringLocalizer<SharedResource> localizer;
-
     private readonly ILogger<AdminController> logger;
-
     private readonly ISensitiveMinistryAdminService ministryAdminService;
     private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveWorkshopsService workshopService;
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
+    private readonly IUserService userService;
 
     public AdminController(
         ILogger<AdminController> logger,
@@ -36,7 +36,8 @@ public class AdminController : Controller
         ISensitiveProviderService providerService,
         ISensitiveWorkshopsService workshopService,
         IStringLocalizer<SharedResource> localizer,
-        ISensitiveWorkshopDraftService workshopDraftService)
+        ISensitiveWorkshopDraftService workshopDraftService,
+        IUserService userService)
     {
         this.localizer = localizer;
         this.logger = logger;
@@ -47,6 +48,7 @@ public class AdminController : Controller
             ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.workshopDraftService =
             workshopDraftService ?? throw new ArgumentNullException(nameof(workshopDraftService));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
     private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
@@ -230,6 +232,7 @@ public class AdminController : Controller
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
         return Ok(result);
     }
+
     /// <summary>
     /// Get all Workshop Drafts from the database by filter.
     /// </summary>
@@ -240,8 +243,39 @@ public class AdminController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
-         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);    
-}   
+         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+
+    /// <summary>
+    /// To Get the Profile of authorized Technical Staff (Techadmin and Moderator).
+    /// </summary>
+    /// <returns>Authorized TechnicalStaff's profile.</returns>
+    [Authorize(Roles = "techadmin, moderator")]
+    [HasPermission(Permissions.PersonalInfo)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TechnicalStaffDto))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    public async Task<IActionResult> Profile()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        if (userId == null)
+        {
+            return BadRequest("Invalid user information.");
+        }
+
+        try
+        {
+            BaseUserDto user = await userService.GetById(userId).ConfigureAwait(false);
+            var technicalStaff = user.ToTechnicalStaffDto();
+            technicalStaff.AccountStatus = await userService.GetAccountStatus(userId).ConfigureAwait(false);
+            return Ok(technicalStaff);
+        }
+        catch (ArgumentException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+}

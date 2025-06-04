@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -110,5 +111,16 @@ public class UserService(
             logger.LogError($"Deleting user with id = {id} - failed");
             throw;
         }
+    }
+
+    public async Task<AccountStatus> GetAccountStatus(string id)
+    {
+        logger.LogDebug("Getting AccountStatus for the User started. Getting user by Id = {id}.", id);
+
+        var user = await repository.GetById(id).ConfigureAwait(false) ?? throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
+        
+        logger.LogDebug("Successfully got the AccountStatus for User with Id = {id}.", id);
+
+        return user.Convert();
     }
 }
