@@ -13,6 +13,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Application;
 using OutOfSchool.BusinessLogic.Models.Providers;
@@ -41,6 +42,7 @@ public class AdminControllerTests
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ISensitiveWorkshopsService> sensitiveWorkshopServices;
     private Mock<ISensitiveWorkshopDraftService> sensitiveWorkshopDraftService;
+    private Mock<IUserService> userService;
 
     private string userId;
     private Guid providerId;
@@ -55,7 +57,6 @@ public class AdminControllerTests
     private DirectionDto direction;
     private List<WorkshopDto> listWorkshopDto;
     private HttpContext fakeHttpContext;
-    private string userRole;
 
     [SetUp]
     public void Setup()
@@ -67,6 +68,7 @@ public class AdminControllerTests
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
         sensitiveWorkshopServices = new Mock<ISensitiveWorkshopsService>();
+        userService = new Mock<IUserService>();
 
         userId = Guid.NewGuid().ToString();
         ministryAdminDtos = AdminGenerator.GenerateMinistryAdminsDtos(10);
@@ -82,7 +84,8 @@ public class AdminControllerTests
             sensitiveProviderService.Object,
             sensitiveWorkshopServices.Object,
             localizer.Object,
-            sensitiveWorkshopDraftService.Object
+            sensitiveWorkshopDraftService.Object,
+            userService.Object
             )
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
@@ -453,6 +456,68 @@ public class AdminControllerTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalled_ReturnsOkResultObject_WithExpectedDto(Role role)
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(role, userId);
+        var shortUserDto = new ShortUserDto
+        {
+            Email = "techstaff@gmail.com",
+            FirstName = "techstaff",
+        };
+        var expected = new TechnicalStaffDto
+        {
+            Email = "techstaff@gmail.com",
+            FirstName = "techstaff",
+            AccountStatus = AccountStatus.Accepted
+        };
+
+        userService.Setup(x => x.GetById(userId)).ReturnsAsync(shortUserDto);
+        userService.Setup(x => x.GetAccountStatus(userId)).ReturnsAsync(AccountStatus.Accepted);
+
+        // Act
+        var result = await controller.Profile().ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(AccountStatus.Accepted, (result.Value as TechnicalStaffDto).AccountStatus);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalledForNotExistUserId_ReturnsBadRequest(Role role)
+    {
+        // Arrange & Act
+        var result = await controller.Profile().ConfigureAwait(false) as BadRequestObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(400, result.StatusCode);
+    }
+
+    [TestCase(Role.TechAdmin)]
+    [TestCase(Role.Moderator)]
+    public async Task Profile_WhenCalledForNotExistUserId_ReturnsNotFound(Role role)
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(role, userId);
+
+        userService.Setup(x => x.GetById(userId)).ThrowsAsync(new ArgumentException());
+
+        // Act
+        var result = await controller.Profile().ConfigureAwait(false) as NotFoundObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(404, result.StatusCode);
+    }
+
+
     private HttpContext GetFakeHttpContext()
     {
         var authProps = new AuthenticationProperties();
@@ -572,7 +637,7 @@ public class AdminControllerTests
         var filter = new WorkshopDraftFilterAdministration();
         var expected = new SearchResult<WorkshopDraftResponseDto>
         {
-            TotalAmount = 5,            
+            TotalAmount = 5,
             Entities = new List<WorkshopDraftResponseDto>(5),
         };
 

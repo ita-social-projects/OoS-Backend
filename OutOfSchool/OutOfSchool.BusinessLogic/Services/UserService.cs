@@ -1,6 +1,7 @@
-﻿using System.Data;
+using System.Data;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -86,6 +87,12 @@ public class UserService(
         return user.IsBlocked;
     }
 
+    /// <summary>
+    /// Asynchronously deletes a user by their ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the user to delete.</param>
+    /// <exception cref="ArgumentException">Thrown if no user with the specified ID exists.</exception>
+    /// <exception cref="DbUpdateConcurrencyException">Thrown if a concurrency conflict occurs during deletion.</exception>
     public async Task Delete(string id)
     {
         logger.LogInformation($"Started deleting of user by Id = {id}");
@@ -110,5 +117,22 @@ public class UserService(
             logger.LogError($"Deleting user with id = {id} - failed");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Retrieves the account status of a user by their ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the user.</param>
+    /// <returns>The account status of the specified user.</returns>
+    /// <exception cref="ArgumentException">Thrown if no user with the given ID exists.</exception>
+    public async Task<AccountStatus> GetAccountStatus(string id)
+    {
+        logger.LogDebug("Getting AccountStatus for the User started. Getting user by Id = {Id}.", id);
+
+        var user = await repository.GetById(id).ConfigureAwait(false) ?? throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
+
+        logger.LogDebug("Successfully got the AccountStatus for User with Id = {Id}.", id);
+
+        return user.Convert();
     }
 }

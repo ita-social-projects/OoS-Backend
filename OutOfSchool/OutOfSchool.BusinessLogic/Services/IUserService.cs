@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -32,9 +33,15 @@ public interface IUserService
     Task<bool> IsBlocked(string id);
 
     /// <summary>
-    /// Delete entity by id.
+    /// Asynchronously deletes the user identified by the specified ID.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns><see cref="Task{TResult}"/>.</returns>
     Task Delete(string id);
+
+    /// <summary>
+    /// Retrieves the account status of the user with the specified ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the user.</param>
+    /// <returns>A task that resolves to the user's account status.</returns>
+    Task<AccountStatus> GetAccountStatus(string id);
 }

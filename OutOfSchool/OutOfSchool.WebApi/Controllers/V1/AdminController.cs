@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
@@ -20,15 +21,26 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 public class AdminController : Controller
 {
     private readonly IStringLocalizer<SharedResource> localizer;
-
     private readonly ILogger<AdminController> logger;
-
     private readonly ISensitiveMinistryAdminService ministryAdminService;
     private readonly ISensitiveDirectionService directionService;
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveWorkshopsService workshopService;
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
+    private readonly IUserService userService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AdminController"/> class with required services for administrative operations.
+    /// </summary>
+    /// <param name="logger">Logger for recording controller operations.</param>
+    /// <param name="ministryAdminService">Service for managing ministry admin entities.</param>
+    /// <param name="directionService">Service for managing direction entities.</param>
+    /// <param name="providerService">Service for managing provider entities.</param>
+    /// <param name="workshopService">Service for managing workshop entities.</param>
+    /// <param name="localizer">Localization service for shared resources.</param>
+    /// <param name="workshopDraftService">Service for managing workshop draft entities.</param>
+    /// <param name="userService">Service for managing user profiles and account status.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any required service is null.</exception>
     public AdminController(
         ILogger<AdminController> logger,
         ISensitiveMinistryAdminService ministryAdminService,
@@ -36,7 +48,8 @@ public class AdminController : Controller
         ISensitiveProviderService providerService,
         ISensitiveWorkshopsService workshopService,
         IStringLocalizer<SharedResource> localizer,
-        ISensitiveWorkshopDraftService workshopDraftService)
+        ISensitiveWorkshopDraftService workshopDraftService,
+        IUserService userService)
     {
         this.localizer = localizer;
         this.logger = logger;
@@ -47,8 +60,13 @@ public class AdminController : Controller
             ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.workshopDraftService =
             workshopDraftService ?? throw new ArgumentNullException(nameof(workshopDraftService));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
+    /// <summary>
+    /// Determines whether the current user has the "techadmin" role.
+    /// </summary>
+    /// <returns>True if the user is a technical administrator; otherwise, false.</returns>
     private bool IsTechAdmin() => User.IsInRole(nameof(Role.TechAdmin).ToLower());
 
     /// <summary>
@@ -214,10 +232,10 @@ public class AdminController : Controller
     }
 
     /// <summary>
-    /// Check providers for existing entities by data from incoming parameter.
+    /// Validates provider import data and returns the validation result.
     /// </summary>
-    /// <param name="data">Values for checking.</param>
-    /// <returns>Crossing data.</returns>
+    /// <param name="data">The import data to validate.</param>
+    /// <returns>The validation result for the provided import data.</returns>
     [Authorize(Roles = "techadmin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ImportDataValidateResponse))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -230,18 +248,54 @@ public class AdminController : Controller
         var result = await providerService.ValidateImportData(data).ConfigureAwait(false);
         return Ok(result);
     }
+
     /// <summary>
-    /// Get all Workshop Drafts from the database by filter.
+    /// Retrieves workshop drafts matching the specified administrative filter.
     /// </summary>
-    /// <param name="filter">Filter to get a part of all workshops that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{WorkshopDraftResponseDto}"/> that contains the count of all found workshops and list of workshops that were received.</returns>
+    /// <param name="filter">Criteria for filtering workshop drafts.</param>
+    /// <returns>A <see cref="SearchResult{WorkshopDraftResponseDto}"/> containing the total count and list of matching workshop drafts, or 204 No Content if none are found.</returns>
     [HasPermission(Permissions.WorkshopApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftResponseDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
-         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);    
-}   
+         await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+
+    /// <summary>
+    /// Retrieves the profile information and account status of the currently authorized technical staff member.
+    /// </summary>
+    /// <returns>The technical staff profile as a <see cref="TechnicalStaffDto"/> if found; returns 400 Bad Request if user information is invalid, or 404 Not Found if the user does not exist.</returns>
+    [Authorize(Roles = "techadmin, moderator")]
+    [HasPermission(Permissions.PersonalInfo)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TechnicalStaffDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    public async Task<IActionResult> Profile()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        if (userId == null)
+        {
+            return BadRequest("Invalid user information.");
+        }
+
+        try
+        {
+            BaseUserDto user = await userService.GetById(userId).ConfigureAwait(false);
+            var technicalStaff = user.ToTechnicalStaffDto();
+            technicalStaff.AccountStatus = await userService.GetAccountStatus(userId).ConfigureAwait(false);
+            return Ok(technicalStaff);
+        }
+        catch (ArgumentException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+}

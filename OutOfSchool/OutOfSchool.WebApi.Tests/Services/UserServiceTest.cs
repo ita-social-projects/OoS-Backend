@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
@@ -148,6 +149,28 @@ public class UserServiceTest
         Assert.ThrowsAsync<ArgumentException>(() => service.Delete(invalidId));
     }
 
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae33")]
+    public async Task GetAccountStatus_WhenLastLoginIsNotDefault_ReturnsAccountStatusIsAccepted(string id)
+    {
+        // Act
+        var accountStatus = await service.GetAccountStatus(id);
+
+        // Assert
+        Assert.AreEqual(AccountStatus.Accepted, accountStatus);
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")]
+    public async Task GetAccountStatus_WhenLastLoginIsDefault_ReturnsAccountStatusIsNeverLogged(string id)
+    {
+        // Act
+        var accountStatus = await service.GetAccountStatus(id);
+
+        // Assert
+        Assert.AreEqual(AccountStatus.NeverLogged, accountStatus);
+    }
+
     private void SeedDatabase()
     {
         using var context = new TestOutOfSchoolDbContext(options);
@@ -266,6 +289,29 @@ public class UserServiceTest
                 SecurityStamp = "WGWJIYDFRG236HXFKGYS7H6QT2DE2LFF",
                 ConcurrencyStamp = "cb54f60f-6282-4416-926c-d1edce844d07",
                 PhoneNumber = "0965889312",
+                Role = "provider",
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false,
+                LockoutEnabled = true,
+                AccessFailedCount = 0,
+            },
+            new User()
+            {
+                Id = "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae33",
+                CreatingTime = default,
+                LastLogin = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero),
+                MiddleName = "MiddleName5",
+                FirstName = "FirstName5",
+                LastName = "LastName5",
+                UserName = "user6@gmail.com",
+                NormalizedUserName = "USER6@GMAIL.COM",
+                Email = "user6@gmail.com",
+                NormalizedEmail = "USER6@GMAIL.COM",
+                EmailConfirmed = false,
+                PasswordHash = "AQAAAAEAACcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
+                SecurityStamp = "WGWJIYDFRG236HXFKGYS7H6QT2DE2LFF",
+                ConcurrencyStamp = "cb54f60f-6282-4416-926c-d1edce844d07",
+                PhoneNumber = "0965889313",
                 Role = "provider",
                 PhoneNumberConfirmed = false,
                 TwoFactorEnabled = false,
