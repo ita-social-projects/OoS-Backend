@@ -44,6 +44,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepositoryMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -74,6 +75,7 @@ public class SensitiveWorkshopDraftServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         institutionHierarchyRepositoryMock = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepository = new Mock<ICodeficatorRepository>();
+        languageServiceMock = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
         workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
 
@@ -88,6 +90,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         service = new WorkshopDraftService(
                    logger.Object,
+                   languageServiceMock.Object,
                    workshopDraftRepoMock.Object,
                    workshopDraftImagesServiceMock.Object,
                    providerServiceMock.Object,
@@ -105,6 +108,8 @@ public class SensitiveWorkshopDraftServiceTests
                    changesLogServiceMock.Object);
 
         SetupModeratorTestData();
+        languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
+                .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
     }
 
     #region FetchByFilterForAdmins    

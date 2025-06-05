@@ -42,4 +42,24 @@ public class LanguageController : ControllerBase
 
         return Ok(languages);
     }
+
+    /// <summary>
+    /// Gets a language by its ID.
+    /// </summary>
+    /// <param name="id">Language ID.</param>
+    /// <returns>Language DTO if found, NotFound if not.</returns>
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LanguageDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var language = await _languageService.GetById(id).ConfigureAwait(false);
+
+        if (language is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(language);
+    }
 }

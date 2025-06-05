@@ -38,6 +38,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<ILanguageService> languageServiceMock;
     private Mock<ITagService> tagServiceMock;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IEntityRepository<long, Tag>> tagRepository;
@@ -54,6 +55,7 @@ public class SensitiveWorkshopsServiceTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        languageServiceMock = new Mock <ILanguageService>();
         tagServiceMock = new Mock<ITagService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
@@ -64,6 +66,7 @@ public class SensitiveWorkshopsServiceTests
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository.Object,
+                languageServiceMock.Object,
                 tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
@@ -81,6 +84,9 @@ public class SensitiveWorkshopsServiceTests
                 contactsServiceMock.Object,
                 applicationRepositoryMock.Object,
                 featureManagerMock.Object);
+
+        languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
+            .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
     }
 
     #region FetchByFilterForAdmins

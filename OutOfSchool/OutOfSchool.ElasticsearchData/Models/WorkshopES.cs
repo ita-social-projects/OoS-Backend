@@ -40,6 +40,8 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public int MaxAge { get; set; }
 
+    public long LanguageOfEducationId { get; set; }
+    public string LanguageOfEducationName { get; set; } = string.Empty;
     public bool CompetitiveSelection { get; set; }
 
     public decimal Price { get; set; }

@@ -114,4 +114,11 @@ public static class WorkshopGenerator
             .WithWorkshop(workshop);
         return workshop;
     }
+
+    public static Workshop WithLanguage(this Workshop workshop, long id = 1, string name = "English")
+    {
+        workshop.LanguageOfEducationId = id;
+        workshop.LanguageOfEducation = new Language { Id = id, Name = name };
+        return workshop;
+    }
 }

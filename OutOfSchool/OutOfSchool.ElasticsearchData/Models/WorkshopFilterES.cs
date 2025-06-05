@@ -73,6 +73,8 @@ public class WorkshopFilterES
 
     public bool IsInclusive { get; set; }
 
+    public long LanguageOfEducationId { get; set; }
+
     public bool AreThereBenefits { get; set; }
 
     public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();

@@ -276,7 +276,13 @@ public static class Constants
     /// Sets public images cache control to be 1 hour (GCS default for public data).
     /// </summary>
     public const string PublicImageCacheControl = "public, max-age=3600";
-    
+
+    /// <summary>
+    /// Sets maximum length for language name.
+    /// </summary>
+    public const int MaxLanguageNameLength = 25;
+
+
     public static class ClaimTypes
     {
         public const string UserId = "user_id";

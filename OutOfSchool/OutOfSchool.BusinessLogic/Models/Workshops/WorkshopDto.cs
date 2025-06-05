@@ -49,6 +49,9 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
     public string Instagram { get; set; } = string.Empty;
 
     public AddressDto Address { get; set; }
+
+    [MaxLength(Constants.MaxLanguageNameLength)]
+    public string LanguageOfEducationName { get; set; }
 }
 
 public static class WorkshopDtoExtensions
@@ -108,6 +111,8 @@ public static class WorkshopDtoExtensions
             StudyPeriodStartMonth = dto.StudyPeriodDates.StartDate.Month,
             StudyPeriodEndDay = dto.StudyPeriodDates.EndDate.Day,
             StudyPeriodEndMonth = dto.StudyPeriodDates.EndDate.Month,
+            LanguageOfEducationId = dto.LanguageOfEducationId,
+            LanguageOfEducationName = dto.LanguageOfEducationName
         };
     }
 
@@ -154,6 +159,7 @@ public static class WorkshopDtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             EducationalShift = model.EducationalShift,
             LanguageOfEducationId = model.LanguageOfEducationId,
+            LanguageOfEducationName = model.LanguageOfEducation?.Name,
             StudyPeriodDates = model.ToStudyPeriodDatesDto(),
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,

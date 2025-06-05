@@ -100,7 +100,7 @@ public static class WorkshopESExtensions
             CompetitiveSelection = dto.CompetitiveSelection,
             Price = dto.Price,
             PayRate = dto.PayRate,
-            Address = dto.Contacts.FirstOrDefault(c => c.IsDefault).Address.ToES(),
+            Address = dto.Contacts?.FirstOrDefault(c => c.IsDefault)?.Address?.ToES(),
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
             InstitutionHierarchy = dto.InstitutionHierarchy.Title,
             InstitutionId = dto.InstitutionHierarchy.InstitutionId,
@@ -131,6 +131,7 @@ public static class WorkshopESExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             Coverage = dto.Coverage,
             Tags = dto.Tags.Select(x => x.Name).ToList(),
+            LanguageOfEducationId = dto.LanguageOfEducationId,
         };
 
     public static List<WorkshopES> ToES(this IEnumerable<Workshop> list)

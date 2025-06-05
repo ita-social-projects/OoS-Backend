@@ -49,5 +49,7 @@ public static class WorkshopCreateRequestDtoExtensions
 
             DefaultTeacher = dto.DefaultTeacher?.ToModel(),
             DefaultTeacherId = dto.DefaultTeacherId,
+
+            LanguageOfEducationId = dto.LanguageOfEducationId,
         };
 }

@@ -57,6 +57,9 @@ public class WorkshopFilter : OffsetFilter
 
     public bool IsStrictWorkdays { get; set; } = false;
 
+    [Range(1,long.MaxValue, ErrorMessage = "LanguageId value must be a possitive number and greater than 0")]
+    public long LanguageOfEducationId { get; set; }
+
     public long CATOTTGId { get; set; } = default;
 
     [Range(2, 10, ErrorMessage = "Field value should be in a range from 2 to 10")]
@@ -139,6 +142,7 @@ public static class WorkshopFilterExtensions
             StudyPeriodStartDay = dto.StudyPeriodStartDay,
             StudyPeriodEndDay = dto.StudyPeriodEndDay,
             StudyPeriodStartMonth = dto.StudyPeriodStartMonth,
-            StudyPeriodEndMonth = dto.StudyPeriodEndMonth
+            StudyPeriodEndMonth = dto.StudyPeriodEndMonth,
+            LanguageOfEducationId = dto.LanguageOfEducationId
         };
 }

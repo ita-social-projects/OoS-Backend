@@ -25,4 +25,20 @@ public class LanguageService(
 
         return languages.ToDto();
     }
+
+    /// <inheritdoc/>
+    public async Task<LanguageDto?> GetById(long id)
+    {
+        logger.LogDebug("Getting Language with ID = {LanguageId}.", id);
+
+        var language = await repository.GetById(id).ConfigureAwait(false);
+
+        if (language is null)
+        {
+            logger.LogWarning("Language with ID = {LanguageId} not found.", id);
+            return null;
+        }
+
+        return language.ToDto();
+    }
 }

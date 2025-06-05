@@ -26,6 +26,7 @@ public static class WorkshopV2DtoExtensions
             MinAge = dto.MinAge ?? default,
             MaxAge = dto.MaxAge ?? default,
             LanguageOfEducationId = dto.LanguageOfEducationId,
+            LanguageOfEducationName = dto.LanguageOfEducationName,
             DateTimeRanges = dto.DateTimeRanges?.ToDraft() ?? [],
             WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToDraft() ?? [],
             CompetitiveSelection = dto.CompetitiveSelection,
@@ -67,6 +68,7 @@ public static class WorkshopV2DtoExtensions
             Website = dto.Website,
             Facebook = dto.Facebook,
             Instagram = dto.Instagram,
+            
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
@@ -125,6 +127,7 @@ public static class WorkshopV2DtoExtensions
             PreferentialTermsOfParticipation = draft.WorkshopDraftContent?.PreferentialTermsOfParticipation,
             EducationalShift = draft.WorkshopDraftContent?.EducationalShift ?? default,
             LanguageOfEducationId = draft.WorkshopDraftContent?.LanguageOfEducationId ?? default,
+            LanguageOfEducationName = draft.WorkshopDraftContent?.LanguageOfEducationName ?? default,
             StudyPeriodDates = draft.WorkshopDraftContent?.ToStudyPeriodDatesDto(),
             AgeComposition = draft.WorkshopDraftContent?.AgeComposition ?? default,
             Coverage = draft.WorkshopDraftContent?.Coverage ?? default,
@@ -236,6 +239,7 @@ public static class WorkshopV2DtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             EducationalShift = model.EducationalShift,
             LanguageOfEducationId = model.LanguageOfEducationId,
+            LanguageOfEducationName = model.LanguageOfEducation?.Name,
             StudyPeriodDates = model.ToStudyPeriodDatesDto(),
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
