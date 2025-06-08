@@ -253,6 +253,11 @@ public static class Constants
     public const int MinCompetitiveEventShortTitleLength = 1;
 
     /// <summary>
+    /// Maximum length allowed for the competitive event draft's rejection message.
+    /// </summary>
+    public const int CompetitiveEventDraftMaxRejectionMessageLength = 500;
+
+    /// <summary>
     /// The maximum length allowed for the benefits for competitive event.
     /// </summary>
     public const int MaxBenefitsLength = 500;
