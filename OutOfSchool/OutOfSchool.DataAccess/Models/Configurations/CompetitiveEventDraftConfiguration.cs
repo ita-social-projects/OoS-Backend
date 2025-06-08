@@ -20,6 +20,7 @@ public class CompetitiveEventDraftConfiguration : TrackableBaseEntityConfigurati
             .HasColumnType(ModelsConfigurationConstants.Char255Type);
 
         builder.Property(x => x.CompetitiveEventDraftContent)
+            .IsRequired()
             .HasColumnType(ModelsConfigurationConstants.JsonType);
 
         builder.Property(x => x.DraftStatus)

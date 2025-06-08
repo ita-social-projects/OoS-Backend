@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.CompetitiveEventDrafts;
-public class CompetitiveEventDraftContent
+public class CompetitiveEventDraftContent : IHasContacts
 {
     [Required]
     [DataType(DataType.Text)]
