@@ -21,13 +21,13 @@ public class CompetitiveEventDraft : TrackableBaseEntity,
 
     public CompetitiveEventStates DraftStatus { get; set; }
 
+    [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
     public string RejectionMessage { get; set; }
 
     public byte[] Version { get; set; }
 
     public string CoverImageId { get; set; }
 
-    [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
     public CompetitiveEventDraftContent CompetitiveEventDraftContent { get; set; }
 
     public virtual Provider Provider { get; set; }
