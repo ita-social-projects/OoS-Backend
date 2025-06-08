@@ -6,6 +6,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -131,6 +132,8 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
 
     public virtual Institution Institution { get; set; }
+
+    public virtual List<CompetitiveEventDraft> CompetitiveEventDrafts { get; set; }
 
     #endregion
 
