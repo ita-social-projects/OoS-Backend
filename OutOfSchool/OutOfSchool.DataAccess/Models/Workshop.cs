@@ -61,11 +61,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [Required(ErrorMessage = "Property IsPaid is required")]
     public bool IsPaid { get; set; } = false;
 
-    [Required(ErrorMessage = "Language of education is required")]
-    [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
+    [Required]
     public long LanguageOfEducationId { get; set; }
-
-    public virtual Language LanguageOfEducation { get; set; }
 
     [Required(ErrorMessage = "Study period start date is required")]
     public DateOnly StudyPeriodStartDate { get; set; }
@@ -153,6 +150,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual List<Tag> Tags { get; set; }
 
     public virtual List<StudySubject> StudySubjects { get; set; }
+    
+    public virtual Language LanguageOfEducation { get; set; }
     #endregion
 
     #region Owned entities

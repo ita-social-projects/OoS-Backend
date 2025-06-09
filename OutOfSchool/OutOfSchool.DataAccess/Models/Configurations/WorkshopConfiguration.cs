@@ -38,5 +38,10 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
 
         builder.HasMany(x => x.Tags)
             .WithMany(x => x.Workshops);
+
+        builder.HasOne(x => x.LanguageOfEducation)
+            .WithMany()
+            .HasForeignKey(x => x.LanguageOfEducationId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
