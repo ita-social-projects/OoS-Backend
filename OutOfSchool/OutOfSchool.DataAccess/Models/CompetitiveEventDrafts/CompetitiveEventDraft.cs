@@ -8,6 +8,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.CompetitiveEventDrafts;
+
+/// <summary>
+/// Model for storing drafts of competitive events before moderation.
+/// Сan be hard deleted from the database if needed.
+/// </summary>
 public class CompetitiveEventDraft : TrackableBaseEntity,
     IImageDependentEntity<CompetitiveEventDraft>,
     IHasEntityImages<CompetitiveEventDraft>,
@@ -19,7 +24,7 @@ public class CompetitiveEventDraft : TrackableBaseEntity,
 
     public Guid ProviderId { get; set; }
 
-    public CompetitiveEventStates DraftStatus { get; set; }
+    public CompetitiveEventStates DraftStatus { get; set; } = CompetitiveEventStates.Draft;
 
     [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
     public string RejectionMessage { get; set; }
