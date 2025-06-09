@@ -47,5 +47,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\OutOfSchool.AuthCommon\OutOfSchool.AuthCommon.csproj" />
+        <ProjectReference Include="..\OutOfSchool.QuartzJobs.Api\OutOfSchool.QuartzJobs.Api.csproj" />
     </ItemGroup>
 </Project>

@@ -15,12 +15,16 @@ public static class EmailSenderExtension
 
         var emailSenderJobKey = new JobKey(EmailSenderConstants.EmailJob, EmailSenderConstants.EmailGroup);
 
-        quartz.AddJob<EmailSenderJob>(j => j.WithIdentity(emailSenderJobKey));
+        quartz.AddJob<EmailSenderJob>(j => j
+            .WithIdentity(emailSenderJobKey)
+            .WithDescription("Sends a single email with expiration check using data passed to the job"));
+
         quartz.AddTrigger(t => t
             .WithIdentity(EmailSenderConstants.EmailSenderJobTrigger, EmailSenderConstants.EmailGroup)
             .StartNow()
             .WithCronSchedule(quartzConfig.CronSchedules.EmailSenderCronScheduleString)
-            .ForJob(emailSenderJobKey));
+            .ForJob(emailSenderJobKey)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.EmailSenderCronScheduleString}"));
 
         quartz.AddJobListener<EmailSenderJobListener>(GroupMatcher<JobKey>.GroupEquals(EmailSenderConstants.EmailGroup));
     }

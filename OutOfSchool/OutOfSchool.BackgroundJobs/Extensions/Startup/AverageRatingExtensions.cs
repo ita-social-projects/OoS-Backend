@@ -28,11 +28,16 @@ public static class AverageRatingExtensions
 
         var averageRatingCalculatingJobKey = new JobKey(JobConstants.AverageRatingCalculating, GroupConstants.AverageRating);
 
-        quartz.AddJob<AverageRatingQuartzJob>(j => j.WithIdentity(averageRatingCalculatingJobKey));
+        quartz.AddJob<AverageRatingQuartzJob>(j => j
+            .WithIdentity(averageRatingCalculatingJobKey)
+            .WithDescription("Calculates average ratings for all workshops and providers."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.AverageRatingCalculating, GroupConstants.AverageRating)
             .ForJob(averageRatingCalculatingJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.AverageRatingCalculatingCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.AverageRatingCalculatingCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.AverageRatingCalculatingCronScheduleString}"));
+
     }
 }

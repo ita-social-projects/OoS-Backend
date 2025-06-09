@@ -34,6 +34,7 @@ using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
+using OutOfSchool.QuartzJobs.Api.Extensions;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -44,6 +45,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.WebApi.Enums;
+using Quartz;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -136,6 +138,12 @@ public static class Startup
             },
         })
             .WithMetadata(new AllowAnonymousAttribute());
+
+        app.UseRateLimiter();
+
+        app.MapQuartzMonitoringApi()
+             .RequireRateLimiting("QuartzMonitoringLimiter")
+             .RequireTechAdmin();
 
         app.MapControllers();
 
@@ -570,6 +578,7 @@ public static class Startup
                 q.AddObjectStorageSynchronization(services, storageConfig.Provider, quartzConfig);
             }
 
+            q.AddQuartzMonitoringListener();
             q.AddElasticsearchSynchronization(services, configuration);
             q.AddStatisticReportsCreating(services, quartzConfig);
             q.AddOldNotificationsClearing(services, quartzConfig);
@@ -578,6 +587,15 @@ public static class Startup
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(quartzConfig);
         });
+
+        // Rate limiter options
+        services.Configure<RateLimiterOptions>(configuration.GetSection("QuartzMonitoring:RateLimiter"));
+
+        // Rate limiter for Quartz monitoring
+        services.AddQuartzMonitoringRateLimiter();
+
+        // Add Quartz monitoring
+        services.AddQuartzMonitoring(configuration);
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
         var redisConfig = configuration

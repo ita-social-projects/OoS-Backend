@@ -28,11 +28,15 @@ public static class StatisticReportExtensions
 
         var statisticReportsMakingJobKey = new JobKey(JobConstants.StatisticReportsMaking, GroupConstants.StatisticReports);
 
-        quartz.AddJob<StatisticReportsMakingQuartsJob>(j => j.WithIdentity(statisticReportsMakingJobKey));
+        quartz.AddJob<StatisticReportsMakingQuartsJob>(j => j
+            .WithIdentity(statisticReportsMakingJobKey)
+            .WithDescription("Generates statistic reports and saves them to the database."));
+
         quartz.AddTrigger(t => t
             .WithIdentity(JobTriggerConstants.StatisticReportsMaking, GroupConstants.StatisticReports)
             .ForJob(statisticReportsMakingJobKey)
             .StartNow()
-            .WithCronSchedule(quartzConfig.CronSchedules.StatisticReportsMakingCronScheduleString));
+            .WithCronSchedule(quartzConfig.CronSchedules.StatisticReportsMakingCronScheduleString)
+            .WithDescription($"Runs by schedule: {quartzConfig.CronSchedules.StatisticReportsMakingCronScheduleString}"));
     }
 }
