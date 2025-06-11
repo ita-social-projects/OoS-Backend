@@ -49,6 +49,7 @@ public class WorkshopServiceDBTests
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IFeatureManager> featureManagerMock;
+    private Mock<IChangesLogService> changesLogServiceMock;
 
 
     [SetUp]
@@ -81,6 +82,7 @@ public class WorkshopServiceDBTests
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         featureManagerMock = new Mock<IFeatureManager>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
 
         workshopService =
                 new WorkshopService(
@@ -102,7 +104,8 @@ public class WorkshopServiceDBTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepositoryMock.Object,
-                    featureManagerMock.Object);
+                    featureManagerMock.Object,
+                    changesLogServiceMock.Object);
 
         Seed();
         languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))

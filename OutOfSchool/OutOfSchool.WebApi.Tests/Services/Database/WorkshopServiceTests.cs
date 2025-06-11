@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -20,6 +21,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
@@ -57,6 +59,7 @@ public class WorkshopServiceTests
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IFeatureManager> featureManager;
+    private Mock<IChangesLogService> changesLogService;
     private Guid providerId;
     private Guid studySubjectId;
 
@@ -84,6 +87,7 @@ public class WorkshopServiceTests
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
         featureManager = new Mock<IFeatureManager>();
+        changesLogService = new Mock<IChangesLogService>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
 
@@ -107,7 +111,8 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureManager.Object
+                    featureManager.Object,
+                    changesLogService.Object
                     );
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
@@ -540,6 +545,22 @@ public class WorkshopServiceTests
 
         // Act
         var result = await workshopService.GetById(It.IsAny<Guid>(), false).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public async Task GetById_WhenWorkshopIsArchived_ShouldReturnNull()
+    {
+        // Arrange
+        var id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43");
+        var workshop = WorkshopGenerator.Generate().WithId(id).WithAddress();
+        workshop.Status = WorkshopStatus.Archived;
+        SetupGetById(workshop);
+
+        // Act
+        var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -1055,6 +1076,56 @@ public class WorkshopServiceTests
 
     #endregion
 
+    #region Archive
+
+    [Test]
+    public async Task Archive_WhenEntityWithIdExists_ShouldTryToDelete()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        workshop.Status = WorkshopStatus.Closed;
+        workshop.Applications = SetupApplications(workshop, 0);
+        SetupArchive(workshop, true);
+
+        // Act
+        await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopRepository.Verify(w => w.Update(It.IsAny<Workshop>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Archive_WhenEntityWithIdDoesNotExist_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        SetupArchive(workshop, false);
+        // Act
+        var result = await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.NotFound.ToString());
+    }
+
+    [Test]
+    public async Task Archive_WhenWorkshopStatusIsNotClosed_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        workshop.Status = WorkshopStatus.Open;
+        SetupArchive(workshop, true);
+
+        // Act
+        var result = await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.BadRequest.ToString());
+    }
+    #endregion
+
     #region Delete
 
     [Test]
@@ -1062,14 +1133,31 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate();
-        SetupDelete(workshop);
+        SetupDelete(workshop, true);
 
         // Act
-        await workshopService.Delete(workshop.Id).ConfigureAwait(false);
+        await (workshopService as ISensitiveWorkshopsService).Delete(workshop.Id).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(w => w.Delete(It.IsAny<Workshop>()), Times.Once);
     }
+
+    [Test]
+    public async Task Delete_WhenEntityWithIdDoesNotExist_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        SetupDelete(workshop, false);
+
+        // Act
+        var result = await (workshopService as ISensitiveWorkshopsService).Delete(workshop.Id).ConfigureAwait(false);
+
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.NotFound.ToString());
+    }
+
     #endregion
 
     #region GetByFilter
@@ -1428,9 +1516,29 @@ public class WorkshopServiceTests
             .Returns((Func<Task<Workshop>> f) => f.Invoke());
     }
 
-    private void SetupDelete(Workshop workshop)
+    private void SetupArchive(Workshop workshop, bool doesWorkshopExist)
     {
-        workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        if (doesWorkshopExist)
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        }
+        else
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync((Workshop)null);
+        }
+        workshopRepository.Setup(w => w.Update(It.IsAny<Workshop>())).ReturnsAsync(workshop);
+    }
+
+    private void SetupDelete(Workshop workshop, bool doesWorkshopExist)
+    {
+        if (doesWorkshopExist)
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        }
+        else
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync((Workshop)null);
+        }
         workshopRepository.Setup(w => w.Delete(It.IsAny<Workshop>())).Returns(Task.CompletedTask);
     }
 

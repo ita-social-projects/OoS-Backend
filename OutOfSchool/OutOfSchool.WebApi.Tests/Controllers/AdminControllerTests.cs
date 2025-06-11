@@ -40,9 +40,10 @@ public class AdminControllerTests
     private Mock<ISensitiveProviderService> sensitiveProviderService;
     private Mock<ILogger<AdminController>> logger;
     private Mock<IStringLocalizer<SharedResource>> localizer;
-    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopServices;
+    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopService;
     private Mock<ISensitiveWorkshopDraftService> sensitiveWorkshopDraftService;
     private Mock<IUserService> userService;
+    private Mock<IWorkshopServicesCombiner> workshopServiceCombiner;
 
     private string userId;
     private Guid providerId;
@@ -67,7 +68,8 @@ public class AdminControllerTests
         sensitiveWorkshopDraftService = new Mock<ISensitiveWorkshopDraftService>();
         logger = new Mock<ILogger<AdminController>>();
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        sensitiveWorkshopServices = new Mock<ISensitiveWorkshopsService>();
+        sensitiveWorkshopService = new Mock<ISensitiveWorkshopsService>();
+        workshopServiceCombiner = new Mock<IWorkshopServicesCombiner>();
         userService = new Mock<IUserService>();
 
         userId = Guid.NewGuid().ToString();
@@ -82,10 +84,11 @@ public class AdminControllerTests
             sensitiveMinistryAdminService.Object,
             sensitiveDirectionService.Object,
             sensitiveProviderService.Object,
-            sensitiveWorkshopServices.Object,
+            sensitiveWorkshopService.Object,
             localizer.Object,
             sensitiveWorkshopDraftService.Object,
-            userService.Object
+            userService.Object,
+            workshopServiceCombiner.Object
             )
         {
             ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
@@ -595,13 +598,13 @@ public class AdminControllerTests
             Entities = listWorkshopDto.ToList(),
         };
 
-        sensitiveWorkshopServices.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+        sensitiveWorkshopService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
 
         // Act
         var result = await controller.GetWorkshopsByFilter(filter).ConfigureAwait(false) as OkObjectResult;
 
         // Assert
-        sensitiveWorkshopServices.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        sensitiveWorkshopService.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
         result.AssertResponseOkResultAndValidateValue(expected);
     }
 
@@ -618,13 +621,13 @@ public class AdminControllerTests
             Entities = new List<WorkshopDto>(),
         };
 
-        sensitiveWorkshopServices.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
+        sensitiveWorkshopService.Setup(x => x.FetchByFilterForAdmins(filter)).ReturnsAsync(expected);
 
         // Act
         var result = await controller.GetWorkshopsByFilter(filter).ConfigureAwait(false);
 
         // Assert
-        sensitiveWorkshopServices.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
+        sensitiveWorkshopService.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 
@@ -672,5 +675,62 @@ public class AdminControllerTests
         // Assert
         sensitiveWorkshopDraftService.Verify(x => x.FetchByFilterForAdmins(filter), Times.Once);
         Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task Delete_ReturnsForbidResult_IfUserIsNotTechAdmin()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider);
+        var id = Guid.NewGuid();
+
+        // Act
+        var result = await controller.Delete(id).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result.StatusCode, Is.EqualTo(403));
+    }
+
+    [Test]
+    public async Task Delete_ReturnsNoContentResult_IfUserIsTechAdmin()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        var id = Guid.NewGuid();
+
+        workshopServiceCombiner
+            .Setup(x => x.Delete(id))
+            .Returns(Task.FromResult(OperationResult.Success));
+
+        // Act
+        var result = await controller.Delete(id).ConfigureAwait(false) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(204, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Delete_ReturnsInternalServerError_IfServiceThrowsException()
+    {
+        // Arrange
+        controller.ControllerContext.HttpContext = fakeHttpContext;
+        controller.ControllerContext.HttpContext.SetContextUser(Role.TechAdmin);
+        var id = Guid.NewGuid();
+        workshopServiceCombiner
+            .Setup(x => x.Delete(id))
+            .Returns(Task.FromResult(OperationResult.Failed(new OperationError()
+            {
+                Code = "500",
+                Description = "Internal server error"
+            })));
+
+        // Act
+        var result = await controller.Delete(id).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result.StatusCode, Is.EqualTo(500));
     }
 }

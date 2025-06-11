@@ -101,6 +101,10 @@ public class WorkshopDraftService(
             }
             else
             {
+                if (existingWorkshop.Status == WorkshopStatus.Archived)
+                {
+                    throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
+                }
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
             }
         }
@@ -126,6 +130,55 @@ public class WorkshopDraftService(
             .ConfigureAwait(false);
 
         logger.LogDebug("WorkshopDraft created successfully.");
+
+        return new WorkshopDraftResultDto
+        {
+            WorkshopDraft = await MapWorkshopDraftWithDetails(createdDraftWithAssociatedTeachers),
+            UploadingCoverImgWorkshopResult = uploadImagesResult.WorkshopCoverImageUploadingResult,
+            UploadingImagesResults = uploadImagesResult.WorkshopImagesUploadingResult?.MultipleKeyValueOperationResult,
+            TeachersCreateUpdateResult = uploadImagesResult.TeacherImagesUploadingResults
+        };
+    }
+
+    // <inheritdoc/>
+    public async Task<WorkshopDraftResultDto> CreateDraftForReactivation(Guid id)
+    {
+        logger.LogDebug("Creating draft for reactivation started. Workshop Id = {Id}.", id);
+
+        var existingWorkshop = await workshopServicesCombinerV2.GetById(id, true);
+
+        if (existingWorkshop == null)
+        {
+            logger.LogError("Getting workshop with Id = {id} failed.", id);
+            throw new ArgumentException($"Workshop with Id = {id} not found.");
+        }
+
+        if (existingWorkshop.Status != WorkshopStatus.Closed)
+        {
+            throw new InvalidOperationException("This Workshop is not closed. It can not be reactivated.");
+        }
+
+        await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+
+        var workshopV2Dto = existingWorkshop.ToModel().ToV2Dto();
+
+        var createdDraftWithAssociatedTeachers = await workshopDraftRepository
+            .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
+            .ConfigureAwait(false);
+
+        var tags = await tagRepository.GetByFilter(
+            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
+            .ConfigureAwait(false);
+
+        var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
+            createdDraftWithAssociatedTeachers,
+            workshopV2Dto)
+           .ConfigureAwait(false);
+
+        await workshopDraftRepository.SaveChangesAsync()
+            .ConfigureAwait(false);
+
+        logger.LogDebug("WorkshopDraft for reactivation created successfully.");
 
         return new WorkshopDraftResultDto
         {
@@ -165,6 +218,10 @@ public class WorkshopDraftService(
                 }
                 else
                 {
+                    if (existingWorkshop.Status == WorkshopStatus.Archived)
+                    {
+                        throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
+                    }
                     await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
                 }
             }
@@ -447,6 +504,10 @@ public class WorkshopDraftService(
             throw new InvalidOperationException($"There is no Workshop with such Id. Workshop can`t be updated.");
         }
 
+        if (existingWorkshop.Status == WorkshopStatus.Archived)
+        {
+            throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
+        }
         await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
         await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 

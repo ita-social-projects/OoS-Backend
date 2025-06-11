@@ -93,7 +93,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                     Value = "false",
                 },
             ],
-            Must = [],
+            Must = []
         };
 
         if (filter.Ids.Count != 0)

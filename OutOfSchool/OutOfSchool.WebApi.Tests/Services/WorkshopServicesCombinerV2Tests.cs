@@ -7,7 +7,9 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
@@ -21,6 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class WorkshopServicesCombinerV2Tests
 {
     private Mock<IWorkshopService> workshopService;
+    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopService;
     private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
     private IWorkshopServicesCombinerV2 service;
 
@@ -29,6 +32,7 @@ public class WorkshopServicesCombinerV2Tests
     {
         workshopService = new Mock<IWorkshopService>();
         elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
+        sensitiveWorkshopService = new Mock<ISensitiveWorkshopsService>();
         var notificationService = new Mock<INotificationService>();
         var favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         var applicationRepository = new Mock<IApplicationRepository>();
@@ -42,6 +46,7 @@ public class WorkshopServicesCombinerV2Tests
         service = new WorkshopServicesCombinerV2(
             workshopService.Object,
             elasticsearchSynchronizationService.Object,
+            sensitiveWorkshopService.Object,
             notificationService.Object,
             favoriteRepository.Object,
             applicationRepository.Object,
@@ -190,6 +195,29 @@ public class WorkshopServicesCombinerV2Tests
         Assert.IsNotNull(firstError, "Expected an error, but no errors were found.");
         Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
         Assert.AreEqual(Constants.InvalidAvailableSeatsForWorkshopErrorMessage, firstError.Description);
+    }
+
+    [Test]
+    public async Task Update_WhenWorkshopIsArchived_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.Status = WorkshopStatus.Archived;
+        var newWorkshopV2Dto = WorkshopV2DtoGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(newWorkshopV2Dto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
+
+        // Act
+        var result = await service.Update(newWorkshopV2Dto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
+
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual(nameof(HttpStatusCode.BadRequest), firstError.Code);
+        Assert.AreEqual("Workshop is archived and cannot be updated.", firstError.Description);
     }
     #endregion
 }

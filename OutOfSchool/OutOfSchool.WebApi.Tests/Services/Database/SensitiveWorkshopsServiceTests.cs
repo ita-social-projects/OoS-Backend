@@ -45,6 +45,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IFeatureManager> featureManagerMock;
+    private Mock<IChangesLogService> changesLogServiceMock;
 
 
     [SetUp]
@@ -62,6 +63,7 @@ public class SensitiveWorkshopsServiceTests
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         featureManagerMock = new Mock<IFeatureManager>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
 
         sensitiveWorkshopService =
             new WorkshopService(
@@ -83,7 +85,8 @@ public class SensitiveWorkshopsServiceTests
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
                 applicationRepositoryMock.Object,
-                featureManagerMock.Object);
+                featureManagerMock.Object,
+                changesLogServiceMock.Object);
 
         languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
             .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });

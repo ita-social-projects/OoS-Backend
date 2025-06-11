@@ -599,6 +599,77 @@ public class WorkshopDraftServiceTests
     }
     #endregion
 
+    #region CreateDraftForReactivation
+
+    [Test]
+    public async Task CreateDraftForReactivation_WhenWorkshopIdIsNull_ShouldThrowArgumentException()
+    {
+        // Arrange
+        Guid workshopId = Guid.Empty;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await service.CreateDraftForReactivation(workshopId));
+    }
+
+    [Test]
+    public async Task CreateDraftForReactivation_WhenWorkshopStatusIsNotClosed_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = workshop.ToV2Dto;
+
+        var workshopDraft = new WorkshopDraft();
+
+        var options = new Mock<IOptions<UploadConcurrencySettings>>();
+        var settings = new UploadConcurrencySettings();
+        options.Setup(o => o.Value).Returns(settings);
+
+        var logger = new Mock<ILogger<WorkshopDraftService>>();
+        var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+        var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
+        var regionAdminService = new Mock<IRegionAdminService>();
+        var ministryAdminService = new Mock<IMinistryAdminService>();
+        var codeficatorService = new Mock<ICodeficatorService>();
+        var searchStringService = new Mock<ISearchStringService>();
+
+        workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
+            .ReturnsAsync(workshopDraft);
+        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopV2Dto).Verifiable(Times.Once);
+        codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
+
+        var service = new WorkshopDraftService(
+                   logger.Object,
+                   new Mock<ILanguageService>().Object,
+                   workshopDraftRepoMoq.Object,
+                   workshopDraftImagesService.Object,
+                   providerServiceMoq.Object,
+                   currentUserServiceMoq.Object,
+                   teacherDraftImagesService.Object,
+                   tagRepositoryMoq.Object,
+                   options.Object,
+                   workshopServiceCombinerV2Moq.Object,
+                   regionAdminService.Object,
+                   ministryAdminService.Object,
+                   codeficatorService.Object,
+                   searchStringService.Object,
+                   institutionHierarchyRepositoryMoq.Object,
+                   codeficatorRepositoryMoq.Object,
+                   new Mock<IChangesLogService>().Object);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
+
+        //Assert 
+        currentUserServiceMoq.VerifyAll();
+    }
+
+    #endregion
+
     #region GetWorkshopDraftIdByWorkshopId
     [Test]
     public async Task GetWorkshopDraftIdByWorkshopId_WhenWorkshopDraftExists_ShouldReturnId()

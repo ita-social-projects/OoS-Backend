@@ -1081,28 +1081,28 @@ public class WorkshopControllerTests
 
     #endregion
 
-    #region DeleteWorkshop
+    #region Delete
     [Test]
-    public async Task DeleteWorkshop_WhenIdIsValid_ShouldReturnNoContentResult()
+    public async Task Delete_WhenIdIsValid_ShouldReturnNoContentResult()
     {
         // Arrange
         workshop.ProviderId = provider.Id;
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
-        workshopServiceMoq.Setup(x => x.Delete(workshop.Id)).Returns(Task.CompletedTask);
+        workshopServiceMoq.Setup(x => x.Archive(workshop.Id)).ReturnsAsync(OperationResult.Success);
 
         // Act
         var result = await controller.Delete(workshop.Id) as NoContentResult;
 
         // Assert
         workshopServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Delete(It.IsAny<Guid>()), Times.Once);
+        workshopServiceMoq.Verify(x => x.Archive(It.IsAny<Guid>()), Times.Once);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(NoContent, result.StatusCode);
     }
 
     [Test]
-    public async Task DeleteWorkshop_WhenThereIsNoWorkshopWithId_ShouldNoContentResult()
+    public async Task Delete_WhenThereIsNoWorkshopWithId_ShouldNoContentResult()
     {
         // Arrange
         workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(() => null);
@@ -1112,13 +1112,13 @@ public class WorkshopControllerTests
 
         // Assert
         workshopServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Delete(workshop.Id), Times.Never);
+        workshopServiceMoq.Verify(x => x.Archive(workshop.Id), Times.Never);
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(NoContent, result.StatusCode);
     }
 
     [Test]
-    public void DeleteWorkshop_WhenIdProviderHasNoRights_ShouldThrowException()
+    public async Task Delete_WhenIdProviderHasNoRights_ShouldReturn403ObjectResult()
     {
         // Arrange
         currentUserServiceMoq.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
@@ -1128,7 +1128,24 @@ public class WorkshopControllerTests
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Delete(workshop.Id));
         workshopServiceMoq.VerifyAll();
-        workshopServiceMoq.Verify(x => x.Delete(It.IsAny<Guid>()), Times.Never);
+        workshopServiceMoq.Verify(x => x.Archive(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Delete_WhenInternalErrorReturned__ShouldReturn500ObjectResult()
+    {
+        // Arrange
+        workshop.ProviderId = provider.Id;
+        workshopServiceMoq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>())).ReturnsAsync(workshop);
+        providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+        workshopServiceMoq.Setup(x => x.Archive(workshop.Id)).ReturnsAsync(OperationResult.Failed(new OperationError()));
+
+        // Act
+        var result = await controller.Delete(workshop.Id) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(500, result.StatusCode);
     }
     #endregion
 

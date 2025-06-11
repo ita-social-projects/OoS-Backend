@@ -1,6 +1,8 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -10,6 +12,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 public class WorkshopServicesCombinerV2(
     IWorkshopService workshopService,
     IElasticsearchSynchronizationService<IWorkshopService, Workshop> elasticsearchSynchronizationService,
+    ISensitiveWorkshopsService sensitiveWorkshopService,
     INotificationService notificationService,
     IEntityRepositorySoftDeleted<long, Favorite> favoriteRepository,
     IApplicationRepository applicationRepository,
@@ -22,6 +25,7 @@ public class WorkshopServicesCombinerV2(
 ) : WorkshopServicesCombiner(
         workshopService,
         elasticsearchSynchronizationService,
+        sensitiveWorkshopService,
         notificationService,
         favoriteRepository,
         applicationRepository,
@@ -58,11 +62,20 @@ public class WorkshopServicesCombinerV2(
             });
         }
 
+        if (currentWorkshop.Status == WorkshopStatus.Archived)
+        {
+            return Result<WorkshopResultDto>.Failed(new OperationError
+            {
+                Code = nameof(HttpStatusCode.BadRequest),
+                Description = "Workshop is archived and cannot be updated.",
+            });
+        }
+
         if (!IsAvailableSeatsValidForWorkshop(dto.AvailableSeats, currentWorkshop))
         {
             return Result<WorkshopResultDto>.Failed(new OperationError
             {
-                Code = HttpStatusCode.BadRequest.ToString(),
+                Code = nameof(HttpStatusCode.BadRequest),
                 Description = Constants.InvalidAvailableSeatsForWorkshopErrorMessage,
             });
         }
@@ -80,7 +93,7 @@ public class WorkshopServicesCombinerV2(
 
     public new async Task Delete(Guid id)
     {
-        await workshopService.DeleteV2(id).ConfigureAwait(false);
+        await sensitiveWorkshopService.DeleteV2(id).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,

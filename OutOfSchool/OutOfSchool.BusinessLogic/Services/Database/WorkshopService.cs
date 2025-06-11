@@ -60,7 +60,8 @@ public class WorkshopService(
     ISearchStringService searchStringService,
     IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
     IApplicationRepository applicationRepository,
-    IFeatureManager featureManager
+    IFeatureManager featureManager,
+    IChangesLogService changesLogService
 ) : IWorkshopService, ISensitiveWorkshopsService
 {
     /// <summary>
@@ -205,6 +206,12 @@ public class WorkshopService(
             return null;
         }
 
+        if (workshop.Status == WorkshopStatus.Archived)
+        {
+            logger.LogWarning("Access denied to archived workshop Id = {id}", id);
+            return null;
+        }
+
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
         var workshopDTO = workshop.ToDto();
@@ -226,7 +233,7 @@ public class WorkshopService(
             providerId);
 
         var workshops = await workshopRepository.GetByFilter(
-            whereExpression: x => x.ProviderId == providerId);
+            whereExpression: x => x.ProviderId == providerId && x.Status != WorkshopStatus.Archived);
 
         var result = workshops.OrderBy(entity => entity.Title).ToShortEntityDto();
 
@@ -423,6 +430,9 @@ public class WorkshopService(
         if (currentWorkshop.Status != dto.Status)
         {
             currentWorkshop.Status = dto.Status;
+
+            changesLogService.AddEntityChangesToDbContext(currentWorkshop, currentUserService.UserId);
+
             try
             {
                 await workshopRepository.Update(currentWorkshop).ConfigureAwait(false);
@@ -525,19 +535,64 @@ public class WorkshopService(
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task Delete(Guid id)
+    public async Task<OperationResult> Archive(Guid id)
     {
-        logger.LogInformation($"Deleting Workshop with Id = {id} started.");
+        logger.LogDebug("Archiving Workshop with Id = {id} started.", id);
+
+        var (entity, validationResult) = await ValidateWorkshopBeforeFinalAction(id);
+
+        if (validationResult != null)
+        {
+            return validationResult;
+        }
+
+        try
+        {
+            entity.Status = WorkshopStatus.Archived;
+            entity.ActiveTo = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            changesLogService.AddEntityChangesToDbContext(entity, currentUserService.UserId);
+
+            await workshopRepository.Update(entity).ConfigureAwait(false);
+            logger.LogDebug("Workshop with Id = {id} succesfully archived.", id);
+
+            return OperationResult.Success;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Archiving failed. Workshop with Id = {id} doesn't exist in the system.", id);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+    public async Task<OperationResult> Delete(Guid id)
+    {
+        logger.LogDebug("Deleting Workshop with Id = {id} started.", id);
 
         var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+        if (entity == null)
+        {
+            logger.LogWarning("Operation failed. Workshop with Id = {id} does not exist in the system.", id);
+            return OperationResult.Failed(new OperationError
+            {
+                Code = HttpStatusCode.NotFound.ToString(),
+                Description = $"Workshop with Id = {id} was not found.",
+            });
+        }
+
         try
         {
             await workshopRepository.Delete(entity).ConfigureAwait(false);
-            logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
+            logger.LogDebug("Workshop with Id = {Id} succesfully deleted", id);
+
+            return OperationResult.Success;
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
+            logger.LogError(ex, "Deleting failed. Workshop with Id = {Id} doesn't exist in the system", id);
             throw;
         }
     }
@@ -876,6 +931,8 @@ public class WorkshopService(
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
+        predicate = predicate.And(x => x.Status != WorkshopStatus.Archived);
+
         if (filter is WorkshopFilterWithSettlements settlementsFilter)
         {
             if (settlementsFilter.InstitutionId != Guid.Empty)
@@ -1050,6 +1107,8 @@ public class WorkshopService(
         var predicate = PredicateBuilder.True<Workshop>();
 
         predicate = predicate.And(x => x.ProviderId == providerId);
+
+        predicate = predicate.And(w => w.Status != WorkshopStatus.Archived);
 
         if (filter.ExcludedId.HasValue)
         {
@@ -1293,5 +1352,43 @@ public class WorkshopService(
             var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.Id)?.PendingApplications;
             card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
+    }
+
+    private async Task<(Workshop Entity, OperationResult ValidationResult)> ValidateWorkshopBeforeFinalAction(Guid id)
+    {
+        var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+        if (entity == null)
+        {
+            logger.LogWarning("Operation failed. Workshop with Id = {id} doesn't exist in the system.", id);
+            return (null, OperationResult.Failed(new OperationError
+            {
+                Code = HttpStatusCode.NotFound.ToString(),
+                Description = $"Workshop with Id = {id} not found.",
+            }));
+        }
+
+        if (entity.Status != WorkshopStatus.Closed)
+        {
+            return (null, OperationResult.Failed(new OperationError
+            {
+                Code = nameof(HttpStatusCode.BadRequest),
+                Description = "Workshop status is not Closed.",
+            }));
+        }
+
+        foreach (var app in entity.Applications.Where(a => !a.IsDeleted))
+        {
+            if (app.Status == ApplicationStatus.Pending)
+            {
+                app.Status = ApplicationStatus.Rejected;
+            }
+            else if (app.Status == ApplicationStatus.StudyingForYears)
+            {
+                app.Status = ApplicationStatus.Completed;
+            }
+        }
+
+        return (entity, null);
     }
 }
