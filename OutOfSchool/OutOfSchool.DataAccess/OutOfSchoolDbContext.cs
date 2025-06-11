@@ -227,6 +227,7 @@ public int Complete() => this.SaveChanges();
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEventDraft>());
         builder.ApplyConfiguration(new WorkshopDraftConfiguration());
         builder.ApplyConfiguration(new TeacherDraftConfiguration());
         builder.ApplyConfiguration(new ChangesLogConfiguration());
