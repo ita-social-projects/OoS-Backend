@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Common;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Configurations.BaseEntity;
 
@@ -24,7 +24,7 @@ public class CompetitiveEventDraftConfiguration : TrackableBaseEntityConfigurati
             .HasColumnType(ModelsConfigurationConstants.JsonType);
 
         builder.Property(x => x.DraftStatus)
-            .HasDefaultValue(CompetitiveEventStates.Draft);
+            .HasDefaultValue(CompetitiveEventDraftStatus.Draft);
 
         builder.Property(x => x.Version)
             .IsRowVersion();

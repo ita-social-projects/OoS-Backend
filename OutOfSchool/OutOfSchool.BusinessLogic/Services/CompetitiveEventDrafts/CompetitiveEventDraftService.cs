@@ -1,4 +1,4 @@
 ﻿namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
-public class CompetitiveEventDraftService : ICompetitiveEventDraftService
+public class CompetitiveEventDraftService /*: ICompetitiveEventDraftService*/
 {
 }

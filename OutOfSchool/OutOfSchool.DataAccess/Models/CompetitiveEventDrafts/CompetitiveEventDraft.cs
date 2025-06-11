@@ -1,5 +1,5 @@
 ﻿using OutOfSchool.Common;
-using OutOfSchool.Common.Enums.CompetitiveEvent;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
@@ -24,7 +24,7 @@ public class CompetitiveEventDraft : TrackableBaseEntity,
 
     public Guid ProviderId { get; set; }
 
-    public CompetitiveEventStates DraftStatus { get; set; } = CompetitiveEventStates.Draft;
+    public CompetitiveEventDraftStatus DraftStatus { get; set; } = CompetitiveEventDraftStatus.Draft;
 
     [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
     public string RejectionMessage { get; set; }
