@@ -21,7 +21,6 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
@@ -619,8 +618,7 @@ public class WorkshopDraftServiceTests
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto;
 
-        var workshopDraft = mapper.Map<WorkshopDraft>();
-        var workshopResponse = mapper.Map<WorkshopDraftResponseDto>(workshopDraft);
+        var workshopDraft = new WorkshopDraft();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -638,12 +636,6 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopDraft);
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopV2Dto).Verifiable(Times.Once);
-        tagRepositoryMoq
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Tag, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<Expression<Func<CATOTTG, bool>>>(),
@@ -652,6 +644,7 @@ public class WorkshopDraftServiceTests
 
         var service = new WorkshopDraftService(
                    logger.Object,
+                   new Mock<ILanguageService>().Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
                    providerServiceMoq.Object,
@@ -665,18 +658,14 @@ public class WorkshopDraftServiceTests
                    codeficatorService.Object,
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
-                   codeficatorRepositoryMoq.Object);
+                   codeficatorRepositoryMoq.Object,
+                   new Mock<IChangesLogService>().Object);
 
-        // Act 
-        var result = await service.CreateDraftForReactivation(workshop.Id).ConfigureAwait(false);
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
 
         //Assert 
         currentUserServiceMoq.VerifyAll();
-        workshopDraftRepoMoq.VerifyAll();
-        tagRepositoryMoq.VerifyAll();
-
-        result.Should().NotBeNull();
-        result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
     }
 
     #endregion

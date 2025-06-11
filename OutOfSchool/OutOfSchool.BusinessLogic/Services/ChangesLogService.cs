@@ -292,7 +292,18 @@ public class ChangesLogService(
     /// <inheritdoc />
     public async Task<SearchResult<WorkshopChangesLogDto>> GetWorkshopChangesLogAsync(WorkshopChangesLogRequest request)
     {
-        var filter = request.ToFilter();
+        ValidateFilter(request);
+        var filter = new ChangesLogFilter
+        {
+            DateFrom = request.DateFrom,
+            DateTo = request.DateTo,
+            EntityId = request.EntityId,
+            EntityType = "Workshop",
+            From = request.From,
+            Size = request.Size,
+            PropertyName = request.PropertyName,
+            SearchString = request.SearchString
+        };
 
         var changesLog = await GetChangesLogAsync(filter).ConfigureAwait(false);
 
@@ -308,7 +319,7 @@ public class ChangesLogService(
                     OldValue = l.OldValue,
                     NewValue = l.NewValue,
                     UpdatedDate = l.UpdatedDate,
-                    User = l.User.ToDto(),
+                    User = l.User.ToShortUser(),
                     WorkshopId = workshop.Id
                 });
 

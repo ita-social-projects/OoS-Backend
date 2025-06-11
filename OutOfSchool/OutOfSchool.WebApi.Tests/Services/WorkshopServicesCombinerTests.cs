@@ -438,7 +438,7 @@ public class WorkshopServicesCombinerTests
         //Arrange
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync((OperationResult)null);
 
         //Act
@@ -457,7 +457,7 @@ public class WorkshopServicesCombinerTests
         //Arrange
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(mapper.Map<WorkshopDto>(workshop));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync(OperationResult.Failed(new OperationError
         {
             Code = nameof(HttpStatusCode.BadRequest),

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -818,11 +819,6 @@ public class ChangesLogServiceTests
             .AsQueryable()
             .BuildMock();
 
-        mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<WorkshopChangesLogRequest>()))
-            .Returns(new ChangesLogFilter());
-        mapper.Setup(m => m.Map<ShortUserDto>(user))
-            .Returns(new ShortUserDto { Id = user.Id });
-
         changesLogRepository
             .Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(),
             It.IsAny<Expression<Func<ChangesLog, bool>>>(), It.IsAny<Dictionary<Expression<Func<ChangesLog, Object>>, SortDirection>>()))
@@ -1261,7 +1257,7 @@ public class ChangesLogServiceTests
         // Use private method via reflection to test
         var service = GetChangesLogService();
         var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
         var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);
@@ -1304,7 +1300,7 @@ public class ChangesLogServiceTests
         // Use private method via reflection to test
         var service = GetChangesLogService();
         var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
         var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);

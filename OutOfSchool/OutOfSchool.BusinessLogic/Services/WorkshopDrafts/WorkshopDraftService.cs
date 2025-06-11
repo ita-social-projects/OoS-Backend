@@ -160,7 +160,7 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
 
-        var workshopV2Dto = mapper.Map<WorkshopV2Dto>(existingWorkshop);
+        var workshopV2Dto = existingWorkshop.ToModel().ToV2Dto();
 
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
