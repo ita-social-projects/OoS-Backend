@@ -471,7 +471,6 @@ public class ApplicationService : IApplicationService
             {
                 { a => a.CreationTime, SortDirection.Descending }
             })
-            .Take(1)
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
         return latestApplication != null && allowedStatuses.Contains(latestApplication.Status);
