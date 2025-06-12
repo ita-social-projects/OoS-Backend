@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -16,6 +17,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService) : ICompetitiveEventDraftService
 {
 
+    // <inheritdoc/>
     public async Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto)
     {
         if (competitiveEventV2Dto == null)
@@ -59,6 +61,28 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             CompetitiveEventDraft = createdCompetitiveEventDraft.ToResponseDto(),
             UploadingCoverImagesCompetitiveEventResult = uploadImagesResult.UploadingCoverImageResult,
             UploadingImagesResults = uploadImagesResult.UploadingImagesResults?.MultipleKeyValueOperationResult
+        };
+    }
+
+    // <inheritdoc/>
+    public async Task<CompetitiveEventDraftResultDto> Update(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    {
+        if (competitiveEventDraftUpdateDto == null || competitiveEventDraftUpdateDto.CompetitiveEventV2Dto == null)
+        {
+            return null;
+        }
+
+        logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
+
+        var (updatedDraft, coverImageResult, imagesResult) = await competitiveEventRepository
+            .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
+            .ConfigureAwait(false);
+
+        return new CompetitiveEventDraftResultDto
+        {
+            CompetitiveEventDraft = updatedDraft.ToResponseDto(),
+            UploadingCoverImagesCompetitiveEventResult = coverImageResult?.UploadingResult?.OperationResult,
+            UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult
         };
     }
 
@@ -130,5 +154,75 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         return task.Result;
+    }
+
+    private async Task<CompetitiveEventDraft> GetDraftById(Guid id)
+    {
+        var draft = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
+
+        if (draft == null)
+        {
+            return null;
+        }
+
+        return draft;
+    }
+
+    private async Task<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
+           MultipleImageChangingResult imagesResult)> UpdateDraftWithImagesAsync(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    {
+        var competitiveEventDraft = await GetDraftById(competitiveEventDraftUpdateDto.Id).ConfigureAwait(false);
+
+        await currentUserService.UserHasRights(
+            new ProviderRights(competitiveEventDraft.ProviderId),
+            new EmployeeRights(competitiveEventDraft.ProviderId))
+            .ConfigureAwait(false);
+        await currentUserService.UserHasRights(
+            new ProviderRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
+            new EmployeeRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId))
+            .ConfigureAwait(false);
+
+        if (competitiveEventDraftUpdateDto.Id != Guid.Empty)
+        {
+            var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventDraftUpdateDto.Id)
+                .ConfigureAwait(false);
+
+            if (existingCompetitiveEvent == null)
+            {
+                competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id = Guid.Empty;
+            }
+            else
+            {
+                await currentUserService.UserHasRights(
+                    new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
+                    new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId))
+                    .ConfigureAwait(false);
+            }
+        }
+
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration)
+        {
+            logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status.", competitiveEventDraftUpdateDto.Id);
+            throw new InvalidOperationException("Competitive event draft can only be updated when it is in Draft status.");
+        }
+
+        competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.SetToDraft(competitiveEventDraft);
+
+        var coverImageResult = await competitiveEventDraftImagesService
+            .ChangeCoverImageAsync(competitiveEventDraft,
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.CoverImageId,
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.CoverImage)
+            .ConfigureAwait(false);
+
+        var imagesResult = await competitiveEventDraftImagesService
+            .ChangeImagesAsync(competitiveEventDraft,
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageIds,
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageFiles)
+            .ConfigureAwait(false);
+
+        await competitiveEventRepository.Update(competitiveEventDraft);
+        logger.LogDebug("Competitive event draft with ID {DraftId} updated successfully.", competitiveEventDraftUpdateDto.Id);
+
+        return (competitiveEventDraft, coverImageResult, imagesResult);
     }
 }

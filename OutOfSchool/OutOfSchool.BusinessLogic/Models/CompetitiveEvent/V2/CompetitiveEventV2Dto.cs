@@ -90,6 +90,13 @@ public static class CompetitiveEventV2DtoExtensions
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
         => list.MapToList(ToV2Dto);
 
+    public static void SetToDraft(this CompetitiveEventV2Dto dto, OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
+    {
+        draft.ProviderId = dto.OrganizerOfTheEventId;
+        draft.CompetitiveEventId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
+        draft.CompetitiveEventDraftContent = dto.ToDraftContent();
+    }
+
     public static OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft ToDraft(this CompetitiveEventV2Dto competitiveEventV2Dto)
         => new()
         {
