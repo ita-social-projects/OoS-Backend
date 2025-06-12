@@ -452,7 +452,7 @@ public class ApplicationService : IApplicationService
 
     public async Task<bool> AllowedToReview(Guid parentId, Guid workshopId)
     {
-        var statuses = new[]
+        var allowedStatuses = new[]
         {
             ApplicationStatus.Completed,
             ApplicationStatus.Approved,
@@ -461,9 +461,19 @@ public class ApplicationService : IApplicationService
 
         Expression<Func<Application, bool>> filter = a => a.ParentId == parentId
                                                           && a.WorkshopId == workshopId
-                                                          && statuses.Contains(a.Status);
+                                                          && !a.Child.IsDeleted
+                                                          && !a.Parent.IsDeleted
+                                                          && !a.Workshop.IsDeleted;
 
-        return await applicationRepository.Any(filter).ConfigureAwait(false);
+        var latestApplication = await applicationRepository.Get(
+            whereExpression: filter,
+            orderBy: new Dictionary<Expression<Func<Application, object>>, SortDirection>
+            {
+                { a => a.CreationTime, SortDirection.Descending }
+            })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        return latestApplication != null && allowedStatuses.Contains(latestApplication.Status);
     }
 
     /// <inheritdoc/>

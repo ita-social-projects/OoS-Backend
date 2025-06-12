@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Elastic.Clients.Elasticsearch.Snapshot;
 using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -1019,6 +1018,160 @@ public class ApplicationServiceTests
         // Assert
         Assert.That(result, Is.EqualTo(3));
     }
+
+    #region AllowedToReview Tests
+
+    [Test]
+    public async Task AllowedToReview_WhenNoApplicationsExist_ReturnsFalse()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var emptyQueryable = new List<Application>().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(x => x.Get(
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Expression<Func<Application, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(emptyQueryable);
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestCase(ApplicationStatus.Completed)]
+    [TestCase(ApplicationStatus.Approved)]
+    [TestCase(ApplicationStatus.StudyingForYears)]
+    public async Task AllowedToReview_WhenLatestApplicationHasAllowedStatus_ReturnsTrue(ApplicationStatus status)
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, status, DateTime.UtcNow);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestCase(ApplicationStatus.Pending)]
+    [TestCase(ApplicationStatus.AcceptedForSelection)]
+    [TestCase(ApplicationStatus.Rejected)]
+    [TestCase(ApplicationStatus.Left)]
+    public async Task AllowedToReview_WhenLatestApplicationHasNonAllowedStatus_ReturnsFalse(ApplicationStatus status)
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, status, DateTime.UtcNow);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenMultipleApplications_ChecksOnlyLatest()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow;
+
+        // Create applications with different creation times
+        var latestPending = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Pending, baseTime);
+
+        // Setup mock to return only the latest application
+        SetupRepositoryMockForAllowedToReview(new[] { latestPending });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result); // Should return false because latest application has Pending status
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenLatestHasAllowedStatusAndOlderHasNot_ReturnsTrue()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow;
+
+        // Create applications - latest has allowed status
+        var latestApproved = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Approved, baseTime);
+
+        // Setup mock to return only the latest application
+        SetupRepositoryMockForAllowedToReview(new[] { latestApproved });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result); // Should return true because latest application has Approved status
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenApplicationsHaveSameCreationTime_StillWorksCorrectly()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var sameTime = DateTime.UtcNow;
+
+        // Test with one application with allowed status
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Approved, sameTime);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result); // Should return true for allowed status
+    }
+
+    private Application CreateApplicationForAllowedToReview(Guid parentId, Guid workshopId, ApplicationStatus status, DateTime creationTime)
+    {
+        return new Application
+        {
+            Id = Guid.NewGuid(),
+            ParentId = parentId,
+            WorkshopId = workshopId,
+            ChildId = Guid.NewGuid(),
+            Status = status,
+            CreationTime = creationTime,
+            Child = new Child { IsDeleted = false },
+            Parent = new Parent { IsDeleted = false },
+            Workshop = new Workshop { IsDeleted = false }
+        };
+    }
+
+    private void SetupRepositoryMockForAllowedToReview(Application[] applications)
+    {
+        // Simulate the behavior of Get method with sorting and Take(1)
+        var mockQuery = applications.AsQueryable().BuildMock();
+
+        applicationRepositoryMock
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
+    }
+
+    #endregion
 
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
     {
