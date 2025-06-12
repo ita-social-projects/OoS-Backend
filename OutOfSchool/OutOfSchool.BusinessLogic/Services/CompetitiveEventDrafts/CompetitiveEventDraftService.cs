@@ -86,6 +86,52 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         };
     }
 
+    // <inheritdoc/>
+    public async Task Delete(Guid id)
+    {
+        logger.LogDebug("Deleting competitive event draft with ID: {DraftId}", id);
+
+        var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
+
+        await currentUserService.UserHasRights(
+            new ProviderRights(competitiveEventDraft.ProviderId),
+            new EmployeeRights(competitiveEventDraft.ProviderId))
+            .ConfigureAwait(false);
+
+        if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
+        {
+            logger.LogWarning("Competitive event draft with ID {DraftId} is in PendingModeration status and cannot be deleted.", id);
+            throw new InvalidOperationException("Competitive event draft can only be deleted when it is not in PendingModeration status.");
+        }
+
+        await competitiveEventRepository.Delete(competitiveEventDraft).ConfigureAwait(false);
+        logger.LogDebug("Competitive event draft with ID {DraftId} deleted successfully.", id);
+    }
+
+    // <inheritdoc/>
+    public async Task SendForModeration(Guid id)
+    {
+        logger.LogDebug("Sending competitive event draft with ID {DraftId} for moderation.", id);
+
+        var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
+
+        await currentUserService.UserHasRights(
+            new ProviderRights(competitiveEventDraft.ProviderId),
+            new EmployeeRights(competitiveEventDraft.ProviderId))
+            .ConfigureAwait(false);
+
+        if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
+        {
+            logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status and cannot be sent for moderation.", id);
+            throw new InvalidOperationException("Competitive event draft can only be sent for moderation when it is in Draft status.");
+        }
+
+        competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.PendingModeration;
+        await competitiveEventRepository.Update(competitiveEventDraft).ConfigureAwait(false);
+
+        logger.LogDebug("Competitive event draft with ID {DraftId} sent for moderation successfully.", id);
+    }
+
     private async Task<CompetitiveEventDraft> CreateCompetitiveEventDraft(CompetitiveEventV2Dto competitiveEventV2Dto)
     {
         var competitiveEventDraft = competitiveEventV2Dto.ToDraft();
