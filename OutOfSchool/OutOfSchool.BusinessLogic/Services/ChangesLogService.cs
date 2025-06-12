@@ -81,6 +81,11 @@ public class ChangesLogService(
     {
         var changeLogFilter = request.ToFilter();
 
+        if (currentUserService.IsModerator())
+        {
+            changeLogFilter.UserId = currentUserService.UserId;
+        }
+
         var predicate = PredicateBuilder.True<Provider>();
 
         if (currentUserService.IsMinistryAdmin())
@@ -145,6 +150,11 @@ public class ChangesLogService(
 
     public async Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request)
     {
+        if (!currentUserService.IsAdmin())
+        {
+            throw new UnauthorizedAccessException("Access denied");
+        }
+
         var changeLogFilter = request.ToFilter();
 
         var predicate = PredicateBuilder.True<Application>();
@@ -211,6 +221,11 @@ public class ChangesLogService(
 
     public async Task<SearchResult<EmployeeChangesLogDto>> GetEmployeeChangesLogAsync(EmployeeChangesLogRequest request)
     {
+        if (!currentUserService.IsAdmin())
+        {
+            throw new UnauthorizedAccessException("Access denied");
+        }
+
         ValidateFilter(request);
 
         var where = GetQueryFilter(request);
@@ -341,6 +356,11 @@ public class ChangesLogService(
         var changeLogFilter = request.ToFilter();
 
         ValidateFilter(changeLogFilter);
+
+        if (currentUserService.IsModerator())
+        {
+            changeLogFilter.UserId = currentUserService.UserId;
+        }
 
         var predicate = await GetWorkshopDraftAccessPredicateAsync();
 
@@ -636,6 +656,11 @@ public class ChangesLogService(
             {
                 expr = expr.And(x => x.EntityIdLong == recordIdLong);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.UserId))
+        {
+            expr = expr.And(x => x.UserId == filter.UserId);
         }
 
         if (filter.DateFrom.HasValue)

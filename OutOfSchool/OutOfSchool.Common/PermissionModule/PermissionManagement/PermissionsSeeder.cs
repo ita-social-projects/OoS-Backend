@@ -135,6 +135,7 @@ public static class PermissionsSeeder
     {
         Permissions.ProviderRead, Permissions.ProviderApprove,
         Permissions.WorkshopRead, Permissions.WorkshopEdit, Permissions.WorkshopApprove,
+        Permissions.LogDataRead,
         Permissions.PersonalInfo,
     };
 
