@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasImages
@@ -88,4 +89,44 @@ public static class CompetitiveEventV2DtoExtensions
 
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
         => list.MapToList(ToV2Dto);
+
+    public static OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft ToDraft(this CompetitiveEventV2Dto competitiveEventV2Dto)
+        => new()
+        {
+            ProviderId = competitiveEventV2Dto.OrganizerOfTheEventId,
+            CompetitiveEventId = competitiveEventV2Dto.Id,
+            CoverImageId = competitiveEventV2Dto.CoverImageId,
+            CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
+        };
+
+    public static List<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft> ToDraft(this IEnumerable<CompetitiveEventV2Dto> list)
+        => list.MapToList(ToDraft);
+
+    public static CompetitiveEventDraftContent ToDraftContent(this CompetitiveEventV2Dto competitiveEventV2Dto)
+        => new()
+        {
+            AdditionalDescription = competitiveEventV2Dto.AdditionalDescription,
+            AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
+            Benefits = competitiveEventV2Dto.Benefits,
+            CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
+            Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<OutOfSchool.Services.Models.ContactInfo.Contacts>(),
+            DescriptionOfOptionsForPeopleWithDisabilities = competitiveEventV2Dto.DescriptionOfOptionsForPeopleWithDisabilities,
+            DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
+            MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
+            MinimumAge = competitiveEventV2Dto.MinimumAge,
+            NumberOfSeats = competitiveEventV2Dto.NumberOfSeats,
+            OptionsForPeopleWithDisabilities = competitiveEventV2Dto.OptionsForPeopleWithDisabilities ?? default,
+            OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
+            ParentId = competitiveEventV2Dto.ParentId,
+            PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
+            PreferentialTermsOfParticipation = competitiveEventV2Dto.PreferentialTermsOfParticipation,
+            Price = competitiveEventV2Dto.Price ?? default,
+            RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
+            RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
+            ScheduledEndTime = competitiveEventV2Dto.ScheduledEndTime,
+            ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
+            ShortTitle = competitiveEventV2Dto.ShortTitle,
+            Title = competitiveEventV2Dto.Title,
+            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation
+        };
 }

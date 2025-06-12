@@ -14,18 +14,12 @@ public interface ICompetitiveEventDraftService
     /// </summary>
     /// <param name="competitiveEventV2Dto">
     /// Data transfer object containing information required to create the draft, 
-    /// including workshop details, teacher details, and optional images.
+    /// including competitive event details, and optional images.
     /// </param>
     /// <returns>
     /// A <see cref="CompetitiveEventDraftResultDto"/> containing the details of the created draft, 
     /// including any results or status from image processing operations.
     /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if the provided <paramref name="competitiveEventV2Dto"/> is null.
-    /// </exception>
-    /// <exception cref="InvalidDataException">
-    /// Thrown when the workshop does not contain a list of teachers or the list is empty.
-    /// </exception>
     Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto);
 
     /// <summary>
