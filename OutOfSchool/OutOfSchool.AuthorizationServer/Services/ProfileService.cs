@@ -46,6 +46,17 @@ public class ProfileService : IProfileService
                     additionalClaims[claim.Key] = claim.Value;
                 }
             }
+
+            // If TechAdmin or Moderator role, add IndividualId claim if not already present
+            else if (roleClaim.Value.Equals(Role.TechAdmin.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                     roleClaim.Value.Equals(Role.Moderator.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                var techStaffClaims = await GetTechStaffClaimsAsync(roleClaim.Subject);
+                foreach (var claim in techStaffClaims)
+                {
+                    additionalClaims[claim.Key] = claim.Value;
+                }
+            }
         }
 
         return additionalClaims;
@@ -100,6 +111,32 @@ public class ProfileService : IProfileService
         return claims;
     }
 
+    private async Task<IReadOnlyDictionary<string, string>> GetTechStaffClaimsAsync(ClaimsIdentity? identity)
+    {
+        var claims = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        if (identity?.Name is null)
+        {
+            return claims;
+        }
+
+        var user = await userManager.FindByNameAsync(identity.Name);
+        if (user == null)
+        {
+            return claims;
+        }
+
+        var individual = await dbContext.Individuals
+            .FirstOrDefaultAsync(i => !i.IsDeleted && i.UserId == user.Id);
+
+        if (individual != null)
+        {
+            claims[Constants.ClaimTypes.IndividualId] = individual.Id.ToString();
+        }
+
+        return claims;
+    }
+
     /// <inheritdoc />
     public async Task EnsureRequiredIdentityClaimsAsync(
         ClaimsIdentity identityToPopulate,
@@ -113,6 +150,7 @@ public class ProfileService : IProfileService
             OpenIddictConstants.Claims.FamilyName,
             OpenIddictConstants.Claims.GivenName,
             Constants.ClaimTypes.Rnokpp,
+            Constants.ClaimTypes.IndividualId,
             Constants.ClaimTypes.Edrpou,
             Constants.ClaimTypes.ProviderId,
             Constants.ClaimTypes.IsDeputy,

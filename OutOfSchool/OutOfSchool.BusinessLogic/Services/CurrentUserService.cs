@@ -304,7 +304,18 @@ public class CurrentUserService(
             return false;
         }
 
-        var result = await moderatorRepository.Any(m => m.Individual.UserId == UserId);
+        var individualIdString = GetClaimValue(Constants.ClaimTypes.IndividualId);
+        if (!Guid.TryParse(individualIdString, out var individualId))
+        {
+            if (options.AccessLogEnabled)
+            {
+                logger.LogWarning(
+                    "Unauthorized access: User ({UserId}) has invalid individual ID claim)", UserId);
+            }
+            return false;
+        }
+
+        var result = await moderatorRepository.Any(m => m.Id == individualId);
 
         if (!result && options.AccessLogEnabled)
         {
@@ -322,7 +333,18 @@ public class CurrentUserService(
             return false;
         }
 
-        var result = await techAdminRepository.Any(ta => ta.Individual.UserId == UserId);
+        var individualIdString = GetClaimValue(Constants.ClaimTypes.IndividualId);
+        if (!Guid.TryParse(individualIdString, out var individualId))
+        {
+            if (options.AccessLogEnabled)
+            {
+                logger.LogWarning(
+                    "Unauthorized access: User ({UserId}) has invalid individual ID claim)", UserId);
+            }
+            return false;
+        }
+
+        var result = await techAdminRepository.Any(ta => ta.Id == individualId);
 
         if (!result && options.AccessLogEnabled)
         {

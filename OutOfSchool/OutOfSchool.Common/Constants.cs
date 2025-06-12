@@ -286,6 +286,7 @@ public static class Constants
     public static class ClaimTypes
     {
         public const string UserId = "user_id";
+        public const string IndividualId = "individual_id";
         public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
         public const string ProviderId = "provider_id";

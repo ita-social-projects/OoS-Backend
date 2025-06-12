@@ -479,6 +479,7 @@ public class ExternalAuthController : Controller
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
             new(OpenIddictConstants.Claims.Email, userInfo.Email),
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
+            new(Constants.ClaimTypes.IndividualId, individual.Id.ToString()),
         };
 
         return claims;
