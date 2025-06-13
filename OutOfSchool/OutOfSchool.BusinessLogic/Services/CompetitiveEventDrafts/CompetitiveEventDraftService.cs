@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
@@ -13,7 +14,7 @@ namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> logger,
     ICurrentUserService currentUserService,
     ICompetitiveEventService competitiveEventService,
-    IEntityRepository<Guid, CompetitiveEventDraft> competitiveEventRepository,
+    IEntityRepository<Guid, CompetitiveEventDraft> competitiveEventDraftRepository,
     IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService) : ICompetitiveEventDraftService
 {
 
@@ -45,14 +46,14 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-        var createdCompetitiveEventDraft = await competitiveEventRepository
+        var createdCompetitiveEventDraft = await competitiveEventDraftRepository
             .RunInTransaction(() => CreateCompetitiveEventDraft(competitiveEventV2Dto))
             .ConfigureAwait(false);
 
         var uploadImagesResult = await UploadImages(createdCompetitiveEventDraft, competitiveEventV2Dto)
             .ConfigureAwait(false);
 
-        await competitiveEventRepository.SaveChangesAsync().ConfigureAwait(false);
+        await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);
 
         logger.LogDebug("Competitive event draft created successfully.");
 
@@ -74,7 +75,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
 
-        var (updatedDraft, coverImageResult, imagesResult) = await competitiveEventRepository
+        var (updatedDraft, coverImageResult, imagesResult) = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
             .ConfigureAwait(false);
 
@@ -104,7 +105,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException("Competitive event draft can only be deleted when it is not in PendingModeration status.");
         }
 
-        await competitiveEventRepository.Delete(competitiveEventDraft).ConfigureAwait(false);
+        await competitiveEventDraftRepository.Delete(competitiveEventDraft).ConfigureAwait(false);
         logger.LogDebug("Competitive event draft with ID {DraftId} deleted successfully.", id);
     }
 
@@ -127,16 +128,56 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.PendingModeration;
-        await competitiveEventRepository.Update(competitiveEventDraft).ConfigureAwait(false);
+        await competitiveEventDraftRepository.Update(competitiveEventDraft).ConfigureAwait(false);
 
         logger.LogDebug("Competitive event draft with ID {DraftId} sent for moderation successfully.", id);
+    }
+
+    // <inheritdoc/>
+    public async Task<SearchResult<CompetitiveEventDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    {
+        logger.LogDebug("Retrieving competitive event drafts for provider with ID: {ProviderId}", id);
+
+        await currentUserService.UserHasRights(new ProviderRights(id), new EmployeeRights(id)).ConfigureAwait(false);
+
+        filter ??= new ExcludeIdFilter();
+        ModelValidationHelper.ValidateExcludedIdFilter(filter);
+
+        var competitiveEventCardsCount = await competitiveEventDraftRepository
+            .Count(whereExpression: x =>
+            filter.ExcludedId == null
+            ? (x.ProviderId == id)
+            : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+
+        var competitiveEventDrafts = await competitiveEventDraftRepository.Get(
+            skip: filter.From,
+            take: filter.Size,
+            whereExpression: x => filter.ExcludedId == null
+                ? (x.ProviderId == id)
+                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+
+        var competitiveEventDraftResponseDtos = new List<CompetitiveEventDraftViewCardDto>();
+
+        foreach (var draft in competitiveEventDrafts)
+        {
+            var responseDto = draft.ToCardDto();
+            competitiveEventDraftResponseDtos.Add(responseDto);
+        }
+
+        logger.LogDebug("Retrieved {Count} competitive event drafts for provider with ID: {ProviderId}", competitiveEventDraftResponseDtos.Count, id);
+
+        return new SearchResult<CompetitiveEventDraftViewCardDto>
+        {
+            TotalAmount = competitiveEventCardsCount,
+            Entities = competitiveEventDraftResponseDtos
+        };
     }
 
     private async Task<CompetitiveEventDraft> CreateCompetitiveEventDraft(CompetitiveEventV2Dto competitiveEventV2Dto)
     {
         var competitiveEventDraft = competitiveEventV2Dto.ToDraft();
 
-        var createdDraft = await competitiveEventRepository
+        var createdDraft = await competitiveEventDraftRepository
             .Create(competitiveEventDraft)
             .ConfigureAwait(false);
 
@@ -204,7 +245,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
     private async Task<CompetitiveEventDraft> GetDraftById(Guid id)
     {
-        var draft = await competitiveEventRepository.GetById(id).ConfigureAwait(false);
+        var draft = await competitiveEventDraftRepository.GetById(id).ConfigureAwait(false);
 
         if (draft == null)
         {
@@ -266,7 +307,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageFiles)
             .ConfigureAwait(false);
 
-        await competitiveEventRepository.Update(competitiveEventDraft);
+        await competitiveEventDraftRepository.Update(competitiveEventDraft);
         logger.LogDebug("Competitive event draft with ID {DraftId} updated successfully.", competitiveEventDraftUpdateDto.Id);
 
         return (competitiveEventDraft, coverImageResult, imagesResult);
