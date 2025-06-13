@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
@@ -8,6 +9,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
@@ -15,7 +17,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     ICurrentUserService currentUserService,
     ICompetitiveEventService competitiveEventService,
     IEntityRepository<Guid, CompetitiveEventDraft> competitiveEventDraftRepository,
-    IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService) : ICompetitiveEventDraftService
+    IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService,
+    ICodeficatorRepository codeficatorRepository) : ICompetitiveEventDraftService
 {
 
     // <inheritdoc/>
@@ -171,6 +174,50 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             TotalAmount = competitiveEventCardsCount,
             Entities = competitiveEventDraftResponseDtos
         };
+    }
+
+    // <inheritdoc/>
+    public async Task<CompetitiveEventDraftResponseDto> GetCompetitiveEventDraftByIdMapped(Guid id)
+    {
+        logger.LogDebug("Retrieving competitive event draft with ID: {Id}", id);
+
+        var draft = await GetDraftById(id).ConfigureAwait(false);
+
+        await currentUserService.UserHasRights(
+            new ProviderRights(draft.ProviderId),
+            new EmployeeRights(draft.ProviderId),
+            new ModeratorRights(),
+            new TechAdminRights())
+            .ConfigureAwait(false);
+
+        return await MapCompetitiveEventDraftWithDetails(draft).ConfigureAwait(false);
+    }
+
+    private async Task<CompetitiveEventDraftResponseDto> MapCompetitiveEventDraftWithDetails(CompetitiveEventDraft draft)
+    {
+        var competitiveEventDraftResponseDto = draft.ToResponseDto();
+
+        var catottgIds = competitiveEventDraftResponseDto.CompetitiveEventDetails.Contacts
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address.CATOTTGId)
+            .Distinct()
+            .ToList();
+
+        var catottgs = await codeficatorRepository
+            .Get(whereExpression: c => catottgIds.Contains(c.Id))
+            .ToListAsync();
+
+        competitiveEventDraftResponseDto.CompetitiveEventDetails.Contacts
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address)
+            .ToList()
+            .ForEach(address =>
+                address.CodeficatorAddressDto = catottgs
+                    .FirstOrDefault(c => c.Id == address.CATOTTGId)
+                    ?.ToAllAddressPartsDto()
+            );
+
+        return competitiveEventDraftResponseDto;
     }
 
     private async Task<CompetitiveEventDraft> CreateCompetitiveEventDraft(CompetitiveEventV2Dto competitiveEventV2Dto)
