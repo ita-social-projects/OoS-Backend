@@ -1,5 +1,4 @@
-﻿using Elastic.Clients.Elasticsearch;
-using OutOfSchool.BusinessLogic.Common;
+﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
@@ -131,6 +130,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
 
+        if (competitiveEventDraft == null)
+        {
+            return OperationResult.Failed(new OperationError()
+            {
+                Code = "404",
+                Description = "Competitive event draft not found."
+            });
+        }
+
         await currentUserService.UserHasRights(
             new ProviderRights(competitiveEventDraft.ProviderId),
             new EmployeeRights(competitiveEventDraft.ProviderId))
@@ -158,6 +166,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         logger.LogDebug("Sending competitive event draft with ID {DraftId} for moderation.", id);
 
         var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
+
+        if (competitiveEventDraft == null)
+        {
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "Competitive event draft not found."
+            });
+        }
 
         await currentUserService.UserHasRights(
             new ProviderRights(competitiveEventDraft.ProviderId),
@@ -380,7 +397,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration)
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.Draft)
         {
             logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status.", competitiveEventDraftUpdateDto.Id);
             return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,

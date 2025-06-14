@@ -9,6 +9,8 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Controllers.V2;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -18,6 +20,8 @@ public class CompetitiveEventsV2ControllerTests
     private Mock<IUserService> userServiceMock;
     private Mock<ILogger<CompetitiveEventController>> loggerMock;
     private CompetitiveEventController controller;
+    private Mock<ICompetitiveEventDraftService> competitiveEventDraftServiceMock;
+    private Mock<IProviderService> providerServiceMock;
 
     [SetUp]
     public void Setup()
@@ -25,11 +29,15 @@ public class CompetitiveEventsV2ControllerTests
         competitiveEventServiceMock = new Mock<ICompetitiveEventServiceV2>();
         userServiceMock = new Mock<IUserService>();
         loggerMock = new Mock<ILogger<CompetitiveEventController>>();
+        competitiveEventDraftServiceMock = new Mock<ICompetitiveEventDraftService>();
+        providerServiceMock = new Mock<IProviderService>();
 
         controller = new CompetitiveEventController(
             competitiveEventServiceMock.Object,
             userServiceMock.Object,
-            loggerMock.Object);
+            loggerMock.Object,
+            competitiveEventDraftServiceMock.Object,
+            providerServiceMock.Object);
     }
 
     #region V2 tests

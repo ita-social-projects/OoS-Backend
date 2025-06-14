@@ -385,6 +385,8 @@ public class CompetitiveEventController : ControllerBase
                 {
                     case "400":
                         return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                    case "404":
+                        return NotFound(result.Errors.FirstOrDefault()?.Description ?? "Competitive event draft was not found by given id.");
                     default:
                         return StatusCode(500, result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
                 }
@@ -432,6 +434,8 @@ public class CompetitiveEventController : ControllerBase
                 {
                     case "400":
                         return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                    case "404":
+                        return NotFound(result.Errors.FirstOrDefault()?.Description ?? "Competitive event draft was not found by given id.");
                     default:
                         return StatusCode(500, result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
                 }

@@ -101,7 +101,7 @@ public static class CompetitiveEventV2DtoExtensions
         => new()
         {
             ProviderId = competitiveEventV2Dto.OrganizerOfTheEventId,
-            CompetitiveEventId = competitiveEventV2Dto.Id,
+            CompetitiveEventId = competitiveEventV2Dto.Id == Guid.Empty ? (Guid?)null : competitiveEventV2Dto.Id,
             CoverImageId = competitiveEventV2Dto.CoverImageId,
             CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
         };
