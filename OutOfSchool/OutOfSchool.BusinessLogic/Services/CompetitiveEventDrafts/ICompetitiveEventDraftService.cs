@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
+using OutOfSchool.BusinessLogic.Common;
 
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public interface ICompetitiveEventDraftService
@@ -31,21 +32,21 @@ public interface ICompetitiveEventDraftService
     /// A <see cref="CompetitiveEventDraftResultDto"/> containing the details of the updated draft, 
     /// including any results or status from image processing operations.
     /// </returns>
-    Task<CompetitiveEventDraftResultDto> Update(Guid id, CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto);
+    Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id, CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto);
 
     /// <summary>
     /// Delete entity.
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
+    Task<OperationResult> Delete(Guid id);
 
     /// <summary>
     /// Send draft for moderation.
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task SendForModeration(Guid id);
+    Task<OperationResult> SendForModeration(Guid id);
 
     /// <summary>
     /// Approve draft after moderating.

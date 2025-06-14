@@ -271,6 +271,11 @@ public class CompetitiveEventController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> CreateDraft([FromForm] CompetitiveEventV2Dto competitiveEventV2Dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var providerValidationResult = await ValidateProvider(competitiveEventV2Dto.OrganizerOfTheEventId).ConfigureAwait(false);
         if (providerValidationResult != null)
         {
@@ -278,6 +283,11 @@ public class CompetitiveEventController : ControllerBase
         }
 
         var result = await competitiveEventDraftService.Create(competitiveEventV2Dto).ConfigureAwait(false);
+
+        if (result == null)
+        {
+            return BadRequest("Model is invalid.");
+        }
 
         return CreatedAtAction(
             nameof(GetDraftById),
@@ -307,6 +317,11 @@ public class CompetitiveEventController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateDraft(Guid id, [FromForm] CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var providerValidationResult = await ValidateProvider(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId).ConfigureAwait(false);
         if (providerValidationResult != null)
         {
@@ -316,6 +331,18 @@ public class CompetitiveEventController : ControllerBase
         try
         {
             var result = await competitiveEventDraftService.Update(id, competitiveEventDraftUpdateDto).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                switch (result.OperationResult.Errors.FirstOrDefault().Code)
+                {
+                    case "400":
+                        return BadRequest(result.OperationResult.Errors.FirstOrDefault()?.Description ?? "Model is invalid.");
+                    default:
+                        return StatusCode(500, result.OperationResult.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                }
+            }
+
             return Ok(result);
         }
         catch (EntityDeletedConflictException ex)
@@ -350,7 +377,19 @@ public class CompetitiveEventController : ControllerBase
     {
         try
         {
-            await competitiveEventDraftService.Delete(id).ConfigureAwait(false);
+            var result = await competitiveEventDraftService.Delete(id).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                switch (result.Errors.FirstOrDefault().Code)
+                {
+                    case "400":
+                        return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                    default:
+                        return StatusCode(500, result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                }
+            }
+
             return NoContent();
         }
         catch (EntityDeletedConflictException ex)
@@ -385,7 +424,19 @@ public class CompetitiveEventController : ControllerBase
     {
         try
         {
-            await competitiveEventDraftService.SendForModeration(id).ConfigureAwait(false);
+            var result = await competitiveEventDraftService.SendForModeration(id).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                switch (result.Errors.FirstOrDefault().Code)
+                {
+                    case "400":
+                        return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                    default:
+                        return StatusCode(500, result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
+                }
+            }
+
             return Ok();
         }
         catch (EntityDeletedConflictException ex)

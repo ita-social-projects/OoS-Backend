@@ -70,39 +70,62 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public async Task<CompetitiveEventDraftResultDto> Update(Guid id,CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    public async Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id,CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
         if (competitiveEventDraftUpdateDto == null || competitiveEventDraftUpdateDto.CompetitiveEventV2Dto == null)
         {
-            return null;
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = "400",
+                Description = "Dto can't be null."
+            });
         }
 
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("Route ID cannot be empty.");
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = "400",
+                Description = "Dto's id can't be empty."
+            });
         }
 
         if (competitiveEventDraftUpdateDto.Id != Guid.Empty && competitiveEventDraftUpdateDto.Id != id)
         {
-            throw new ArgumentException("ID in route and DTO do not match.");
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = "400",
+                Description = "ID in route and DTO do not match."
+            });
         }
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
 
-        var (updatedDraft, coverImageResult, imagesResult) = await competitiveEventDraftRepository
+        var draftImageUpdateResult = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
             .ConfigureAwait(false);
 
-        return new CompetitiveEventDraftResultDto
+        if (!draftImageUpdateResult.Succeeded)
+        {
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = draftImageUpdateResult.OperationResult.Errors.FirstOrDefault().Code,
+                Description = draftImageUpdateResult.OperationResult.Errors.FirstOrDefault().Description
+            });
+        }
+
+        var (updatedDraft, coverImageResult, imagesResult) = draftImageUpdateResult.Value;
+
+        return Result<CompetitiveEventDraftResultDto>.Success(new CompetitiveEventDraftResultDto
         {
             CompetitiveEventDraft = updatedDraft.ToResponseDto(),
             UploadingCoverImagesCompetitiveEventResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult
-        };
+        });
     }
 
     // <inheritdoc/>
-    public async Task Delete(Guid id)
+    public async Task<OperationResult> Delete(Guid id)
     {
         logger.LogDebug("Deleting competitive event draft with ID: {DraftId}", id);
 
@@ -116,15 +139,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
         {
             logger.LogWarning("Competitive event draft with ID {DraftId} is in PendingModeration status and cannot be deleted.", id);
-            throw new InvalidOperationException("Competitive event draft can only be deleted when it is not in PendingModeration status.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Competitive event draft can only be deleted when it is not in PendingModeration status."
+            });
         }
 
         await competitiveEventDraftRepository.Delete(competitiveEventDraft).ConfigureAwait(false);
         logger.LogDebug("Competitive event draft with ID {DraftId} deleted successfully.", id);
+
+        return OperationResult.Success;
     }
 
     // <inheritdoc/>
-    public async Task SendForModeration(Guid id)
+    public async Task<OperationResult> SendForModeration(Guid id)
     {
         logger.LogDebug("Sending competitive event draft with ID {DraftId} for moderation.", id);
 
@@ -135,16 +164,22 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             new EmployeeRights(competitiveEventDraft.ProviderId))
             .ConfigureAwait(false);
 
-        if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.Draft)
         {
             logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status and cannot be sent for moderation.", id);
-            throw new InvalidOperationException("Competitive event draft can only be sent for moderation when it is in Draft status.");
+            return OperationResult.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Competitive event draft can only be sent for moderation when it is in Draft status."
+            });
         }
 
         competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.PendingModeration;
         await competitiveEventDraftRepository.Update(competitiveEventDraft).ConfigureAwait(false);
 
         logger.LogDebug("Competitive event draft with ID {DraftId} sent for moderation successfully.", id);
+
+        return OperationResult.Success;
     }
 
     // <inheritdoc/>
@@ -313,8 +348,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return draft;
     }
 
-    private async Task<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
-           MultipleImageChangingResult imagesResult)> UpdateDraftWithImagesAsync(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    private async Task<Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
+           MultipleImageChangingResult imagesResult)>> UpdateDraftWithImagesAsync(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
         var competitiveEventDraft = await GetDraftById(competitiveEventDraftUpdateDto.Id).ConfigureAwait(false);
 
@@ -348,7 +383,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration)
         {
             logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status.", competitiveEventDraftUpdateDto.Id);
-            throw new InvalidOperationException("Competitive event draft can only be updated when it is in Draft status.");
+            return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
+           MultipleImageChangingResult imagesResult)>.Failed(new OperationError
+           {
+               Code = "400",
+               Description = "Competitive event draft can only be updated when it is in Draft status."
+           });
         }
 
         competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.SetToDraft(competitiveEventDraft);
@@ -368,6 +408,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         await competitiveEventDraftRepository.Update(competitiveEventDraft);
         logger.LogDebug("Competitive event draft with ID {DraftId} updated successfully.", competitiveEventDraftUpdateDto.Id);
 
-        return (competitiveEventDraft, coverImageResult, imagesResult);
+        return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
+           MultipleImageChangingResult imagesResult)>.Success((competitiveEventDraft, coverImageResult, imagesResult));
     }
 }
