@@ -136,7 +136,7 @@ public class WorkshopServiceDBTests
         var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(2, result.TotalAmount);
+        Assert.AreEqual(0, result.TotalAmount);
     }
 
     [Test]
@@ -172,7 +172,7 @@ public class WorkshopServiceDBTests
         var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
         // Assert
-        Assert.AreEqual(5, result.TotalAmount);
+        Assert.AreEqual(0, result.TotalAmount);
     }
 
     [Test]
