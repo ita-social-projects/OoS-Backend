@@ -23,14 +23,15 @@ public interface ICompetitiveEventDraftService
     Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto);
 
     /// <summary>
-    /// Update existing competitive event draft.   
+    /// Update existing competitive event draft.
     /// </summary>
+    /// <param name="id">Key in the table.</param>
     /// <param name="competitiveEventDraftUpdateDto">Dto containing information required to update the draft.</param>   
     /// <returns>
     /// A <see cref="CompetitiveEventDraftResultDto"/> containing the details of the updated draft, 
     /// including any results or status from image processing operations.
     /// </returns>
-    Task<CompetitiveEventDraftResultDto> Update(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto);
+    Task<CompetitiveEventDraftResultDto> Update(Guid id, CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto);
 
     /// <summary>
     /// Delete entity.

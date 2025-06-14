@@ -18,6 +18,7 @@ using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -35,6 +36,7 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -411,6 +413,9 @@ public static class Startup
         // workshop draft images in the external storage
         services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+
+        services.AddScoped<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
+        services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>, ImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
 
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();

@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Common;
+﻿using Elastic.Clients.Elasticsearch;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
@@ -69,11 +70,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public async Task<CompetitiveEventDraftResultDto> Update(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    public async Task<CompetitiveEventDraftResultDto> Update(Guid id,CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
         if (competitiveEventDraftUpdateDto == null || competitiveEventDraftUpdateDto.CompetitiveEventV2Dto == null)
         {
             return null;
+        }
+
+        if (id == Guid.Empty)
+        {
+            throw new ArgumentException("Route ID cannot be empty.");
+        }
+
+        if (competitiveEventDraftUpdateDto.Id != Guid.Empty && competitiveEventDraftUpdateDto.Id != id)
+        {
+            throw new ArgumentException("ID in route and DTO do not match.");
         }
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
