@@ -57,7 +57,6 @@ public class WorkshopFilter : OffsetFilter
 
     public bool IsStrictWorkdays { get; set; } = false;
 
-    [Range(1,long.MaxValue, ErrorMessage = "LanguageId value must be a possitive number and greater than 0")]
     public long LanguageOfEducationId { get; set; }
 
     public long CATOTTGId { get; set; } = default;
