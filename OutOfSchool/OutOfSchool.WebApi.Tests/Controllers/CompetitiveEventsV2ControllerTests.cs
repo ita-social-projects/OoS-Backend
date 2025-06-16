@@ -653,6 +653,165 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(internalError.Value.ToString(), Does.Contain("An error occurred while deleting the draft"));
     }
 
+    [Test]
+    public async Task DeleteDraft_ReturnsInternalError_WhenServiceThrowsEntityDeletedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id))
+            .ThrowsAsync(new EntityDeletedConflictException("Service error"));
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
+    }
+
+    [Test]
+    public async Task DeleteDraft_ReturnsInternalError_WhenServiceThrowsEntityModifiedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id))
+            .ThrowsAsync(new EntityModifiedConflictException("Service error"));
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
+    }
+
+    #endregion
+
+    #region SendForModeration
+
+    [Test]
+    public async Task SendForModeration_ReturnsOkResult_WhenDraftSentForModeration()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Success;
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkResult>(result);
+        var okResult = result as OkResult;
+        Assert.That(okResult.StatusCode, Is.EqualTo(200));
+    }
+
+    [Test]
+    public async Task SendForModeration_ReturnsBadRequest_WhenOperationResultFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "400",
+            Description = "Something gone wrong."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("Something gone wrong"));
+    }
+
+    [Test]
+    public async Task SendForModeration_ReturnsNotFound_WhenDraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "404",
+            Description = "Competitive event draft was not found."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var badRequest = result as NotFoundObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(404));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("Competitive event draft was not found"));
+    }
+
+    [Test]
+    public async Task SendForModeration_ReturnsInternalError_WhenOperationResultFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "500",
+            Description = "An error occurred while sending the draft for moderation."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("An error occurred while sending the draft for moderation"));
+    }
+
+    [Test]
+    public async Task SendForModeration_ReturnsInternalError_WhenServiceThrowsEntityDeletedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id))
+            .ThrowsAsync(new EntityDeletedConflictException("Service error"));
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
+    }
+
+    [Test]
+    public async Task SendForModeration_ReturnsInternalError_WhenServiceThrowsEntityModifiedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.SendForModeration(id))
+            .ThrowsAsync(new EntityModifiedConflictException("Service error"));
+
+        // Act
+        var result = await controller.SendForModeration(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
+    }
+
     #endregion
 
     #endregion
