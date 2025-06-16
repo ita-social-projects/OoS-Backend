@@ -271,6 +271,11 @@ public class CompetitiveEventController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> CreateDraft([FromForm] CompetitiveEventV2Dto competitiveEventV2Dto)
     {
+        if (competitiveEventV2Dto is null)
+        {
+            return BadRequest("CompetitiveEventV2Dto is null.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -286,7 +291,7 @@ public class CompetitiveEventController : ControllerBase
 
         if (result == null)
         {
-            return BadRequest("Model is invalid.");
+            return BadRequest("CompetitiveEventV2Dto is null.");
         }
 
         return CreatedAtAction(

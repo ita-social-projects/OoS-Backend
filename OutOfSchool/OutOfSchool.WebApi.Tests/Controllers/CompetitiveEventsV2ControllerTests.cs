@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Controllers.V2;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 public class CompetitiveEventsV2ControllerTests
@@ -267,6 +268,107 @@ public class CompetitiveEventsV2ControllerTests
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));
         Assert.That(badRequest.Value.ToString(), Does.Contain("Test error"));
+    }
+
+    #endregion
+
+    #region CreateDraft
+
+    [Test]
+    public async Task CreateDraft_ReturnsCreated_WhenSuccessful()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            OrganizerOfTheEventId = Guid.NewGuid()
+        };
+        competitiveEventDraftServiceMock.Setup(s => s.Create(dto))
+            .ReturnsAsync(new CompetitiveEventDraftResultDto
+            {
+                CompetitiveEventDraft = new CompetitiveEventDraftResponseDto
+                {
+                    CompetitiveEventDraftId = dto.Id,
+                }
+            });
+        providerServiceMock.Setup(s => s.IsBlocked(dto.OrganizerOfTheEventId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.CreateDraft(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<CreatedAtActionResult>());
+
+        var createdResult = result as CreatedAtActionResult;
+        Assert.That(createdResult?.Value, Is.InstanceOf<CompetitiveEventDraftResultDto>());
+
+        var responseDto = createdResult.Value as CompetitiveEventDraftResultDto;
+        Assert.That(responseDto?.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(dto.Id));
+    }
+
+    [Test]
+    public async Task CreateDraft_ReturnsBadRequest_WhenResultNull()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        providerServiceMock.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
+        competitiveEventDraftServiceMock.Setup(s => s.Create(dto))
+            .ReturnsAsync((CompetitiveEventDraftResultDto)null);
+
+        // Act
+        var result = await controller.CreateDraft(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("CompetitiveEventV2Dto is null"));
+    }
+
+    [Test]
+    public async Task CreateDraft_ReturnsBadRequest_WhenDtoIsNull()
+    {
+        // Act
+        var result = await controller.CreateDraft(null).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("CompetitiveEventV2Dto is null"));
+    }
+
+    [Test]
+    public async Task CreateDraft_ReturnsBadRequest_WhenProviderDoesNotExist()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        providerServiceMock.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync((bool?)null);
+
+        // Act
+        var result = await controller.CreateDraft(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var objectResult = result as ObjectResult;
+        Assert.That(objectResult?.StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task CreateDraft_ReturnsForbidden_WhenProviderIsBlocked()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        providerServiceMock.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(true);
+
+        // Act
+        var result = await controller.CreateDraft(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var objectResult = result as ObjectResult;
+        Assert.That(objectResult?.StatusCode, Is.EqualTo(403));
     }
 
     #endregion
