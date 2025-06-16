@@ -814,5 +814,78 @@ public class CompetitiveEventsV2ControllerTests
 
     #endregion
 
+    #region GetDraftByProviderId
+
+    [Test]
+    public async Task GetDraftByProviderId_ReturnsOk_WhenResultsExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var filter = new ExcludeIdFilter();
+        var resultDto = new SearchResult<CompetitiveEventDraftViewCardDto> { TotalAmount = 1, Entities = new List<CompetitiveEventDraftViewCardDto> { new() } };
+        competitiveEventDraftServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(resultDto);
+
+        // Act
+        var result = await controller.GetDraftByProviderId(id, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+    }
+
+    [Test]
+    public async Task GetDraftByProviderId_ReturnsNoContent_WhenNoEntitiesExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var filter = new ExcludeIdFilter();
+        var emptyResult = new SearchResult<CompetitiveEventDraftViewCardDto> { TotalAmount = 0, Entities = new List<CompetitiveEventDraftViewCardDto>() };
+
+        competitiveEventDraftServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(emptyResult);
+        // Act
+        var result = await controller.GetDraftByProviderId(id, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    #endregion
+
+    #region GetDraftById
+
+    [Test]
+    public async Task GetDraftById_ReturnsOk_WhenDraftExists()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var draftDto = new CompetitiveEventDraftResponseDto { CompetitiveEventDraftId = id };
+        competitiveEventDraftServiceMock.Setup(s => s.GetCompetitiveEventDraftByIdMapped(id)).ReturnsAsync(draftDto);
+
+        // Act
+        var result = await controller.GetDraftById(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = result as OkObjectResult;
+        Assert.That(okResult.Value, Is.InstanceOf<CompetitiveEventDraftResponseDto>());
+        var responseDto = okResult.Value as CompetitiveEventDraftResponseDto;
+        Assert.That(responseDto.CompetitiveEventDraftId, Is.EqualTo(id));
+    }
+
+    [Test]
+    public async Task GetDraftById_ReturnsNotFound_WhenDraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.GetCompetitiveEventDraftByIdMapped(id)).ReturnsAsync((CompetitiveEventDraftResponseDto)null);
+
+        // Act
+        var result = await controller.GetDraftById(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundResult>(result);
+    }
+
+    #endregion
+
     #endregion
 }
