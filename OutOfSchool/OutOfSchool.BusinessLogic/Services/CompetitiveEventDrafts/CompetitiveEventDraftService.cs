@@ -256,6 +256,30 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return await MapCompetitiveEventDraftWithDetails(draft).ConfigureAwait(false);
     }
 
+    public Task Approve(Guid id)
+    {
+        // TODO: implement method
+        throw new NotImplementedException();
+    }
+
+    public Task Reject(Guid id, string rejectionMessage)
+    {
+        // TODO: implement method
+        throw new NotImplementedException();
+    }
+
+    public Task<CompetitiveEventV2Dto> UpdateCompetitiveEvent(CompetitiveEventV2Dto competitiveEventV2Dto)
+    {
+        // TODO: implement method(?)
+        throw new NotImplementedException();
+    }
+
+    public Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
+    {
+        // TODO: implement method(?)
+        throw new NotImplementedException();
+    }
+
     private async Task<CompetitiveEventDraftResponseDto> MapCompetitiveEventDraftWithDetails(CompetitiveEventDraft draft)
     {
         var competitiveEventDraftResponseDto = draft.ToResponseDto();
