@@ -569,5 +569,91 @@ public class CompetitiveEventsV2ControllerTests
 
     #endregion
 
+    #region DeleteDraft
+
+    [Test]
+    public async Task DeleteDraft_ReturnsNoContent_WhenDraftDeleted()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Success;
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+        var noContentResult = result as NoContentResult;
+        Assert.That(noContentResult.StatusCode, Is.EqualTo(204));
+    }
+
+    [Test]
+    public async Task DeleteDraft_ReturnsBadRequest_WhenOpeartionResultFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "400",
+            Description = "Something gone wrong."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("Something gone wrong"));
+    }
+
+    [Test]
+    public async Task DeleteDraft_ReturnsNotFound_WhenDraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "404",
+            Description = "Draft does not exist."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+        var notFoundResult = result as NotFoundObjectResult;
+        Assert.That(notFoundResult.StatusCode, Is.EqualTo(404));
+    }
+
+    [Test]
+    public async Task DeleteDraft_ReturnsInternalError_WhenOperationResultFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var response = OperationResult.Failed(new OperationError
+        {
+            Code = "500",
+            Description = "An error occurred while deleting the draft."
+        });
+        competitiveEventDraftServiceMock.Setup(s => s.Delete(id)).ReturnsAsync(response);
+
+        // Act
+        var result = await controller.DeleteDraft(id).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<ObjectResult>(result);
+        var internalError = result as ObjectResult;
+        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.Value.ToString(), Does.Contain("An error occurred while deleting the draft"));
+    }
+
+    #endregion
+
     #endregion
 }
