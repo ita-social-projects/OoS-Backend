@@ -13,6 +13,8 @@ using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Controllers.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.Services.Common.Exceptions;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 public class CompetitiveEventsV2ControllerTests
@@ -323,7 +325,7 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
-        Assert.That(badRequest?.Value.ToString(), Does.Contain("CompetitiveEventV2Dto is null"));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("Dto is null"));
     }
 
     [Test]
@@ -336,7 +338,7 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
-        Assert.That(badRequest?.Value.ToString(), Does.Contain("CompetitiveEventV2Dto is null"));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("Returned result is null"));
     }
 
     [Test]
@@ -369,6 +371,200 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(result, Is.InstanceOf<ObjectResult>());
         var objectResult = result as ObjectResult;
         Assert.That(objectResult?.StatusCode, Is.EqualTo(403));
+    }
+
+    #endregion
+
+    #region UpdateDraft
+
+    [Test]
+    public async Task UpdateDraft_ReturnsBadRequest_WhenDtoIsNull()
+    {
+        // Act
+        var result = await controller.UpdateDraft(Guid.NewGuid(), null).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("Dto is null"));
+    }
+
+    [Test]
+    public async Task UpdateDraft_ReturnsOk_WhenSuccessful()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var providerId = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = id,
+                OrganizerOfTheEventId = providerId
+            }
+        };
+        var returnedResult = Result<CompetitiveEventDraftResultDto>.Success(new CompetitiveEventDraftResultDto()
+        {
+            CompetitiveEventDraft = new CompetitiveEventDraftResponseDto
+            {
+                CompetitiveEventDraftId = id,
+                CompetitiveEventDetails = dto.CompetitiveEventV2Dto
+            }
+        });
+
+        competitiveEventDraftServiceMock.Setup(s => s.Update(id, dto))
+            .ReturnsAsync(returnedResult);
+        providerServiceMock.Setup(s => s.IsBlocked(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.UpdateDraft(id, dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = result as OkObjectResult;
+        Assert.That(okResult?.Value, Is.InstanceOf<Result<CompetitiveEventDraftResultDto>>());
+        var responseResult = okResult.Value as Result<CompetitiveEventDraftResultDto>;
+        Assert.That(responseResult.Succeeded, Is.True);
+        Assert.That(responseResult.Value.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(id));
+    }
+
+    [Test]
+    public async Task UpdateDraft_ReturnsBadReques_WhenOpeartionResultIsFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var providerId = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = id,
+                OrganizerOfTheEventId = providerId
+            }
+        };
+        var returnedResult = Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+        {
+            Code = "400",
+            Description = "An error occurred while updating the draft."
+        });
+
+        competitiveEventDraftServiceMock.Setup(s => s.Update(id, dto))
+            .ReturnsAsync(returnedResult);
+        providerServiceMock.Setup(s => s.IsBlocked(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.UpdateDraft(id, dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
+        var errorDescription = badRequest.Value;
+        Assert.That(errorDescription, Does.Contain("error occurred while updating the draft"));
+    }
+
+    [Test]
+    public async Task UpdateDraft_ReturnsInternalError_WhenOpeartionResultIsFailed()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var providerId = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = id,
+                OrganizerOfTheEventId = providerId
+            }
+        };
+        var returnedResult = Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+        {
+            Code = "500",
+            Description = "An error occurred while updating the draft."
+        });
+
+        competitiveEventDraftServiceMock.Setup(s => s.Update(id, dto))
+            .ReturnsAsync(returnedResult);
+        providerServiceMock.Setup(s => s.IsBlocked(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.UpdateDraft(id, dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var internalError = result as ObjectResult;
+        Assert.That(internalError?.StatusCode, Is.EqualTo(500));
+        var errorDescription = internalError.Value;
+        Assert.That(errorDescription, Does.Contain("error occurred while updating the draft"));
+    }
+
+    [Test]
+    public async Task UpdateDraft_ReturnsInternalError_WhenServiceThrowsEntityDeletedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var providerId = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = id,
+                OrganizerOfTheEventId = providerId
+            }
+        };
+        competitiveEventDraftServiceMock.Setup(s => s.Update(id, dto))
+            .ThrowsAsync(new EntityDeletedConflictException("Service error"));
+        providerServiceMock.Setup(s => s.IsBlocked(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.UpdateDraft(id, dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var internalError = result as ObjectResult;
+        Assert.That(internalError?.StatusCode, Is.EqualTo(500));
+        var errorDescription = internalError.Value;
+        Assert.That(errorDescription, Does.Contain("Service error"));
+    }
+
+    [Test]
+    public async Task UpdateDraft_ReturnsInternalError_WhenServiceThrowsEntityModifiedConflictException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var providerId = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = id,
+                OrganizerOfTheEventId = providerId
+            }
+        };
+        competitiveEventDraftServiceMock.Setup(s => s.Update(id, dto))
+            .ThrowsAsync(new EntityModifiedConflictException("Service error"));
+        providerServiceMock.Setup(s => s.IsBlocked(providerId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.UpdateDraft(id, dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var internalError = result as ObjectResult;
+        Assert.That(internalError?.StatusCode, Is.EqualTo(500));
+        var errorDescription = internalError.Value;
+        Assert.That(errorDescription, Does.Contain("Service error"));
     }
 
     #endregion

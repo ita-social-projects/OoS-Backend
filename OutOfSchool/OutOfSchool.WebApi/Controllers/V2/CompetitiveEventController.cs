@@ -273,7 +273,7 @@ public class CompetitiveEventController : ControllerBase
     {
         if (competitiveEventV2Dto is null)
         {
-            return BadRequest("CompetitiveEventV2Dto is null.");
+            return BadRequest("Dto is null.");
         }
 
         if (!ModelState.IsValid)
@@ -291,7 +291,7 @@ public class CompetitiveEventController : ControllerBase
 
         if (result == null)
         {
-            return BadRequest("CompetitiveEventV2Dto is null.");
+            return BadRequest("Returned result is null.");
         }
 
         return CreatedAtAction(
@@ -322,6 +322,11 @@ public class CompetitiveEventController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateDraft(Guid id, [FromForm] CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
+        if (competitiveEventDraftUpdateDto is null)
+        {
+            return BadRequest("Dto is null.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
