@@ -325,7 +325,7 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
-        Assert.That(badRequest?.Value.ToString(), Does.Contain("Dto is null"));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("Returned result is null"));
     }
 
     [Test]
@@ -338,7 +338,7 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
-        Assert.That(badRequest?.Value.ToString(), Does.Contain("Returned result is null"));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("Dto is null"));
     }
 
     [Test]

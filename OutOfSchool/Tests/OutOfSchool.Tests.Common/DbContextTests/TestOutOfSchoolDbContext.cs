@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using System.Text.Json;
 
@@ -21,6 +22,14 @@ public class TestOutOfSchoolDbContext : OutOfSchoolDbContext
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<WorkshopDraftContent>(v, (JsonSerializerOptions)null));
+        });
+
+        builder.Entity<CompetitiveEventDraft>(entity =>
+        {
+            entity.Property(p => p.CompetitiveEventDraftContent)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Deserialize<CompetitiveEventDraftContent>(v, (JsonSerializerOptions)null));
         });
     }
 }
