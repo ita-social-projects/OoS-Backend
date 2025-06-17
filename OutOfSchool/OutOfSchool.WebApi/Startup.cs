@@ -44,6 +44,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -232,6 +233,7 @@ public static class Startup
                         NoStore = false,
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
+                options.ModelBinderProviders.Insert(0, new EnumCollectionModelBinderProvider());
             })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

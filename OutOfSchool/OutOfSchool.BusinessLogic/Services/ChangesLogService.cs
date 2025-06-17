@@ -1,13 +1,14 @@
-﻿using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -32,6 +33,8 @@ public class ChangesLogService(
 {
     public const char WORD_SEPARATOR_SPACE = ' ';
     public const char WORD_SEPARATOR_COMMA = ',';
+
+    private const string WorkshopDraftEntityName = nameof(WorkshopDraft);
 
     private static readonly char[] wordSplitSymbols = [ WORD_SEPARATOR_SPACE, WORD_SEPARATOR_COMMA ];
 
@@ -77,6 +80,11 @@ public class ChangesLogService(
     public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
     {
         var changeLogFilter = request.ToFilter();
+
+        if (currentUserService.IsModerator())
+        {
+            changeLogFilter.UserId = currentUserService.UserId;
+        }
 
         var predicate = PredicateBuilder.True<Provider>();
 
@@ -142,6 +150,11 @@ public class ChangesLogService(
 
     public async Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request)
     {
+        if (!currentUserService.IsAdmin())
+        {
+            throw new UnauthorizedAccessException("Access denied");
+        }
+
         var changeLogFilter = request.ToFilter();
 
         var predicate = PredicateBuilder.True<Application>();
@@ -208,6 +221,11 @@ public class ChangesLogService(
 
     public async Task<SearchResult<EmployeeChangesLogDto>> GetEmployeeChangesLogAsync(EmployeeChangesLogRequest request)
     {
+        if (!currentUserService.IsAdmin())
+        {
+            throw new UnauthorizedAccessException("Access denied");
+        }
+
         ValidateFilter(request);
 
         var where = GetQueryFilter(request);
@@ -339,6 +357,11 @@ public class ChangesLogService(
 
         ValidateFilter(changeLogFilter);
 
+        if (currentUserService.IsModerator())
+        {
+            changeLogFilter.UserId = currentUserService.UserId;
+        }
+
         var predicate = await GetWorkshopDraftAccessPredicateAsync();
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
@@ -376,8 +399,21 @@ public class ChangesLogService(
             return;
         }
 
-        // Separate collection and non-collection properties
-        var collectionProperties = new[] { nameof(WorkshopDraftContent.WorkshopDescriptionItems) };
+        var trackedPropertiesSet = trackedProperties.ToHashSet();
+
+        var contactCollectionProperties = new[]
+{
+            "Contacts.Phones",
+            "Contacts.Emails",
+            "Contacts.SocialNetworks"
+        };
+
+        // Combine all collection properties
+        var collectionProperties = new[]
+        {
+            nameof(WorkshopDraftContent.WorkshopDescriptionItems)
+        }.Concat(contactCollectionProperties).ToArray();
+
         var nonCollectionProperties = trackedProperties.Except(collectionProperties).ToList();
 
         // Log regular properties
@@ -385,7 +421,7 @@ public class ChangesLogService(
             oldContent,
             newContent,
             draftId,
-            "WorkshopDraft",
+            WorkshopDraftEntityName,
             userId,
             nonCollectionProperties,
             valueProjector);
@@ -393,18 +429,38 @@ public class ChangesLogService(
         // Log collections
         var collectionLogs = new List<ChangesLog>();
 
-        if (trackedProperties.Contains(nameof(WorkshopDraftContent.WorkshopDescriptionItems)))
+        // Log WorkshopDescriptionItems
+        if (trackedPropertiesSet.Contains(nameof(WorkshopDraftContent.WorkshopDescriptionItems)))
         {
-            collectionLogs = collectionChangeLogger.CompareCollections(
+            var descriptionItemsLogs = collectionChangeLogger.CompareCollections(
                 oldContent.WorkshopDescriptionItems ?? [],
                 newContent.WorkshopDescriptionItems ?? [],
                 item => item.SectionName,
                 draftId,
-                "WorkshopDraft",
+                WorkshopDraftEntityName,
                 userId,
                 nameof(WorkshopDraftContent.WorkshopDescriptionItems),
                 valueProjector,
                 true);
+
+            collectionLogs.AddRange(descriptionItemsLogs);
+        }
+
+        // Log contact collections
+        var trackedContactProperties = contactCollectionProperties
+            .Where(trackedPropertiesSet.Contains)
+            .ToArray();
+
+        if (trackedContactProperties.Length > 0)
+        {
+            var contactsLogs = LogContactCollections(
+                oldContent.Contacts ?? [],
+                newContent.Contacts ?? [],
+                trackedContactProperties,
+                draftId,
+                userId);
+
+            collectionLogs.AddRange(contactsLogs);
         }
 
         // Save combined logs
@@ -416,6 +472,112 @@ public class ChangesLogService(
             logger.LogInformation("Logged {Count} changes for WorkshopDraft {DraftId}.", allLogs.Count, draftId);
         }
     }
+
+    /// <summary>
+    /// Logs changes in contact collections (phones, emails, social networks) for all contacts.
+    /// </summary>
+    private List<ChangesLog> LogContactCollections(
+        List<Contacts> oldContacts,
+        List<Contacts> newContacts,
+        string[] trackedCollectionProperties,
+        Guid draftId,
+        string userId)
+    {
+        var logs = new List<ChangesLog>();
+        var maxCount = Math.Max(oldContacts.Count, newContacts.Count);
+
+        for (int i = 0; i < maxCount; i++)
+        {
+            var oldContact = i < oldContacts.Count ? oldContacts[i] : null;
+            var newContact = i < newContacts.Count ? newContacts[i] : null;
+
+            if (oldContact == null && newContact == null)
+                continue;
+
+            var contactIdentifier = GetContactIdentifier(oldContact, newContact, i);
+
+            foreach (var trackedProperty in trackedCollectionProperties)
+            {
+                var collectionType = GetContactCollectionType(trackedProperty);
+
+                if (!collectionType.HasValue)
+                    continue;
+
+                var propertyPrefix = $"Contacts[{contactIdentifier}].{collectionType}";
+
+                var collectionLogs = GetContactCollectionLogs(
+                    oldContact,
+                    newContact,
+                    collectionType.Value,
+                    draftId,
+                    userId,
+                    propertyPrefix);
+
+                logs.AddRange(collectionLogs);
+            }
+        }
+
+        return logs;
+    }
+
+    private static ContactCollectionType? GetContactCollectionType(string trackedProperty) =>
+        trackedProperty switch
+        {
+            "Contacts.Phones" => ContactCollectionType.Phones,
+            "Contacts.Emails" => ContactCollectionType.Emails,
+            "Contacts.SocialNetworks" => ContactCollectionType.SocialNetworks,
+            _ => null
+        };
+
+    private static string GetContactIdentifier(Contacts oldContact, Contacts newContact, int index)
+    {
+        var title = newContact?.Title ?? oldContact?.Title;
+        return !string.IsNullOrWhiteSpace(title) ? title : $"Index{index}";
+    }
+
+    private List<ChangesLog> GetContactCollectionLogs(
+       Contacts oldContact,
+       Contacts newContact,
+       ContactCollectionType collectionType,
+       Guid draftId,
+       string userId,
+       string propertyPrefix) => collectionType switch
+       {
+           ContactCollectionType.Phones => collectionChangeLogger.CompareCollections(
+                oldContact?.Phones ?? [],
+                newContact?.Phones ?? [],
+                phone => phone.Number,
+                draftId,
+                WorkshopDraftEntityName,
+                userId,
+                propertyPrefix,
+                valueProjector,
+                true),
+
+           ContactCollectionType.Emails => collectionChangeLogger.CompareCollections(
+                oldContact?.Emails ?? [],
+                newContact?.Emails ?? [],
+                email => email.Address,
+                draftId,
+                WorkshopDraftEntityName,
+                userId,
+                propertyPrefix,
+                valueProjector,
+                true),
+
+           ContactCollectionType.SocialNetworks => collectionChangeLogger.CompareCollections(
+                oldContact?.SocialNetworks ?? [],
+                newContact?.SocialNetworks ?? [],
+                sn => $"{sn.Type}_{sn.Url}",
+                draftId,
+                WorkshopDraftEntityName,
+                userId,
+                propertyPrefix,
+                valueProjector,
+                true),
+
+           _ => []
+       };
 
     /// <inheritdoc />
     public void LogImageDeletions(
@@ -494,6 +656,11 @@ public class ChangesLogService(
             {
                 expr = expr.And(x => x.EntityIdLong == recordIdLong);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.UserId))
+        {
+            expr = expr.And(x => x.UserId == filter.UserId);
         }
 
         if (filter.DateFrom.HasValue)

@@ -269,7 +269,14 @@ public class AuthController : Controller
                             AddProviderClaims(claims, providerId, providerEdrpou, isDeputy);
                         }
                     }
-                    
+
+                    else if (nameof(Role.TechAdmin).Equals(user.Role, StringComparison.OrdinalIgnoreCase) ||
+                             nameof(Role.Moderator).Equals(user.Role, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Add IndividualId claim for TechAdmin and Moderator
+                        claims.Add(new Claim(Constants.ClaimTypes.IndividualId, individual.Id.ToString()));
+                    }
+
                     var properties = new AuthenticationProperties
                     {
                         RedirectUri = model.ReturnUrl,

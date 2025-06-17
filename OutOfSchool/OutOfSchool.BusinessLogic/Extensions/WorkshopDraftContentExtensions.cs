@@ -1,4 +1,5 @@
-﻿using OutOfSchool.Services.Models.WorkshopDrafts;
+﻿using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Extensions;
 
@@ -33,6 +34,47 @@ public static class WorkshopDraftContentExtensions
                 {
                     SectionName = x.SectionName,
                     Description = x.Description
+                })
+                .ToList(),
+
+            Contacts = source.Contacts?
+                .Select(contact => new Contacts
+                {
+                    Title = contact.Title,
+                    IsDefault = contact.IsDefault,
+                    Address = contact.Address != null ? new ContactsAddress
+                    {
+                        Street = contact.Address.Street,
+                        BuildingNumber = contact.Address.BuildingNumber,
+                        Latitude = contact.Address.Latitude,
+                        Longitude = contact.Address.Longitude,
+                        GeoHash = contact.Address.GeoHash,
+                        CATOTTGId = contact.Address.CATOTTGId
+                    } : null,
+
+                    Phones = contact.Phones?
+                        .Select(phone => new PhoneNumber
+                        {
+                            Type = phone.Type,
+                            Number = phone.Number
+                        })
+                        .ToList() ?? [],
+
+                    Emails = contact.Emails?
+                        .Select(email => new Email
+                        {
+                            Type = email.Type,
+                            Address = email.Address
+                        })
+                        .ToList() ?? [],
+
+                    SocialNetworks = contact.SocialNetworks?
+                        .Select(sn => new SocialNetwork
+                        {
+                            Type = sn.Type,
+                            Url = sn.Url
+                        })
+                        .ToList() ?? []
                 })
                 .ToList()
         };
