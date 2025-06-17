@@ -14,9 +14,9 @@ public class EnumCollectionModelBinder<T> : IModelBinder where T : struct, Enum
 
         var values = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
 
-        if (values == StringValues.Empty)
+        if (values == ValueProviderResult.None || values == StringValues.Empty)
         {
-            bindingContext.Result = ModelBindingResult.Success(new HashSet<T>());
+            bindingContext.Result = ModelBindingResult.Success(null);
             return Task.CompletedTask;
         }
 

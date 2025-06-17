@@ -52,7 +52,7 @@ public class EnumCollectionModelBinderTests
     }
 
     [Test]
-    public async Task BindModelAsync_WithEmptyValues_ReturnsEmptyHashSet()
+    public async Task BindModelAsync_WithEmptyValues_ReturnsNull()
     {
         // Arrange
         _valueProvider.SetValue("testParam", StringValues.Empty);
@@ -62,9 +62,7 @@ public class EnumCollectionModelBinderTests
 
         // Assert
         Assert.That(_bindingContext.Result.IsModelSet, Is.True);
-        var result = _bindingContext.Result.Model as HashSet<TestEnum>;
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count, Is.EqualTo(0));
+        Assert.That(_bindingContext.Result.Model, Is.Null);
         Assert.That(_modelState.IsValid, Is.True);
     }
 
@@ -256,6 +254,36 @@ public class EnumCollectionModelBinderTests
         Assert.That(result.Count, Is.EqualTo(0)); // 0 is not defined in TestEnum
         Assert.That(_modelState.IsValid, Is.False);
         Assert.That(_modelState.ContainsKey("testParam"), Is.True);
+    }
+
+    [Test]
+    public async Task BindModelAsync_WithNoValues_ReturnsNull()
+    {
+        // Act
+        await _modelBinder.BindModelAsync(_bindingContext);
+
+        // Assert
+        Assert.That(_bindingContext.Result.IsModelSet, Is.True);
+        Assert.That(_bindingContext.Result.Model, Is.Null);
+        Assert.That(_modelState.IsValid, Is.True);
+    }
+
+
+    [Test]
+    public async Task BindModelAsync_WithOnlyWhitespaceValues_ReturnsEmptyHashSet()
+    {
+        // Arrange
+        _valueProvider.SetValue("testParam", new StringValues(["", "   ", null]));
+
+        // Act
+        await _modelBinder.BindModelAsync(_bindingContext);
+
+        // Assert
+        Assert.That(_bindingContext.Result.IsModelSet, Is.True);
+        var result = _bindingContext.Result.Model as HashSet<TestEnum>;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count, Is.EqualTo(0));
+        Assert.That(_modelState.IsValid, Is.True);
     }
 
     // Helper class for testing
