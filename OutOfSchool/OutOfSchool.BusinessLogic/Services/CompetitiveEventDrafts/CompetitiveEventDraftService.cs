@@ -126,6 +126,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     // <inheritdoc/>
     public async Task<OperationResult> Delete(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            return OperationResult.Failed(new OperationError()
+            {
+                Code = "400",
+                Description = "Id cannot be empty."
+            });
+        }
+
         logger.LogDebug("Deleting competitive event draft with ID: {DraftId}", id);
 
         var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
@@ -163,6 +172,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     // <inheritdoc/>
     public async Task<OperationResult> SendForModeration(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            return OperationResult.Failed(new OperationError()
+            {
+                Code = "400",
+                Description = "Id cannot be empty."
+            });
+        }
+
         logger.LogDebug("Sending competitive event draft with ID {DraftId} for moderation.", id);
 
         var competitiveEventDraft = await GetDraftById(id).ConfigureAwait(false);
@@ -245,6 +263,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         logger.LogDebug("Retrieving competitive event draft with ID: {Id}", id);
 
         var draft = await GetDraftById(id).ConfigureAwait(false);
+
+        if (draft == null)
+        {
+            return null;
+        }
 
         await currentUserService.UserHasRights(
             new ProviderRights(draft.ProviderId),
