@@ -117,6 +117,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool AreThereBenefits { get; set; } = default;
 
+    public bool IsChampionPath { get; set; } = false;
+
     [MaxLength(500)]
     public string PreferentialTermsOfParticipation { get; set; }
 

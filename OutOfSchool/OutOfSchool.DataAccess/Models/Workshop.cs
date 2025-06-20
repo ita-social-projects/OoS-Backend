@@ -110,6 +110,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public Coverage Coverage { get; set; } = Coverage.School;
 
+    public bool IsChampionPath { get; set; } = false;
+
     [Required(ErrorMessage = "Provider is required")]
     public Guid ProviderId { get; set; }
 
