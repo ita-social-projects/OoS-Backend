@@ -282,6 +282,11 @@ public static class Constants
     /// </summary>
     public const int MaxLanguageNameLength = 25;
 
+    public static class ExternalImages
+    {
+        public const string CustomFileName = "customFileName";
+        public const string IsProcessed = "is-processed";
+    }
 
     public static class ClaimTypes
     {

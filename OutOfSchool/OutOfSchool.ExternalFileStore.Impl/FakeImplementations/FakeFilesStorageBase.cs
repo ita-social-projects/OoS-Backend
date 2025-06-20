@@ -44,6 +44,6 @@ where TFile : FileModel, new()
 
     protected override async Task<bool> ExistsOperationAsync(string imageId, CancellationToken cancellationToken = default)
     {
-        return (await StorageClient.GetByIdAsync(imageId) is null);
+        return (await StorageClient.GetByIdAsync(imageId) is not null);
     }
 }

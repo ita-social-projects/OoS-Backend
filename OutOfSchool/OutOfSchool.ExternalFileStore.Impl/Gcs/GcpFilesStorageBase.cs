@@ -104,6 +104,6 @@ public abstract class GcpFilesStorageBase<TFile>(IStorageContext<StorageClient> 
 
     protected override async Task<bool> ExistsOperationAsync(string imageId, CancellationToken cancellationToken = default)
     {
-        return (await StorageClient.GetObjectAsync(BucketName, imageId, cancellationToken: cancellationToken) is null);
+        return (await StorageClient.GetObjectAsync(BucketName, imageId, cancellationToken: cancellationToken) is not null);
     }
 }

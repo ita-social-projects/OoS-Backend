@@ -68,12 +68,12 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             var metadataThumbnail = new Dictionary<string, string>
             { 
-                { MetadataKeys.ExternalImages.CustomFileName , thumbnailId }
+                { Constants.ExternalImages.CustomFileName , thumbnailId }
             };
 
             var metadataImage = new Dictionary<string, string>
             {
-                { MetadataKeys.ExternalImages.IsProcessed , "true" }
+                { Constants.ExternalImages.IsProcessed , "true" }
             };
 
             var uploadedThumbnailId = await imageStorage.UploadAsync(
