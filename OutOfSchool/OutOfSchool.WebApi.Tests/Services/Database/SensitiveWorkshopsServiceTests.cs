@@ -14,6 +14,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -31,10 +32,11 @@ public class SensitiveWorkshopsServiceTests
     private readonly string includingPropertiesForMappingDtoModel =
         $"{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},"
         + $"{nameof(Workshop.InstitutionHierarchy)},Contacts.Address.CATOTTG";
-
+    
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock <IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -52,6 +54,7 @@ public class SensitiveWorkshopsServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        institutionHierarchyServiceMock =  new Mock<IInstitutionHierarchyService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
@@ -69,6 +72,7 @@ public class SensitiveWorkshopsServiceTests
             new WorkshopService(
                 workshopRepository.Object,
                 languageServiceMock.Object,
+                institutionHierarchyServiceMock.Object,
                 tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,

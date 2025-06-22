@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
@@ -29,9 +30,9 @@ public class WorkshopServiceDBTests
 {
     private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
     private TestOutOfSchoolDbContext dbContext;
-
     private IWorkshopService workshopService;
     private IWorkshopRepository workshopRepository;
+    private Mock <IInstitutionHierarchyService> institutionHierarchyService;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
     private Mock<ITeacherService> teacherService;
@@ -76,6 +77,7 @@ public class WorkshopServiceDBTests
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        institutionHierarchyService = new Mock<IInstitutionHierarchyService>();
         tagServiceMock = new Mock<ITagService>();
         var searchStringServiceMock = new Mock<ISearchStringService>();
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
@@ -88,6 +90,7 @@ public class WorkshopServiceDBTests
                 new WorkshopService(
                     workshopRepository,
                     languageServiceMock.Object,
+                    institutionHierarchyService.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
                     roomRepository.Object,

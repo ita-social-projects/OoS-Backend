@@ -13,6 +13,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -20,6 +21,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
@@ -38,6 +40,7 @@ public class WorkshopDraftServiceTests
 {
     private IWorkshopDraftService service;  
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMoq;
+    private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<ILanguageService> languageServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<ICurrentUserService> currentUserServiceMoq;
@@ -55,6 +58,7 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq = new Mock<IWorkshopDraftRepository>();
 
         currentUserServiceMoq = new Mock<ICurrentUserService>();
+        institutionHierarchyServiceMock = new  Mock<IInstitutionHierarchyService>();
         providerServiceMoq = new Mock<IProviderService>();
         tagRepositoryMoq = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
@@ -96,6 +100,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object);
+
+        SetupInstitutionHierarchy();
     }
 
     #region Create
@@ -113,12 +119,26 @@ public class WorkshopDraftServiceTests
     public async Task Create_WithValidDto_ShouldReturnCreatedObject()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();    
+        var institutionHierarchyId = Guid.NewGuid();
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        workshop.InstitutionHierarchyId = institutionHierarchyId;
+        
         var workshopV2Dto = workshop.ToV2Dto();
-
+        workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        
         var workshopDraft = workshopV2Dto.ToDraft();
+        workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
+        {
+            InstitutionHierarchyId = institutionHierarchyId
+        };
         var workshopResponse = workshopDraft.ToResponseDto();
 
+        institutionHierarchyServiceMock.Setup(x => x.GetById(institutionHierarchyId))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт" }
+            });
+        
         languageServiceMoq.Setup(x => x.GetById(workshop.LanguageOfEducationId))
             .ReturnsAsync(new LanguageDto { Id = workshop.LanguageOfEducationId, Name = workshop.LanguageOfEducation.Name });
 
@@ -723,4 +743,12 @@ public class WorkshopDraftServiceTests
         result.Should().BeNull();
     }
     #endregion
+    private void SetupInstitutionHierarchy()
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
 }

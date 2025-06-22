@@ -1028,18 +1028,16 @@ public class WorkshopDraftService(
 
     private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
     {
-        var institutionHierarchyId = workshopDraft.WorkshopDraftContent.InstitutionHierarchyId;
-
-        if (institutionHierarchyId == null)
+        if (workshopDraft?.WorkshopDraftContent?.InstitutionHierarchyId == null)
         {
             return null;
         }
-
+        
         var institutionHierarchyDto = await institutionHierarchyRepository.GetByIdWithDetails(
             id: (Guid)workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
 
-        return institutionHierarchyDto.SubDirections.Select(d => d.DirectionId).ToList();
+        return institutionHierarchyDto?.SubDirections?.Select(d => d.DirectionId).ToList();
     }
 
     private async Task<List<long>> GetSubDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)

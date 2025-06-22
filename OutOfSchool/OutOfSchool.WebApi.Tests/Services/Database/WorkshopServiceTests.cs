@@ -15,12 +15,14 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
@@ -40,6 +42,7 @@ public class WorkshopServiceTests
 {
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
+    private Mock<IInstitutionHierarchyService>  institutionHierarchyServiceMock;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
     private Mock<ITeacherService> teacherService;
@@ -68,6 +71,7 @@ public class WorkshopServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
         roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
         teacherService = new Mock<ITeacherService>();
@@ -95,6 +99,7 @@ public class WorkshopServiceTests
                 new WorkshopService(
                     workshopRepository.Object,
                     languageServiceMock.Object,
+                    institutionHierarchyServiceMock.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
                     roomRepository.Object,
@@ -1371,6 +1376,15 @@ public class WorkshopServiceTests
     #endregion
 
     #region Setup
+    
+    private void SetupInstitutionHierarchy()
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
     private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted = false)
     {
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
@@ -1381,6 +1395,7 @@ public class WorkshopServiceTests
             .ReturnsAsync(It.IsAny<int>());
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
             .Returns((Func<Task<Workshop>> f) => f.Invoke());
+        SetupInstitutionHierarchy();
     }
 
     private void SetupCreateV2(Workshop workshop, bool isMemberOfWorkshopIdExisted = false, int numberOfImages = 0)
@@ -1409,7 +1424,7 @@ public class WorkshopServiceTests
 
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
-
+        SetupInstitutionHierarchy();
         var multipleImageUploadingResult = new MultipleImageUploadingResult()
         {
             MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult(),
@@ -1513,7 +1528,9 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
 
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-            .Returns((Func<Task<Workshop>> f) => f.Invoke());
+            .Returns((Func<Task<Workshop>> f) => f.Invoke()); 
+        
+        SetupInstitutionHierarchy();
     }
 
     private void SetupArchive(Workshop workshop, bool doesWorkshopExist)

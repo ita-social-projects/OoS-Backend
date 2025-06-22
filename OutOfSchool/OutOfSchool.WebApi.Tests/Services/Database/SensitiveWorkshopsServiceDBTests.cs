@@ -9,11 +9,13 @@ using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
@@ -37,6 +39,7 @@ public class SensitiveWorkshopsServiceDBTests
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IInstitutionHierarchyService>  institutionHierarchyServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -61,7 +64,7 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
-        
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         languageServiceMock = new Mock<ILanguageService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -79,6 +82,7 @@ public class SensitiveWorkshopsServiceDBTests
             new WorkshopService(
                 workshopRepository,
                 languageServiceMock.Object,
+                institutionHierarchyServiceMock.Object,
                 tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
@@ -100,7 +104,7 @@ public class SensitiveWorkshopsServiceDBTests
 
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
-
+        MockInstitutionHierarchy();
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
     }
@@ -482,6 +486,14 @@ public class SensitiveWorkshopsServiceDBTests
         };
     }
 
+    private void MockInstitutionHierarchy()
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
     private async Task<List<WorkshopDto>> MapWorkshopsToDtos()
     {
         var workshops = await SeedWorkshops();
