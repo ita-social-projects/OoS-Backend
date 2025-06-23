@@ -107,7 +107,7 @@ public class WorkshopService(
 
         return workshopDtos;
     }
-
+    
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopDto"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
