@@ -68,15 +68,30 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
         metadata ??= new Dictionary<string, string>(StringComparer.Ordinal);
         var fileId = this.GenerateFileId();
         var fullFileName = CreateFullPathFromFileId(fileId, main_subfolder);
+        var customFileName = String.Empty;
 
         try
         {
-            return await UploadOperationAsync(file, fullFileName, cacheControl, metadata, cancellationToken);
+            if (metadata.TryGetValue("customFileName", out customFileName))
+            {
+                metadata.Remove("customFileName");
+            }
+            else
+            {
+                customFileName = fullFileName;
+            }
+            return await UploadOperationAsync(file, fullFileName: customFileName, cacheControl, metadata, cancellationToken);
+
         }
         catch (Exception ex)
         {
             throw new FileStorageException(ex);
         }
+    }
+
+    public async Task<bool> ExistsAsync(string imageId, CancellationToken cancellationToken = default)
+    {
+        return await ExistsOperationAsync(imageId, cancellationToken);
     }
 
     // These protected abstract methods must be overridden for each store that will be used in the application.
@@ -85,6 +100,8 @@ public abstract class FilesStorageBase<TFile, TStorageClient>(IStorageContext<TS
     protected abstract IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null);
     protected abstract Task<string> UploadOperationAsync(TFile file, string fullFileName, string cacheControl = "",
         IDictionary<string, string>? metadata = null, CancellationToken cancellationToken = default);
+    protected abstract Task<bool> ExistsOperationAsync(string imageId, CancellationToken cancellationToken = default);
+ 
 
     // Custom hash implementation used for consistent directory structure across platforms.
     // This approach avoids the platform-dependent behavior of string.GetHashCode().

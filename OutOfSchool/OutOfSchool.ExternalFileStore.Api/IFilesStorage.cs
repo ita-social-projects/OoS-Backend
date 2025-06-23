@@ -44,4 +44,11 @@ public interface IFilesStorage<TFile, TIdentifier>
     /// The result contains a string value of the file if it's uploaded.
     /// </returns>
     TIdentifier GenerateFileId();
+
+    /// <summary>
+    /// Check is it object already exists in storage
+    /// </summary>
+    /// <param name="imageId">Image Id.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="OperationResult"/> of the operation.</returns>
+    Task<bool> ExistsAsync(string imageId, CancellationToken cancellationToken = default);
 }

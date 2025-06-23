@@ -8,7 +8,7 @@ using OutOfSchool.ExternalFileStore.Models;
 namespace OutOfSchool.ExternalFileStore.S3;
 
 public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> storageContext)
-    : FilesStorageBase<TFile, IMinioClient>(storageContext)
+    : FilesStorageBase<TFile, IMinioClient>(storageContext), IMetadataStorage
     where TFile : FileModel, new()
 {
     protected sealed override async Task<TFile> GetByIdOperationAsync(string fileId, MemoryStream fileStream, CancellationToken cancellationToken = default)
@@ -71,6 +71,22 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         await StorageClient.RemoveObjectAsync(args, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    protected sealed override async Task<bool> ExistsOperationAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await StorageClient.StatObjectAsync(new StatObjectArgs()
+                .WithBucket(BucketName)
+                .WithObject(fileId),
+                cancellationToken: cancellationToken);
+            return true;
+        }
+        catch (MinioException)
+        {
+            return false;
+        }
+    }
+
     protected sealed override IAsyncEnumerable<StorageObject> ListObjectsOperationAsync(string? prefix = null, object? options = null)
     {
         if (options is ListObjectsArgs args)
@@ -88,5 +104,39 @@ public abstract class S3FilesStorageBase<TFile>(IStorageContext<IMinioClient> st
         }
 
         throw new ArgumentException($"Argument is not of required type {typeof(ListObjectsArgs)}", nameof(options));
+    }
+
+    public async Task<IDictionary<string, string>> GetCurrentMetadataAsync(string objectId, CancellationToken cancellationToken = default)
+    {
+        var stat = await StorageClient.StatObjectAsync(new StatObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(objectId),
+            cancellationToken);
+
+        return stat.MetaData.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToString() ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task UpdateMetadataAsync(string objectId, IDictionary<string, string> newMetadata, CancellationToken cancellationToken = default)
+    {
+        var existingMetadata = await GetCurrentMetadataAsync(objectId);
+
+        foreach (var kvp in newMetadata)
+        {
+            existingMetadata[kvp.Key] = kvp.Value;
+        }
+
+        var source = new CopySourceObjectArgs().WithBucket(BucketName).WithObject(objectId);
+
+        var args = new CopyObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(objectId)
+            .WithCopyObjectSource(source)
+            .WithReplaceMetadataDirective(true)
+            .WithHeaders(existingMetadata);
+
+        await StorageClient.CopyObjectAsync(args, cancellationToken);
     }
 }
