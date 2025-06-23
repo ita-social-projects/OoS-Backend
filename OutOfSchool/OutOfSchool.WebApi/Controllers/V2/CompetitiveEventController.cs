@@ -514,6 +514,118 @@ public class CompetitiveEventController : ControllerBase
         };
     }
 
+    [HasPermission(Permissions.CompetitiveEventApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Reject(Guid id, [FromBody] CompetitveEventDraftRejectionDto competitiveEventDraftRejection)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await competitiveEventDraftService.Reject(id, competitiveEventDraftRejection.RejectionMessage);
+            return Ok();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    [HasPermission(Permissions.CompetitiveEventApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Approve(Guid id)
+    {
+        try
+        {
+            await competitiveEventDraftService.Approve(id);
+            return Ok();
+        }
+        catch (EntityDeletedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+
+        }
+        catch (EntityModifiedConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Deletes the cover image from the specified competitive event draft by a user with permission to moderate drafts.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft to update.</param>
+    /// <returns>Returns <see cref="CompetitiveEventDraftResponseDto"/> with the cover image removed if successful.</returns>
+    /// <response code="200">Cover image deleted successfully.</response>
+    /// <response code="400">The draft does not have a cover image.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">The specified draft was not found.</response>
+    /// <response code="409">The draft is not editable.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{draftId}/cover-image")]
+    [HasPermission(Permissions.CompetitiveEventEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteCoverImageAsModerator(Guid draftId)
+    {
+        var result = await competitiveEventDraftService.DeleteCoverImageAsModeratorAsync(draftId);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>
+    /// Deletes multiple images from a competitive events draft by a user with permission to moderate drafts.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft.</param>
+    /// <param name="imageIds">A list of image IDs (externalStorageId) to delete.</param>
+    /// <returns>Returns <see cref="CompetitiveEventDraftResponseDto"/> with multiple images removed if successful.</returns>
+    /// <response code="200">Images deleted successfully.</response>
+    /// <response code="400">No image IDs were provided.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user does not have permission to perform this action.</response>
+    /// <response code="404">Draft not found or images not present in draft.</response>
+    /// <response code="409">The draft is not editable.</response>
+    /// <response code="500">An unexpected error occurred.</response>
+    [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{draftId}/images")]
+    [HasPermission(Permissions.WorkshopEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteImagesAsModerator(Guid draftId, [FromBody] List<string> imageIds)
+    {
+        var result = await competitiveEventDraftService.DeleteImagesAsModeratorAsync(draftId, imageIds);
+
+        return this.ToActionResult(result);
+    }
+
     private async Task<bool> IsCurrentUserBlocked()
     {
         var userId = GettingUserProperties.GetUserId(User);

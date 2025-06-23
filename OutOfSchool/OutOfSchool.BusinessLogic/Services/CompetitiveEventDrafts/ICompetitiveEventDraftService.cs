@@ -98,4 +98,20 @@ public interface ICompetitiveEventDraftService
     /// A <see cref="Guid"/> representing the CompetitiveEventDraft Id, or null if no matching CompetitiveEventDraft exists.
     /// </returns>
     Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId);
+
+    /// <summary>
+    /// Deletes the cover image of a competitive event draft on behalf of a moderator.
+    /// Only allowed if the draft exists, is editable, and contains a cover image.
+    /// </summary>
+    /// <param name="draftId">The ID of the workshop draft.</param>
+    /// <returns>A <see cref="Result{CompetitiveEventDraftResponseDto}"/> with the updated draft or error information.</returns>
+    Task<Result<CompetitiveEventDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId);
+
+    /// <summary>
+    /// Deletes images from a competitive event draft on behalf of a moderator.
+    /// </summary>
+    /// <param name="draftId">The ID of the workshop draft.</param>
+    /// <param name="imageId">The externalStorageId of the image to delete.</param>
+    /// <returns>A <see cref="Result{CompetitiveEventDraftResponseDto}"/> with the updated draft or error information.</returns>
+    Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageId);
 }

@@ -279,25 +279,43 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return await MapCompetitiveEventDraftWithDetails(draft).ConfigureAwait(false);
     }
 
+    // <inheritdoc/>
     public Task Approve(Guid id)
     {
         // TODO: implement method
         throw new NotImplementedException();
     }
 
+    // <inheritdoc/>
     public Task Reject(Guid id, string rejectionMessage)
     {
         // TODO: implement method
         throw new NotImplementedException();
     }
 
+    // <inheritdoc/>
     public Task<CompetitiveEventV2Dto> UpdateCompetitiveEvent(CompetitiveEventV2Dto competitiveEventV2Dto)
     {
         // TODO: implement method(?)
         throw new NotImplementedException();
     }
 
+    // <inheritdoc/>
     public Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
+    {
+        // TODO: implement method(?)
+        throw new NotImplementedException();
+    }
+
+    // <inheritdoc/>
+    public Task<Result<CompetitiveEventDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId)
+    {        
+        // TODO: implement method(?)
+        throw new NotImplementedException();
+    }
+
+    // <inheritdoc/>
+    public Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageId)
     {
         // TODO: implement method(?)
         throw new NotImplementedException();
@@ -368,9 +386,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                "Error occurred while uploading images for draft with ID {DraftId}.",
-                createdDraft.Id);
+            logger.LogError(ex, "Error occurred while uploading images for draft with ID {DraftId}.", createdDraft.Id);
             throw;
         }
 
@@ -392,7 +408,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         {
             logger.LogError(
                      task.Exception,
-                     "Images upload task for workshop draft with ID {DraftId} failed due to an exception.",
+                     "Images upload task for competitive event draft with ID {DraftId} failed due to an exception.",
                      draftId);
             return null;
         }
