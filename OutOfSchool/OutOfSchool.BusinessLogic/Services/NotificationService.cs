@@ -55,7 +55,7 @@ public class NotificationService(
         Dictionary<string, string> additionalData = null,
         string groupedData = null)
     {
-        if (!notificationsConfig.Value.Enabled || recipientsIds is null)
+        if (!notificationsConfig.Value.Enabled || recipientsIds is null || !recipientsIds.Any()) 
         {
             return;
         }
@@ -75,7 +75,7 @@ public class NotificationService(
         foreach (var userId in recipientsIds)
         {
             notification.Id = Guid.NewGuid();
-            notification.UserId = userId;
+            notification.UserId = userId; 
             var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 
             logger.LogInformation("Notification with Id = {Id} was created successfully", newNotificationDto?.Id);

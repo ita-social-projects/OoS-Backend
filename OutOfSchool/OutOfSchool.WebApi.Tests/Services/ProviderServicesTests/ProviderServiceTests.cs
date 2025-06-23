@@ -1065,21 +1065,144 @@ public class ProviderServiceTests
     #region SendNotification
 
     [Test]
-    public async Task SendNotification_MethodWasCalled()
+    public async Task SendNotification_WithValidProvider_ShouldCallNotificationServiceCreate()
     {
         // Arrange
         var existingProvider = fakeProviders.RandomItem();
-        var notificationAction = new NotificationAction();
-        notificationService.Setup(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            existingProvider.Id, It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null));
+        var notificationAction = NotificationAction.Create;
+
+        var mockAddress = new ContactsAddress { CATOTTGId = 1 };
+        var mockContact = new Contacts { IsDefault = true, Address = mockAddress };
+        existingProvider.Contacts = new List<Contacts> { mockContact };
+
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(
+                existingProvider.Id,
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(existingProvider);
 
         // Act
-        providerService.SendNotification(existingProvider, notificationAction,
-            It.IsAny<bool>(), It.IsAny<bool>());
+        await providerService.SendNotification(existingProvider, notificationAction, false, false);
 
         // Assert
-        notificationService.Verify(n => n.Create(It.IsAny<NotificationType>(), notificationAction,
-            existingProvider.Id, It.IsAny<IEnumerable<string>>(), It.IsAny<Dictionary<string, string>>(), null), Times.Once);
+        notificationService.Verify(n => n.Create(
+            NotificationType.Provider,
+            notificationAction,
+            existingProvider.Id,
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<Dictionary<string, string>>(),
+            null), Times.Once);
+    }
+
+    [Test]
+    public async Task SendNotification_WithNoRecipients_ShouldNotCallNotificationServiceCreate()
+    {
+        // Arrange
+        var existingProvider = fakeProviders.RandomItem();
+        var notificationAction = NotificationAction.Unknown;
+
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(
+                existingProvider.Id,
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(existingProvider);
+
+        // Act
+        await providerService.SendNotification(existingProvider, notificationAction, false, false);
+
+        // Assert
+        notificationService.Verify(n => n.Create(
+            It.IsAny<NotificationType>(),
+            It.IsAny<NotificationAction>(),
+            It.IsAny<Guid>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<Dictionary<string, string>>(),
+            It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SendNotification_WithStatusData_ShouldAddStatusToAdditionalData()
+    {
+        // Arrange
+        var existingProvider = fakeProviders.RandomItem();
+        existingProvider.Status = ProviderStatus.Approved;
+        var notificationAction = NotificationAction.Create;
+
+        var mockAddress = new ContactsAddress { CATOTTGId = 1 };
+        var mockContact = new Contacts { IsDefault = true, Address = mockAddress };
+        existingProvider.Contacts = new List<Contacts> { mockContact };
+
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(
+                existingProvider.Id,
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(existingProvider);
+
+        var mockTechAdmins = new List<User>
+    {
+        new User { Id = "tech-admin-1", Role = "techadmin" },
+        new User { Id = "tech-admin-2", Role = "techadmin" }
+    };
+
+        usersRepositoryMock.Setup(r => r.GetByFilter(
+                It.Is<Expression<Func<User, bool>>>(expr => expr.ToString().Contains("techadmin")),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .ReturnsAsync(mockTechAdmins);
+
+        // Act
+        await providerService.SendNotification(existingProvider, notificationAction, true, false);
+
+        // Assert
+        notificationService.Verify(n => n.Create(
+            NotificationType.Provider,
+            notificationAction,
+            existingProvider.Id,
+            It.IsAny<IEnumerable<string>>(),
+            It.Is<Dictionary<string, string>>(d => d.ContainsKey("Status") && d["Status"] == "Approved"),
+            null), Times.Once);
+    }
+
+    [Test]
+    public async Task SendNotification_WithLicenseStatusData_ShouldAddLicenseStatusToAdditionalData()
+    {
+        // Arrange
+        var existingProvider = fakeProviders.RandomItem();
+        existingProvider.LicenseStatus = ProviderLicenseStatus.Approved;
+        var notificationAction = NotificationAction.Create;
+
+        var mockAddress = new ContactsAddress { CATOTTGId = 1 };
+        var mockContact = new Contacts { IsDefault = true, Address = mockAddress };
+        existingProvider.Contacts = new List<Contacts> { mockContact };
+
+        providersRepositoryMock.Setup(r => r.GetByIdWithDetails(
+                existingProvider.Id,
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(existingProvider);
+
+        var mockTechAdmins = new List<User>
+    {
+        new User { Id = "tech-admin-1", Role = "techadmin" }
+    };
+
+        usersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<User, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .ReturnsAsync(mockTechAdmins);
+
+        // Act
+        await providerService.SendNotification(existingProvider, notificationAction, false, true);
+
+        // Assert
+        notificationService.Verify(n => n.Create(
+            NotificationType.Provider,
+            notificationAction,
+            existingProvider.Id,
+            It.IsAny<IEnumerable<string>>(),
+            It.Is<Dictionary<string, string>>(d => d.ContainsKey("LicenseStatus") && d["LicenseStatus"] == "Approved"),
+            null), Times.Once);
     }
 
     [Test]
