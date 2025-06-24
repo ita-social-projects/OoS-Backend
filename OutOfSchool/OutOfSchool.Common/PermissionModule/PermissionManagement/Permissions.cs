@@ -78,6 +78,8 @@ public enum Permissions : short
     ProviderApprove = 55,
     [Display(GroupName = "Provider", Name = "Block", Description = "Can block Provider")]
     ProviderBlock = 56,
+    [Display(GroupName = "Provider", Name = "Read Provider Data", Description = "Can read Provider data")]
+    ProviderDataRead = 57,
     #endregion
 
     #region Rating control permissions #7

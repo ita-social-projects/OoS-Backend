@@ -353,6 +353,12 @@ public class ProviderService(
 
         var recipientsIds = await GetNotificationsRecipientIds(notificationAction, additionalData, provider.Id).ConfigureAwait(false);
 
+        if (!recipientsIds.Any())
+        {
+            logger.LogInformation("No recipients found for notification action {Action} for provider with Id {ProviderId}.", notificationAction, provider.Id);
+            return;
+        }
+
         await notificationService.Create(
                 NotificationType.Provider,
                 notificationAction,
@@ -508,17 +514,20 @@ public class ProviderService(
                 }
             }
         }
-        else if (action == NotificationAction.Block)
+        else if (action == NotificationAction.Block || action == NotificationAction.Unblock)
         {
             var directorUserId = await officialRepository
                 .GetDirectorOfficialUserIdByProviderIdAsync(provider.Id);
-            recipientIds.Add(directorUserId);
-        }
-        else if (action == NotificationAction.Unblock)
-        {
-            var directorUserId = await officialRepository
-                .GetDirectorOfficialUserIdByProviderIdAsync(provider.Id);
-            recipientIds.Add(directorUserId);
+
+            if (string.IsNullOrEmpty(directorUserId))
+            {
+                logger.LogWarning("Director user ID is null or empty for provider with Id {ProviderId}.", provider.Id);
+            }
+            else
+            {
+                logger.LogInformation("Director user ID {DirectorUserId} found for provider with Id {ProviderId}.", directorUserId, provider.Id);
+                recipientIds.Add(directorUserId);
+            }
         }
 
         return recipientIds.Distinct();
