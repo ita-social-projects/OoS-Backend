@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
@@ -86,4 +87,36 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
 
         return model;
     }
+
+    public static CompetitiveEventV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
+       => new()
+       {
+           Id = draft.CompetitiveEventId ?? default,
+           Title = draft.CompetitiveEventDraftContent?.Title,
+           ShortTitle = draft.CompetitiveEventDraftContent?.ShortTitle,
+           RegistrationStartTime = draft.CompetitiveEventDraftContent?.RegistrationStartTime,
+           RegistrationEndTime = draft.CompetitiveEventDraftContent?.RegistrationEndTime,
+           ParentId = draft.CompetitiveEventDraftContent?.ParentId,
+           AdditionalDescription = draft.CompetitiveEventDraftContent?.AdditionalDescription,
+           ScheduledStartTime = draft.CompetitiveEventDraftContent?.ScheduledStartTime ?? default,
+           ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
+           NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
+           DescriptionOfTheEnrollmentProcedure = draft.CompetitiveEventDraftContent?.DescriptionOfTheEnrollmentProcedure,
+           OrganizerOfTheEventId = draft.CompetitiveEventDraftContent?.OrganizerOfTheEventId ?? default,
+           PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
+           VenueName = draft.CompetitiveEventDraftContent?.VenueName,
+           TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
+           PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
+           AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
+           Benefits = draft.CompetitiveEventDraftContent?.Benefits,
+           OptionsForPeopleWithDisabilities = draft.CompetitiveEventDraftContent?.OptionsForPeopleWithDisabilities,
+           DescriptionOfOptionsForPeopleWithDisabilities = draft.CompetitiveEventDraftContent?.DescriptionOfOptionsForPeopleWithDisabilities,
+           MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
+           MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
+           Price = draft.CompetitiveEventDraftContent?.Price,
+           CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
+           Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
+           CoverImageId = draft.CoverImageId,
+           ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
+       };
 }

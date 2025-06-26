@@ -1,10 +1,12 @@
 ﻿using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
@@ -15,9 +17,10 @@ using OutOfSchool.Services.Repository.Base.Api;
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> logger,
     ICurrentUserService currentUserService,
-    ICompetitiveEventService competitiveEventService,
+    ICompetitiveEventServiceV2 competitiveEventService,
     IEntityRepository<Guid, CompetitiveEventDraft> competitiveEventDraftRepository,
     IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService,
+    IChangesLogService changesLogService,
     ICodeficatorRepository codeficatorRepository) : ICompetitiveEventDraftService
 {
 
@@ -280,45 +283,249 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public Task Approve(Guid id)
+    public async Task Approve(Guid id)
     {
-        // TODO: implement method
-        throw new NotImplementedException();
+        logger.LogDebug("Approving CompetitiveEventDraft started. CompetitiveEventDraft Id = {Id}.", id);
+
+        var competitiveEventDraft = await GetDraftById(id);
+
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
+        {
+            throw new ArgumentException("This WorkshopDraft can`t be approved.");
+        }
+
+        if (competitiveEventDraft.CompetitiveEventId == null)
+        {
+            await competitiveEventService.Create(competitiveEventDraft.ToV2CreateRequestDto());
+        }
+        else
+        {
+            await competitiveEventService.Update(competitiveEventDraft.ToV2CreateRequestDto());
+        }
+
+        await competitiveEventDraftRepository.Delete(competitiveEventDraft);
+
+        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
     }
 
     // <inheritdoc/>
-    public Task Reject(Guid id, string rejectionMessage)
+    public async Task Reject(Guid id, string rejectionMessage)
     {
-        // TODO: implement method
-        throw new NotImplementedException();
+        logger.LogDebug($"Rejecting CompetitiveEventDraft started. CompetitiveEventDraft Id = {id}.");
+
+        var competitiveEventDraft = await GetDraftById(id);
+
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
+        {
+            throw new ArgumentException("This CompetitiveEventDraft can`t be rejected.");
+        }
+
+        competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.Rejected;
+        competitiveEventDraft.RejectionMessage = rejectionMessage;
+
+        await competitiveEventDraftRepository.Update(competitiveEventDraft);
+        logger.LogDebug($"CompetitiveEventDraft was successfully rejected. Draft Id = {id}.");
     }
 
     // <inheritdoc/>
-    public Task<CompetitiveEventV2Dto> UpdateCompetitiveEvent(CompetitiveEventV2Dto competitiveEventV2Dto)
+    public async Task<CompetitiveEventV2Dto> UpdateCompetitiveEvent(CompetitiveEventV2Dto competitiveEventV2Dto)
     {
-        // TODO: implement method(?)
-        throw new NotImplementedException();
+        logger.LogDebug("Competitive event updating process started. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
+
+        var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventV2Dto.Id);
+
+        if (existingCompetitiveEvent == null)
+        {
+            throw new InvalidOperationException($"There is no CompetitiveEvent with such Id. CompetitiveEvent can`t be updated.");
+        }
+
+        var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.Id == competitiveEventV2Dto.Id)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+
+        if (draft != null)
+        {
+            logger.LogDebug("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
+
+            throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
+        }
+
+        if (AreModeratedFieldsChanged(competitiveEventV2Dto, existingCompetitiveEvent))
+        {
+            logger.LogDebug("Moderated fields was changed. CompetitiveEvent draft creation initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
+            return (await Create(competitiveEventV2Dto)).CompetitiveEventDraft.CompetitiveEventDetails;
+        }
+
+        logger.LogDebug("Moderated fields was not changed. CompetitiveEvent update initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
+
+        return competitiveEventService.UpdateV2(competitiveEventV2Dto.ToDraft().ToV2CreateRequestDto()).Result.CompetitiveEventV2;
+    }
+
+    private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
+    {
+        if (competitiveEventV2Dto.CoverImage != null || competitiveEventV2Dto.ImageFiles != null)
+        {
+            return true;
+        }
+
+        if (!competitiveEventV2Dto.CompetitiveEventDescriptionItems.Select(wdi => wdi.SectionName + wdi.Description)
+                .SequenceEqual(existingCompetitiveEvent.CompetitiveEventDescriptionItems.Select(wdi => wdi.SectionName + wdi.Description)))
+        {
+            return true;
+        }
+
+        var stringFieldsToCompare = new List<Func<CompetitiveEventDto, string>>
+        {
+            w => w.ShortTitle,
+            w => w.Title,
+            w => w.AdditionalDescription,
+            w => w.DescriptionOfTheEnrollmentProcedure,
+            w => string.Join(" | ", w.Contacts.Select(c => c.ToString())),
+            w => w.Title
+        };
+
+        return stringFieldsToCompare.Any(field =>
+        {
+            var newValue = field(competitiveEventV2Dto);
+            var oldValue = field(existingCompetitiveEvent);
+            return newValue != oldValue;
+        });
     }
 
     // <inheritdoc/>
-    public Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
+    public async Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
     {
-        // TODO: implement method(?)
-        throw new NotImplementedException();
+        logger.LogDebug($"Getting CompetitiveEventDraft Id by CompetitiveEvent Id started. Id = {competitiveEventId}.");
+
+        var competitiveEventDraft = await competitiveEventDraftRepository.Get(whereExpression: wd => wd.CompetitiveEventId == competitiveEventId).FirstOrDefaultAsync();
+
+        if (competitiveEventDraft == null)
+        {
+            return null;
+        }
+
+        return competitiveEventDraft.Id;
     }
 
     // <inheritdoc/>
-    public Task<Result<CompetitiveEventDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId)
-    {        
-        // TODO: implement method(?)
-        throw new NotImplementedException();
+    public async Task<Result<CompetitiveEventDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId)
+    {
+        logger.LogDebug("Deleting cover image as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
+
+        var validation = await ValidateDraftForModerator(draftId);
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<CompetitiveEventDraftResponseDto>();
+        }
+
+        var competitiveEventDraft = validation.Value;
+
+        if (competitiveEventDraft.CoverImageId == null)
+        {
+            logger.LogWarning("CompetitiveEventDraft with Id = {Id} doesn't have a cover image to delete.", draftId);
+
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "No cover image exists for this workshop draft."
+            });
+        }
+
+        try
+        {
+            await competitiveEventDraftImagesService.RemoveCoverImageAsync(competitiveEventDraft);
+            competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.EditedByModerator;
+
+            changesLogService.AddEntityChangesToDbContext(competitiveEventDraft, currentUserService.UserId);
+
+            await competitiveEventDraftRepository.Update(competitiveEventDraft).ConfigureAwait(false);
+
+            logger.LogInformation("Cover image successfully deleted from CompetitiveEventDraft. Id = {Id}.", draftId);
+            return Result<CompetitiveEventDraftResponseDto>.Success(competitiveEventDraft.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while deleting cover image for CompetitiveEventDraft with ID {DraftId}.", draftId);
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while deleting the cover image."
+            });
+        }
     }
 
     // <inheritdoc/>
-    public Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageId)
+    public async Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageIds)
     {
-        // TODO: implement method(?)
-        throw new NotImplementedException();
+        logger.LogDebug("Deleting multiple images as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
+
+        if (imageIds == null || !imageIds.Any())
+        {
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "At least one ImageId must be provided."
+            });
+        }
+
+        var validation = await ValidateDraftForModerator(draftId);
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<CompetitiveEventDraftResponseDto>();
+        }
+
+        var competitiveEventDraft = validation.Value;
+
+        var decodedImageIds = imageIds.Select(Uri.UnescapeDataString).ToList();
+
+        var imagesToDelete = competitiveEventDraft.Images
+            .Where(i => decodedImageIds.Contains(i.ExternalStorageId))
+            .ToList();
+
+        if (imagesToDelete.Count == 0)
+        {
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "None of the specified images were found in this workshop draft."
+            });
+        }
+
+        var oldImageIds = competitiveEventDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+        try
+        {
+            await competitiveEventDraftImagesService.RemoveManyImagesAsync(competitiveEventDraft, decodedImageIds);
+
+            var newImageIds = competitiveEventDraft.Images.Select(x => x.ExternalStorageId).ToList();
+
+            competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.EditedByModerator;
+
+            changesLogService.LogImageDeletions(
+                oldImageIds,
+                newImageIds,
+                competitiveEventDraft.Id,
+                "CompetitiveEventDraft",
+                currentUserService.UserId);
+
+            await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("{Count} images successfully deleted from CompetitiveEventDraft. Draft Id = {DraftId}.",
+                imagesToDelete.Count, draftId);
+
+            return Result<CompetitiveEventDraftResponseDto>.Success(competitiveEventDraft.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while deleting images for CompetitiveEventDraft with ID {DraftId}.", draftId);
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while deleting the images."
+            });
+        }
     }
 
     private async Task<CompetitiveEventDraftResponseDto> MapCompetitiveEventDraftWithDetails(CompetitiveEventDraft draft)
@@ -490,5 +697,36 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
            MultipleImageChangingResult imagesResult)>.Success((competitiveEventDraft, coverImageResult, imagesResult));
+    }
+
+    /// <summary>
+    /// Validates whether the specified moderator or tech admin is allowed to access and modify the given draft.
+    /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
+    /// </summary>
+    /// <param name="draftId">The ID of the workshop draft to validate.</param>
+    /// <returns>
+    /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
+    /// or a failed result with appropriate error code and description.
+    /// </returns>
+    private async Task<Result<CompetitiveEventDraft>> ValidateDraftForModerator(Guid draftId)
+    {
+        await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
+
+        var competitiveEventDraft = await GetDraftById(draftId);
+
+        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration &&
+            competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
+        {
+            logger.LogWarning("CompetitiveEventDraft with Id = {Id} is not editable in current status: {Status}.",
+                draftId, competitiveEventDraft.DraftStatus);
+
+            return Result<CompetitiveEventDraft>.Failed(new OperationError
+            {
+                Code = "409",
+                Description = "WorkshopDraft is not editable in its current status."
+            });
+        }
+
+        return Result<CompetitiveEventDraft>.Success(competitiveEventDraft);
     }
 }

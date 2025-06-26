@@ -25,6 +25,30 @@ public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<Conta
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<SocialNetworkDto> SocialNetworks { get; set; } = [];
 
+    public override string ToString()
+    {
+        var phones = Phones is { Count: > 0 }
+            ? string.Join(", ", Phones.Select(p => $"{p.Type}: {p.Number}"))
+            : "No phones";
+
+        var emails = Emails is { Count: > 0 }
+            ? string.Join(", ", Emails.Select(e => $"{e.Type}: {e.Address}"))
+            : "No emails";
+
+        var socials = SocialNetworks is { Count: > 0 }
+            ? string.Join(", ", SocialNetworks.Select(s => $"{s.Type}: {s.Url}"))
+            : "No social networks";
+
+        var address = Address != null
+            ? $"Street: {Address.Street}, Building: {Address.BuildingNumber}, " +
+              $"Lat: {Address.Latitude}, Long: {Address.Longitude}, CATOTTGId: {Address.CATOTTGId}"
+            : "No address";
+
+        return $"Title: {Title}, IsDefault: {IsDefault}, Address: [{address}], " +
+               $"Phones: [{phones}], Emails: [{emails}], SocialNetworks: [{socials}]";
+    }
+
+
     public override bool Equals(object obj)
     {
         if (obj is not ContactsDto contacts)
