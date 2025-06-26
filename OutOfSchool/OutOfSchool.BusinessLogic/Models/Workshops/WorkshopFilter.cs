@@ -31,7 +31,7 @@ public class WorkshopFilter : OffsetFilter
     [Range(0, int.MaxValue, ErrorMessage = "Field value should be in a range from 0 to 2 147 483 647")]
     public int MaxPrice { get; set; } = int.MaxValue;
 
-    public List<long> DirectionIds { get; set; } = new List<long>();
+    public List<long> SubDirectionIds { get; set; } = new List<long>();
 
     public string City { get; set; } = string.Empty;
 
@@ -110,7 +110,7 @@ public static class WorkshopFilterExtensions
             IsFree = dto.IsFree,
             MinPrice = dto.IsPaid && !dto.IsFree ? Math.Max(1, dto.MinPrice) : dto.MinPrice,
             MaxPrice = dto.IsFree && !dto.IsPaid ? 0 : dto.MaxPrice,
-            DirectionIds = dto.DirectionIds,
+            SubDirectionIds = dto.SubDirectionIds,
             City = dto.City,
             Workdays = string.Join(' ', dto.Workdays ?? []),
             MinStartTime = dto.MinStartTime,

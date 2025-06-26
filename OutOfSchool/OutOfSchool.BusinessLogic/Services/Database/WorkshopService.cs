@@ -920,12 +920,12 @@ public class WorkshopService(
             predicate = predicate.And(tempPredicate);
         }
 
-        if (filter.DirectionIds.Any())
+        if (filter.SubDirectionIds.Any())
         {
             var tempPredicate = PredicateBuilder.False<Workshop>();
-            foreach (var direction in filter.DirectionIds)
+            foreach(var subDirectionId in filter.SubDirectionIds) 
             {
-                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.SubDirections.Any(d => !d.Direction.IsDeleted && d.DirectionId == direction));
+                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.SubDirections.Any(sd => !sd.IsDeleted && sd.Id == subDirectionId));
             }
 
             predicate = predicate.And(tempPredicate);

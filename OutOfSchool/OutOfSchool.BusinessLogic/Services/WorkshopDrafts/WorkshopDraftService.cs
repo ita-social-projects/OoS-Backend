@@ -722,11 +722,27 @@ public class WorkshopDraftService(
         return institutionHierarchyDto.SubDirections.Select(d => d.DirectionId).ToList();
     }
 
+    private async Task<List<long>> GetSubDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
+    {
+        var institutionHierarchyId = workshopDraft.WorkshopDraftContent.InstitutionHierarchyId;
+
+        if (institutionHierarchyId == null)
+            return null;
+
+        var insistutionHierarchyDto = await institutionHierarchyRepository.GetByIdWithDetails(
+            id: (Guid)workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
+            includeExpression: includeDirectionsFunc);
+
+        return insistutionHierarchyDto.SubDirections.Select(sd => sd.Id).ToList();
+    }
+
     private async Task<WorkshopDraftResponseDto> MapWorkshopDraftWithDetails(WorkshopDraft draft)
     {
         var workshopDraftResponseDto = draft.ToResponseDto();
 
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
+
+        workshopDraftResponseDto.WorkshopDetails.SubDirectionIds = await GetSubDirectionIdsForWorkshopDraft(draft);
 
         var catottgIds = workshopDraftResponseDto.WorkshopDetails.Contacts
             .Where(c => c?.Address != null)
@@ -787,6 +803,10 @@ public class WorkshopDraftService(
 
             responseDto.WorkshopDetails.DirectionIds = institutionHierarchy?.SubDirections
                 .Select(d => d.DirectionId)
+                .ToList();
+
+            responseDto.WorkshopDetails.SubDirectionIds = institutionHierarchy?.SubDirections
+                .Select(sd => sd.Id)
                 .ToList();
 
             responseDto.WorkshopDetails.Contacts

@@ -35,6 +35,7 @@ public static class WorkshopProviderViewCardExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             Price = model.Price,
             DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList() ?? [],
+            SubDirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(sd => !sd.IsDeleted).Select(sd => sd.Id).ToList() ?? [],
             ProviderId = model.ProviderId,
             Address = defaultContact?.Address?.ToDto(),
             ProviderLicenseStatus = model.Provider?.LicenseStatus ?? default,
