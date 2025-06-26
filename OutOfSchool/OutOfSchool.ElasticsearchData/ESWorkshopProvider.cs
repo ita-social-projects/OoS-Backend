@@ -116,7 +116,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
 
         AddSearchTextQuery(query, filter);
         AddCityQuery(query, filter);
-        AddDirectionIdsQuery(query, filter);
+        AddSubDirectionIdsQuery(query, filter);
         if (includePrice) 
         { 
             AddPriceQuery(query, filter); 
@@ -257,14 +257,14 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         }
     }
 
-    private void AddDirectionIdsQuery(BoolQuery query, WorkshopFilterES filter)
+    private void AddSubDirectionIdsQuery(BoolQuery query, WorkshopFilterES filter)
     {
-        if (filter.DirectionIds.Count != 0)
+        if (filter.SubDirectionIds.Count != 0)
         {
             query.Filter.Add(new TermsQuery()
             {
-                Field = Infer.Field<WorkshopES>(w => w.DirectionIds),
-                Term = new(filter.DirectionIds
+                Field = Infer.Field<WorkshopES>(w => w.SubDirectionIds),
+                Term = new(filter.SubDirectionIds
                     .Select(id => FieldValue.String(id.ToString())).ToArray()),
             });
         }
