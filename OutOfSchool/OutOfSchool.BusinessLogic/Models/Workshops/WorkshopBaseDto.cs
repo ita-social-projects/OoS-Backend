@@ -183,5 +183,31 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         {
             yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
+
+        // validate Price and PayRate when IsPaid is true
+        if (IsPaid)
+        {
+            if (PayRate == null || PayRate == PayRateType.None)
+            {
+                yield return new ValidationResult("Pay rate must be specified when the workshop is paid.", new[] { nameof(PayRate) });
+            }
+
+            if (!Price.HasValue)
+            {
+                yield return new ValidationResult("Price must be specified when the workshop is paid.", new[] { nameof(Price) });
+            }
+            else
+            {
+                if (Price < 1.00m)
+                {
+                    yield return new ValidationResult("Price must be at least 1.00 if the workshop is paid.", new[] { nameof(Price) });
+                }
+
+                if (Price > 100000.00m)
+                {
+                    yield return new ValidationResult("Price must be less than or equal to 100000.00.", new[] { nameof(Price) });
+                }
+            }
+        }
     }
 }
