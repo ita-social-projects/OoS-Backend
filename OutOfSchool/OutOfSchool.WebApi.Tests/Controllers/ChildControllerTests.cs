@@ -335,6 +335,7 @@ public class ChildControllerTests
                 MaxAge = (int)existingWorkshop.MaxAge,
                 Price = (decimal)existingWorkshop.Price,
                 DirectionIds = existingWorkshop.DirectionIds,
+                SubDirectionIds = existingWorkshop.SubDirectionIds,
                 ProviderId = existingWorkshop.ProviderId,
                 Address = existingWorkshop.Address,
                 Rating = existingWorkshop.Rating,
