@@ -51,6 +51,7 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
             Price = dto.Price ?? 0,
             CompetitiveSelection = dto.CompetitiveSelection ?? false,
             Contacts = dto.Contacts?.ToModel(),
+            SubDirections = dto.SubDirectionIds.Select(id => new SubDirection { DirectionId = id }).ToList(),
             CoverImageId = dto.CoverageId.ToString(),
         };
 
@@ -83,6 +84,7 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;
+        model.SubDirections = dto.SubDirectionIds.Select(id => new SubDirection { DirectionId = id }).ToList();
         model.CoverImageId = dto.CoverageId.ToString();
 
         return model;

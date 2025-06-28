@@ -29,6 +29,10 @@ public class CompetitiveEventDraft : TrackableBaseEntity,
     [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
     public string RejectionMessage { get; set; }
 
+    public int CoverageId { get; set; }
+    
+    public int CompetitiveEventAccountingTypeId { get; set; }
+
     public byte[] Version { get; set; }
 
     public string CoverImageId { get; set; }

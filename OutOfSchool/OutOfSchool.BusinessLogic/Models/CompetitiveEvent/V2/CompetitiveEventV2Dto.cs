@@ -49,7 +49,7 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             Contacts = model.Contacts?.ToDto(),
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
-            Coverage = model.Coverage?.ToDto(),
+            Coverage = model.Coverage?.ToDto(),        
         };
 
     public static CompetitiveEventV2Dto ToDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
@@ -83,6 +83,8 @@ public static class CompetitiveEventV2DtoExtensions
             Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
+            CoverageId = draft.CoverageId,
+            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId
         };
     }
 
@@ -103,6 +105,8 @@ public static class CompetitiveEventV2DtoExtensions
             ProviderId = competitiveEventV2Dto.OrganizerOfTheEventId,
             CompetitiveEventId = competitiveEventV2Dto.Id == Guid.Empty ? (Guid?)null : competitiveEventV2Dto.Id,
             CoverImageId = competitiveEventV2Dto.CoverImageId,
+            CoverageId = competitiveEventV2Dto.CoverageId,
+            CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
             CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
         };
 

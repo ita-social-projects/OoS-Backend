@@ -32,20 +32,23 @@ public class CompetitiveEventDraftServiceTests
     private ICompetitiveEventDraftService competitiveEventDraftService;
     private Mock<ILogger<CompetitiveEventDraftService>> mockLogger;
     private Mock<ICurrentUserService> mockUserService;
-    private Mock<ICompetitiveEventService> mockCompetitiveEventService;
+    private Mock<ICompetitiveEventServiceV2> mockCompetitiveEventService;
     private Mock<IEntityRepository<Guid, CompetitiveEventDraft>> mockCompetitiveEventDraftRepository;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>> mockImageService;
     private Mock<ICodeficatorRepository> mockCodeficatorRepository;
+    private Mock<IChangesLogService> mockChangesLogService;
 
-    [SetUp]
+
+[SetUp]
     public void SetUp()
     {
         mockLogger = new Mock<ILogger<CompetitiveEventDraftService>>();
         mockUserService = new Mock<ICurrentUserService>();
-        mockCompetitiveEventService = new Mock<ICompetitiveEventService>();
+        mockCompetitiveEventService = new Mock<ICompetitiveEventServiceV2>();
         mockCompetitiveEventDraftRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDraft>>();
         mockImageService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
         mockCodeficatorRepository = new Mock<ICodeficatorRepository>();
+        mockChangesLogService = new Mock<IChangesLogService>();
 
         competitiveEventDraftService = new CompetitiveEventDraftService(
             mockLogger.Object,
@@ -53,6 +56,7 @@ public class CompetitiveEventDraftServiceTests
             mockCompetitiveEventService.Object,
             mockCompetitiveEventDraftRepository.Object,
             mockImageService.Object,
+            mockChangesLogService.Object,
             mockCodeficatorRepository.Object);
     }
 
