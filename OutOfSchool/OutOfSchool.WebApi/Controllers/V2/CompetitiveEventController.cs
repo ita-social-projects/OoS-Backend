@@ -267,7 +267,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPost]
+    [HttpPost("/api/v{version:apiVersion}/competitions-drafts")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> CreateDraft([FromForm] CompetitiveEventV2Dto competitiveEventV2Dto)
     {
@@ -312,7 +312,7 @@ public class CompetitiveEventController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
-    [HttpPut("{id}")]
+    [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -382,7 +382,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
+    [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{id}")]
     public async Task<IActionResult> DeleteDraft(Guid id)
     {
         try
@@ -431,7 +431,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{id}/send-for-moderation")]
+    [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/send-for-moderation")]
     public async Task<IActionResult> SendForModeration(Guid id)
     {
         try
@@ -479,7 +479,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("provider/{providerId}/drafts")]
+    [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/competitions-drafts")]
     public async Task<IActionResult> GetDraftByProviderId(Guid providerId, [FromQuery] ExcludeIdFilter filter) =>
         await competitiveEventDraftService.GetByProviderId(providerId, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
@@ -497,7 +497,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("drafts/{id}")]
+    [HttpGet("/api/v{version:apiVersion}/competitions-drafts/{id}")]
     public async Task<IActionResult> GetDraftById(Guid id)
     {
         var responseDto = await competitiveEventDraftService.GetCompetitiveEventDraftByIdMapped(id);
@@ -520,7 +520,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{id}")]
+    [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] CompetitveEventDraftRejectionDto competitiveEventDraftRejection)
     {
         if (!ModelState.IsValid)
@@ -550,7 +550,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut("{id}")]
+    [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
         try
