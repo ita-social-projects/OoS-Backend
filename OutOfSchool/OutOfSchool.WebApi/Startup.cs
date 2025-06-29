@@ -263,6 +263,7 @@ public static class Startup
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+        services.Configure<ImagesLimits<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Limits"));
         services.Configure<UploadConcurrencySettings>(configuration.GetSection(nameof(UploadConcurrencySettings)));
 
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -278,6 +279,7 @@ public static class Startup
 
         services.Configure<ImageOptions<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+        services.Configure<ImageOptions<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Specs"));
 
         // TODO: Move version check into an extension to reuse code across apps
         var mariaDbServerVersion = configuration["MariaDbServerVersion"];
@@ -400,6 +402,7 @@ public static class Startup
         //Image validator drafts
         services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
         services.AddScoped<IImageValidator<TeacherDraft>, ImageValidator<TeacherDraft>>();
+        services.AddScoped<IImageValidator<CompetitiveEventDraft>, ImageValidator<CompetitiveEventDraft>>();
 
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
@@ -409,12 +412,13 @@ public static class Startup
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
 
         services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
+        
 
         // workshop draft images in the external storage
         services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
-
-        services.AddScoped<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
+        
+        // competitive event draft images in the external storage
         services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>, ImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
 
         services.AddTransient<INotificationService, NotificationService>();
@@ -431,6 +435,8 @@ public static class Startup
 
         services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
         services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
+
+        services.AddTransient<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
 
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
