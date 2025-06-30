@@ -115,12 +115,13 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
            Price = draft.CompetitiveEventDraftContent?.Price,
            CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
-           Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
+           Contacts = draft.CompetitiveEventDraftContent?.Contacts?.Any() == true
+            ? draft.CompetitiveEventDraftContent.Contacts.ToDto()
+            : draft.CompetitiveEvent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
            CoverImageId = draft.CoverImageId,
            CoverageId = draft.CoverageId,
            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
            ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
-           //SubDirectionIds = new List<long>() { 2, 3}
-           SubDirectionIds = draft.CompetitiveEvent.SubDirections.Select(sd => sd.Id).ToList()
+           SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(sd => sd.Id).ToList() ?? []
        };
 }

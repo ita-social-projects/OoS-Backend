@@ -12,13 +12,12 @@ using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> logger,
     ICurrentUserService currentUserService,
     ICompetitiveEventServiceV2 competitiveEventService,
-    IEntityRepository<Guid, CompetitiveEventDraft> competitiveEventDraftRepository,
+    ICompetitiveEventDraftRepository competitiveEventDraftRepository,
     IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService,
     IChangesLogService changesLogService,
     ICodeficatorRepository codeficatorRepository) : ICompetitiveEventDraftService
@@ -65,7 +64,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         return new CompetitiveEventDraftResultDto
         {
-            CompetitiveEventDraft = createdCompetitiveEventDraft.ToResponseDto(),
+            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(createdCompetitiveEventDraft),
             UploadingCoverImagesCompetitiveEventResult = uploadImagesResult.UploadingCoverImageResult,
             UploadingImagesResults = uploadImagesResult.UploadingImagesResults?.MultipleKeyValueOperationResult
         };
@@ -120,7 +119,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         return Result<CompetitiveEventDraftResultDto>.Success(new CompetitiveEventDraftResultDto
         {
-            CompetitiveEventDraft = updatedDraft.ToResponseDto(),
+            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(updatedDraft),
             UploadingCoverImagesCompetitiveEventResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult
         });
@@ -559,10 +558,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         var competitiveEventDraft = competitiveEventV2Dto.ToDraft();
 
+        competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.Draft;
+        
         var createdDraft = await competitiveEventDraftRepository
             .Create(competitiveEventDraft)
             .ConfigureAwait(false);
-
+        
         return createdDraft;
     }
 

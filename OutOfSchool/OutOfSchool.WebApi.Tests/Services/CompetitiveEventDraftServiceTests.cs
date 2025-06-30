@@ -16,7 +16,6 @@ using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using System;
 using System.Collections.Generic;
@@ -33,7 +32,7 @@ public class CompetitiveEventDraftServiceTests
     private Mock<ILogger<CompetitiveEventDraftService>> mockLogger;
     private Mock<ICurrentUserService> mockUserService;
     private Mock<ICompetitiveEventServiceV2> mockCompetitiveEventService;
-    private Mock<IEntityRepository<Guid, CompetitiveEventDraft>> mockCompetitiveEventDraftRepository;
+    private Mock<ICompetitiveEventDraftRepository> mockCompetitiveEventDraftRepository;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>> mockImageService;
     private Mock<ICodeficatorRepository> mockCodeficatorRepository;
     private Mock<IChangesLogService> mockChangesLogService;
@@ -45,7 +44,7 @@ public class CompetitiveEventDraftServiceTests
         mockLogger = new Mock<ILogger<CompetitiveEventDraftService>>();
         mockUserService = new Mock<ICurrentUserService>();
         mockCompetitiveEventService = new Mock<ICompetitiveEventServiceV2>();
-        mockCompetitiveEventDraftRepository = new Mock<IEntityRepository<Guid, CompetitiveEventDraft>>();
+        mockCompetitiveEventDraftRepository = new Mock<ICompetitiveEventDraftRepository>();
         mockImageService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
         mockCodeficatorRepository = new Mock<ICodeficatorRepository>();
         mockChangesLogService = new Mock<IChangesLogService>();
@@ -81,6 +80,10 @@ public class CompetitiveEventDraftServiceTests
         // Arrange
         var dto = new CompetitiveEventV2Dto() { Id = Guid.NewGuid()};
         var draft = dto.ToDraft();
+        var catottgs = new List<CATOTTG>
+        {
+            new CATOTTG { Id = 1, Name = "Test Codeficator" }
+        };
         mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
             .ReturnsAsync((CompetitiveEventDto)null);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
@@ -93,6 +96,9 @@ public class CompetitiveEventDraftServiceTests
             .ReturnsAsync(new MultipleImageUploadingResult());
         mockImageService.Setup(service => service.AddCoverImageAsync(draft, dto.CoverImage))
             .ReturnsAsync(Result<string>.Success("some text"));
+        mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(catottgs.AsTestAsyncEnumerableQuery);
 
         // Act
         var result = await competitiveEventDraftService.Create(dto);
@@ -175,6 +181,10 @@ public class CompetitiveEventDraftServiceTests
         {
             Id = id
         };
+        var catottgs = new List<CATOTTG>
+        {
+            new CATOTTG { Id = 1, Name = "Test Codeficator" }
+        };
         var coverImageResult = new ImageChangingResult();
         var imagesResult = new MultipleImageChangingResult();
         var expectedResult = Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>
@@ -194,6 +204,9 @@ public class CompetitiveEventDraftServiceTests
             .ReturnsAsync(coverImageResult);
         mockImageService.Setup(service => service.ChangeImagesAsync(draft, dto.CompetitiveEventV2Dto.ImageIds, dto.CompetitiveEventV2Dto.ImageFiles))
             .ReturnsAsync(imagesResult);
+        mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(catottgs.AsTestAsyncEnumerableQuery);
 
         // Act
         var result = await competitiveEventDraftService.Update(id, dto);
@@ -436,6 +449,8 @@ public class CompetitiveEventDraftServiceTests
         Assert.AreEqual(1, result.TotalAmount);
     }
 
+    #endregion GetByProviderId
+
     #region GetCompetitiveEventDraftByIdMapped
 
     [Test]
@@ -484,8 +499,6 @@ public class CompetitiveEventDraftServiceTests
         Assert.IsInstanceOf<CompetitiveEventDraftResponseDto>(result);
         Assert.AreEqual(draft.Id, result.CompetitiveEventDraftId);
     }
-
-    #endregion
 
     #endregion
 }

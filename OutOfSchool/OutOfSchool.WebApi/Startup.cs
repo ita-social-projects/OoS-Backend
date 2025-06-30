@@ -43,6 +43,7 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Api.Files;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.WebApi.Enums;
@@ -472,6 +473,7 @@ public static class Startup
         services.AddTransient<IPositionRepository, PositionRepository>();
 
         services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
+        services.AddTransient<ICompetitiveEventDraftRepository, CompetitiveEventDraftRepository>();
 
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;

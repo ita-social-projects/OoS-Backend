@@ -84,7 +84,8 @@ public static class CompetitiveEventV2DtoExtensions
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
             CoverageId = draft.CoverageId,
-            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId
+            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
+            SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? []
         };
     }
 
