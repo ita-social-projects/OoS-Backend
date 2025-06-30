@@ -544,7 +544,7 @@ public class CompetitiveEventController : ControllerBase
         }
     }
 
-    
+    [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
