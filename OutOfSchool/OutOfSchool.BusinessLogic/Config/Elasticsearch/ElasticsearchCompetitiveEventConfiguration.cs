@@ -44,8 +44,6 @@ public class ElasticsearchCompetitiveEventConfiguration : IElasticsearchEntityTy
                    .Text(n => n.PreferentialTermsOfParticipation)
                    .Boolean(n => n.AreThereBenefits)
                    .Text(n => n.Benefits)
-                   .Boolean(n => n.OptionsForPeopleWithDisabilities)
-                   .Text(n => n.DescriptionOfOptionsForPeopleWithDisabilities)
                    .IntegerNumber(n => n.MinimumAge)
                    .IntegerNumber(n => n.MaximumAge)
                    .Text(n => n.Coverage)

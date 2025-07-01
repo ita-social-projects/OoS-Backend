@@ -68,11 +68,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MaxLength(Constants.MaxBenefitsLength)]
     public string Benefits { get; set; } = string.Empty;
 
-    public bool OptionsForPeopleWithDisabilities { get; set; }
-
-    [MaxLength(Constants.DisabilityOptionsLength)]
-    public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
@@ -130,8 +125,6 @@ public static class CompetitiveEventInfoDtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
-            OptionsForPeopleWithDisabilities = model.OptionsForPeopleWithDisabilities,
-            DescriptionOfOptionsForPeopleWithDisabilities = model.DescriptionOfOptionsForPeopleWithDisabilities,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,

@@ -1,19 +1,19 @@
-﻿using Elastic.Clients.Elasticsearch;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.ElasticsearchData;
-using OutOfSchool.ElasticsearchData.Models;
-using System.Threading.Tasks;
-using System.Threading;
-using Elastic.Transport;
-using Microsoft.AspNetCore.Http;
-using Elastic.Clients.Elasticsearch.Core.Search;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.Core.Search;
+using Elastic.Transport;
+using Microsoft.AspNetCore.Http;
+using Moq;
+using NUnit.Framework;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
-using Elastic.Clients.Elasticsearch.Aggregations;
+using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Tests.ElasticsearchData;
 
@@ -103,7 +103,6 @@ public class ESCompetitiveEventProviderTests
             SearchText = "test",
             MinimumAge = 15,
             MaximumAge = 20,
-            OptionsForPeopleWithDisabilities = true,
             PlannedFormatsOfClasses = [FormOfLearning.Offline, FormOfLearning.Mixed],
             States = [CompetitiveEventStates.Published, CompetitiveEventStates.Completed],
             AreThereBenefits = true,

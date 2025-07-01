@@ -78,11 +78,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(2000)]
     public string Benefits {  get; set; }
 
-    public bool OptionsForPeopleWithDisabilities { get; set; }
-
-    [MaxLength(2000)]
-    public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
