@@ -9,4 +9,6 @@ public abstract class ChangesLogFilterBase : SearchStringFilter
     public DateTime? DateFrom { get; set; }
 
     public DateTime? DateTo { get; set; }
+
+    public string UserId { get; set; }
 }

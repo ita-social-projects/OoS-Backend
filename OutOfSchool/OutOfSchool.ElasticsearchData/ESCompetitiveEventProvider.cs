@@ -1,11 +1,11 @@
-﻿using Elastic.Clients.Elasticsearch;
-using Elastic.Clients.Elasticsearch.Aggregations;
-using Elastic.Clients.Elasticsearch.QueryDsl;
-using OutOfSchool.ElasticsearchData.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.QueryDsl;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData;
 
@@ -90,7 +90,6 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         AddSearchTextQuery(query, filter);
         AddStatesQuery(query, filter);
         AddPlannedFormatOfClassesQuery(query, filter);
-        AddOptionsForPeopleWithDisabilitiesQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
         AddCompetitiveSelectionQuery(query, filter);
         if (includePrice)
@@ -122,7 +121,6 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
                     Infer.Field<CompetitiveEventES>(e => e.TermsOfParticipation),
                     Infer.Field<CompetitiveEventES>(e => e.PreferentialTermsOfParticipation),
                     Infer.Field<CompetitiveEventES>(e => e.Benefits),
-                    Infer.Field<CompetitiveEventES>(e => e.DescriptionOfOptionsForPeopleWithDisabilities),
                     Infer.Field<CompetitiveEventES>(e => e.Coverage),
                 },
 
@@ -155,17 +153,6 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
                 Field = Infer.Field<CompetitiveEventES>(f => f.PlannedFormatOfClasses),
                 Term = new(filter.PlannedFormatsOfClasses
                     .Select(s => FieldValue.String(s.ToString())).ToArray()),
-            });
-        }
-    }
-
-    private void AddOptionsForPeopleWithDisabilitiesQuery(BoolQuery query, CompetitiveEventFilterES filter)
-    {
-        if (filter.OptionsForPeopleWithDisabilities)
-        {
-            query.Filter.Add(new TermQuery(Infer.Field<CompetitiveEventES>(e => e.OptionsForPeopleWithDisabilities))
-            {
-                Value = filter.OptionsForPeopleWithDisabilities,
             });
         }
     }

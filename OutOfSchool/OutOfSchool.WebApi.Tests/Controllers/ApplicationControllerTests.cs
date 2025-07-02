@@ -897,6 +897,7 @@ public class ApplicationControllerTests
             MaxAge = (int)w.MaxAge,
             Price = (decimal)w.Price,
             DirectionIds = w.DirectionIds,
+            SubDirectionIds = w.SubDirectionIds,
             ProviderId = w.ProviderId,
             Address = w.Address,
             Rating = w.Rating,

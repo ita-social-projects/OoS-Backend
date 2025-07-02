@@ -217,11 +217,6 @@ public static class Constants
     ///</summary>
     public const int WorkshopDraftMaxRejectionMessageLength = 500;
 
-    ///<summary>
-    /// Maximum length for disability option descriptions.
-    /// </summary>
-    public const int DisabilityOptionsLength = 200;
-
     /// <summary>
     /// Maximum allowed length for a teacher's description.
     /// </summary>
@@ -287,10 +282,16 @@ public static class Constants
     /// </summary>
     public const int MaxLanguageNameLength = 25;
 
+    public static class ExternalImages
+    {
+        public const string CustomFileName = "customFileName";
+        public const string IsProcessed = "is-processed";
+    }
 
     public static class ClaimTypes
     {
         public const string UserId = "user_id";
+        public const string IndividualId = "individual_id";
         public const string Rnokpp = "rnokpp";
         public const string Edrpou = "edrpou";
         public const string ProviderId = "provider_id";

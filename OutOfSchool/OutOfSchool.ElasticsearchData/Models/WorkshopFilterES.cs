@@ -27,7 +27,7 @@ public class WorkshopFilterES
 
     public int MaxPrice { get; set; } = int.MaxValue;
 
-    public List<long> DirectionIds { get; set; } = new List<long>();
+    public List<long> SubDirectionIds { get; set; } = new List<long>();
 
     public string City { get; set; } = string.Empty;
 

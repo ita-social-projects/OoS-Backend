@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using WorkshopDraftModel = OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft;
 
@@ -36,6 +38,9 @@ public class ModeratorWorkshopDraftEditDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    public IEnumerable<ContactsDto> Contacts { get; set; } = [];
 }
 
 public static class ModeratorWorkshopDraftEditDtoExtensions
@@ -50,6 +55,39 @@ public static class ModeratorWorkshopDraftEditDtoExtensions
         model.WorkshopDraftContent.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.WorkshopDraftContent.WorkshopDescriptionItems = dto.WorkshopDescriptionItems.ToDraft();
 
+        // Update contact information (only editable fields)
+        UpdateContactsForModeration(model.WorkshopDraftContent.Contacts, dto.Contacts);
+
         return model;
+    }
+
+    /// <summary>
+    /// Updates existing contacts with moderated information.
+    /// Only phones, emails, and social networks are updated.
+    /// Title, IsDefault, and Address remain unchanged.
+    /// </summary>
+    private static void UpdateContactsForModeration(
+        List<Contacts> existingContacts,
+        IEnumerable<ContactsDto> moderationContacts)
+    {
+        if (existingContacts == null || moderationContacts == null)
+            return;
+
+        foreach (var moderationContact in moderationContacts)
+        {
+            // Find existing contact by Title + Address combination
+            var existingContact = existingContacts.FirstOrDefault(c =>
+                c.Title == moderationContact.Title &&
+                c.Address != null &&
+                moderationContact.Address != null &&
+                c.Address.Equals(moderationContact.Address.ToModel()));
+
+            if (existingContact != null)
+            {
+                existingContact.Phones = moderationContact.Phones?.ToModel() ?? [];
+                existingContact.Emails = moderationContact.Emails?.ToModel() ?? [];
+                existingContact.SocialNetworks = moderationContact.SocialNetworks?.ToModel() ?? [];
+            }
+        }
     }
 }

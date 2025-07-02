@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using H3Lib;
 using H3Lib.Extensions;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -41,9 +42,11 @@ namespace OutOfSchool.BusinessLogic.Services;
 /// <param name="codeficatorService">Srvice for CATOTTG.</param>
 /// <param name="searchStringService">Service for handling the search string.</param>
 /// <param name="tagService">Service for Tag entity.</param>
+/// <param name="institutionHierarchyService"> Service for institutionHierarchy entity.</param>
 public class WorkshopService(
     IWorkshopRepository workshopRepository,
     ILanguageService languageService,
+    IInstitutionHierarchyService institutionHierarchyService,
     IEntityRepository<long, Tag> tagRepository,
     IEntityRepositorySoftDeleted<long, DateTimeRange> dateTimeRangeRepository,
     IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop> roomRepository,
@@ -60,7 +63,9 @@ public class WorkshopService(
     ISearchStringService searchStringService,
     IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
     IApplicationRepository applicationRepository,
-    IFeatureManager featureManager
+    IFeatureManager featureManager,
+    IChangesLogService changesLogService,
+    IOptions<InstitutionOptions> institutionOptions
 ) : IWorkshopService, ISensitiveWorkshopsService
 {
     /// <summary>
@@ -79,8 +84,14 @@ public class WorkshopService(
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
-
+        
+        // Validate related entities
         await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
+        
+        var (workshopType,isChampionPath) = await ValidateInstitutionHierarchy(dto.InstitutionHierarchyId,dto.WorkshopType);
+        dto.WorkshopType = workshopType;
+        dto.IsChampionPath = isChampionPath;
+        
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the dto properties with Id to the default value.
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
@@ -98,7 +109,7 @@ public class WorkshopService(
 
         return workshopDtos;
     }
-
+    
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">If <see cref="WorkshopDto"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
@@ -108,7 +119,11 @@ public class WorkshopService(
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation("Workshop creating was started.");
         await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
-
+        
+        var (workshopType,isChampionPath) = await ValidateInstitutionHierarchy(dto.InstitutionHierarchyId,dto.WorkshopType);
+        dto.WorkshopType = workshopType;
+        dto.IsChampionPath = isChampionPath;
+        
         // TODO: after refactoring the DTOs for the Workshop entities, this method needs to be replaced with the correct mapping
         await SetIdsToDefaultValue(dto); // This method sets the properties with the Id to the default value.
         var createdWorkshop = await CheckDtoAndPrepareCreatedWorkshop(dto);
@@ -205,6 +220,12 @@ public class WorkshopService(
             return null;
         }
 
+        if (workshop.Status == WorkshopStatus.Archived)
+        {
+            logger.LogWarning("Access denied to archived workshop Id = {id}", id);
+            return null;
+        }
+
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
         var workshopDTO = workshop.ToDto();
@@ -226,7 +247,7 @@ public class WorkshopService(
             providerId);
 
         var workshops = await workshopRepository.GetByFilter(
-            whereExpression: x => x.ProviderId == providerId);
+            whereExpression: x => x.ProviderId == providerId && x.Status != WorkshopStatus.Archived);
 
         var result = workshops.OrderBy(entity => entity.Title).ToShortEntityDto();
 
@@ -333,6 +354,12 @@ public class WorkshopService(
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
         await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
+        
+        var (workshopType,isChampionPath) = await ValidateInstitutionHierarchy(dto.InstitutionHierarchyId,dto.WorkshopType);
+        dto.WorkshopType = workshopType;
+        dto.IsChampionPath = isChampionPath;
+        
+      //  await ValidateInstitutionHierarchy(dto).ConfigureAwait(false);   
         async Task<Workshop> UpdateWorkshopLocally()
         {
             await UpdateDateTimeRanges(dto.DateTimeRanges, dto.Id).ConfigureAwait(false);
@@ -423,6 +450,9 @@ public class WorkshopService(
         if (currentWorkshop.Status != dto.Status)
         {
             currentWorkshop.Status = dto.Status;
+
+            changesLogService.AddEntityChangesToDbContext(currentWorkshop, currentUserService.UserId);
+
             try
             {
                 await workshopRepository.Update(currentWorkshop).ConfigureAwait(false);
@@ -445,7 +475,11 @@ public class WorkshopService(
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
         await ValidateLanguageExists(dto.LanguageOfEducationId).ConfigureAwait(false);
-
+        
+        var (workshopType,isChampionPath) = await ValidateInstitutionHierarchy(dto.InstitutionHierarchyId,dto.WorkshopType);
+        dto.WorkshopType = workshopType;
+        dto.IsChampionPath = isChampionPath;
+        
         async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult,
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
@@ -525,19 +559,64 @@ public class WorkshopService(
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task Delete(Guid id)
+    public async Task<OperationResult> Archive(Guid id)
     {
-        logger.LogInformation($"Deleting Workshop with Id = {id} started.");
+        logger.LogDebug("Archiving Workshop with Id = {id} started.", id);
+
+        var (entity, validationResult) = await ValidateWorkshopBeforeFinalAction(id);
+
+        if (validationResult != null)
+        {
+            return validationResult;
+        }
+
+        try
+        {
+            entity.Status = WorkshopStatus.Archived;
+            entity.ActiveTo = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            changesLogService.AddEntityChangesToDbContext(entity, currentUserService.UserId);
+
+            await workshopRepository.Update(entity).ConfigureAwait(false);
+            logger.LogDebug("Workshop with Id = {id} succesfully archived.", id);
+
+            return OperationResult.Success;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Archiving failed. Workshop with Id = {id} doesn't exist in the system.", id);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+    public async Task<OperationResult> Delete(Guid id)
+    {
+        logger.LogDebug("Deleting Workshop with Id = {id} started.", id);
 
         var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+        if (entity == null)
+        {
+            logger.LogWarning("Operation failed. Workshop with Id = {id} does not exist in the system.", id);
+            return OperationResult.Failed(new OperationError
+            {
+                Code = HttpStatusCode.NotFound.ToString(),
+                Description = $"Workshop with Id = {id} was not found.",
+            });
+        }
+
         try
         {
             await workshopRepository.Delete(entity).ConfigureAwait(false);
-            logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
+            logger.LogDebug("Workshop with Id = {Id} succesfully deleted", id);
+
+            return OperationResult.Success;
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException ex)
         {
-            logger.LogError($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
+            logger.LogError(ex, "Deleting failed. Workshop with Id = {Id} doesn't exist in the system", id);
             throw;
         }
     }
@@ -876,6 +955,8 @@ public class WorkshopService(
     {
         var predicate = PredicateBuilder.True<Workshop>();
 
+        predicate = predicate.And(x => x.Status != WorkshopStatus.Archived);
+
         if (filter is WorkshopFilterWithSettlements settlementsFilter)
         {
             if (settlementsFilter.InstitutionId != Guid.Empty)
@@ -926,15 +1007,10 @@ public class WorkshopService(
             predicate = predicate.And(tempPredicate);
         }
 
-        if (filter.DirectionIds.Any())
+        if (filter.SubDirectionIds.Any())
         {
-            var tempPredicate = PredicateBuilder.False<Workshop>();
-            foreach (var direction in filter.DirectionIds)
-            {
-                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.SubDirections.Any(d => !d.Direction.IsDeleted && d.DirectionId == direction));
-            }
-
-            predicate = predicate.And(tempPredicate);
+            predicate = predicate.And(x => x.InstitutionHierarchy.SubDirections
+                .Any(sd => !sd.IsDeleted && filter.SubDirectionIds.Contains(sd.Id)));
         }
 
         if (includePrice)
@@ -1050,6 +1126,8 @@ public class WorkshopService(
         var predicate = PredicateBuilder.True<Workshop>();
 
         predicate = predicate.And(x => x.ProviderId == providerId);
+
+        predicate = predicate.And(w => w.Status != WorkshopStatus.Archived);
 
         if (filter.ExcludedId.HasValue)
         {
@@ -1263,6 +1341,35 @@ public class WorkshopService(
             throw new InvalidOperationException(errorMessage);
         }
     }
+    
+    /// <summary>
+    /// Validates the workshop's institution hierarchy and adjusts the workshop type and champion path flag accordingly.
+    /// This method is designed to be **universal** and can be used for both creating and updating workshops across different versions:
+    /// - It works seamlessly in `CreateV1`, `CreateV2`, `UpdateV1`, and `UpdateV2` methods, ensuring that the `workshopType` is correctly validated and the `isChampionPath` flag is set based on the institution hierarchy.
+    /// The function ensures that:
+    /// - If the institution hierarchy corresponds to "Мінспорт" (Ministry of Sport), it sets the `WorkshopType` to "Section" and `isChampionPath` to `true`.
+    /// - If the institution is not "Мінспорт", it sets `isChampionPath` to `false`, as per business logic.
+    /// This allows consistent validation across multiple parts of the system, reducing code duplication and improving maintainability.
+    /// The method returns a tuple containing the updated `workshopType` and `isChampionPath`.
+    /// </summary>
+    private async Task<(WorkshopType workshopType, bool isChampionPath)> ValidateInstitutionHierarchy(Guid? institutionHierarchyId, WorkshopType workshopType)
+    {
+        if (institutionHierarchyId == null)
+        {
+            throw new InvalidOperationException("InstitutionHierarchyId cannot be null.");
+        }
+
+        // Get information about the institution hierarchy
+        var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId.Value).ConfigureAwait(false);
+
+        // If the institution is "Мінспорт", set workshopType and isChampionPath; otherwise, use default values
+        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals(institutionOptions.Value.MinistryOfSportTitle, StringComparison.OrdinalIgnoreCase);
+        if (isChampionPath)
+        {
+            workshopType = WorkshopType.Section;
+        }
+        return (workshopType, isChampionPath);
+    }
 
     private async Task SetIdsToDefaultValue(WorkshopCreateRequestDto dto)
     {
@@ -1293,5 +1400,43 @@ public class WorkshopService(
             var pendingApplications = pendingApplicationsList?.SingleOrDefault(w => w.WorkshopId == card.Id)?.PendingApplications;
             card.AmountOfPendingApplications = pendingApplications ?? 0;
         }
+    }
+
+    private async Task<(Workshop Entity, OperationResult ValidationResult)> ValidateWorkshopBeforeFinalAction(Guid id)
+    {
+        var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+        if (entity == null)
+        {
+            logger.LogWarning("Operation failed. Workshop with Id = {id} doesn't exist in the system.", id);
+            return (null, OperationResult.Failed(new OperationError
+            {
+                Code = HttpStatusCode.NotFound.ToString(),
+                Description = $"Workshop with Id = {id} not found.",
+            }));
+        }
+
+        if (entity.Status != WorkshopStatus.Closed)
+        {
+            return (null, OperationResult.Failed(new OperationError
+            {
+                Code = nameof(HttpStatusCode.BadRequest),
+                Description = "Workshop status is not Closed.",
+            }));
+        }
+
+        foreach (var app in entity.Applications.Where(a => !a.IsDeleted))
+        {
+            if (app.Status == ApplicationStatus.Pending)
+            {
+                app.Status = ApplicationStatus.Rejected;
+            }
+            else if (app.Status == ApplicationStatus.StudyingForYears)
+            {
+                app.Status = ApplicationStatus.Completed;
+            }
+        }
+
+        return (entity, null);
     }
 }

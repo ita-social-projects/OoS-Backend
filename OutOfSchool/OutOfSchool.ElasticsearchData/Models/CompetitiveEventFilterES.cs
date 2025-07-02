@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System;
-using OutOfSchool.Common.Enums.CompetitiveEvent;
+﻿using System;
+using System.Collections.Generic;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
@@ -28,8 +28,6 @@ public class CompetitiveEventFilterES
     public IReadOnlyCollection<FormOfLearning> PlannedFormatsOfClasses { get; set; } = new List<FormOfLearning>();
 
     public bool AreThereBenefits { get; set; }
-
-    public bool OptionsForPeopleWithDisabilities { get; set; }
 
     public int MinimumAge { get; set; } = 0;
 

@@ -1,4 +1,5 @@
-﻿using OutOfSchool.BusinessLogic.Models;
+﻿using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 
@@ -68,18 +69,11 @@ public interface IWorkshopService
     Task<WorkshopStatusWithTitleDto> UpdateStatus(WorkshopStatusDto dto);
 
     /// <summary>
-    ///  Delete entity.
+    ///  Archives entity.
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Delete(Guid id);
-
-    /// <summary>
-    ///  Delete entity.
-    /// </summary>
-    /// <param name="id">Key in the table.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task DeleteV2(Guid id);
+    Task<OperationResult> Archive(Guid id);
 
     /// <summary>
     /// Get all entities from the database.

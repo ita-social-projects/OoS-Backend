@@ -17,6 +17,7 @@ using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
+using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
@@ -26,6 +27,7 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.TempSave;
+using OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Communication;
@@ -47,6 +49,7 @@ using OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
 
 namespace OutOfSchool.WebApi;
@@ -172,6 +175,7 @@ public static class Startup
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
+        services.Configure<InstitutionOptions>(configuration.GetSection(InstitutionOptions.Name));
 
         services.AddMemoryCache();
 
@@ -235,6 +239,7 @@ public static class Startup
                         NoStore = false,
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
+                options.ModelBinderProviders.Insert(0, new EnumCollectionModelBinderProvider());
             })
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -289,6 +294,11 @@ public static class Startup
         {
             throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
         }
+
+        //registartion of thumbnail generation 
+        builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
+        builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
+
 
         var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
             "DefaultConnection",

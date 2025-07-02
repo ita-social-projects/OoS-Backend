@@ -46,8 +46,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits ?? false,
             Benefits = dto.Benefits,
-            OptionsForPeopleWithDisabilities = dto.OptionsForPeopleWithDisabilities ?? false,
-            DescriptionOfOptionsForPeopleWithDisabilities = dto.DescriptionOfOptionsForPeopleWithDisabilities,
             MinimumAge = dto.MinimumAge,
             MaximumAge = dto.MaximumAge ?? 0,
             Price = dto.Price ?? 0,
@@ -77,8 +75,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         model.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
-        model.OptionsForPeopleWithDisabilities = dto.OptionsForPeopleWithDisabilities ?? model.OptionsForPeopleWithDisabilities;
-        model.DescriptionOfOptionsForPeopleWithDisabilities = dto.DescriptionOfOptionsForPeopleWithDisabilities;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
         model.Price = dto.Price ?? model.Price;

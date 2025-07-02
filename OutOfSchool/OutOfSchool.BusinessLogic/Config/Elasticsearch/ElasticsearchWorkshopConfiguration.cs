@@ -30,6 +30,7 @@ public class ElasticsearchWorkshopConfiguration : IElasticsearchEntityTypeConfig
                                 nameof(DateTimeRangeES.EndTime).FirstCharToLowerCase(),
                                 d => d.Format(TimeFormat))))
                     .Keyword(n => n.DirectionIds)
+                    .Keyword(n => n.SubDirectionIds)
                     .Keyword(n => n.FormOfLearning)
                     .Keyword(n => n.Id)
                     .Keyword(n => n.InstitutionId)

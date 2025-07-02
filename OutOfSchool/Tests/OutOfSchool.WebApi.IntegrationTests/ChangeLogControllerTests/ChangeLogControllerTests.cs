@@ -44,6 +44,7 @@ public class ChangeLogControllerTests
             new Mock<IWorkshopDraftRepository>().Object,
             new Mock<IEntityRepository<long, EmployeeChangesLog>>().Object,
             parentBlockedByAdminLogRepository,
+            new Mock<IWorkshopRepository>().Object,
             new Mock<ILogger<ChangesLogService>>().Object,
             new Mock<IValueProjector>().Object,
             new Mock<ICurrentUserService>().Object,

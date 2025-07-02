@@ -11,6 +11,7 @@ public static class WorkshopProviderViewCardGenerator
         .RuleFor(x => x.AvailableSeats, f => f.Random.UInt(5, 50))
         .RuleFor(x => x.CompetitiveSelection, f => f.Random.Bool())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
+        .RuleFor(x => x.SubDirectionIds, _ => new List<long>())
         .RuleFor(x => x.Address, f => AddressDtoGenerator.Generate())
         .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>())
         .RuleFor(x => x.TakenSeats, f => f.Random.UInt(0, 5))

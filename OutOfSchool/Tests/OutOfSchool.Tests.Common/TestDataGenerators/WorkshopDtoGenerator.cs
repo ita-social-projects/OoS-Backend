@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using System;
+using System.Linq;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -13,7 +14,7 @@ public static class WorkshopDtoGenerator
     .RuleFor(x => x.TakenSeats, f => f.Random.UInt(0, 5))
     .RuleFor(x => x.Rating, f => f.Random.Float(0, 5))
     .RuleFor(x => x.NumberOfRatings, f => f.Random.Int(0))
-    .RuleFor(x => x.Status, f => f.PickRandom<WorkshopStatus>())
+    .RuleFor(x => x.Status, f => f.PickRandom(Enum.GetValues(typeof(WorkshopStatus)).Cast<WorkshopStatus>().Where(s => s != WorkshopStatus.Archived)))
     .RuleFor(x => x.IsBlocked, f => f.Random.Bool())
     .RuleFor(x => x.ProviderOwnership, f => f.PickRandom<OwnershipType>())
     .RuleFor(x => x.ProviderStatus, f => f.PickRandom<ProviderStatus>())

@@ -549,7 +549,7 @@ public class ESWorkshopProviderTests
         {
             SearchText = "test",
             City = "Kyiv",
-            DirectionIds = [123456, 158764],
+            SubDirectionIds = [123456, 158764],
             Statuses = [WorkshopStatus.Open],
             FormOfLearning = [FormOfLearning.Offline, FormOfLearning.Mixed],
             CATOTTGId = 31375,

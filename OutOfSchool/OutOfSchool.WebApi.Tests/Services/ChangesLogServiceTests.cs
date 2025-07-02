@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,8 +15,10 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Changes;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -34,6 +37,7 @@ public class ChangesLogServiceTests
     private Mock<IWorkshopDraftRepository> workshopDraftRepositoryMock;
     private Mock<IEntityRepository<long, EmployeeChangesLog>> employeeChangesLogRepository;
     private Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>> parentBlockedByAdminLogRepository;
+    private Mock<IWorkshopRepository> workshopRepository;
     private Mock<IValueProjector> valueProjector;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
@@ -85,6 +89,7 @@ public class ChangesLogServiceTests
         workshopDraftRepositoryMock = new Mock<IWorkshopDraftRepository>(MockBehavior.Strict);
         employeeChangesLogRepository = new Mock<IEntityRepository<long, EmployeeChangesLog>>(MockBehavior.Strict);
         parentBlockedByAdminLogRepository = new Mock<IEntityAddOnlyRepository<long, ParentBlockedByAdminLog>>();
+        workshopRepository = new Mock<IWorkshopRepository>(MockBehavior.Strict);
         valueProjector = new Mock<IValueProjector>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -332,6 +337,8 @@ public class ChangesLogServiceTests
         var changesLogService = GetChangesLogService();
         var request = new ApplicationChangesLogRequest();
 
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(true);
+
         var entitiesCount = 5;
         var totalAmount = 5;
         var changesMock = Enumerable.Range(1, entitiesCount)
@@ -382,6 +389,7 @@ public class ChangesLogServiceTests
         workshop = workshop.WithProvider(provider);
         application = application.WithWorkshop(workshop);
 
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(x => x.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
@@ -440,6 +448,7 @@ public class ChangesLogServiceTests
 
         var entitiesCount = 5;
         var totalAmount = 10;
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(true);
         var changesMock = Enumerable.Range(1, entitiesCount)
             .Select(x => new EmployeeChangesLog
             {
@@ -484,6 +493,7 @@ public class ChangesLogServiceTests
         var request = new EmployeeChangesLogRequest();
         provider = provider.WithInstitutionId(institutionId);
 
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(x => x.IsMinistryAdmin()).Returns(true);
         ministryAdminServiceMock
             .Setup(m => m.GetByUserId(It.IsAny<string>()))
@@ -540,6 +550,7 @@ public class ChangesLogServiceTests
         var request = new EmployeeChangesLogRequest();
         provider = provider.WithInstitutionId(institutionId);
 
+        currentUserServiceMock.Setup(x => x.IsAdmin()).Returns(true);
         currentUserServiceMock.Setup(x => x.IsAreaAdmin()).Returns(true);
         areaAdminServiceMock
             .Setup(x => x.GetByUserId(It.IsAny<string>()))
@@ -784,6 +795,60 @@ public class ChangesLogServiceTests
         Assert.AreEqual(fakeData.Count, searchResult.TotalAmount);
         Assert.AreEqual(fakeData.Count, searchResult.Entities.Count);
     }
+
+    [Test]
+    public async Task GetWorkshopChangesLogAsync_WithValidRequest_ReturnsExpectedResult()
+    {
+        // Arrange
+        var changesLogService = GetChangesLogService();
+        var request = new WorkshopChangesLogRequest
+        {
+            From = 0,
+            Size = 5
+        };
+
+        var entitiesCount = 5;
+        var totalAmount = 10;
+        var changesMock = Enumerable.Range(1, totalAmount)
+            .Select(x => new ChangesLog
+            {
+                Id = x,
+                EntityIdGuid = workshop.Id,
+                PropertyName = "TestProperty",
+                OldValue = "OldValue",
+                NewValue = "NewValue",
+                UpdatedDate = DateTime.UtcNow,
+                User = user
+            })
+            .AsQueryable()
+            .BuildMock();
+
+        var workshopsMock = new List<Workshop> { workshop }
+            .AsQueryable()
+            .BuildMock();
+
+        changesLogRepository
+            .Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<Expression<Func<ChangesLog, bool>>>(), It.IsAny<Dictionary<Expression<Func<ChangesLog, Object>>, SortDirection>>()))
+            .Returns(changesMock);
+        workshopRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Dictionary<Expression<Func<Workshop, Object>>, SortDirection>>()))
+            .Returns(workshopsMock);
+
+        // Act  
+        var result = await changesLogService.GetWorkshopChangesLogAsync(request);
+
+        // Assert
+        Assert.AreEqual(totalAmount, result.TotalAmount);
+        Assert.AreEqual(entitiesCount, result.Entities.Count);
+        Assert.True(result.Entities.All(x => x.WorkshopId == workshop.Id));
+        Assert.True(result.Entities.All(x => x.FieldName == "TestProperty"));
+        Assert.True(result.Entities.All(x => x.OldValue == "OldValue"));
+        Assert.True(result.Entities.All(x => x.NewValue == "NewValue"));
+        Assert.True(result.Entities.All(x => x.User.Id == user.Id));
+        Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
+    }
+
     #endregion
 
     #region GetWorkshopDraftChangesLogAsync
@@ -1108,6 +1173,694 @@ public class ChangesLogServiceTests
 
     #endregion
 
+    #region LogContactCollections Tests
+
+    [Test]
+    public void LogContactCollections_WithAddedContacts_LogsCorrectly()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var trackedProperties = new[] { "Contacts.Phones", "Contacts.Emails" };
+
+        var oldContacts = new List<Contacts>();
+        var newContacts = new List<Contacts>
+    {
+        new()
+        {
+            Title = "Main Office",
+            Phones =
+            [
+                new() { Number = "+1234567890", Type = "Work" }
+            ],
+            Emails =
+            [
+                new() { Address = "test@example.com", Type = "Work" }
+            ]
+        }
+    };
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Main Office].Phones.Added[0].Number",
+            OldValue = null,
+            NewValue = "+1234567890",
+            UserId = userId
+        },
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Main Office].Emails.Added[0].Address",
+            OldValue = null,
+            NewValue = "test@example.com",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<Func<PhoneNumber, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                "Contacts[Main Office].Phones",
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs.Where(l => l.PropertyName.Contains("Phones")).ToList());
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.IsAny<IEnumerable<Email>>(),
+                It.IsAny<IEnumerable<Email>>(),
+                It.IsAny<Func<Email, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                "Contacts[Main Office].Emails",
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs.Where(l => l.PropertyName.Contains("Emails")).ToList());
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("LogContactCollections",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContacts, newContacts, trackedProperties, draftId, userId
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(2, result.Count);
+        Assert.True(result.Any(l => l.PropertyName.Contains("Phones")));
+        Assert.True(result.Any(l => l.PropertyName.Contains("Emails")));
+    }
+
+    [Test]
+    public void LogContactCollections_WithRemovedContacts_LogsCorrectly()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var trackedProperties = new[] { "Contacts.Phones" };
+
+        var oldContacts = new List<Contacts>
+    {
+        new()
+        {
+            Title = "Old Office",
+            Phones = new List<PhoneNumber>
+            {
+                new() { Number = "+0987654321", Type = "Work" }
+            }
+        }
+    };
+        var newContacts = new List<Contacts>();
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Old Office].Phones.Removed[0].Number",
+            OldValue = "+0987654321",
+            NewValue = null,
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<Func<PhoneNumber, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                "Contacts[Old Office].Phones",
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("LogContactCollections",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContacts, newContacts, trackedProperties, draftId, userId
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual("Contacts[Old Office].Phones.Removed[0].Number", result[0].PropertyName);
+        Assert.AreEqual("+0987654321", result[0].OldValue);
+        Assert.IsNull(result[0].NewValue);
+    }
+
+    [Test]
+    public void LogContactCollections_WithEmptyCollections_ReturnsEmptyList()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var trackedProperties = new[] { "Contacts.Phones", "Contacts.Emails" };
+
+        var oldContacts = new List<Contacts>();
+        var newContacts = new List<Contacts>();
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("LogContactCollections",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service, new object[]
+        {
+        oldContacts, newContacts, trackedProperties, draftId, userId
+        });
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [Test]
+    public void LogContactCollections_WithUntrackedProperties_IgnoresUntrackedCollections()
+    {
+        // Arrange
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var trackedProperties = new[] { "Contacts.Phones" }; // Only phones tracked
+
+        var oldContacts = new List<Contacts>();
+        var newContacts = new List<Contacts>
+    {
+        new()
+        {
+            Title = "Office",
+            Phones = new List<PhoneNumber>
+            {
+                new() { Number = "+1234567890", Type = "Work" }
+            },
+            Emails = new List<Email>  // This should be ignored
+            {
+                new() { Address = "test@example.com", Type = "Work" }
+            },
+            SocialNetworks = new List<SocialNetwork>  // This should be ignored
+            {
+                new() { Type = SocialNetworkContactType.Facebook, Url = "facebook.com/test" }
+            }
+        }
+    };
+
+        var expectedPhoneLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Office].Phones.Added[0].Number",
+            OldValue = null,
+            NewValue = "+1234567890",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<IEnumerable<PhoneNumber>>(),
+                It.IsAny<Func<PhoneNumber, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                "Contacts[Office].Phones",
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedPhoneLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("LogContactCollections",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service, new object[]
+        {
+        oldContacts, newContacts, trackedProperties, draftId, userId
+        });
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.True(result.All(l => l.PropertyName.Contains("Phones")));
+        Assert.False(result.Any(l => l.PropertyName.Contains("Emails")));
+        Assert.False(result.Any(l => l.PropertyName.Contains("SocialNetworks")));
+    }
+
+    #endregion
+
+    #region GetContactCollectionType Tests
+
+    [Test]
+    [TestCase("Contacts.Phones", ExpectedResult = ContactCollectionType.Phones)]
+    [TestCase("Contacts.Emails", ExpectedResult = ContactCollectionType.Emails)]
+    [TestCase("Contacts.SocialNetworks", ExpectedResult = ContactCollectionType.SocialNetworks)]
+    public ContactCollectionType? GetContactCollectionType_WithValidProperty_ReturnsCorrectType(string trackedProperty)
+    {
+        // Arrange
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionType",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (ContactCollectionType?)methodInfo.Invoke(null, new object[] { trackedProperty });
+
+        // Assert
+        return result;
+    }
+
+    [Test]
+    [TestCase("InvalidProperty")]
+    [TestCase("Contacts.InvalidCollection")]
+    [TestCase("")]
+    [TestCase(null)]
+    public void GetContactCollectionType_WithInvalidProperty_ReturnsNull(string trackedProperty)
+    {
+        // Arrange
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionType",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (ContactCollectionType?)methodInfo.Invoke(null, new object[] { trackedProperty });
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    #endregion
+
+    #region GetContactIdentifier Tests
+
+    [Test]
+    public void GetContactIdentifier_WithNewContactTitle_ReturnsTitle()
+    {
+        // Arrange
+        var oldContact = (Contacts)null;
+        var newContact = new Contacts { Title = "Main Office" };
+        var index = 0;
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactIdentifier",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (string)methodInfo.Invoke(null, new object[] { oldContact, newContact, index });
+
+        // Assert
+        Assert.AreEqual("Main Office", result);
+    }
+
+    [Test]
+    public void GetContactIdentifier_WithOldContactTitle_ReturnsTitle()
+    {
+        // Arrange
+        var oldContact = new Contacts { Title = "Old Office" };
+        var newContact = (Contacts)null;
+        var index = 1;
+
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactIdentifier",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (string)methodInfo.Invoke(null, [oldContact, newContact, index]);
+
+        // Assert
+        Assert.AreEqual("Old Office", result);
+    }
+
+    [Test]
+    public void GetContactIdentifier_WithBothContactTitles_PrefersNewContactTitle()
+    {
+        // Arrange
+        var oldContact = new Contacts { Title = "Old Office" };
+        var newContact = new Contacts { Title = "New Office" };
+        var index = 2;
+
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactIdentifier",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (string)methodInfo.Invoke(null, [oldContact, newContact, index]);
+
+        // Assert
+        Assert.AreEqual("New Office", result);
+    }
+
+    [Test]
+    public void GetContactIdentifier_WithEmptyTitles_ReturnsIndexBasedIdentifier()
+    {
+        // Arrange
+        var oldContact = new Contacts { Title = "" };
+        var newContact = new Contacts { Title = "   " };
+        var index = 3;
+
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactIdentifier",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (string)methodInfo.Invoke(null, [oldContact, newContact, index]);
+
+        // Assert
+        Assert.AreEqual("Index3", result);
+    }
+
+    [Test]
+    public void GetContactIdentifier_WithNullContacts_ReturnsIndexBasedIdentifier()
+    {
+        // Arrange
+        var oldContact = (Contacts)null;
+        var newContact = (Contacts)null;
+        var index = 5;
+
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactIdentifier",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        // Act
+        var result = (string)methodInfo.Invoke(null, [oldContact, newContact, index]);
+
+        // Assert
+        Assert.AreEqual("Index5", result);
+    }
+
+    #endregion
+
+    #region GetContactCollectionLogs Tests
+
+    [Test]
+    public void GetContactCollectionLogs_WithPhonesCollection_ReturnsCorrectLogs()
+    {
+        // Arrange
+        var oldContact = new Contacts
+        {
+            Phones = new List<PhoneNumber>
+        {
+            new() { Number = "+1234567890", Type = "Work" }
+        }
+        };
+
+        var newContact = new Contacts
+        {
+            Phones = new List<PhoneNumber>
+        {
+            new() { Number = "+0987654321", Type = "Mobile" }
+        }
+        };
+
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var propertyPrefix = "Contacts[Office].Phones";
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Office].Phones.Changed[0].Number",
+            OldValue = "+1234567890",
+            NewValue = "+0987654321",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                oldContact.Phones,
+                newContact.Phones,
+                It.IsAny<Func<PhoneNumber, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                propertyPrefix,
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionLogs",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContact, newContact, ContactCollectionType.Phones, draftId, userId, propertyPrefix
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(expectedLogs[0].PropertyName, result[0].PropertyName);
+        Assert.AreEqual(expectedLogs[0].OldValue, result[0].OldValue);
+        Assert.AreEqual(expectedLogs[0].NewValue, result[0].NewValue);
+    }
+
+    [Test]
+    public void GetContactCollectionLogs_WithEmailsCollection_ReturnsCorrectLogs()
+    {
+        // Arrange
+        var oldContact = new Contacts
+        {
+            Emails = new List<Email>
+        {
+            new() { Address = "old@example.com", Type = "Work" }
+        }
+        };
+
+        var newContact = new Contacts
+        {
+            Emails = new List<Email>
+        {
+            new() { Address = "new@example.com", Type = "Work" }
+        }
+        };
+
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var propertyPrefix = "Contacts[Office].Emails";
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Office].Emails.Changed[0].Address",
+            OldValue = "old@example.com",
+            NewValue = "new@example.com",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                oldContact.Emails,
+                newContact.Emails,
+                It.IsAny<Func<Email, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                propertyPrefix,
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionLogs",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContact, newContact, ContactCollectionType.Emails, draftId, userId, propertyPrefix
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(expectedLogs[0].PropertyName, result[0].PropertyName);
+        Assert.AreEqual(expectedLogs[0].OldValue, result[0].OldValue);
+        Assert.AreEqual(expectedLogs[0].NewValue, result[0].NewValue);
+    }
+
+    [Test]
+    public void GetContactCollectionLogs_WithSocialNetworksCollection_ReturnsCorrectLogs()
+    {
+        // Arrange
+        var oldContact = new Contacts
+        {
+            SocialNetworks =
+        [
+            new() { Type = SocialNetworkContactType.Facebook, Url = "facebook.com/old" }
+        ]
+        };
+
+        var newContact = new Contacts
+        {
+            SocialNetworks =
+        [
+            new() { Type = SocialNetworkContactType.Instagram, Url = "instagram.com/new" }
+        ]
+        };
+
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var propertyPrefix = "Contacts[Office].SocialNetworks";
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Office].SocialNetworks.Changed[Facebook_facebook.com/old].Type",
+            OldValue = "Facebook",
+            NewValue = "Instagram",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                oldContact.SocialNetworks,
+                newContact.SocialNetworks,
+                It.IsAny<Func<SocialNetwork, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                propertyPrefix,
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionLogs",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContact, newContact, ContactCollectionType.SocialNetworks, draftId, userId, propertyPrefix
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(expectedLogs[0].PropertyName, result[0].PropertyName);
+        Assert.AreEqual(expectedLogs[0].OldValue, result[0].OldValue);
+        Assert.AreEqual(expectedLogs[0].NewValue, result[0].NewValue);
+    }
+
+    [Test]
+    public void GetContactCollectionLogs_WithNullOldContact_HandlesGracefully()
+    {
+        // Arrange
+        var oldContact = (Contacts)null;
+        var newContact = new Contacts
+        {
+            Phones = new List<PhoneNumber>
+        {
+            new() { Number = "+1234567890", Type = "Work" }
+        }
+        };
+
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var propertyPrefix = "Contacts[Office].Phones";
+
+        var expectedLogs = new List<ChangesLog>
+    {
+        new()
+        {
+            EntityType = "WorkshopDraft",
+            EntityIdGuid = draftId,
+            PropertyName = "Contacts[Office].Phones.Added[0].Number",
+            OldValue = null,
+            NewValue = "+1234567890",
+            UserId = userId
+        }
+    };
+
+        collectionChangeLoggerMock.Setup(l => l.CompareCollections(
+                It.Is<IEnumerable<PhoneNumber>>(phones => !phones.Any()),
+                newContact.Phones,
+                It.IsAny<Func<PhoneNumber, string>>(),
+                draftId,
+                "WorkshopDraft",
+                userId,
+                propertyPrefix,
+                valueProjector.Object,
+                true,
+                null))
+            .Returns(expectedLogs);
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionLogs",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContact, newContact, ContactCollectionType.Phones, draftId, userId, propertyPrefix
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(expectedLogs[0].PropertyName, result[0].PropertyName);
+        Assert.IsNull(result[0].OldValue);
+        Assert.AreEqual("+1234567890", result[0].NewValue);
+    }
+
+    [Test]
+    public void GetContactCollectionLogs_WithInvalidCollectionType_ReturnsEmptyList()
+    {
+        // Arrange
+        var oldContact = new Contacts();
+        var newContact = new Contacts();
+        var draftId = Guid.NewGuid();
+        var userId = "test-user-id";
+        var propertyPrefix = "Contacts[Office].Invalid";
+
+        var service = GetChangesLogService();
+        var methodInfo = typeof(ChangesLogService).GetMethod("GetContactCollectionLogs",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        // Act
+        var result = (List<ChangesLog>)methodInfo.Invoke(service,
+        [
+        oldContact, newContact, (ContactCollectionType)999, draftId, userId, propertyPrefix
+        ]);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    #endregion
+
     #region LogImageDeletions
 
     [Test]
@@ -1200,7 +1953,7 @@ public class ChangesLogServiceTests
         // Use private method via reflection to test
         var service = GetChangesLogService();
         var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
         var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);
@@ -1243,7 +1996,7 @@ public class ChangesLogServiceTests
         // Use private method via reflection to test
         var service = GetChangesLogService();
         var methodInfo = typeof(ChangesLogService).GetMethod("GetWorkshopDraftAccessPredicateAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Act
         var predicateTask = (Task<Expression<Func<WorkshopDraft, bool>>>)methodInfo.Invoke(service, null);
@@ -1277,6 +2030,7 @@ public class ChangesLogServiceTests
             workshopDraftRepositoryMock.Object,
             employeeChangesLogRepository.Object,
             parentBlockedByAdminLogRepository.Object,
+            workshopRepository.Object,
             logger.Object,
             valueProjector.Object,
             currentUserServiceMock.Object,

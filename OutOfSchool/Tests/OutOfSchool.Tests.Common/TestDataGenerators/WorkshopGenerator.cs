@@ -35,6 +35,7 @@ public static class WorkshopGenerator
         .RuleFor(x => x.ShortTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.StudyPeriodStartDate, _ => new DateOnly(2000, 9, 1))
         .RuleFor(x => x.StudyPeriodEndDate, _ => new DateOnly(2000, 5, 31))
+        .RuleFor(x => x.InstitutionHierarchyId, f => f.Random.Guid())
         .RuleFor(x => x.Tags, f => []);
 
     public static Workshop Generate() => faker.Generate();

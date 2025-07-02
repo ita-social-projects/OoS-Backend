@@ -5,16 +5,20 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -37,6 +41,7 @@ public class SensitiveWorkshopsServiceDBTests
     private ISensitiveWorkshopsService sensitiveWorkshopService;
     private IWorkshopRepository workshopRepository;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IInstitutionHierarchyService>  institutionHierarchyServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
@@ -47,8 +52,8 @@ public class SensitiveWorkshopsServiceDBTests
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IFeatureManager> featureManagerMock;
-
-
+    private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     [SetUp]
     public void SetUp()
     {
@@ -60,7 +65,7 @@ public class SensitiveWorkshopsServiceDBTests
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
 
         workshopRepository = new WorkshopRepository(dbContext);
-        
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         languageServiceMock = new Mock<ILanguageService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
@@ -72,11 +77,13 @@ public class SensitiveWorkshopsServiceDBTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         featureManagerMock = new Mock<IFeatureManager>();
         searchStringServiceMock = new Mock<ISearchStringService>();
-
+        changesLogServiceMock = new Mock<IChangesLogService>();
+        institutionOptionsMock = new  Mock<IOptions<InstitutionOptions>>();
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository,
                 languageServiceMock.Object,
+                institutionHierarchyServiceMock.Object,
                 tagRepository.Object,
                 new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>().Object,
                 new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>().Object,
@@ -93,11 +100,16 @@ public class SensitiveWorkshopsServiceDBTests
                 searchStringServiceMock.Object,
                 contactsServiceMock.Object,
                 applicationRepositoryMock.Object,
-                featureManagerMock.Object);
+                featureManagerMock.Object,
+                changesLogServiceMock.Object,
+                institutionOptionsMock.Object);
 
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
-
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+        
+        MockInstitutionHierarchy();
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
     }
@@ -479,6 +491,14 @@ public class SensitiveWorkshopsServiceDBTests
         };
     }
 
+    private void MockInstitutionHierarchy()
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
     private async Task<List<WorkshopDto>> MapWorkshopsToDtos()
     {
         var workshops = await SeedWorkshops();

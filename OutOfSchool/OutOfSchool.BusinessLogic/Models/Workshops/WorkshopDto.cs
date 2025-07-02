@@ -88,6 +88,7 @@ public static class WorkshopDtoExtensions
             Institution = dto.Institution,
             Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),
             DirectionIds = dto.DirectionIds,
+            SubDirectionIds = dto.SubDirectionIds,
             DateTimeRanges = dto.DateTimeRanges?.ToES() ?? [],
             Status = dto.Status,
             IsBlocked = dto.IsBlocked,
@@ -112,7 +113,8 @@ public static class WorkshopDtoExtensions
             StudyPeriodEndDay = dto.StudyPeriodDates.EndDate.Day,
             StudyPeriodEndMonth = dto.StudyPeriodDates.EndDate.Month,
             LanguageOfEducationId = dto.LanguageOfEducationId,
-            LanguageOfEducationName = dto.LanguageOfEducationName
+            LanguageOfEducationName = dto.LanguageOfEducationName,
+            IsChampionPath =  dto.IsChampionPath,
         };
     }
 
@@ -143,6 +145,7 @@ public static class WorkshopDtoExtensions
             InstitutionHierarchy = model.InstitutionHierarchy?.Title,
             DefaultTeacher = model.DefaultTeacher?.ToDto(),
             DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList() ?? [],
+            SubDirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(sd => !sd.IsDeleted).Select(sd => sd.Id).ToList() ?? [],
             Keywords = model.Keywords?.Split(Constants.MappingSeparator, StringSplitOptions.None) ?? [],
             Teachers = model.Teachers?.ToNotDeletedDto() ?? [],
             ProviderId = model.ProviderId,
@@ -184,6 +187,7 @@ public static class WorkshopDtoExtensions
             Facebook = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
             Instagram = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
             Address = defaultContact?.Address?.ToDto(),
+            IsChampionPath = model.IsChampionPath,
         };
     }
 

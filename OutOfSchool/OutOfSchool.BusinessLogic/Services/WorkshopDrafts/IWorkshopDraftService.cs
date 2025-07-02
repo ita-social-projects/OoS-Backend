@@ -107,4 +107,11 @@ public interface IWorkshopDraftService
     /// A <see cref="Guid"/> representing the WorkshopDraft Id, or null if no matching WorkshopDraft exists.
     /// </returns>
     Task<Guid?> GetWorkshopDraftIdByWorkshopId(Guid workshopId);
+
+    /// <summary>
+    /// Creates a new draft for reactivation of a closed workshop.
+    /// </summary>
+    /// <param name="id">Key in the db.</param>
+    /// <returns>A <see cref="WorkshopDraftResultDto"/> containing the details of the created draft.</returns>
+    Task<WorkshopDraftResultDto> CreateDraftForReactivation(Guid id);
 }

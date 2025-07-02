@@ -62,6 +62,8 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public List<long> DirectionIds { get; set; }
 
+    public List<long> SubDirectionIds { get; set; }
+
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public int? StudyPeriodStartDay { get; set; }
@@ -107,4 +109,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
     public Coverage Coverage { get; set; }
 
     public List<string> Tags { get; set; }
+
+    public bool IsChampionPath { get; set; } 
 }

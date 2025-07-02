@@ -7,4 +7,5 @@ public enum WorkshopStatus
 {
     Open = 1,
     Closed,
+    Archived
 }

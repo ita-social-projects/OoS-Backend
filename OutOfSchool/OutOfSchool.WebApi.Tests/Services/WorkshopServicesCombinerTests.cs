@@ -6,10 +6,12 @@ using System.Net;
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData;
@@ -27,6 +29,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class WorkshopServicesCombinerTests
 {
     private Mock<IWorkshopService> workshopService;
+    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopsService;
     private Mock<INotificationService> notificationServiceMock;
     private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
     private Mock<IApplicationRepository> applicationRepository;
@@ -40,6 +43,7 @@ public class WorkshopServicesCombinerTests
     {
         workshopService = new Mock<IWorkshopService>();
         elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
+        sensitiveWorkshopsService = new Mock<ISensitiveWorkshopsService>();
 
         favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
         applicationRepository = new Mock<IApplicationRepository>();
@@ -55,6 +59,7 @@ public class WorkshopServicesCombinerTests
         service = new WorkshopServicesCombiner(
             workshopService.Object,
             elasticsearchSynchronizationService.Object,
+            sensitiveWorkshopsService.Object,
             notificationServiceMock.Object,
             favoriteRepository.Object,
             applicationRepository.Object,
@@ -238,6 +243,29 @@ public class WorkshopServicesCombinerTests
         Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
         Assert.AreEqual(Constants.InvalidAvailableSeatsForWorkshopErrorMessage, firstError.Description);
     }
+
+    [Test]
+    public async Task Update_WhenWorkshopIsArchived_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.Status = WorkshopStatus.Archived;
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
+
+        // Act
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
+
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.AreEqual(nameof(HttpStatusCode.BadRequest), firstError.Code);
+        Assert.AreEqual("Workshop is archived and cannot be updated.", firstError.Description);
+    }
     #endregion
 
     #region UpdateStatus
@@ -342,8 +370,10 @@ public class WorkshopServicesCombinerTests
             Times.Exactly(workshops.Count));
     }
 
+    #region Archive
+
     [Test]
-    public async Task Delete_WhenCalled_CreateNotificationWithTitleInAdditionalData()
+    public async Task Archive_WhenCalled_CreateNotificationWithTitleInAdditionalData()
     {
         // Arrange
         string titleKey = "Title";
@@ -368,6 +398,7 @@ public class WorkshopServicesCombinerTests
         var workshop = WorkshopGenerator.Generate();
 
         workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        workshopService.Setup(x => x.Archive(workshop.Id)).ReturnsAsync(OperationResult.Success);
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -383,7 +414,7 @@ public class WorkshopServicesCombinerTests
             .Returns(applications.AsTestAsyncEnumerableQuery());
 
         // Act
-        await service.Delete(workshop.Id).ConfigureAwait(false);
+        await service.Archive(workshop.Id).ConfigureAwait(false);
 
         // Assert
         notificationServiceMock.Verify(
@@ -396,6 +427,56 @@ public class WorkshopServicesCombinerTests
                 null),
             Times.Once);
     }
+
+    #endregion
+
+    #region Delete
+
+    [Test]
+    public async Task Delete_WhenResultIsNull_ShouldReturnFailedOperationResult()
+    {
+        //Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync((OperationResult)null);
+
+        //Act
+        var result = await service.Delete(workshop.Id).ConfigureAwait(false);
+
+        //Assert
+        Assert.IsNotNull(result);
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.Errors.FirstOrDefault().Code, Is.EqualTo(HttpStatusCode.BadRequest.ToString()));
+        Assert.That(result.Errors.FirstOrDefault().Description, Is.EqualTo("Returned result was null."));
+    }
+
+    [Test]
+    public async Task Delete_WhenResultIsFailed_ShouldReturnFailedOperationResult()
+    {
+        //Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync(OperationResult.Failed(new OperationError
+        {
+            Code = nameof(HttpStatusCode.BadRequest),
+            Description = "Returned result was null.",
+        }));
+
+        //Act
+        var result = await service.Delete(workshop.Id).ConfigureAwait(false);
+
+        //Assert
+        Assert.IsNotNull(result);
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.Errors.FirstOrDefault().Code, Is.EqualTo(HttpStatusCode.BadRequest.ToString()));
+        Assert.That(result.Errors.FirstOrDefault().Description, Is.EqualTo("Returned result was null."));
+    }
+
+    #endregion
+
+    #region GetPriceRange
 
     [Test]
     public async Task GetPriceRangeAsync_WhenCalled_ReturnsPriceRange()
@@ -436,4 +517,6 @@ public class WorkshopServicesCombinerTests
         Assert.AreEqual(priceRange.MaxPrice, result.MaxPrice);
         Assert.AreEqual(priceRange.MinPrice, result.MinPrice);
     }
+
+    #endregion
 }

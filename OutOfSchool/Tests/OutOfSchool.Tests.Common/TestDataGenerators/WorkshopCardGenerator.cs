@@ -14,6 +14,7 @@ public static class WorkshopCardGenerator
         .RuleFor(x => x.Institution, f => f.Lorem.Word())
         .RuleFor(x => x.InstitutionHierarchyId, f => f.Random.Guid())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
+        .RuleFor(x => x.SubDirectionIds, _ => new List<long>())
         .RuleFor(x => x.Address, f => AddressDtoGenerator.Generate())
         .RuleFor(x => x.ProviderLicenseStatus, f => f.PickRandom<ProviderLicenseStatus>())
         .RuleFor(x => x.TakenSeats, f => f.Random.UInt(0, 5))

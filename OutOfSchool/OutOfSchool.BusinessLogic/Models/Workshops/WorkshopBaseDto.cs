@@ -80,6 +80,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public List<long> DirectionIds { get; set; }
 
+    public List<long> SubDirectionIds { get; set; }
+
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
@@ -114,6 +116,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
+
+    public bool IsChampionPath { get; set; } = false;
 
     [MaxLength(500)]
     public string PreferentialTermsOfParticipation { get; set; }

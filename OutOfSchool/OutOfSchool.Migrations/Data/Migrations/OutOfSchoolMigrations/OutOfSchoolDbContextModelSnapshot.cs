@@ -895,10 +895,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(36)
                         .HasColumnType("char");
 
-                    b.Property<string>("DescriptionOfOptionsForPeopleWithDisabilities")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<string>("DescriptionOfTheEnrollmentProcedure")
                         .HasMaxLength(2000)
                         .HasColumnType("varchar(2000)");
@@ -932,9 +928,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<uint>("NumberOfSeats")
                         .HasColumnType("int unsigned");
-
-                    b.Property<bool>("OptionsForPeopleWithDisabilities")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("OrganizerOfTheEventId")
                         .HasColumnType("UUID(16)");
@@ -1988,7 +1981,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg+PTw/SEdJRlBRW11cXnJwcW9ufHp7eXh9kI6PjYyRVGeW",
+                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg5Pj08P0hHSUZQUVtdXF5ycHFvbnx6e3l4fZCOj42MkVRnlg==",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -2016,28 +2009,28 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoLBRQUUZUblteenh5e32OjI2PkWeW",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoLDkUUFFGVG5bXnp4eXt9joyNj5Fnlg==",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlR4eY6MjY+RW15nlg==",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUeHmOjI2PkVteZ5Y=",
                             RoleName = "RegionAdmin"
                         },
                         new
                         {
                             Id = 7L,
                             Description = "area admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoFFBRRlSMjVteZ5Y=",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUjI1bXmeW",
                             RoleName = "AreaAdmin"
                         },
                         new
                         {
                             Id = 8L,
                             Description = "moderator permissions",
-                            PackedPermissions = "MjdaW15U",
+                            PackedPermissions = "Mjc5WlteZlQ=",
                             RoleName = "Moderator"
                         });
                 });
@@ -3860,6 +3853,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<bool>("IsBlocked")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsChampionPath")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -5198,7 +5194,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.Language", "LanguageOfEducation")
                         .WithMany()
                         .HasForeignKey("LanguageOfEducationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "ParentWorkshop")

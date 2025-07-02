@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using MockQueryable.Moq;
 using Moq;
@@ -14,12 +16,16 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Images;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
@@ -38,6 +44,7 @@ public class WorkshopServiceTests
 {
     private IWorkshopService workshopService;
     private Mock<IWorkshopRepository> workshopRepository;
+    private Mock<IInstitutionHierarchyService>  institutionHierarchyServiceMock;
     private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
     private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
     private Mock<ITeacherService> teacherService;
@@ -57,6 +64,8 @@ public class WorkshopServiceTests
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IFeatureManager> featureManager;
+    private Mock<IChangesLogService> changesLogService;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Guid providerId;
     private Guid studySubjectId;
 
@@ -65,6 +74,7 @@ public class WorkshopServiceTests
     public void SetUp()
     {
         workshopRepository = new Mock<IWorkshopRepository>();
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
         roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
         teacherService = new Mock<ITeacherService>();
@@ -84,6 +94,8 @@ public class WorkshopServiceTests
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
         featureManager = new Mock<IFeatureManager>();
+        changesLogService = new Mock<IChangesLogService>();
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
 
@@ -91,6 +103,7 @@ public class WorkshopServiceTests
                 new WorkshopService(
                     workshopRepository.Object,
                     languageServiceMock.Object,
+                    institutionHierarchyServiceMock.Object,
                     tagRepository.Object,
                     dateTimeRangeRepository.Object,
                     roomRepository.Object,
@@ -107,10 +120,14 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureManager.Object
+                    featureManager.Object,
+                    changesLogService.Object,
+                    institutionOptionsMock.Object
                     );
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
     }
 
     #region Create
@@ -263,6 +280,65 @@ public class WorkshopServiceTests
         await workshopService.Invoking(w => w.Create(WorkshopCreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
+    
+    [Test]
+    public async Task Create_WhenInstitutionTitleIsMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
+    {
+        // Arrange
+        var createdEntity = WorkshopGenerator.Generate().WithProvider();
+        createdEntity.InstitutionHierarchyId = Guid.NewGuid();
+        createdEntity.WorkshopType = WorkshopType.Studio;
+
+        SetupCreate(createdEntity);
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(createdEntity.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт" }
+            });
+        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+        var dto = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
+        workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
+            .ReturnsAsync((Workshop w) => w); 
+        // Act
+        var result = await workshopService.Create(dto).ConfigureAwait(false);
+
+        // Assert
+        result.WorkshopType.Should().Be(WorkshopType.Section);
+        result.IsChampionPath.Should().BeTrue();
+    }
+    
+    [Test]
+    public async Task Create_WhenInstitutionTitleIsNotMinSport_ShouldNotChangeWorkshopTypeAndIsChampionPathFalse()
+    {
+        // Arrange
+        var createdEntity = WorkshopGenerator.Generate().WithProvider();
+        createdEntity.InstitutionHierarchyId = Guid.NewGuid();
+        createdEntity.WorkshopType = WorkshopType.Studio;
+
+        SetupCreate(createdEntity);
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(createdEntity.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Інший заклад" }
+            });
+    
+        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+
+        var dto = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
+        
+        workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
+            .ReturnsAsync((Workshop w) => w);
+
+        // Act
+        var result = await workshopService.Create(dto).ConfigureAwait(false);
+
+        // Assert
+        result.WorkshopType.Should().Be(WorkshopType.Studio);
+        result.IsChampionPath.Should().BeFalse();
+    }
+
     #endregion
 
     #region CreateV2
@@ -492,6 +568,42 @@ public class WorkshopServiceTests
         result.Should().NotBeNull();
         result.UploadingCoverImageResult.Should().BeNull();
     }
+    
+    [Test]
+    public async Task CreateV2_WhenInstitutionTitleIsMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
+    {
+        // Arrange
+        var createdEntity = WorkshopGenerator.Generate().WithProvider();
+        createdEntity.InstitutionHierarchyId = Guid.NewGuid();
+        createdEntity.WorkshopType = WorkshopType.Studio;
+
+        SetupCreateV2(createdEntity);
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(createdEntity.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт" }
+            });
+
+        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
+        
+        workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
+            .ReturnsAsync((Workshop w) => w);
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()))
+            .Returns((Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>> f) => f());
+
+        // Act
+        var result = await workshopService.CreateV2(dto).ConfigureAwait(false);
+
+        // Assert
+        result.Workshop.WorkshopType.Should().Be(WorkshopType.Section);
+        result.Workshop.IsChampionPath.Should().BeTrue();
+    }
+
+
     #endregion
 
     #region GetAll
@@ -540,6 +652,22 @@ public class WorkshopServiceTests
 
         // Act
         var result = await workshopService.GetById(It.IsAny<Guid>(), false).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public async Task GetById_WhenWorkshopIsArchived_ShouldReturnNull()
+    {
+        // Arrange
+        var id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43");
+        var workshop = WorkshopGenerator.Generate().WithId(id).WithAddress();
+        workshop.Status = WorkshopStatus.Archived;
+        SetupGetById(workshop);
+
+        // Act
+        var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -988,6 +1116,89 @@ public class WorkshopServiceTests
             .ThrowAsync<InvalidOperationException>()
             .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
     }
+    
+    [Test]
+    public async Task Update_WhenInstitutionTitleIsExactlyMinSport_ShouldSetSectionAndChampionPath()
+    {
+        // Arrange
+        var dto = WorkshopCreateUpdateDtoGenerator.Generate();
+        dto.InstitutionHierarchyId = Guid.NewGuid();
+        dto.WorkshopType = WorkshopType.Studio;
+
+        var teachers = TeachersGenerator.Generate(2);
+        dto.Teachers = teachers.ToDto();
+
+        var workshop = dto.SetToModel(WorkshopGenerator.Generate());
+        workshop.Teachers = teachers;
+        workshop.Applications = [];
+
+        SetupUpdate(workshop);
+        
+        applicationRepository
+            .Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
+            .ReturnsAsync(new List<WorkshopTakenSeats>());
+        
+        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт" }
+            });
+
+        // Act
+        var result = await workshopService.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        result.WorkshopType.Should().Be(WorkshopType.Section);
+        result.IsChampionPath.Should().BeTrue();
+    }
+    
+    [Test]
+    public async Task Update_WhenInstitutionTitleIsDifferent_ShouldKeepWorkshopTypeAndSetChampionPathFalse()
+    {
+        // Arrange
+        var dto = WorkshopCreateUpdateDtoGenerator.Generate();
+        dto.InstitutionHierarchyId = Guid.NewGuid();
+        dto.WorkshopType = WorkshopType.CreativeUnion;
+
+        var teachers = TeachersGenerator.Generate(2);
+        dto.Teachers = teachers.ToDto();
+
+        var workshop = dto.SetToModel(WorkshopGenerator.Generate());
+        workshop.Teachers = teachers;
+        workshop.Applications = [];
+
+        SetupUpdate(workshop);
+        applicationRepository
+            .Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
+            .ReturnsAsync(new List<WorkshopTakenSeats>());
+        
+        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Some Other Institution" }
+            });
+
+        // Act
+        var result = await workshopService.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        result.WorkshopType.Should().Be(WorkshopType.CreativeUnion);
+        result.IsChampionPath.Should().BeFalse();
+    }
+    
+    [Test]
+    public async Task Update_WhenInstitutionHierarchyIdIsNull_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopCreateUpdateDtoGenerator.Generate();
+        dto.InstitutionHierarchyId = null;
+
+        // Act & Assert
+        await workshopService.Invoking(s => s.Update(dto))
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("InstitutionHierarchyId cannot be null.");
+    }
 
     [Test]
     public async Task UpdateV2_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
@@ -1005,6 +1216,107 @@ public class WorkshopServiceTests
             .Should()
             .ThrowAsync<InvalidOperationException>()
             .WithMessage($"*Language with ID = {dto.LanguageOfEducationId}*");
+    }
+    
+    [Test]
+    public async Task UpdateV2_WhenInstitutionTitleIsExactlyMinSport_ShouldSetSectionAndChampionPath()
+    {
+        // Arrange
+        var dto = WorkshopV2DtoGenerator.Generate();
+        dto.InstitutionHierarchyId = Guid.NewGuid();
+        dto.WorkshopType = WorkshopType.CreativeUnion;
+        dto.Teachers = TeachersGenerator.Generate(2).ToDto();
+        dto.DateTimeRanges = [];
+        dto.AvailableSeats = 0;
+    
+        var workshop = dto.SetToModel(WorkshopGenerator.Generate());
+        workshop.Teachers = TeachersGenerator.Generate(2);
+        workshop.Applications = [];
+
+        SetupUpdate(workshop);
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт" }
+            });
+
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
+            .ReturnsAsync(new List<WorkshopTakenSeats>());
+
+        workshopImagesMediator.Setup(i => i.ChangeImagesAsync(It.IsAny<Workshop>(), It.IsAny<IList<string>>(), It.IsAny<IList<IFormFile>>()))
+            .ReturnsAsync(new MultipleImageChangingResult());
+
+        workshopImagesMediator.Setup(i => i.ChangeCoverImageAsync(It.IsAny<Workshop>(), It.IsAny<string>(), It.IsAny<IFormFile>()))
+            .ReturnsAsync(new ImageChangingResult());
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>>>()))
+            .Returns((Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>> f) => f.Invoke());
+
+        // Act
+        var result = await workshopService.UpdateV2(dto).ConfigureAwait(false);
+
+        // Assert
+        result.Workshop.WorkshopType.Should().Be(WorkshopType.Section);
+        result.Workshop.IsChampionPath.Should().BeTrue();
+    }
+    
+    [Test]
+    public async Task UpdateV2_WhenInstitutionTitleIsNotMinSport_ShouldKeepWorkshopTypeAndSetChampionPathFalse()
+    {
+        // Arrange
+        var dto = WorkshopV2DtoGenerator.Generate();
+        dto.InstitutionHierarchyId = Guid.NewGuid();
+        dto.WorkshopType = WorkshopType.Studio;
+        dto.Teachers = TeachersGenerator.Generate(2).ToDto();
+        dto.DateTimeRanges = [];
+        dto.AvailableSeats = 5;
+
+        var workshop = dto.SetToModel(WorkshopGenerator.Generate());
+        workshop.Teachers = TeachersGenerator.Generate(2);
+        workshop.Applications = [];
+
+        SetupUpdate(workshop);
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Some Other Org" }
+            });
+
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
+            .ReturnsAsync(new List<WorkshopTakenSeats>());
+
+        workshopImagesMediator.Setup(i => i.ChangeImagesAsync(It.IsAny<Workshop>(), It.IsAny<IList<string>>(), It.IsAny<IList<IFormFile>>()))
+            .ReturnsAsync(new MultipleImageChangingResult());
+
+        workshopImagesMediator.Setup(i => i.ChangeCoverImageAsync(It.IsAny<Workshop>(), It.IsAny<string>(), It.IsAny<IFormFile>()))
+            .ReturnsAsync(new ImageChangingResult());
+
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>>>()))
+            .Returns((Func<Task<(Workshop, MultipleImageChangingResult, ImageChangingResult)>> f) => f.Invoke());
+
+        // Act
+        var result = await workshopService.UpdateV2(dto).ConfigureAwait(false);
+
+        // Assert
+        result.Workshop.WorkshopType.Should().Be(WorkshopType.Studio);
+        result.Workshop.IsChampionPath.Should().BeFalse();
+    }
+    
+    [Test]
+    public async Task UpdateV2_WhenInstitutionHierarchyIdIsNull_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var dto = WorkshopV2DtoGenerator.Generate();
+        dto.InstitutionHierarchyId = null;
+
+        // Act & Assert
+        await workshopService
+            .Invoking(s => s.UpdateV2(dto))
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("InstitutionHierarchyId cannot be null.");
     }
     #endregion
 
@@ -1055,6 +1367,56 @@ public class WorkshopServiceTests
 
     #endregion
 
+    #region Archive
+
+    [Test]
+    public async Task Archive_WhenEntityWithIdExists_ShouldTryToDelete()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        workshop.Status = WorkshopStatus.Closed;
+        workshop.Applications = SetupApplications(workshop, 0);
+        SetupArchive(workshop, true);
+
+        // Act
+        await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        workshopRepository.Verify(w => w.Update(It.IsAny<Workshop>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Archive_WhenEntityWithIdDoesNotExist_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        SetupArchive(workshop, false);
+        // Act
+        var result = await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.NotFound.ToString());
+    }
+
+    [Test]
+    public async Task Archive_WhenWorkshopStatusIsNotClosed_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        workshop.Status = WorkshopStatus.Open;
+        SetupArchive(workshop, true);
+
+        // Act
+        var result = await workshopService.Archive(workshop.Id).ConfigureAwait(false);
+
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.BadRequest.ToString());
+    }
+    #endregion
+
     #region Delete
 
     [Test]
@@ -1062,14 +1424,31 @@ public class WorkshopServiceTests
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate();
-        SetupDelete(workshop);
+        SetupDelete(workshop, true);
 
         // Act
-        await workshopService.Delete(workshop.Id).ConfigureAwait(false);
+        await (workshopService as ISensitiveWorkshopsService).Delete(workshop.Id).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(w => w.Delete(It.IsAny<Workshop>()), Times.Once);
     }
+
+    [Test]
+    public async Task Delete_WhenEntityWithIdDoesNotExist_ShouldReturnFailedOperationResult()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        SetupDelete(workshop, false);
+
+        // Act
+        var result = await (workshopService as ISensitiveWorkshopsService).Delete(workshop.Id).ConfigureAwait(false);
+
+        // Assert   
+        result.Should().NotBeNull();
+        result.Succeeded.Should().BeFalse();
+        result.Errors.FirstOrDefault().Code.Should().Be(HttpStatusCode.NotFound.ToString());
+    }
+
     #endregion
 
     #region GetByFilter
@@ -1283,6 +1662,15 @@ public class WorkshopServiceTests
     #endregion
 
     #region Setup
+    
+    private void SetupInstitutionHierarchy()
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
     private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted = false)
     {
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
@@ -1293,6 +1681,7 @@ public class WorkshopServiceTests
             .ReturnsAsync(It.IsAny<int>());
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
             .Returns((Func<Task<Workshop>> f) => f.Invoke());
+        SetupInstitutionHierarchy();
     }
 
     private void SetupCreateV2(Workshop workshop, bool isMemberOfWorkshopIdExisted = false, int numberOfImages = 0)
@@ -1321,7 +1710,7 @@ public class WorkshopServiceTests
 
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
-
+        SetupInstitutionHierarchy();
         var multipleImageUploadingResult = new MultipleImageUploadingResult()
         {
             MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult(),
@@ -1425,12 +1814,34 @@ public class WorkshopServiceTests
         workshopRepository.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<int>());
 
         workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-            .Returns((Func<Task<Workshop>> f) => f.Invoke());
+            .Returns((Func<Task<Workshop>> f) => f.Invoke()); 
+        
+        SetupInstitutionHierarchy();
     }
 
-    private void SetupDelete(Workshop workshop)
+    private void SetupArchive(Workshop workshop, bool doesWorkshopExist)
     {
-        workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        if (doesWorkshopExist)
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        }
+        else
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync((Workshop)null);
+        }
+        workshopRepository.Setup(w => w.Update(It.IsAny<Workshop>())).ReturnsAsync(workshop);
+    }
+
+    private void SetupDelete(Workshop workshop, bool doesWorkshopExist)
+    {
+        if (doesWorkshopExist)
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+        }
+        else
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync((Workshop)null);
+        }
         workshopRepository.Setup(w => w.Delete(It.IsAny<Workshop>())).Returns(Task.CompletedTask);
     }
 

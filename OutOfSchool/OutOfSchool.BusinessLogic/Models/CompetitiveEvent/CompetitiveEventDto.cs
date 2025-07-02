@@ -13,6 +13,7 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
     public string CoverImageId { get; set; } = string.Empty;
     public IList<string> ImageIds { get; set; }
     public CompetitiveEventCoverageDto Coverage { get; set; }
+    public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
 }
 
 public static class CompetitiveEventDtoExtensions
@@ -43,8 +44,6 @@ public static class CompetitiveEventDtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
-            OptionsForPeopleWithDisabilities = model.OptionsForPeopleWithDisabilities,
-            DescriptionOfOptionsForPeopleWithDisabilities = model.DescriptionOfOptionsForPeopleWithDisabilities,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,
@@ -52,6 +51,13 @@ public static class CompetitiveEventDtoExtensions
             Contacts = model.Contacts?.ToDto(),
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
             Coverage = model.Coverage?.ToDto(),
+            DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(
+                s => new DirectionSubDirectionIdsDto
+                {
+                    DirectionId = s.DirectionId,
+                    SubDirectionId = s.Id
+                })
+            .ToList() ?? [],
         };
 
     public static List<CompetitiveEventDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)

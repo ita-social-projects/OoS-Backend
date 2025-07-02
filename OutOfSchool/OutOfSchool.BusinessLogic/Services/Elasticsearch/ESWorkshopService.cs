@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -88,9 +89,12 @@ public class ESWorkshopService(
             {
                 foreach (var entity in data.Entities)
                 {
-                    var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
-                    entity.Rating = rating?.Rate ?? default;
-                    source.Add(entity.ToES());
+                    if (entity.Status != WorkshopStatus.Archived)
+                    {
+                        var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
+                        entity.Rating = rating?.Rate ?? default;
+                        source.Add(entity.ToES());
+                    }
                 }
 
                 filter.From += filter.Size;

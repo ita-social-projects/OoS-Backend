@@ -76,11 +76,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [MaxLength(Constants.MaxBenefitsLength)]
     public string Benefits { get; set; }
 
-    public bool? OptionsForPeopleWithDisabilities { get; set; }
-
-    [MaxLength(Constants.DisabilityOptionsLength)]
-    public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
-
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinimumAge { get; set; }
 
