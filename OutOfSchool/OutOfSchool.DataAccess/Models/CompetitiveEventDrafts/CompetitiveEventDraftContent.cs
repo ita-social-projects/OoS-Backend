@@ -45,10 +45,6 @@ public class CompetitiveEventDraftContent : IHasContacts
 
     public string Benefits { get; set; }
 
-    public bool OptionsForPeopleWithDisabilities { get; set; }
-
-    public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
-
     public int MinimumAge { get; set; }
 
     public int MaximumAge { get; set; }

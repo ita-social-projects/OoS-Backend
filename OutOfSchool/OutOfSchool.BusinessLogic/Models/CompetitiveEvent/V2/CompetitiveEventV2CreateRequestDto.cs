@@ -105,8 +105,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
            AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
            Benefits = draft.CompetitiveEventDraftContent?.Benefits,
-           OptionsForPeopleWithDisabilities = draft.CompetitiveEventDraftContent?.OptionsForPeopleWithDisabilities,
-           DescriptionOfOptionsForPeopleWithDisabilities = draft.CompetitiveEventDraftContent?.DescriptionOfOptionsForPeopleWithDisabilities,
            MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
            MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
            Price = draft.CompetitiveEventDraftContent?.Price,
