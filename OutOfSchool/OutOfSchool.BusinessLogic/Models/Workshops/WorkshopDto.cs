@@ -113,7 +113,8 @@ public static class WorkshopDtoExtensions
             StudyPeriodEndDay = dto.StudyPeriodDates.EndDate.Day,
             StudyPeriodEndMonth = dto.StudyPeriodDates.EndDate.Month,
             LanguageOfEducationId = dto.LanguageOfEducationId,
-            LanguageOfEducationName = dto.LanguageOfEducationName
+            LanguageOfEducationName = dto.LanguageOfEducationName,
+            IsChampionPath =  dto.IsChampionPath,
         };
     }
 
@@ -186,6 +187,7 @@ public static class WorkshopDtoExtensions
             Facebook = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
             Instagram = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
             Address = defaultContact?.Address?.ToDto(),
+            IsChampionPath = model.IsChampionPath,
         };
     }
 

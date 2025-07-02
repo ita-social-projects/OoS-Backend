@@ -172,6 +172,7 @@ public static class Startup
         services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
+        services.Configure<InstitutionOptions>(configuration.GetSection(InstitutionOptions.Name));
 
         services.AddMemoryCache();
 

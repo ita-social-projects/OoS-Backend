@@ -11,7 +11,8 @@ public class WorkshopCreateRequestDto : WorkshopContactsDto
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<TeacherDTO> Teachers { get; set; }
-
+    
+    public bool IsChampionPath {get; set; }
     public Guid? DefaultTeacherId { get; set; }
 }
 
@@ -40,7 +41,6 @@ public static class WorkshopCreateRequestDtoExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
             StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
-
             WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel(),
             InstitutionHierarchyId = dto.InstitutionHierarchyId,
             Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []),
@@ -51,5 +51,6 @@ public static class WorkshopCreateRequestDtoExtensions
             DefaultTeacherId = dto.DefaultTeacherId,
 
             LanguageOfEducationId = dto.LanguageOfEducationId,
+            IsChampionPath = dto.IsChampionPath,
         };
 }

@@ -20,6 +20,7 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
@@ -85,6 +86,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
+        var institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
 
         userId = "someUserId";
 
@@ -105,11 +107,14 @@ public class SensitiveWorkshopDraftServiceTests
                    searchStringServiceMock.Object,
                    institutionHierarchyRepositoryMock.Object,
                    codeficatorRepository.Object,
-                   changesLogServiceMock.Object);
+                   changesLogServiceMock.Object,
+                   institutionOptionsMock.Object);
 
         SetupModeratorTestData();
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
     }
 
     #region FetchByFilterForAdmins    

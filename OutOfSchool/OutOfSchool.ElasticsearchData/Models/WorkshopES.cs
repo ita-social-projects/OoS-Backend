@@ -109,4 +109,6 @@ namespace OutOfSchool.ElasticsearchData.Models;
     public Coverage Coverage { get; set; }
 
     public List<string> Tags { get; set; }
+
+    public bool IsChampionPath { get; set; } 
 }

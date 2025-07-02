@@ -109,4 +109,6 @@ public class WorkshopDraftContent :
     public string Facebook { get; set; }
 
     public string Instagram { get; set; }
+    
+    public bool IsChampionPath { get;set; }
 }

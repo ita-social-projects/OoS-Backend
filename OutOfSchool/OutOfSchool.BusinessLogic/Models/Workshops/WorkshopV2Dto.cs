@@ -68,7 +68,7 @@ public static class WorkshopV2DtoExtensions
             Website = dto.Website,
             Facebook = dto.Facebook,
             Instagram = dto.Instagram,
-            
+            IsChampionPath = dto.IsChampionPath
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
@@ -134,7 +134,8 @@ public static class WorkshopV2DtoExtensions
             WorkshopType = draft.WorkshopDraftContent?.WorkshopType ?? default,
             ParentWorkshopId = draft.WorkshopDraftContent?.ParentWorkshopId,
             Contacts = draft.WorkshopDraftContent?.Contacts?.ToDto() ?? [],
-            NoAgeRestrictions = draft.WorkshopDraftContent?.NoAgeRestrictions ?? default,
+            NoAgeRestrictions = draft.WorkshopDraftContent?.NoAgeRestrictions ?? false,
+            IsChampionPath = draft.WorkshopDraftContent?.IsChampionPath ?? false,
 
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
@@ -192,7 +193,7 @@ public static class WorkshopV2DtoExtensions
         model.DefaultTeacherId = dto.DefaultTeacherId;
         model.ParentWorkshopId = dto.ParentWorkshopId;
         model.CoverImageId = dto.CoverImageId;
-
+        model.IsChampionPath = dto.IsChampionPath;
         return model;
     }
 
@@ -241,6 +242,7 @@ public static class WorkshopV2DtoExtensions
             EducationalShift = model.EducationalShift,
             LanguageOfEducationId = model.LanguageOfEducationId,
             LanguageOfEducationName = model.LanguageOfEducation?.Name,
+            IsChampionPath = model.IsChampionPath,
             StudyPeriodDates = model.ToStudyPeriodDatesDto(),
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
@@ -249,7 +251,6 @@ public static class WorkshopV2DtoExtensions
             ParentWorkshopId = model.ParentWorkshopId,
             ParentWorkshop = model.ParentWorkshop?.ToDto(),
             Contacts = model.Contacts?.ToDto() ?? [],
-
             TagIds = model.Tags?.Select(x => x.Id).ToList() ?? [],
 
             CoverImageId = model.CoverImageId,

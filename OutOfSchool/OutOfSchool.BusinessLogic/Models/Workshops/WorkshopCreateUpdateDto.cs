@@ -52,6 +52,7 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.WorkshopType = dto.WorkshopType;
         model.DefaultTeacherId = dto.DefaultTeacherId;
         model.ParentWorkshopId = dto.ParentWorkshopId;
+        model.IsChampionPath = dto.IsChampionPath;
 
         return model;
     }
@@ -94,5 +95,6 @@ public static class WorkshopCreateUpdateDtoExtensions
             WorkshopType = dto.WorkshopType,
             DefaultTeacherId = dto.DefaultTeacherId,
             ParentWorkshopId = dto.ParentWorkshopId,
+            IsChampionPath =  dto.IsChampionPath,
         };
 }

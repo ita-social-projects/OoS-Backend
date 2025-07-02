@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
@@ -62,7 +63,8 @@ public class WorkshopDraftService(
     ISearchStringService searchStringService,
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
-    IChangesLogService changesLogService
+    IChangesLogService changesLogService,
+    IOptions<InstitutionOptions> institutionSettings
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -109,7 +111,8 @@ public class WorkshopDraftService(
             }
         }
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
-
+        await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
+        
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
         // The result is the created draft with all its related teachers.
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
@@ -231,6 +234,8 @@ public class WorkshopDraftService(
                 throw new ArgumentException("This WorkshopDraft can`t be updated.");
             }
             await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
+            await ValidateAndAdjustInstitutionHierarchyAsync(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
+            
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
@@ -819,7 +824,6 @@ public class WorkshopDraftService(
         var workshopDraft = workshopV2Dto.ToDraft();
 
         var licenseStatusAndOwnership = await providerService.GetLicenseStatusAndOwnershipAsync(workshopV2Dto.ProviderId);
-
         workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = licenseStatusAndOwnership.Item1;
         workshopDraft.WorkshopDraftContent.OwnershipType = licenseStatusAndOwnership.Item2;
         workshopDraft.WorkshopDraftContent.WorkshopStatus = WorkshopStatus.Open;
@@ -1028,18 +1032,16 @@ public class WorkshopDraftService(
 
     private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
     {
-        var institutionHierarchyId = workshopDraft.WorkshopDraftContent.InstitutionHierarchyId;
-
-        if (institutionHierarchyId == null)
+        if (workshopDraft?.WorkshopDraftContent?.InstitutionHierarchyId == null)
         {
             return null;
         }
-
+        
         var institutionHierarchyDto = await institutionHierarchyRepository.GetByIdWithDetails(
             id: (Guid)workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
 
-        return institutionHierarchyDto.SubDirections.Select(d => d.DirectionId).ToList();
+        return institutionHierarchyDto?.SubDirections?.Select(d => d.DirectionId).ToList();
     }
 
     private async Task<List<long>> GetSubDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
@@ -1191,6 +1193,41 @@ public class WorkshopDraftService(
             throw new InvalidOperationException(errorMessage);
         }
         dto.LanguageOfEducationName = language.Name;
+    }
+    
+    /// <summary>
+    /// Validates and updates the InstitutionHierarchy-related properties in the provided DTO:
+    /// - Sets WorkshopType to Section and IsChampionPath to true if institution is "Мінспорт".
+    /// </summary>
+    private async Task ValidateAndAdjustInstitutionHierarchyAsync(WorkshopV2Dto dto)
+    {
+        if (dto.InstitutionHierarchyId == null)
+        {
+            throw new InvalidOperationException("InstitutionHierarchyId cannot be null.");
+        }
+
+        var institutionHierarchy = await institutionHierarchyRepository
+            .GetById(dto.InstitutionHierarchyId.Value)
+            .ConfigureAwait(false);
+
+        if (institutionHierarchy == null)
+        {
+            throw new InvalidOperationException($"InstitutionHierarchy with ID = {dto.InstitutionHierarchyId} was not found.");
+        }
+        
+        if (institutionHierarchy.Institution == null)
+        {
+          throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
+        }
+        
+        dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals(
+            institutionSettings.Value.MinistryOfSportTitle,
+            StringComparison.OrdinalIgnoreCase);
+
+        if (dto.IsChampionPath)
+        {
+            dto.WorkshopType = WorkshopType.Section;
+        }
     }
     /// <summary>
     /// Validates whether the specified moderator or tech admin is allowed to access and modify the given workshop draft.

@@ -16,6 +16,8 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
 
     public Guid? InstitutionHierarchyId { get; set; }
 
+    public bool IsChampionPath { get; set; } = false;
+
     public List<long> DirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

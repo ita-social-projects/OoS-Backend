@@ -58,7 +58,8 @@ public static class WorkshopV2CreateRequestDtoExtensions
             
             AvailableSeats = dto.AvailableSeats ?? default,
             Contacts = dto.Contacts?.ToModel() ?? [],
-            LanguageOfEducationId = dto.LanguageOfEducationId,            
+            LanguageOfEducationId = dto.LanguageOfEducationId,
+            IsChampionPath = dto.IsChampionPath,
         };
 
     public static WorkshopV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft)
@@ -103,5 +104,6 @@ public static class WorkshopV2CreateRequestDtoExtensions
             Teachers = draft.Teachers?.Where(x => !x.IsDefaultTeacher).ToDto() ?? [],
 
             CoverImageId = draft.CoverImageId,
+            IsChampionPath = draft.WorkshopDraftContent?.IsChampionPath ?? default,
         };
 }
