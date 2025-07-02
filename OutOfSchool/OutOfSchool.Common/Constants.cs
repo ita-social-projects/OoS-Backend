@@ -217,11 +217,6 @@ public static class Constants
     ///</summary>
     public const int WorkshopDraftMaxRejectionMessageLength = 500;
 
-    ///<summary>
-    /// Maximum length for disability option descriptions.
-    /// </summary>
-    public const int DisabilityOptionsLength = 200;
-
     /// <summary>
     /// Maximum allowed length for a teacher's description.
     /// </summary>

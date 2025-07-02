@@ -1,6 +1,6 @@
-﻿using OutOfSchool.Common.Enums;
+﻿using System;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
-using System;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
@@ -50,10 +50,6 @@ public class CompetitiveEventES
     public bool AreThereBenefits { get; set; }
 
     public string Benefits { get; set; }
-
-    public bool OptionsForPeopleWithDisabilities { get; set; }
-
-    public string DescriptionOfOptionsForPeopleWithDisabilities { get; set; }
 
     public int MinimumAge { get; set; }
 

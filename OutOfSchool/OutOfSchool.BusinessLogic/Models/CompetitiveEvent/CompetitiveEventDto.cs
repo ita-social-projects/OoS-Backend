@@ -44,8 +44,6 @@ public static class CompetitiveEventDtoExtensions
             PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
-            OptionsForPeopleWithDisabilities = model.OptionsForPeopleWithDisabilities,
-            DescriptionOfOptionsForPeopleWithDisabilities = model.DescriptionOfOptionsForPeopleWithDisabilities,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,

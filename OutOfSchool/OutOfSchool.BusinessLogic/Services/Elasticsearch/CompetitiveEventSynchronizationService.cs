@@ -53,8 +53,6 @@ public static class CompetitiveEventESExtensions
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits,
             Benefits = dto.Benefits,
-            OptionsForPeopleWithDisabilities = dto.OptionsForPeopleWithDisabilities,
-            DescriptionOfOptionsForPeopleWithDisabilities = dto.DescriptionOfOptionsForPeopleWithDisabilities,
             MinimumAge = dto.MinimumAge,
             MaximumAge = dto.MaximumAge,
             Coverage = dto.Coverage.Title,
