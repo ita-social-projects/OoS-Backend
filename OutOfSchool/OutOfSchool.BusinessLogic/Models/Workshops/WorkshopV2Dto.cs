@@ -223,6 +223,7 @@ public static class WorkshopV2DtoExtensions
             InstitutionHierarchy = model.InstitutionHierarchy?.Title,
             DefaultTeacher = model.DefaultTeacher?.ToDto(),
             DirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(x => !x.IsDeleted).Select(d => d.DirectionId).ToList() ?? [],
+            SubDirectionIds = model.InstitutionHierarchy?.SubDirections?.Where(sd => !sd.IsDeleted).Select(sd => sd.Id).ToList() ?? [],
             Keywords = model.Keywords?.Split(Constants.MappingSeparator, StringSplitOptions.None),
             Teachers = model.Teachers?.ToNotDeletedDto() ?? [],
             ProviderId = model.ProviderId,

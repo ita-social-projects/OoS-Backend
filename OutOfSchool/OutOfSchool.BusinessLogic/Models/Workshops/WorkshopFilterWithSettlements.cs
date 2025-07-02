@@ -18,7 +18,7 @@ public static class WorkshopFilterWithSettlementsExtensions
             IsFree = filter.IsFree,
             MinPrice = filter.MinPrice,
             MaxPrice = filter.MaxPrice,
-            DirectionIds = filter.DirectionIds,
+            SubDirectionIds = filter.SubDirectionIds,
             MinStartTime = filter.MinStartTime,
             MaxStartTime = filter.MaxStartTime,
             Latitude = filter.Latitude,

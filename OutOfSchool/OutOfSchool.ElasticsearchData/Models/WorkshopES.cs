@@ -62,6 +62,8 @@ namespace OutOfSchool.ElasticsearchData.Models;
 
     public List<long> DirectionIds { get; set; }
 
+    public List<long> SubDirectionIds { get; set; }
+
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
     public int? StudyPeriodStartDay { get; set; }

@@ -30,6 +30,7 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.InstitutionHierarchyId, f => f.Random.Guid())
         .RuleFor(x => x.InstitutionHierarchy, f => f.Lorem.Word())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
+        .RuleFor(x => x.SubDirectionIds, _ => new List<long>())
         .RuleFor(x => x.Keywords, f => f.Make(new Random().Next(1, 10), () => f.Lorem.Word()))
         .RuleFor(x => x.Teachers, f => f.Make(new Random().Next(1, 3), () => new TeacherDTO()))
         .RuleFor(x => x.ProviderId, f => f.Random.Guid())

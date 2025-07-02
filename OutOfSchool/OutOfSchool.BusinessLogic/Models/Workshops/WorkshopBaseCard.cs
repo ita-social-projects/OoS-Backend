@@ -53,6 +53,8 @@ public class WorkshopBaseCard : IHasRating
 
     public List<long> DirectionIds { get; set; }
 
+    public List<long> SubDirectionIds { get; set; }
+
     [Required]
     public Guid ProviderId { get; set; }
 

@@ -80,6 +80,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public List<long> DirectionIds { get; set; }
 
+    public List<long> SubDirectionIds { get; set; }
+
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
