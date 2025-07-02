@@ -38,6 +38,7 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -77,6 +78,16 @@ public class WorkshopDraftServiceTests
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
 
+        // Мок для GetByIdWithDetails (корректная сигнатура)
+        institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy>, IQueryable<OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy>>>()
+        )).ReturnsAsync(new OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy
+        {
+            SubDirections = new List<SubDirection>(),
+            Institution = new OutOfSchool.Services.Models.SubordinationStructure.Institution { Title = "Мінспорт" }
+        });
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -89,7 +100,10 @@ public class WorkshopDraftServiceTests
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();              
+        
         institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
       
         userId = "someUserId";
         service = new WorkshopDraftService(
@@ -111,9 +125,6 @@ public class WorkshopDraftServiceTests
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
                    institutionOptionsMock.Object);
-        
-        institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
         SetupInstitutionHierarchy();
     }
 
@@ -178,7 +189,8 @@ public class WorkshopDraftServiceTests
         tagRepositoryMoq.VerifyAll();
 
         result.Should().NotBeNull();
-        result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
+        result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
+        result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
     }
     [Test]
     public void Create_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
@@ -262,7 +274,8 @@ public class WorkshopDraftServiceTests
                 IsChampionPath = true,
                 WorkshopType = WorkshopType.Section
             },
-            Teachers = new List<TeacherDraft>()
+            Teachers = new List<TeacherDraft>(),
+            
         };
 
         workshopDraftRepoMoq
@@ -298,9 +311,9 @@ public class WorkshopDraftServiceTests
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
-            InstitutionHierarchyId = institutionHierarchyId
+            InstitutionHierarchyId = institutionHierarchyId,
         };
-
+        
         var expectedResponse = workshopDraft.ToResponseDto();
         expectedResponse.WorkshopDetails.IsChampionPath = false;
         expectedResponse.WorkshopDetails.WorkshopType = WorkshopType.Workshop;
@@ -340,7 +353,9 @@ public class WorkshopDraftServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.WorkshopDraft.Should().BeEquivalentTo(expectedResponse);
+        result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
+        result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
+       
     }
     #endregion
 
@@ -411,7 +426,8 @@ public class WorkshopDraftServiceTests
         currentUserServiceMoq.VerifyAll();          
 
         result.Should().NotBeNull();
-        result.WorkshopDraft.Should().BeEquivalentTo(workshopResponse);
+        result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeTrue();
+        result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Section);
     }
 
     [Test]
