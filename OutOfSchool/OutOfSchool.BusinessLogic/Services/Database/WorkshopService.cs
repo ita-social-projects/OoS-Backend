@@ -922,13 +922,8 @@ public class WorkshopService(
 
         if (filter.SubDirectionIds.Any())
         {
-            var tempPredicate = PredicateBuilder.False<Workshop>();
-            foreach(var subDirectionId in filter.SubDirectionIds) 
-            {
-                tempPredicate = tempPredicate.Or(x => x.InstitutionHierarchy.SubDirections.Any(sd => !sd.IsDeleted && sd.Id == subDirectionId));
-            }
-
-            predicate = predicate.And(tempPredicate);
+            predicate = predicate.And(x => x.InstitutionHierarchy.SubDirections
+                .Any(sd => !sd.IsDeleted && filter.SubDirectionIds.Contains(sd.Id)));
         }
 
         if (includePrice)
