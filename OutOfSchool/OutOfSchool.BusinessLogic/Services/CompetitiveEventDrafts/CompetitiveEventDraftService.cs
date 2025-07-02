@@ -290,7 +290,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
         {
-            throw new ArgumentException("This WorkshopDraft can`t be approved.");
+            throw new ArgumentException("This Competitive event draft can`t be approved.");
         }
 
         if (competitiveEventDraft.CompetitiveEventId == null)
