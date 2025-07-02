@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using MockQueryable.Moq;
 using Moq;
@@ -24,6 +25,7 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
@@ -63,6 +65,7 @@ public class WorkshopServiceTests
     private Mock<IApplicationRepository> applicationRepository;
     private Mock<IFeatureManager> featureManager;
     private Mock<IChangesLogService> changesLogService;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Guid providerId;
     private Guid studySubjectId;
 
@@ -92,6 +95,7 @@ public class WorkshopServiceTests
         applicationRepository = new Mock<IApplicationRepository>();
         featureManager = new Mock<IFeatureManager>();
         changesLogService = new Mock<IChangesLogService>();
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         providerId = Guid.NewGuid();
         studySubjectId = Guid.NewGuid();
 
@@ -117,10 +121,13 @@ public class WorkshopServiceTests
                     contactsServiceMock.Object,
                     applicationRepository.Object,
                     featureManager.Object,
-                    changesLogService.Object
+                    changesLogService.Object,
+                    institutionOptionsMock.Object
                     );
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
     }
 
     #region Create

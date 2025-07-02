@@ -26,6 +26,7 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
@@ -56,6 +57,7 @@ public class WorkshopDraftServiceTests
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
     private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
 
     private string userId;
 
@@ -87,7 +89,8 @@ public class WorkshopDraftServiceTests
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();              
-
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+      
         userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
@@ -106,8 +109,11 @@ public class WorkshopDraftServiceTests
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
-                   changesLogServiceMock.Object);
-
+                   changesLogServiceMock.Object,
+                   institutionOptionsMock.Object);
+        
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
         SetupInstitutionHierarchy();
     }
 
@@ -990,7 +996,8 @@ public class WorkshopDraftServiceTests
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
-                   new Mock<IChangesLogService>().Object);
+                   new Mock<IChangesLogService>().Object,
+                   institutionOptionsMock.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));

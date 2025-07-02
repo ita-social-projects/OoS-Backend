@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
@@ -16,6 +17,7 @@ using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -48,6 +50,7 @@ public class SensitiveWorkshopsServiceTests
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IFeatureManager> featureManagerMock;
     private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
 
 
     [SetUp]
@@ -67,7 +70,7 @@ public class SensitiveWorkshopsServiceTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         featureManagerMock = new Mock<IFeatureManager>();
         changesLogServiceMock = new Mock<IChangesLogService>();
-
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         sensitiveWorkshopService =
             new WorkshopService(
                 workshopRepository.Object,
@@ -90,10 +93,13 @@ public class SensitiveWorkshopsServiceTests
                 contactsServiceMock.Object,
                 applicationRepositoryMock.Object,
                 featureManagerMock.Object,
-                changesLogServiceMock.Object);
+                changesLogServiceMock.Object,
+                institutionOptionsMock.Object);
 
         languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
             .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
     }
 
     #region FetchByFilterForAdmins

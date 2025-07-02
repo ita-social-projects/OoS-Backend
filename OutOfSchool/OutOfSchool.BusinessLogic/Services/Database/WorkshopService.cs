@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using H3Lib;
 using H3Lib.Extensions;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
@@ -63,7 +64,8 @@ public class WorkshopService(
     IContactsService<Workshop, IHasContactsDto<Workshop>> contactsService,
     IApplicationRepository applicationRepository,
     IFeatureManager featureManager,
-    IChangesLogService changesLogService
+    IChangesLogService changesLogService,
+    IOptions<InstitutionOptions> institutionOptions
 ) : IWorkshopService, ISensitiveWorkshopsService
 {
     /// <summary>
@@ -1361,12 +1363,11 @@ public class WorkshopService(
         var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId.Value).ConfigureAwait(false);
 
         // If the institution is "Мінспорт", set workshopType and isChampionPath; otherwise, use default values
-        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals("Мінспорт", StringComparison.OrdinalIgnoreCase);
+        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals(institutionOptions.Value.MinistryOfSportTitle, StringComparison.OrdinalIgnoreCase);
         if (isChampionPath)
         {
             workshopType = WorkshopType.Section;
         }
-
         return (workshopType, isChampionPath);
     }
 

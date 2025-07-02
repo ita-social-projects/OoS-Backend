@@ -63,7 +63,8 @@ public class WorkshopDraftService(
     ISearchStringService searchStringService,
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
-    IChangesLogService changesLogService
+    IChangesLogService changesLogService,
+    IOptions<InstitutionOptions> institutionSettings
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -1213,8 +1214,15 @@ public class WorkshopDraftService(
         {
             throw new InvalidOperationException($"InstitutionHierarchy with ID = {dto.InstitutionHierarchyId} was not found.");
         }
-
-        dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals("Мінспорт", StringComparison.OrdinalIgnoreCase);
+        
+        if (institutionHierarchy.Institution == null)
+        {
+          throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
+        }
+        
+        dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals(
+            institutionSettings.Value.MinistryOfSportTitle,
+            StringComparison.OrdinalIgnoreCase);
 
         if (dto.IsChampionPath)
         {

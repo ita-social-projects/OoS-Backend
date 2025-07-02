@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
@@ -13,6 +14,7 @@ using OutOfSchool.BusinessLogic.Services.AverageRatings;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
@@ -51,6 +53,7 @@ public class WorkshopServiceDBTests
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IFeatureManager> featureManagerMock;
     private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
 
 
     [SetUp]
@@ -85,6 +88,7 @@ public class WorkshopServiceDBTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         featureManagerMock = new Mock<IFeatureManager>();
         changesLogServiceMock = new Mock<IChangesLogService>();
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
 
         workshopService =
                 new WorkshopService(
@@ -108,11 +112,14 @@ public class WorkshopServiceDBTests
                     contactsServiceMock.Object,
                     applicationRepositoryMock.Object,
                     featureManagerMock.Object,
-                    changesLogServiceMock.Object);
+                    changesLogServiceMock.Object,
+                    institutionOptionsMock.Object);
 
         Seed();
         languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
     }
 
     [TearDown]
