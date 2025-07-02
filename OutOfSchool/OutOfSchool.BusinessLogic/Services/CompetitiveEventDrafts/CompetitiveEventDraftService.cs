@@ -110,8 +110,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         {
             return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
             {
-                Code = draftImageUpdateResult.OperationResult.Errors.FirstOrDefault().Code,
-                Description = draftImageUpdateResult.OperationResult.Errors.FirstOrDefault().Description
+                Code = draftImageUpdateResult.OperationResult?.Errors?.FirstOrDefault()?.Code ?? "500",
+                Description = draftImageUpdateResult.OperationResult?.Errors?.FirstOrDefault()?.Description ?? "Image uploading gone wrong."
             });
         }
 
@@ -310,7 +310,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     // <inheritdoc/>
     public async Task Reject(Guid id, string rejectionMessage)
     {
-        logger.LogDebug($"Rejecting CompetitiveEventDraft started. CompetitiveEventDraft Id = {id}.");
+        logger.LogDebug("Rejecting CompetitiveEventDraft started. CompetitiveEventDraft Id = {id}.", id);
 
         var competitiveEventDraft = await GetDraftById(id);
 
@@ -323,7 +323,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         competitiveEventDraft.RejectionMessage = rejectionMessage;
 
         await competitiveEventDraftRepository.Update(competitiveEventDraft);
-        logger.LogDebug($"CompetitiveEventDraft was successfully rejected. Draft Id = {id}.");
+        logger.LogDebug("CompetitiveEventDraft was successfully rejected. Draft Id = {id}.", id);
     }
 
     // <inheritdoc/>
@@ -394,7 +394,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     // <inheritdoc/>
     public async Task<Guid?> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
     {
-        logger.LogDebug($"Getting CompetitiveEventDraft Id by CompetitiveEvent Id started. Id = {competitiveEventId}.");
+        logger.LogDebug("Getting CompetitiveEventDraft Id by CompetitiveEvent Id started. Id = {id}.", competitiveEventId);
 
         var competitiveEventDraft = await competitiveEventDraftRepository.Get(whereExpression: wd => wd.CompetitiveEventId == competitiveEventId).FirstOrDefaultAsync();
 
@@ -427,7 +427,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
             {
                 Code = "400",
-                Description = "No cover image exists for this workshop draft."
+                Description = "No cover image exists for this competitive event draft."
             });
         }
 
@@ -488,7 +488,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
             {
                 Code = "404",
-                Description = "None of the specified images were found in this workshop draft."
+                Description = "None of the specified images were found in this competitive event draft."
             });
         }
 
@@ -595,7 +595,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occurred while uploading images for draft with ID {DraftId}.", createdDraft.Id);
-            throw;
+            throw new InvalidOperationException($"Failed to upload one or more images for draft ID {createdDraft.Id}. See inner exception for details.", ex);
         }
 
         return new UploadCompetitiveEventDraftImagesResult()
@@ -704,9 +704,9 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     /// Validates whether the specified moderator or tech admin is allowed to access and modify the given draft.
     /// Checks the user's permissions, the existence of the draft, and whether it is in an editable status.
     /// </summary>
-    /// <param name="draftId">The ID of the workshop draft to validate.</param>
+    /// <param name="draftId">The ID of the competitive event draft to validate.</param>
     /// <returns>
-    /// A <see cref="Result{WorkshopDraft}"/> containing the draft if validation is successful,
+    /// A <see cref="Result{CompetitiveEventDraft}"/> containing the draft if validation is successful,
     /// or a failed result with appropriate error code and description.
     /// </returns>
     private async Task<Result<CompetitiveEventDraft>> ValidateDraftForModerator(Guid draftId)
@@ -724,7 +724,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return Result<CompetitiveEventDraft>.Failed(new OperationError
             {
                 Code = "409",
-                Description = "WorkshopDraft is not editable in its current status."
+                Description = "Competitive event draft is not editable in its current status."
             });
         }
 

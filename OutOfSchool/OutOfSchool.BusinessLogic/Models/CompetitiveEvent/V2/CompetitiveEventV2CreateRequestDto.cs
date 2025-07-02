@@ -102,7 +102,7 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
            NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
            DescriptionOfTheEnrollmentProcedure = draft.CompetitiveEventDraftContent?.DescriptionOfTheEnrollmentProcedure,
-           OrganizerOfTheEventId = draft.CompetitiveEventDraftContent?.OrganizerOfTheEventId ?? default,
+           OrganizerOfTheEventId = draft.CompetitiveEventDraftContent.OrganizerOfTheEventId,
            PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
            VenueName = draft.CompetitiveEventDraftContent?.VenueName,
            TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,

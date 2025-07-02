@@ -179,7 +179,11 @@ public class CompetitiveEventDraftServiceTests
         };
         var draft = new CompetitiveEventDraft()
         {
-            Id = id
+            Id = id,
+            CompetitiveEventDraftContent = new CompetitiveEventDraftContent()
+            {
+                OrganizerOfTheEventId = Guid.NewGuid()
+            }
         };
         var catottgs = new List<CATOTTG>
         {

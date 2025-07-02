@@ -344,7 +344,7 @@ public class CompetitiveEventController : ControllerBase
 
             if (!result.Succeeded)
             {
-                switch (result.OperationResult.Errors.FirstOrDefault().Code)
+                switch (result.OperationResult?.Errors?.FirstOrDefault()?.Code)
                 {
                     case "400":
                         return BadRequest(result.OperationResult.Errors.FirstOrDefault()?.Description ?? "Model is invalid.");
@@ -391,7 +391,7 @@ public class CompetitiveEventController : ControllerBase
 
             if (!result.Succeeded)
             {
-                switch (result.Errors.FirstOrDefault().Code)
+                switch (result.Errors?.FirstOrDefault()?.Code)
                 {
                     case "400":
                         return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
@@ -440,7 +440,7 @@ public class CompetitiveEventController : ControllerBase
 
             if (!result.Succeeded)
             {
-                switch (result.Errors.FirstOrDefault().Code)
+                switch (result.Errors?.FirstOrDefault()?.Code)
                 {
                     case "400":
                         return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Something gone wrong.");
@@ -488,7 +488,7 @@ public class CompetitiveEventController : ControllerBase
     /// </summary>
     /// <param name="id">Key in the table.</param>
     /// <returns>Competitive event draft by given id.</returns>
-    /// <response code="200">The entoty by given Id.</response>
+    /// <response code="200">The entity by given Id was found.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
@@ -514,6 +514,12 @@ public class CompetitiveEventController : ControllerBase
         };
     }
 
+    /// <summary>
+    /// Rejects the competitive event draft by a user with permission to moderate drafts.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <param name="competitiveEventDraftRejection">Dto that contains rejction message.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -521,7 +527,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/reject")]
-    public async Task<IActionResult> Reject(Guid id, [FromBody] CompetitveEventDraftRejectionDto competitiveEventDraftRejection)
+    public async Task<IActionResult> Reject(Guid id, [FromBody] CompetitiveEventDraftRejectionDto competitiveEventDraftRejection)
     {
         if (!ModelState.IsValid)
         {
@@ -544,6 +550,11 @@ public class CompetitiveEventController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Approves the competitive event draft by a user with permission to moderate drafts.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -611,7 +622,7 @@ public class CompetitiveEventController : ControllerBase
     /// <response code="409">The draft is not editable.</response>
     /// <response code="500">An unexpected error occurred.</response>
     [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{draftId}/images")]
-    [HasPermission(Permissions.WorkshopEdit)]
+    [HasPermission(Permissions.CompetitiveEventEdit)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -649,7 +660,7 @@ public class CompetitiveEventController : ControllerBase
         {
             return StatusCode(
                 StatusCodes.Status403Forbidden,
-                new { Message = $"Provider with ID {providerId} is blocked and cannot create workshop drafts." });
+                new { Message = $"Provider with ID {providerId} is blocked and cannot create competitive event drafts." });
         }
 
         return null;

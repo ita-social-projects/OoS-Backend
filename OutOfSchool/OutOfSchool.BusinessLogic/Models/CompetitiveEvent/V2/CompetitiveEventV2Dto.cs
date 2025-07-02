@@ -52,6 +52,9 @@ public static class CompetitiveEventV2DtoExtensions
             Coverage = model.Coverage?.ToDto(),        
         };
 
+    public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
+        => list.MapToList(ToV2Dto);
+
     public static CompetitiveEventV2Dto ToDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
     {
         return new CompetitiveEventV2Dto()
@@ -67,7 +70,7 @@ public static class CompetitiveEventV2DtoExtensions
             ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
             NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
             DescriptionOfTheEnrollmentProcedure = draft.CompetitiveEventDraftContent?.DescriptionOfTheEnrollmentProcedure,
-            OrganizerOfTheEventId = draft.CompetitiveEventDraftContent?.OrganizerOfTheEventId ?? default,
+            OrganizerOfTheEventId = draft.CompetitiveEventDraftContent.OrganizerOfTheEventId,
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
             TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
@@ -88,10 +91,6 @@ public static class CompetitiveEventV2DtoExtensions
             SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? []
         };
     }
-
-
-    public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
-        => list.MapToList(ToV2Dto);
 
     public static void SetToDraft(this CompetitiveEventV2Dto dto, OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
     {

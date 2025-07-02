@@ -76,7 +76,7 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
         return entity;
     }
 
-    private  async Task<bool> HandleConcurrencyExceptionAsync(DbUpdateConcurrencyException ex)
+    private static async Task<bool> HandleConcurrencyExceptionAsync(DbUpdateConcurrencyException ex)
     {
         var exceptionEntry = ex.Entries.FirstOrDefault();
 

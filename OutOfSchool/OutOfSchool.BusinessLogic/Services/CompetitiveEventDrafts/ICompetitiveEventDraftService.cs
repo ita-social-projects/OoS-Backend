@@ -113,5 +113,5 @@ public interface ICompetitiveEventDraftService
     /// <param name="draftId">The ID of the workshop draft.</param>
     /// <param name="imageId">The externalStorageId of the image to delete.</param>
     /// <returns>A <see cref="Result{CompetitiveEventDraftResponseDto}"/> with the updated draft or error information.</returns>
-    Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageId);
+    Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageIds);
 }

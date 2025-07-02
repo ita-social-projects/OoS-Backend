@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
-public class CompetitveEventDraftRejectionDto
+public class CompetitiveEventDraftRejectionDto
 {
     [Required(ErrorMessage = "Rejection message is required")]
     [MaxLength(Constants.CompetitiveEventDraftMaxRejectionMessageLength)]
