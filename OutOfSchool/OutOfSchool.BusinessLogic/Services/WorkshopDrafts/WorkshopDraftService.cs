@@ -64,7 +64,8 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IOptions<InstitutionOptions> institutionSettings
+    IOptions<InstitutionOptions> institutionSettings,
+    IFeatureManager featureManager
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -236,7 +237,7 @@ public class WorkshopDraftService(
             await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             await ValidateAndAdjustInstitutionHierarchyAsync(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             
-            workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
+            workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft, await featureManager.IsEnabledAsync("EnableWorkshopTags"));
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
                 workshopDraft,
@@ -342,7 +343,7 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
+            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto(await featureManager.IsEnabledAsync("EnableWorkshopTags")));
         }
         else
         {
@@ -821,7 +822,7 @@ public class WorkshopDraftService(
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
     {
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
 
         var licenseStatusAndOwnership = await providerService.GetLicenseStatusAndOwnershipAsync(workshopV2Dto.ProviderId);
         workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = licenseStatusAndOwnership.Item1;

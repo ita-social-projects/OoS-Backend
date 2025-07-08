@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
+using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -22,6 +23,8 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IList<string> ImageIds { get; set; }
 
+    [ConditionalRequired("EnableWorkshopTags")]
+    [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     public List<TagDto> Tags { get; set; }
 
     public int NumberOfRatings { get; set; }

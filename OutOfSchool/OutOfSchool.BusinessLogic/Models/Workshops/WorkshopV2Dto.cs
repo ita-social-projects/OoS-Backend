@@ -20,7 +20,7 @@ public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 
 public static class WorkshopV2DtoExtensions
 {
-    public static WorkshopDraftContent ToDraftContent(this WorkshopV2Dto dto)
+    public static WorkshopDraftContent ToDraftContent(this WorkshopV2Dto dto, bool tagsEnabled)
         => new()
         {
             MinAge = dto.MinAge ?? default,
@@ -32,7 +32,7 @@ public static class WorkshopV2DtoExtensions
             CompetitiveSelection = dto.CompetitiveSelection,
             ActiveFrom = dto.ActiveFrom,
             ActiveTo = dto.ActiveTo,
-            TagIds = (dto.Tags ?? []).Select(x => x.Id).Concat(dto.TagIds ?? []).ToList(),
+            TagIds = tagsEnabled ? (dto.Tags ?? []).Select(x => x.Id).Concat(dto.TagIds ?? []).ToList() : null,
             Title = dto.Title,
             ProviderTitle = dto.ProviderTitle,
             ProviderTitleEn = dto.ProviderTitleEn,
@@ -71,25 +71,25 @@ public static class WorkshopV2DtoExtensions
             IsChampionPath = dto.IsChampionPath
         };
 
-    public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
+    public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model, bool tagsEnabled)
     {
         model.ProviderId = dto.ProviderId;
         model.WorkshopId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
-        model.WorkshopDraftContent = dto.ToDraftContent();
+        model.WorkshopDraftContent = dto.ToDraftContent(tagsEnabled);
     }
 
-    public static OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft ToDraft(this WorkshopV2Dto dto)
+    public static OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft ToDraft(this WorkshopV2Dto dto, bool tagsEnabled)
         => new()
         {
             ProviderId = dto.ProviderId,
             WorkshopId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id,
             CoverImageId = dto.CoverImageId,
-            WorkshopDraftContent = dto.ToDraftContent(),
+            WorkshopDraftContent = dto.ToDraftContent(tagsEnabled),
             Teachers = dto.Teachers?.ToDraft(),
         };
 
-    public static List<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> ToDraft(this IEnumerable<WorkshopV2Dto> list)
-        => list.MapToList(ToDraft);
+    public static List<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> ToDraft(this IEnumerable<WorkshopV2Dto> list, bool tagsEnabled)
+        => list.MapToList(x => x.ToDraft(tagsEnabled));
 
     public static WorkshopV2Dto ToDto(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft)
         => new()

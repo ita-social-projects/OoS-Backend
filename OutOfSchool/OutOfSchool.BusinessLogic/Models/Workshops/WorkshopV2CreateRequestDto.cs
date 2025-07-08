@@ -62,7 +62,7 @@ public static class WorkshopV2CreateRequestDtoExtensions
             IsChampionPath = dto.IsChampionPath,
         };
 
-    public static WorkshopV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft)
+    public static WorkshopV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, bool tagsEnabled)
         => new()
         {
             Title = draft.WorkshopDraftContent?.Title,
@@ -96,7 +96,7 @@ public static class WorkshopV2CreateRequestDtoExtensions
             Keywords = draft.WorkshopDraftContent?.Keywords ?? [],
             EnrollmentProcedureDescription = draft.WorkshopDraftContent?.EnrollmentProcedureDescription,
             Coverage = draft.WorkshopDraftContent?.Coverage ?? default,
-            TagIds = draft.WorkshopDraftContent?.TagIds ?? [],
+            TagIds = tagsEnabled ? draft.WorkshopDraftContent?.TagIds ?? [] : null,
 
             Contacts = draft.WorkshopDraftContent?.Contacts?.ToDto() ?? [],
 
