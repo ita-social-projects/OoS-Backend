@@ -12,12 +12,6 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
-    public Guid? InstitutionId { get; set; }
-
-    public Guid? InstitutionHierarchyId { get; set; }
-
-    public bool IsChampionPath { get; set; } = false;
-
     public List<long> DirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

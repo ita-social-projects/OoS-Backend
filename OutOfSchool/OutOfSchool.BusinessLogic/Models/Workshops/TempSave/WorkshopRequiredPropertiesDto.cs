@@ -46,4 +46,10 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [MaxLength(500)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
     public string PreferentialTermsOfParticipation { get; set; }
+
+    public Guid? InstitutionId { get; set; }
+
+    public Guid? InstitutionHierarchyId { get; set; }
+
+    public bool IsChampionPath { get; set; } = false;
 }
