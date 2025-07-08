@@ -120,6 +120,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsChampionPath { get; set; } = false;
 
     [MaxLength(500)]
+    [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
