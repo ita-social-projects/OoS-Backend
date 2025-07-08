@@ -78,8 +78,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public TeacherDTO DefaultTeacher { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> DirectionIds { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> SubDirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
