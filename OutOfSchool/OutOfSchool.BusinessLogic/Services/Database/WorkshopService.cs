@@ -370,16 +370,13 @@ public class WorkshopService(
 
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
-            if (await featureManager.IsEnabledAsync("EnableWorkshopTags"))
+            if (await featureManager.IsEnabledAsync("EnableWorkshopTags") && !dto.TagIds.IsNullOrEmpty())
             {
-                if (!dto.TagIds.IsNullOrEmpty())
-                {
-                    var tagEntities = await tagRepository
-                        .GetByFilter(t => dto.TagIds.Contains(t.Id));
+                var tagEntities = await tagRepository
+                    .GetByFilter(t => dto.TagIds.Contains(t.Id));
 
-                    currentWorkshop.Tags.Clear();
-                    currentWorkshop.Tags.AddRange(tagEntities);
-                }
+                currentWorkshop.Tags.Clear();
+                currentWorkshop.Tags.AddRange(tagEntities);
             }
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();

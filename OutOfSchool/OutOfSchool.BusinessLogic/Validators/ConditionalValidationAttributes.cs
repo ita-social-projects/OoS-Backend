@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations;
 namespace OutOfSchool.BusinessLogic.Validators;
 public class ConditionalValidationAttributes
 {
+    /// <summary>
+    /// Attribute to conditionally require a field based on a feature flag.
+    /// </summary>
     public class ConditionalRequiredAttribute : ValidationAttribute
     {
         private readonly string _featureFlagName;
@@ -24,18 +27,18 @@ public class ConditionalValidationAttributes
 
             bool enabled = featureManager.IsEnabledAsync(_featureFlagName).ConfigureAwait(false).GetAwaiter().GetResult();
 
-            if (enabled)
+            if (enabled && (value == null || (value is string str && string.IsNullOrWhiteSpace(str))))
             {
-                if (value == null || (value is string str && string.IsNullOrWhiteSpace(str)))
-                {
-                    return new ValidationResult(ErrorMessage ?? "This field is required when the feature is enabled.");
-                }
+                return new ValidationResult(ErrorMessage ?? "This field is required when the feature is enabled.");
             }
 
             return ValidationResult.Success;
         }
     }
 
+    /// <summary>
+    /// Attribute to conditionally validate the minimum length of a field based on a feature flag.
+    /// </summary>
     public class ConditionalMinLengthAttribute : ValidationAttribute
     {
         private readonly string _featureFlagName;
