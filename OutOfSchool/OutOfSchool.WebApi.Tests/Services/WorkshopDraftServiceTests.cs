@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OutOfSchool.ExternalFileStore.Models;
+using Microsoft.FeatureManagement;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -38,7 +32,11 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.Services.Models.SubordinationStructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -59,6 +57,7 @@ public class WorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
+    private Mock<IFeatureManager> featureManagerMoq;
 
     private string userId;
 
@@ -77,7 +76,8 @@ public class WorkshopDraftServiceTests
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
-        
+        featureManagerMoq = new Mock<IFeatureManager>();
+
         institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(
             It.IsAny<Guid>(),
             It.IsAny<string>(),
@@ -123,7 +123,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   featureManagerMoq.Object);
         SetupInstitutionHierarchy();
     }
 
@@ -149,7 +150,7 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
         
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
             InstitutionHierarchyId = institutionHierarchyId
@@ -307,7 +308,7 @@ public class WorkshopDraftServiceTests
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
         workshopV2Dto.WorkshopType = WorkshopType.Workshop;
 
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
             InstitutionHierarchyId = institutionHierarchyId,
@@ -375,7 +376,7 @@ public class WorkshopDraftServiceTests
         //Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         var workshopResponse = workshopDraft.ToResponseDto();
         
         workshopResponse.WorkshopDetails.IsChampionPath = true;
@@ -435,7 +436,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
 
         var updateDto = new WorkshopDraftUpdateDto
         {
@@ -612,7 +613,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
@@ -635,7 +636,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
@@ -658,7 +659,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
 
@@ -683,7 +684,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;   
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -709,7 +710,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
         var rejectionMessage = "rejectionMessage";
@@ -732,7 +733,7 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
 
         var rejectionMessage = "rejectionMessage";
@@ -789,7 +790,7 @@ public class WorkshopDraftServiceTests
 
         var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
         var workshopV2Dtos = workshops.ToV2Dto();
-        var workshopDrafts = workshopV2Dtos.ToDraft();
+        var workshopDrafts = workshopV2Dtos.ToDraft(false);
         var workshopDraftResponses = workshopDrafts.ToCardDto();
 
         institutionHierarchyRepositoryMoq.Setup(
@@ -912,7 +913,7 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
 
         var workshopDrafts = new List<WorkshopDraft>();
-        var workshopDraft = workshopV2Dto.ToDraft();
+        var workshopDraft = workshopV2Dto.ToDraft(false);
         
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(workshop.InstitutionHierarchyId.Value))
             .ReturnsAsync(new InstitutionHierarchy
@@ -983,6 +984,7 @@ public class WorkshopDraftServiceTests
         var ministryAdminService = new Mock<IMinistryAdminService>();
         var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();
+        var featureManager = new Mock<IFeatureManager>();
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
@@ -1012,7 +1014,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    new Mock<IChangesLogService>().Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   featureManager.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
@@ -1033,7 +1036,7 @@ public class WorkshopDraftServiceTests
 
         var workshopDrafts = new List<WorkshopDraft>()
         {
-            workshopV2Dto.ToDraft()
+            workshopV2Dto.ToDraft(false)
         };
 
         workshopDraftRepoMoq.Setup(x =>

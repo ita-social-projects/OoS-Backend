@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -54,6 +55,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepository;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
+    private Mock<IFeatureManager> featureManagerMock;
 
     private string userId;
     private WorkshopDraft validWorkshopDraft;
@@ -79,6 +81,7 @@ public class SensitiveWorkshopDraftServiceTests
         languageServiceMock = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
         workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+        featureManagerMock = new Mock<IFeatureManager>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -108,7 +111,8 @@ public class SensitiveWorkshopDraftServiceTests
                    institutionHierarchyRepositoryMock.Object,
                    codeficatorRepository.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   featureManagerMock.Object);
 
         SetupModeratorTestData();
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
@@ -786,7 +790,7 @@ public class SensitiveWorkshopDraftServiceTests
         string[] searchWords = null)
     {
         var workshops = WorkshopV2DtoGenerator.Generate(5).ToList();
-        var workshopDrafts = workshops.ToDraft();
+        var workshopDrafts = workshops.ToDraft(false);
         var workshopDraftDtos = workshopDrafts.ToResponseDto();
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);

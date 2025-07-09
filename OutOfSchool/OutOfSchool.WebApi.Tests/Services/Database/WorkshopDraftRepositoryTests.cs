@@ -108,7 +108,7 @@ public class WorkshopDraftRepositoryTests
 
         var worshopV2Dtos = WorkshopV2DtoGenerator.Generate(3);
 
-        workshopDrafts = worshopV2Dtos.ToDraft();
+        workshopDrafts = worshopV2Dtos.ToDraft(false);
 
         context.AddRange(workshopDrafts);
         await context.SaveChangesAsync();
