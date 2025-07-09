@@ -128,7 +128,7 @@ public class ChangesLogService(
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
 
-        var providers = providerRepository.Get(whereExpression: predicate);
+        var providers = providerRepository.Get(whereExpression: predicate).IncludeContactsWithCodeficatorHierarchy();
 
         var query = changesLog
                 .Join(
@@ -199,7 +199,9 @@ public class ChangesLogService(
 
         var changesLog = await GetChangesLogAsync(changeLogFilter).ConfigureAwait(false);
 
-        var applications = applicationRepository.Get(whereExpression: predicate);
+        var applications = applicationRepository
+            .Get(whereExpression: predicate)
+            .IncludeNavigationPropertyContactsWithCodeficatorHierarchy(a => a.Workshop);
 
         var query = changesLog
                 .Join(
