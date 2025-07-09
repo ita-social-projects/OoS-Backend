@@ -66,7 +66,7 @@ public class WorkshopControllerV2Tests
         workshops = WorkshopV2DtoGenerator.Generate(5);
         provider = ProviderDtoGenerator.Generate();
         workshopCreateDto = WorkshopV2DtoGenerator.Generate();
-        workshopV2CreateRequestDto = WorkshopV2CreateRequestDtoGenerator.FromModel(WorkshopGenerator.Generate());
+        workshopV2CreateRequestDto = WorkshopV2CreateRequestDtoGenerator.FromModel(WorkshopGenerator.Generate(), false);
         workshopCreateDto.Address = AddressDtoGenerator.Generate();
         workshopCreateDto.DateTimeRanges = DateTimeRangeDtoGenerator.Generate(5);
         workshopCreateDto.ProviderId = provider.Id;
