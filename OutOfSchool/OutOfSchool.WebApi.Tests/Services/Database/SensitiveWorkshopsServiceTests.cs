@@ -255,7 +255,7 @@ public class SensitiveWorkshopsServiceTests
         string[] searchWords = null)
     {
         var workshops = WorkshopGenerator.Generate(5).ToList();
-        var workshopsDto = workshops.ToDto();
+        var workshopsDto = workshops.ToDto(false);
 
         SetUpCurrentUserService(userId, isRegionAdmin, isMinistryAdmin);
         SetUpWorkshopsRepository(workshops, filter);

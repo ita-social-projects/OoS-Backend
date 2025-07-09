@@ -64,7 +64,7 @@ public class WorkshopServicesCombinerV2Tests
     {
         // Arrange
         var createdWorkshop = WorkshopGenerator.Generate();
-        var workshopV2Dto = createdWorkshop.ToV2Dto();
+        var workshopV2Dto = createdWorkshop.ToV2Dto(false);
         var workshopV2CreateRequestDto = workshopV2Dto.ToDraft(false).ToV2CreateRequestDto(false);
         workshopV2Dto.AvailableSeats = 8;
         var workshopResultDto = new WorkshopResultDto()

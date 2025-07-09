@@ -502,7 +502,7 @@ public class SensitiveWorkshopsServiceDBTests
     private async Task<List<WorkshopDto>> MapWorkshopsToDtos()
     {
         var workshops = await SeedWorkshops();
-        return workshops.ToDto();
+        return workshops.ToDto(false);
     }
     private class WorkshopSeedConfig
     {

@@ -197,7 +197,7 @@ public static class WorkshopV2DtoExtensions
         return model;
     }
 
-    public static WorkshopV2Dto ToV2Dto(this Workshop model)
+    public static WorkshopV2Dto ToV2Dto(this Workshop model, bool tagsEnabled)
     {
         var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
 
@@ -249,13 +249,13 @@ public static class WorkshopV2DtoExtensions
             WorkshopType = model.WorkshopType,
             DefaultTeacherId = model.DefaultTeacherId,
             ParentWorkshopId = model.ParentWorkshopId,
-            ParentWorkshop = model.ParentWorkshop?.ToDto(),
+            ParentWorkshop = model.ParentWorkshop?.ToDto(tagsEnabled),
             Contacts = model.Contacts?.ToDto() ?? [],
-            TagIds = model.Tags?.Select(x => x.Id).ToList() ?? [],
+            TagIds = tagsEnabled ? model.Tags?.Select(x => x.Id).ToList() ?? [] : null,
 
             CoverImageId = model.CoverImageId,
             ImageIds = model.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
-            Tags = model.Tags?.ToDto() ?? [],
+            Tags = tagsEnabled ? model.Tags?.ToDto() ?? [] : null,
             Status = model.Status,
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
@@ -269,6 +269,6 @@ public static class WorkshopV2DtoExtensions
         };
     }
 
-    public static List<WorkshopV2Dto> ToV2Dto(this IEnumerable<Workshop> list)
-        => list.MapToList(ToV2Dto);
+    public static List<WorkshopV2Dto> ToV2Dto(this IEnumerable<Workshop> list, bool tagsEnabled)
+        => list.MapToList(x => x.ToV2Dto(tagsEnabled));
 }

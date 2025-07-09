@@ -22,7 +22,8 @@ public class ESWorkshopService(
     IElasticsearchHealthService elasticHealthService,
     ILogger<ESWorkshopService> logger,
     IAverageRatingService averageRatingService,
-    IOptions<ElasticConfig> config
+    IOptions<ElasticConfig> config,
+    IFeatureManager featureManager
 ) : IElasticsearchService<WorkshopES, WorkshopFilterES>
 {
 
@@ -93,7 +94,7 @@ public class ESWorkshopService(
                     {
                         var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
                         entity.Rating = rating?.Rate ?? default;
-                        source.Add(entity.ToES());
+                        source.Add(entity.ToES(await featureManager.IsEnabledAsync("EnableWorkshopTags")));
                     }
                 }
 

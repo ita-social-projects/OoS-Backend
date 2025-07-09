@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Config;
@@ -26,6 +27,7 @@ public class ESWorkshopServiceTests
     private Mock<IElasticsearchHealthService> elasticHealthServiceMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
     private Mock<IOptions<ElasticConfig>> configMock; 
+    private Mock<IFeatureManager> featureManagerMock;
 
     [SetUp]
     public void Setup()
@@ -35,13 +37,16 @@ public class ESWorkshopServiceTests
         elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         configMock = new Mock<IOptions<ElasticConfig>>();
+        featureManagerMock = new Mock<IFeatureManager>();
+
         service = new ESWorkshopService(
             workshopServiceMock.Object,
             esProviderMock.Object,
             elasticHealthServiceMock.Object,
             new Mock<ILogger<ESWorkshopService>>().Object,
             averageRatingServiceMock.Object,
-            configMock.Object);
+            configMock.Object,
+            featureManagerMock.Object);
     }
 
     #region IsElasticAlive

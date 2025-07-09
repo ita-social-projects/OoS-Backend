@@ -59,7 +59,7 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
 public static class WorkshopDtoExtensions
 {
-    public static WorkshopES ToES(this WorkshopDto dto)
+    public static WorkshopES ToES(this WorkshopDto dto, bool tagsEnabled)
     {
         var defaultContact = dto.Contacts?.FirstOrDefault(c => c.IsDefault);
 
@@ -110,7 +110,7 @@ public static class WorkshopDtoExtensions
             AreThereBenefits = dto.AreThereBenefits,
             PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             Coverage = dto.Coverage,
-            Tags = dto.Tags?.Select(x => x.Name).ToList() ?? [],
+            Tags = tagsEnabled ? dto.Tags?.Select(x => x.Name).ToList() ?? [] : null,
             StudyPeriodStartDay = dto.StudyPeriodDates.StartDate.Day,
             StudyPeriodStartMonth = dto.StudyPeriodDates.StartDate.Month,
             StudyPeriodEndDay = dto.StudyPeriodDates.EndDate.Day,
@@ -121,7 +121,7 @@ public static class WorkshopDtoExtensions
         };
     }
 
-    public static WorkshopDto ToDto(this Workshop model)
+    public static WorkshopDto ToDto(this Workshop model, bool tagsEnabled)
     {
         var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
 
@@ -172,14 +172,14 @@ public static class WorkshopDtoExtensions
             WorkshopType = model.WorkshopType,
             DefaultTeacherId = model.DefaultTeacherId,
             ParentWorkshopId = model.ParentWorkshopId,
-            ParentWorkshop = model.ParentWorkshop?.ToDto(),
+            ParentWorkshop = model.ParentWorkshop?.ToDto(tagsEnabled),
             Contacts = model.Contacts?.ToDto(),
 
-            TagIds = model.Tags?.Select(x => x.Id).ToList() ?? [],
+            TagIds = tagsEnabled ? model.Tags?.Select(x => x.Id).ToList() ?? [] : null,
 
             CoverImageId = model.CoverImageId,
             ImageIds = model.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
-            Tags = model.Tags?.ToDto() ?? [],
+            Tags = tagsEnabled ? model.Tags?.ToDto() ?? [] : null,
             Status = model.Status,
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
@@ -194,6 +194,6 @@ public static class WorkshopDtoExtensions
         };
     }
 
-    public static List<WorkshopDto> ToDto(this IEnumerable<Workshop> list)
-        => list.MapToList(ToDto);
+    public static List<WorkshopDto> ToDto(this IEnumerable<Workshop> list, bool tagsEnabled)
+        => list.MapToList(x => x.ToDto(tagsEnabled));
 }

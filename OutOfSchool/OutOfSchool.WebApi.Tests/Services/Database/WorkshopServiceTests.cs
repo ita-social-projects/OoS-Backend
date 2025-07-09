@@ -150,18 +150,14 @@ public class WorkshopServiceTests
     [Test]
     public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 25, 1)] int availableSeats,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 25, 1)] int availableSeats)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
         createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
         var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
         SetupCreate(createdEntity);
 
         // Act
@@ -170,19 +166,16 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Tags.Should().BeEquivalentTo(expectedTags);
         result.AvailableSeats.Should().Be((uint)availableSeats);
     }
 
     [Test]
     public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
-        [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreate(createdEntity);
 
@@ -195,7 +188,6 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
-        result.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -230,7 +222,7 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(createdEntity.ToDto());
+        result.Should().BeEquivalentTo(createdEntity.ToDto(false));
     }
 
     [Test]
@@ -379,19 +371,15 @@ public class WorkshopServiceTests
     [Test]
     public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 25, 1)] int availableSeats,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 25, 1)] int availableSeats)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
         createdEntity.DateTimeRanges = new List<DateTimeRange>();
         createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
         var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
         SetupCreateV2(createdEntity);
 
         // Act
@@ -400,20 +388,17 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Workshop.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Workshop.Tags.Should().BeEquivalentTo(expectedTags);
         result.Workshop.AvailableSeats.Should().Be((uint)availableSeats);
     }
 
     [Test]
     public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
-        [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         createdEntity.DateTimeRanges = new List<DateTimeRange>();
         createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreateV2(createdEntity);
 
@@ -426,7 +411,6 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Workshop.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
-        result.Workshop.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.Workshop.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -443,7 +427,7 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Workshop.Should().BeEquivalentTo(createdEntity.ToV2Dto());
+        result.Workshop.Should().BeEquivalentTo(createdEntity.ToV2Dto(false));
     }
 
     [Test]
@@ -620,7 +604,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetAll(filter).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto().AsReadOnly(), TotalAmount = workshops.Count() });
+        result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto(false).AsReadOnly(), TotalAmount = workshops.Count() });
     }
 
     #endregion
@@ -639,7 +623,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(workshop.ToDto());
+        result.Should().BeEquivalentTo(workshop.ToDto(false));
     }
 
     [Test]
