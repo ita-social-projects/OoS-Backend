@@ -22,7 +22,7 @@ public class ConditionalValidationAttributes
                 return new ValidationResult("IFeatureManager service is not registered.");
             }
 
-            bool enabled = featureManager.IsEnabledAsync(_featureFlagName).GetAwaiter().GetResult();
+            bool enabled = featureManager.IsEnabledAsync(_featureFlagName).ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (enabled)
             {
@@ -56,7 +56,7 @@ public class ConditionalValidationAttributes
                 return new ValidationResult("IFeatureManager service is not registered.");
             }
 
-            bool enabled = featureManager.IsEnabledAsync(_featureFlagName).GetAwaiter().GetResult();
+            bool enabled = featureManager.IsEnabledAsync(_featureFlagName).ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (enabled)
             {
