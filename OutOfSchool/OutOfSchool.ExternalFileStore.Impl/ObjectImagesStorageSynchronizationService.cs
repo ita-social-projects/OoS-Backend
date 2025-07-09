@@ -26,14 +26,14 @@ public abstract class ObjectImagesStorageSynchronizationService : IObjectStorage
             objectImagesSyncDataRepository.GetIntersectWorkshopImagesIds,
             objectImagesSyncDataRepository.GetIntersectProviderImagesIds,
             objectImagesSyncDataRepository.GetIntersectCompetitiveEventImagesIds,
-            objectImagesSyncDataRepository.GetIntersectCompetitiveEventDrafImagesIds,
+            objectImagesSyncDataRepository.GetIntersectCompetitiveEventDraftImagesIds,
 
             // Entity cover images
             objectImagesSyncDataRepository.GetIntersectWorkshopCoverImagesIds,
             objectImagesSyncDataRepository.GetIntersectTeacherCoverImagesIds,
             objectImagesSyncDataRepository.GetIntersectProviderCoverImagesIds,
             objectImagesSyncDataRepository.GetIntersectCompetitiveEventCoverImagesIds,
-            objectImagesSyncDataRepository.GetIntersectCompetitiveEventDrafCoverImagesIds
+            objectImagesSyncDataRepository.GetIntersectCompetitiveEventDraftCoverImagesIds
         ];
     }
 

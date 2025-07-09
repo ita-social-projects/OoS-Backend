@@ -60,7 +60,7 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
         => await GetIntersectEntityCoverImagesIds(competitiveEventSet, searchIds).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task<List<string>> GetIntersectCompetitiveEventDrafCoverImagesIds(IEnumerable<string> searchIds)
+    public async Task<List<string>> GetIntersectCompetitiveEventDraftCoverImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityCoverImagesIds(competitiveEventDraftSet, searchIds).ConfigureAwait(false);
 
     #endregion
@@ -80,7 +80,7 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
         => await GetIntersectEntityImagesIds(competitiveEventImagesSet, searchIds).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task<List<string>> GetIntersectCompetitiveEventDrafImagesIds(IEnumerable<string> searchIds)
+    public async Task<List<string>> GetIntersectCompetitiveEventDraftImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityImagesIds(competitiveEventDraftImagesSet, searchIds).ConfigureAwait(false);
 
     #endregion
