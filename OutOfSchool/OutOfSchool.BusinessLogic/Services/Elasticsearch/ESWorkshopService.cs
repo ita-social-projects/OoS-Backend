@@ -22,8 +22,7 @@ public class ESWorkshopService(
     IElasticsearchHealthService elasticHealthService,
     ILogger<ESWorkshopService> logger,
     IAverageRatingService averageRatingService,
-    IOptions<ElasticConfig> config,
-    IFeatureManager featureManager
+    IOptions<ElasticConfig> config
 ) : IElasticsearchService<WorkshopES, WorkshopFilterES>
 {
 
