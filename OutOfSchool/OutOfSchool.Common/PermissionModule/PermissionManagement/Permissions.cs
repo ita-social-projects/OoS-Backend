@@ -196,6 +196,8 @@ public enum Permissions : short
     CompetitiveEventAddNew = 152,
     [Display(GroupName = "CompetitiveEvent", Name = "Remove", Description = "Can remove CompetitiveEvent data")]
     CompetitiveEventRemove = 153,
+    [Display(GroupName = "CompetitiveEvent", Name = "Approve", Description = "Can approve new CompetitiveEvent draft")]
+    CompetitiveEventApprove = 154,
     #endregion
 
     #region Position control permissions #16

@@ -19,6 +19,7 @@ using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
@@ -37,12 +38,14 @@ using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Config;
 using OutOfSchool.RazorTemplatesData.Services;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Api.Files;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.WebApi.Enums;
@@ -266,6 +269,7 @@ public static class Startup
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+        services.Configure<ImagesLimits<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Limits"));
         services.Configure<UploadConcurrencySettings>(configuration.GetSection(nameof(UploadConcurrencySettings)));
 
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -281,6 +285,7 @@ public static class Startup
 
         services.Configure<ImageOptions<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+        services.Configure<ImageOptions<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Specs"));
 
         // TODO: Move version check into an extension to reuse code across apps
         var mariaDbServerVersion = configuration["MariaDbServerVersion"];
@@ -408,6 +413,7 @@ public static class Startup
         //Image validator drafts
         services.AddScoped<IImageValidator<WorkshopDraft>, ImageValidator<WorkshopDraft>>();
         services.AddScoped<IImageValidator<TeacherDraft>, ImageValidator<TeacherDraft>>();
+        services.AddScoped<IImageValidator<CompetitiveEventDraft>, ImageValidator<CompetitiveEventDraft>>();
 
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
@@ -417,10 +423,14 @@ public static class Startup
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
 
         services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
+        
 
         // workshop draft images in the external storage
         services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+        
+        // competitive event draft images in the external storage
+        services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>, ImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
 
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();
@@ -436,6 +446,8 @@ public static class Startup
 
         services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
         services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
+
+        services.AddTransient<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
 
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
@@ -471,6 +483,7 @@ public static class Startup
         services.AddTransient<IPositionRepository, PositionRepository>();
 
         services.AddTransient<ICompetitiveEventRepository, CompetitiveEventRepository>();
+        services.AddTransient<ICompetitiveEventDraftRepository, CompetitiveEventDraftRepository>();
 
         var featuresConfig = configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
         var isImagesEnabled = featuresConfig.Images;

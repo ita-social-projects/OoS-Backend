@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace OutOfSchool.Services.Repository.WorkshopDraftRepository;
+namespace OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 
 /// <summary>
-///     Repository class responsible for managing the storage and retrieval of workshop draft entities.
+///     Repository class responsible for managing the storage and retrieval of competitive event draft entities.
 /// </summary>
-public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IWorkshopDraftRepository
+public class CompetitiveEventDraftRepository : EntityRepository<Guid, CompetitiveEventDraft>, ICompetitiveEventDraftRepository
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="WorkshopDraftRepository"/> class.
+    /// Initializes a new instance of the <see cref="CompetitiveEventDraftRepository"/> class.
     /// </summary>
     /// <param name="dbContext">OutOfSchoolDbContext.</param>
-    public WorkshopDraftRepository(OutOfSchoolDbContext dbContext)
+    public CompetitiveEventDraftRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
     }
@@ -27,17 +26,17 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
     /// <inheritdoc/>
     /// <exception cref="EntityDeletedConflictException">Thrown if the entity has already been deleted by another user.</exception>
     /// <exception cref="EntityModifiedConflictException">Thrown if the entity has been modified by another user before deletion.</exception>
-    public override async Task Delete(WorkshopDraft entity)
+    public override async Task Delete(CompetitiveEventDraft entity)
     {
-       try
-       {
+        try
+        {
             dbContext.Entry(entity).State = EntityState.Deleted;
 
             await dbContext.SaveChangesAsync()
                 .ConfigureAwait(false);
-       }
-       catch (DbUpdateConcurrencyException ex)
-       {
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
             if (!await HandleConcurrencyExceptionAsync(ex))
             {
                 throw;
@@ -46,17 +45,9 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkshopDraft>> GetByProviderIdAsync(Guid providerId)
-    {
-        return await dbSet.Where(x => x.ProviderId == providerId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     /// <exception cref="EntityDeletedConflictException">Thrown if the entity has already been deleted by another user.</exception>
     /// <exception cref="EntityModifiedConflictException">Thrown if the entity has been modified by another user before deletion.</exception>
-    public override async Task<WorkshopDraft> Update(WorkshopDraft entity)
+    public override async Task<CompetitiveEventDraft> Update(CompetitiveEventDraft entity)
     {
         try
         {

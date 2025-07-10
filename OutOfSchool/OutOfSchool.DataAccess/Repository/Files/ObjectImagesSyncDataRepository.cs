@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.ExternalFileStore;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
 
@@ -18,10 +19,12 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
     private readonly DbSet<Workshop> workshopSet;
     private readonly DbSet<Teacher> teacherSet;
     private readonly DbSet<Provider> providerSet;
+    private readonly DbSet<CompetitiveEvent> competitiveEventSet;
+    private readonly DbSet<CompetitiveEventDraft> competitiveEventDraftSet;
     private readonly DbSet<Image<Workshop>> workshopImagesSet;
     private readonly DbSet<Image<Provider>> providerImagesSet;
-    private readonly DbSet<CompetitiveEvent> competitiveEventSet;
     private readonly DbSet<Image<CompetitiveEvent>> competitiveEventImagesSet;
+    private readonly DbSet<Image<CompetitiveEventDraft>> competitiveEventDraftImagesSet;
 
     public ObjectImagesSyncDataRepository(OutOfSchoolDbContext dbContext)
     {
@@ -31,9 +34,11 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
         teacherSet = dbContext.Set<Teacher>();
         providerSet = dbContext.Set<Provider>();
         competitiveEventSet = dbContext.Set<CompetitiveEvent>();
+        competitiveEventDraftSet = dbContext.Set<CompetitiveEventDraft>();
         workshopImagesSet = dbContext.Set<Image<Workshop>>();
         providerImagesSet = dbContext.Set<Image<Provider>>();
         competitiveEventImagesSet = dbContext.Set<Image<CompetitiveEvent>>();
+        competitiveEventDraftImagesSet = dbContext.Set<Image<CompetitiveEventDraft>>();
     }
 
     #region EntityCoverImages
@@ -54,6 +59,9 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
     public async Task<List<string>> GetIntersectCompetitiveEventCoverImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityCoverImagesIds(competitiveEventSet, searchIds).ConfigureAwait(false);
 
+    /// <inheritdoc/>
+    public async Task<List<string>> GetIntersectCompetitiveEventDraftCoverImagesIds(IEnumerable<string> searchIds)
+        => await GetIntersectEntityCoverImagesIds(competitiveEventDraftSet, searchIds).ConfigureAwait(false);
 
     #endregion
 
@@ -71,6 +79,9 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
     public async Task<List<string>> GetIntersectCompetitiveEventImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityImagesIds(competitiveEventImagesSet, searchIds).ConfigureAwait(false);
 
+    /// <inheritdoc/>
+    public async Task<List<string>> GetIntersectCompetitiveEventDraftImagesIds(IEnumerable<string> searchIds)
+        => await GetIntersectEntityImagesIds(competitiveEventDraftImagesSet, searchIds).ConfigureAwait(false);
 
     #endregion
 

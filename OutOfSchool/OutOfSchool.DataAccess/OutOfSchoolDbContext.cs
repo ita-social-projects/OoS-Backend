@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
@@ -150,11 +151,15 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<TechAdmin> TechAdmins { get; set; }
 
+    public DbSet<CompetitiveEventDraft> CompetitiveEventDrafts { get; set; }
+
+    public DbSet<Image<CompetitiveEventDraft>> CompetitiveEventDraftImages { get; set; }
+
     /// <summary>
-/// Asynchronously saves all changes made in this context to the database.
-/// </summary>
-/// <returns>The number of state entries written to the database.</returns>
-public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+    /// Asynchronously saves all changes made in this context to the database.
+    /// </summary>
+    /// <returns>The number of state entries written to the database.</returns>
+    public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
     /// <summary>
 /// Saves all changes made in the context to the database.
@@ -222,6 +227,7 @@ public int Complete() => this.SaveChanges();
         builder.ApplyConfiguration(new WorkshopConfiguration());
         builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
         builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEventDraft>());
         builder.ApplyConfiguration(new WorkshopDraftConfiguration());
         builder.ApplyConfiguration(new TeacherDraftConfiguration());
         builder.ApplyConfiguration(new ChangesLogConfiguration());
@@ -230,6 +236,7 @@ public int Complete() => this.SaveChanges();
         builder.ApplyConfiguration(new ElasticsearchSyncRecordConfiguration());
         builder.ApplyConfiguration(new ModeratorConfiguration());
         builder.ApplyConfiguration(new TechAdminConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventDraftConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();
