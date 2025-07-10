@@ -116,7 +116,7 @@ public class WorkshopServicesCombinerTests
     {
         // Arrange
         var createdWorkshop = WorkshopGenerator.Generate();
-        var workshopDto = createdWorkshop.ToDto(false);
+        var workshopDto = createdWorkshop.ToDto();
         var workshopCreateRequestDto = new WorkshopCreateRequestDto();// mapper.Map<WorkshopCreateRequestDto>(createdWorkshop);
         workshopDto.AvailableSeats = 10;
 
@@ -171,7 +171,7 @@ public class WorkshopServicesCombinerTests
         workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
 
-        var updatedWorkshopDto = newWorkshopCreateUpdateDto.ToModel().ToDto(false);
+        var updatedWorkshopDto = newWorkshopCreateUpdateDto.ToModel().ToDto();
         newWorkshopCreateUpdateDto.ProviderTitle = updatedWorkshopDto.ProviderTitle;
         workshopService.Setup(x => x.Update(newWorkshopCreateUpdateDto))
             .ReturnsAsync(updatedWorkshopDto);
@@ -312,7 +312,7 @@ public class WorkshopServicesCombinerTests
             Status = WorkshopStatus.Closed,
         };
 
-        var workshopDto = workshop.ToDto(false);
+        var workshopDto = workshop.ToDto();
         var workshopDtoWithTitle = workshopStatusDto.ToWorkshopStatusWithTitleDto(workshop.Title);
 
         workshopService.Setup(x => x.GetById(workshopDto.Id, It.IsAny<bool>())).ReturnsAsync(workshopDto);
@@ -395,7 +395,7 @@ public class WorkshopServicesCombinerTests
 
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto(false));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         workshopService.Setup(x => x.Archive(workshop.Id)).ReturnsAsync(OperationResult.Success);
         favoriteRepository.Setup(x => x.Get(
                 It.IsAny<int>(),
@@ -436,7 +436,7 @@ public class WorkshopServicesCombinerTests
         //Arrange
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto(false));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync((OperationResult)null);
 
         //Act
@@ -455,7 +455,7 @@ public class WorkshopServicesCombinerTests
         //Arrange
         var workshop = WorkshopGenerator.Generate();
 
-        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto(false));
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
         sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync(OperationResult.Failed(new OperationError
         {
             Code = nameof(HttpStatusCode.BadRequest),

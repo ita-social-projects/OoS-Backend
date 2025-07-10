@@ -103,7 +103,7 @@ public class WorkshopService(
 
         logger.LogInformation("Workshop with Id = {newWorkshopId} created successfully.", newWorkshop.Id);
 
-        var workshopDtos = newWorkshop.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopDtos = newWorkshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDtos, applicationRepository);
 
@@ -161,7 +161,7 @@ public class WorkshopService(
 
         return new WorkshopResultDto
         {
-            Workshop = newWorkshop.ToV2Dto(await featureManager.IsEnabledAsync("EnableWorkshopTags")),
+            Workshop = newWorkshop.ToV2Dto(),
             UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
             UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
         };
@@ -200,7 +200,7 @@ public class WorkshopService(
             ? "Workshop table is empty."
             : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-        var dtos = workshops.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var dtos = workshops.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(dtos, applicationRepository);
 
@@ -228,7 +228,8 @@ public class WorkshopService(
 
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
-        var workshopDTO = workshop.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        // TODO: (?)
+        var workshopDTO = workshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
 
@@ -394,7 +395,7 @@ public class WorkshopService(
         var updatedWorkshop = await workshopRepository
             .RunInTransaction(UpdateWorkshopLocally).ConfigureAwait(false);
 
-        var workshopDTO = updatedWorkshop.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopDTO = updatedWorkshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
         return workshopDTO;
@@ -431,7 +432,7 @@ public class WorkshopService(
 
         await workshopRepository.Update(workshop);
 
-        var workshopDto = workshop.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopDto = workshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDto, applicationRepository);
 
@@ -500,6 +501,15 @@ public class WorkshopService(
 
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
+            if (await featureManager.IsEnabledAsync("EnableWorkshopTags") && !dto.TagIds.IsNullOrEmpty())
+            {
+                var tagEntities = await tagRepository
+                    .GetByFilter(t => dto.TagIds.Contains(t.Id));
+
+                currentWorkshop.Tags.Clear();
+                currentWorkshop.Tags.AddRange(tagEntities);
+            }
+
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
             await UpdateWorkshopStatusBySeatsLimitAndAvailability(
@@ -520,7 +530,7 @@ public class WorkshopService(
 
         return new WorkshopResultDto
         {
-            Workshop = updatedWorkshop.ToV2Dto(await featureManager.IsEnabledAsync("EnableWorkshopTags")),
+            Workshop = updatedWorkshop.ToV2Dto(),
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
@@ -812,7 +822,7 @@ public class WorkshopService(
 
         logger.LogInformation("Retrieved {WorkshopsCount} matching records by filter for admins.", workshopsCount);
 
-        var workshopsDTO = workshops.ToDto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopsDTO = workshops.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopsDTO, applicationRepository);
 
@@ -1331,7 +1341,11 @@ public class WorkshopService(
         if (await featureManager.IsEnabledAsync("EnableWorkshopTags"))
         {
             createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
+        } else {
+            createdWorkshop.Tags = [];
         }
+
+
         createdWorkshop.Status = WorkshopStatus.Open;
 
         contactsService.PrepareNewContacts(createdWorkshop, dto);

@@ -94,7 +94,7 @@ public class ESWorkshopService(
                     {
                         var rating = await averageRatingService.GetByEntityIdAsync(entity.Id).ConfigureAwait(false);
                         entity.Rating = rating?.Rate ?? default;
-                        source.Add(entity.ToES(await featureManager.IsEnabledAsync("EnableWorkshopTags")));
+                        source.Add(entity.ToES());
                     }
                 }
 

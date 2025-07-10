@@ -220,7 +220,7 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(createdEntity.ToDto(false));
+        result.Should().BeEquivalentTo(createdEntity.ToDto());
     }
 
     [Test]
@@ -342,7 +342,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, isMemberOfWorkshopIdExisted);
 
         // Act
-        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         workshopRepository.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<(Workshop, MultipleImageUploadingResult, Result<string>)>>>()), Times.Once);
@@ -381,7 +381,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -400,7 +400,7 @@ public class WorkshopServiceTests
         createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreateV2(createdEntity);
 
-        var createRequest = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var createRequest = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         createRequest.AvailableSeats = 0;
 
         // Act
@@ -421,11 +421,11 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act
-        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)).ConfigureAwait(false);
+        var result = await workshopService.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Workshop.Should().BeEquivalentTo(createdEntity.ToV2Dto(false));
+        result.Workshop.Should().BeEquivalentTo(createdEntity.ToV2Dto());
     }
 
     [Test]
@@ -436,7 +436,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<NullReferenceException>();
     }
 
@@ -457,7 +457,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -472,7 +472,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity, true);
 
         // Act and Assert
-        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false)))
+        await workshopService.Invoking(w => w.CreateV2(WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity)))
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
@@ -482,7 +482,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true, numberOfImages);
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.ImageFiles = new List<IFormFile>();
         for (int i = 1; i <= numberOfImages; i++)
@@ -505,7 +505,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity, true);
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
 
         // Act
@@ -523,7 +523,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         var file = new Mock<IFormFile>().Object;
         dto.CoverImage = file;
 
@@ -541,7 +541,7 @@ public class WorkshopServiceTests
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         SetupCreateV2(createdEntity);
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
 
         // Act
         var result = await workshopService.CreateV2(dto).ConfigureAwait(false);
@@ -569,7 +569,7 @@ public class WorkshopServiceTests
 
         featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
 
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, false);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
             .ReturnsAsync((Workshop w) => w);
@@ -595,7 +595,7 @@ public class WorkshopServiceTests
         SetupCreateV2(createdEntity);
         tagRepository.Setup(t => t.GetByFilter(It.IsAny<Expression<Func<Tag, bool>>>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
             .ReturnsAsync(createdEntity.Tags);
-        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity, true);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
 
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
             .ReturnsAsync((Workshop w) => w);
@@ -623,7 +623,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetAll(filter).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto(false).AsReadOnly(), TotalAmount = workshops.Count() });
+        result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto().AsReadOnly(), TotalAmount = workshops.Count() });
     }
 
     [Test]
@@ -643,7 +643,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetAll(filter).ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(workshops.ToDto(true).AsReadOnly());
+        result.Entities.Should().BeEquivalentTo(workshops.ToDto().AsReadOnly());
     }
 
     #endregion
@@ -662,7 +662,7 @@ public class WorkshopServiceTests
         var result = await workshopService.GetById(id, false).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(workshop.ToDto(false));
+        result.Should().BeEquivalentTo(workshop.ToDto());
     }
 
     [Test]

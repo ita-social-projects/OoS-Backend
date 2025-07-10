@@ -59,7 +59,7 @@ public class WorkshopDraftControllerTests
 
         workshopDraftResultDto = new WorkshopDraftResultDto()
         {
-            WorkshopDraft = workshopV2Dto.ToDraft(false).ToResponseDto()
+            WorkshopDraft = workshopV2Dto.ToDraft().ToResponseDto()
         };
     }
 
@@ -230,7 +230,7 @@ public class WorkshopDraftControllerTests
             TotalAmount = 1,
             Entities = new List<WorkshopDraftViewCardDto>()
             {
-                workshopV2Dto.ToDraft(false).ToCardDto()
+                workshopV2Dto.ToDraft().ToCardDto()
             },            
         };
 

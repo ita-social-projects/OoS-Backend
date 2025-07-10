@@ -64,8 +64,7 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IOptions<InstitutionOptions> institutionSettings,
-    IFeatureManager featureManager
+    IOptions<InstitutionOptions> institutionSettings
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -164,7 +163,7 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
 
-        var workshopV2Dto = existingWorkshop.ToModel().ToV2Dto(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopV2Dto = existingWorkshop.ToModel().ToV2Dto();
 
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
@@ -237,7 +236,7 @@ public class WorkshopDraftService(
             await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             await ValidateAndAdjustInstitutionHierarchyAsync(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             
-            workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft, await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+            workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
                 workshopDraft,
@@ -343,7 +342,7 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto(await featureManager.IsEnabledAsync("EnableWorkshopTags")));
+            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
         {
@@ -822,7 +821,7 @@ public class WorkshopDraftService(
 
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
     {
-        var workshopDraft = workshopV2Dto.ToDraft(await featureManager.IsEnabledAsync("EnableWorkshopTags"));
+        var workshopDraft = workshopV2Dto.ToDraft();
 
         var licenseStatusAndOwnership = await providerService.GetLicenseStatusAndOwnershipAsync(workshopV2Dto.ProviderId);
         workshopDraft.WorkshopDraftContent.ProviderLicenseStatus = licenseStatusAndOwnership.Item1;

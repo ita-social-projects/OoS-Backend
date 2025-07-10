@@ -24,7 +24,7 @@ public static class WorkshopV2CreateRequestDtoGenerator
 
     public static List<WorkshopV2CreateRequestDto> Generate(int count) => Faker.Generate(count);
 
-    public static WorkshopV2CreateRequestDto FromModel(this Workshop model, bool tagsEnabled)
+    public static WorkshopV2CreateRequestDto FromModel(this Workshop model)
         => new()
         {
             Id = model.Id,
@@ -61,7 +61,7 @@ public static class WorkshopV2CreateRequestDtoGenerator
             LanguageOfEducationId = model.LanguageOfEducationId,
             IsChampionPath = model.IsChampionPath,
 
-            TagIds = tagsEnabled ? model.Tags.Select(t => t.Id).ToList() ?? [ ] : null
+            TagIds = model.Tags.Select(t => t.Id).ToList() ?? [ ]
         };
 
     public static void Populate(WorkshopV2CreateRequestDto dto) => Faker.Populate(dto);
