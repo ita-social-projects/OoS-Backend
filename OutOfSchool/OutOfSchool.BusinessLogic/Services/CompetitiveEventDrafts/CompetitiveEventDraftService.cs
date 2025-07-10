@@ -28,7 +28,13 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         if (competitiveEventV2Dto == null)
         {
-            return null;
+            logger.LogError(
+               "ArgumentNullException: While executing the method '{MethodName}'," +
+               " the parameter '{ParameterName}' is null.",
+               nameof(Create),
+               nameof(CompetitiveEventV2Dto));
+
+            throw new ArgumentNullException(nameof(competitiveEventV2Dto));
         }
 
         logger.LogDebug("Creating competitive event draft with details: {CompetitiveEventDetails}", competitiveEventV2Dto);
@@ -338,7 +344,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException($"There is no CompetitiveEvent with such Id. CompetitiveEvent can`t be updated.");
         }
 
-        var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.Id == competitiveEventV2Dto.Id)
+        var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.CompetitiveEventId == competitiveEventV2Dto.Id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
 
@@ -357,7 +363,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         logger.LogDebug("Moderated fields was not changed. CompetitiveEvent update initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
 
-        return competitiveEventService.UpdateV2(competitiveEventV2Dto.ToDraft().ToV2CreateRequestDto()).Result.CompetitiveEventV2;
+        var result = await competitiveEventService.UpdateV2(competitiveEventV2Dto.ToDraft().ToV2CreateRequestDto()).ConfigureAwait(false);
+        return result.CompetitiveEventV2;
     }
 
     private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
@@ -379,8 +386,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             w => w.Title,
             w => w.AdditionalDescription,
             w => w.DescriptionOfTheEnrollmentProcedure,
-            w => string.Join(" | ", w.Contacts.Select(c => c.ToString())),
-            w => w.Title
+            w => string.Join(" | ", w.Contacts.Select(c => c.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>

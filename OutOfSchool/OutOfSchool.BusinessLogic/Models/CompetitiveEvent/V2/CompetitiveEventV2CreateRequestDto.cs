@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;

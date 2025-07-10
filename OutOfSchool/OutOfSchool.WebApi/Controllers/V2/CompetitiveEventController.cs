@@ -553,8 +553,13 @@ public class CompetitiveEventController : ControllerBase
     /// <summary>
     /// Approves the competitive event draft by a user with permission to moderate drafts.
     /// </summary>
-    /// <param name="id">Key in the table.</param>
+    /// <param name="id">The ID of the draft to approve.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    /// <response code="200">The draft was successfully approved.</response>
+    /// <response code="400">The model is invalid.</response>
+    /// <response code="401">The user is not authorized.</response>
+    /// <response code="403">The user has no rights to use this method.</response>
+    /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -593,7 +598,7 @@ public class CompetitiveEventController : ControllerBase
     /// <response code="409">The draft is not editable.</response>
     /// <response code="500">An unexpected error occurred.</response>
     [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{draftId}/cover-image")]
-    [HasPermission(Permissions.CompetitiveEventEdit)]
+    [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -622,7 +627,7 @@ public class CompetitiveEventController : ControllerBase
     /// <response code="409">The draft is not editable.</response>
     /// <response code="500">An unexpected error occurred.</response>
     [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{draftId}/images")]
-    [HasPermission(Permissions.CompetitiveEventEdit)]
+    [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
