@@ -62,16 +62,13 @@ public class CompetitiveEventDraftServiceTests
     #region Create
 
     [Test]
-    public async Task Create_ReturnsNull_WhenDtoIsNull()
+    public async Task Create_ThrowsArgumentNullException_WhenDtoIsNull()
     {
         // Arrange
         CompetitiveEventV2Dto dto = null;
 
-        // Act
-        var result = await competitiveEventDraftService.Create(dto);
-
-        // Assert
-        Assert.IsNull(result);
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>( async () => await competitiveEventDraftService.Create(dto));
     }
 
     [Test]
