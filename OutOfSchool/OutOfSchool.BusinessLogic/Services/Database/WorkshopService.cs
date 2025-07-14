@@ -370,7 +370,7 @@ public class WorkshopService(
 
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
 
-            if (!dto.TagIds.IsNullOrEmpty())
+            if (await featureManager.IsEnabledAsync("EnableWorkshopTags") && !dto.TagIds.IsNullOrEmpty())
             {
                 var tagEntities = await tagRepository
                     .GetByFilter(t => dto.TagIds.Contains(t.Id));
@@ -403,6 +403,11 @@ public class WorkshopService(
     /// <inheritdoc/>
     public async Task<WorkshopDto> UpdateTags(WorkshopTagsUpdateDto dto)
     {
+        if (!await featureManager.IsEnabledAsync("EnableWorkshopTags"))
+        {
+            throw new InvalidOperationException("Feature 'EnableWorkshopTags' is not enabled.");
+        }
+
         logger.LogInformation($"Updating the tags for Workshop with Id = {dto.WorkshopId} started.");
 
         var workshop = await workshopRepository.GetById(dto.WorkshopId);
@@ -494,6 +499,15 @@ public class WorkshopService(
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
 
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
+
+            if (await featureManager.IsEnabledAsync("EnableWorkshopTags") && !dto.TagIds.IsNullOrEmpty())
+            {
+                var tagEntities = await tagRepository
+                    .GetByFilter(t => dto.TagIds.Contains(t.Id));
+
+                currentWorkshop.Tags.Clear();
+                currentWorkshop.Tags.AddRange(tagEntities);
+            }
 
             dto.AvailableSeats = dto.AvailableSeats.GetMaxValueIfNullOrZero();
 
@@ -1322,8 +1336,15 @@ public class WorkshopService(
         {
             createdWorkshop.Teachers = dto.Teachers.ToModel();
         }
+        
+        if (await featureManager.IsEnabledAsync("EnableWorkshopTags"))
+        {
+            createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
+        } else {
+            createdWorkshop.Tags = [];
+        }
 
-        createdWorkshop.Tags = (await tagRepository.GetByFilter(tag => dto.TagIds.Contains(tag.Id))).ToList();
+
         createdWorkshop.Status = WorkshopStatus.Open;
 
         contactsService.PrepareNewContacts(createdWorkshop, dto);

@@ -59,7 +59,9 @@ public static class WorkshopV2CreateRequestDtoGenerator
             AvailableSeats = model.AvailableSeats,
             Contacts = model.Contacts?.ToDto(),
             LanguageOfEducationId = model.LanguageOfEducationId,
-            IsChampionPath = model.IsChampionPath
+            IsChampionPath = model.IsChampionPath,
+
+            TagIds = model.Tags.Select(t => t.Id).ToList() ?? [ ]
         };
 
     public static void Populate(WorkshopV2CreateRequestDto dto) => Faker.Populate(dto);

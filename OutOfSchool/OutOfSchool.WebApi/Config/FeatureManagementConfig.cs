@@ -39,5 +39,7 @@ public class FeatureManagementConfig
     public bool PasswordManagement { get; set; }
 
     public bool OnlyUkrainianLanguage {  get; set; }
+
+    public bool EnableWorkshopTags { get; set; }
 }
     

@@ -111,7 +111,7 @@ public static class WorkshopGenerator
 
     public static Workshop WithTags(this Workshop workshop)
     {
-        workshop.Tags = TagsGenerator.Generate(new Random().Next(1, 4))
+        workshop.Tags = TagsGenerator.Generate(new Random().Next(3, 5))
             .WithWorkshop(workshop);
         return workshop;
     }

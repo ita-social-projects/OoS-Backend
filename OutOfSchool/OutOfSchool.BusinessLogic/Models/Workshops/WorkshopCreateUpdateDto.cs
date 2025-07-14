@@ -2,10 +2,13 @@
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums.Workshop;
+using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 public class WorkshopCreateUpdateDto : WorkshopBaseDto
 {
+    [ConditionalRequired("EnableWorkshopTags")]
+    [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
 }

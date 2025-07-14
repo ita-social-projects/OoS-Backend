@@ -22,5 +22,6 @@ public enum Feature
     EmailConfirmation,
     EmailManagement,
     PasswordManagement,
-    OnlyUkrainianLanguage
+    OnlyUkrainianLanguage,
+    EnableWorkshopTags
 }

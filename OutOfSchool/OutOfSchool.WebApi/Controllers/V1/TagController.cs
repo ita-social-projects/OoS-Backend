@@ -2,13 +2,16 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.Tag;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
+[FeatureGate(nameof(Feature.EnableWorkshopTags))]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class TagController : ControllerBase
 {

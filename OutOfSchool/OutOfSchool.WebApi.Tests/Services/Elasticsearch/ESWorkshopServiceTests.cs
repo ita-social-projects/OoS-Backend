@@ -25,7 +25,7 @@ public class ESWorkshopServiceTests
     private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProviderMock;
     private Mock<IElasticsearchHealthService> elasticHealthServiceMock;
     private Mock<IAverageRatingService> averageRatingServiceMock;
-    private Mock<IOptions<ElasticConfig>> configMock; 
+    private Mock<IOptions<ElasticConfig>> configMock;
 
     [SetUp]
     public void Setup()
@@ -35,6 +35,7 @@ public class ESWorkshopServiceTests
         elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
         averageRatingServiceMock = new Mock<IAverageRatingService>();
         configMock = new Mock<IOptions<ElasticConfig>>();
+
         service = new ESWorkshopService(
             workshopServiceMock.Object,
             esProviderMock.Object,

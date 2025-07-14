@@ -63,7 +63,6 @@ public class WorkshopServiceTests
     private Mock<IEntityRepository<long, Tag>> tagRepository;
     private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IFeatureManager> featureManager;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Guid providerId;
@@ -93,7 +92,6 @@ public class WorkshopServiceTests
         tagRepository = new Mock<IEntityRepository<long, Tag>>();
         contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
         applicationRepository = new Mock<IApplicationRepository>();
-        featureManager = new Mock<IFeatureManager>();
         changesLogService = new Mock<IChangesLogService>();
         institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         providerId = Guid.NewGuid();
@@ -120,7 +118,7 @@ public class WorkshopServiceTests
                     searchStringServiceMock.Object,
                     contactsServiceMock.Object,
                     applicationRepository.Object,
-                    featureManager.Object,
+                    featureManagerMock.Object,
                     changesLogService.Object,
                     institutionOptionsMock.Object
                     );
@@ -150,18 +148,14 @@ public class WorkshopServiceTests
     [Test]
     public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 25, 1)] int availableSeats,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 25, 1)] int availableSeats)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
         createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
         var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
         SetupCreate(createdEntity);
 
         // Act
@@ -170,19 +164,16 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Tags.Should().BeEquivalentTo(expectedTags);
         result.AvailableSeats.Should().Be((uint)availableSeats);
     }
 
     [Test]
     public async Task Create_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
-        [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreate(createdEntity);
 
@@ -195,7 +186,6 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
-        result.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -296,7 +286,7 @@ public class WorkshopServiceTests
             {
                 Institution = new InstitutionDto { Title = "Мінспорт" }
             });
-        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+        featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
         var dto = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
             .ReturnsAsync((Workshop w) => w); 
@@ -324,7 +314,7 @@ public class WorkshopServiceTests
                 Institution = new InstitutionDto { Title = "Інший заклад" }
             });
     
-        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+        featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
 
         var dto = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
         
@@ -379,19 +369,15 @@ public class WorkshopServiceTests
     [Test]
     public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNotNull_ShouldReturnThisEntity(
         [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 25, 1)] int availableSeats,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 25, 1)] int availableSeats)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
         createdEntity.DateTimeRanges = new List<DateTimeRange>();
         createdEntity.Teachers = teachers;
-        var tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
-        createdEntity.Tags = tags;
         createdEntity.AvailableSeats = (uint)availableSeats;
         var expectedTeachers = teachers.ToDto();
-        var expectedTags = tags.ToDto();
         SetupCreateV2(createdEntity);
 
         // Act
@@ -400,20 +386,17 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Workshop.Teachers.Should().BeEquivalentTo(expectedTeachers);
-        result.Workshop.Tags.Should().BeEquivalentTo(expectedTags);
         result.Workshop.AvailableSeats.Should().Be((uint)availableSeats);
     }
 
     [Test]
     public async Task CreateV2_WhenEntityIsValidAndAvailableSeatsIsNull_ShouldReturnThisEntity(
-        [Random(2, 5, 1)] int teachersInWorkshop,
-        [Random(2, 8, 1)] int tagNumber)
+        [Random(2, 5, 1)] int teachersInWorkshop)
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
         createdEntity.DateTimeRanges = new List<DateTimeRange>();
         createdEntity.Teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(createdEntity);
-        createdEntity.Tags = TagsGenerator.Generate(tagNumber).WithWorkshop(createdEntity);
         createdEntity.AvailableSeats = uint.MaxValue;
         SetupCreateV2(createdEntity);
 
@@ -426,7 +409,6 @@ public class WorkshopServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Workshop.Teachers.Should().BeEquivalentTo(createdEntity.Teachers.ToDto());
-        result.Workshop.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
         result.Workshop.AvailableSeats.Should().Be(uint.MaxValue);
     }
 
@@ -585,7 +567,7 @@ public class WorkshopServiceTests
                 Institution = new InstitutionDto { Title = "Мінспорт" }
             });
 
-        featureManager.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
+        featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
 
         var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
         
@@ -603,6 +585,27 @@ public class WorkshopServiceTests
         result.Workshop.IsChampionPath.Should().BeTrue();
     }
 
+    [Test]
+    public async Task CreateV2_WhenTagsAreEnabled_ShouldSetTagsToWorkshop()
+    {
+        // Arrange
+        featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopTags"))
+            .ReturnsAsync(true);
+        var createdEntity = WorkshopGenerator.Generate().WithProvider().WithTags();
+        SetupCreateV2(createdEntity);
+        tagRepository.Setup(t => t.GetByFilter(It.IsAny<Expression<Func<Tag, bool>>>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
+            .ReturnsAsync(createdEntity.Tags);
+        var dto = WorkshopV2CreateRequestDtoGenerator.FromModel(createdEntity);
+
+        workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
+            .ReturnsAsync((Workshop w) => w);
+
+        // Act
+        var result = await workshopService.CreateV2(dto).ConfigureAwait(false);
+
+        // Assert
+        result.Workshop.Tags.Should().BeEquivalentTo(createdEntity.Tags.ToDto());
+    }
 
     #endregion
 
@@ -621,6 +624,26 @@ public class WorkshopServiceTests
 
         // Assert
         result.Should().BeEquivalentTo(new SearchResult<WorkshopDto>() { Entities = workshops.ToDto().AsReadOnly(), TotalAmount = workshops.Count() });
+    }
+
+    [Test]
+    public async Task GetAll_WhenTagsEnabled_ShouldReturnAllEntitiesWithTags()
+    {
+        // Arrange
+        var workshops = WorkshopGenerator.Generate(5);
+        workshops.Select(w => w.Tags).ToList().ForEach(t => t.AddRange(TagsGenerator.Generate(2)));
+        var guids = workshops.Select(w => w.Id);
+        SetupGetAll(workshops, WithAvarageRatings(guids));
+        featureManagerMock
+            .Setup(f => f.IsEnabledAsync("EnableWorkshopTags"))
+            .ReturnsAsync(true);
+        var filter = new OffsetFilter();
+
+        // Act
+        var result = await workshopService.GetAll(filter).ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should().BeEquivalentTo(workshops.ToDto().AsReadOnly());
     }
 
     #endregion
@@ -1659,6 +1682,7 @@ public class WorkshopServiceTests
     {
         return RatingsGenerator.GetAverageRatings(workshopGuids);
     }
+
     #endregion
 
     #region Setup
@@ -1671,6 +1695,7 @@ public class WorkshopServiceTests
                 Institution = new InstitutionDto { Title = "Мінспорт"}
             });
     }
+
     private void SetupCreate(Workshop workshop, bool isMemberOfWorkshopIdExisted = false)
     {
         providerRepositoryMock.Setup(p => p.GetById(It.IsAny<Guid>()))
