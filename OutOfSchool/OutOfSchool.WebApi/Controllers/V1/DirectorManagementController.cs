@@ -94,18 +94,4 @@ public class DirectorManagementController : ControllerBase
             return NotFound(ex.Message);
         }
     }
-
-    /// <summary>
-    /// Validate if the provider has valid director/deputy structure.
-    /// </summary>
-    /// <param name="providerId">Provider's ID.</param>
-    /// <returns>Status of validation.</returns>
-    [Authorize]
-    [HttpGet("{providerId:guid}/validate")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ValidateStructure(Guid providerId)
-    {
-        var isValid = await directorService.ValidateDirectorshipRequirements(providerId);
-        return Ok(new { IsValid = isValid });
-    }
 }

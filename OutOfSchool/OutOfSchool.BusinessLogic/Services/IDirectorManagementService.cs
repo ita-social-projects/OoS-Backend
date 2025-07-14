@@ -26,13 +26,4 @@ public interface IDirectorManagementService
     /// <param name="request">A DTO containing the IDs of the current director and the employee who will become the new director.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<TransferDirectorResponseDto> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request);
-
-    /// <summary>
-    /// Validates that the provider has either an active director or at least one deputy.
-    /// Can be used as a safety check after deletion or reassignment operations.
-    /// </summary>
-    /// <param name="providerId">ID of the provider to validate.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The task result contains a <see cref="bool"/> indicating whether the requirement is met.</returns>
-    Task<bool> ValidateDirectorshipRequirements(Guid providerId);
 }

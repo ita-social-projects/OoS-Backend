@@ -116,7 +116,6 @@ public class DirectorManagementService : IDirectorManagementService
             throw;
         }
     }
-    
     public async Task<TransferDirectorResponseDto> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
     {
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
@@ -142,7 +141,6 @@ public class DirectorManagementService : IDirectorManagementService
                 toOfficial.PositionId = fromOfficial.PositionId;
                 fromOfficial.PositionId = tmp;
 
-                // need this?
                 var tempPosition = toOfficial.Position;
                 toOfficial.Position = fromOfficial.Position;
                 fromOfficial.Position = tempPosition;
@@ -180,12 +178,6 @@ public class DirectorManagementService : IDirectorManagementService
             _logger.LogError(ex, "Failed to transfer Director position. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.FromOfficialId);
             throw;
         }
-    }
-
-
-    public Task<bool> ValidateDirectorshipRequirements(Guid providerId)
-    {
-        throw new NotImplementedException();
     }
     private void ValidateOfficialsExist(Official from, Official to)
     {
