@@ -7,6 +7,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
+
 public class DirectorManagementService : IDirectorManagementService
 {
     private readonly IOfficialRepository _officialRepository;
@@ -21,18 +22,18 @@ public class DirectorManagementService : IDirectorManagementService
     /// Create a delegate to include other entities in Official entity
     /// </summary>
     private readonly Func<IQueryable<Official>, IQueryable<Official>> _includeOfficialFunc =
-    query => query
-        .Include(o => o.Position)
-        .Include(o => o.Individual);
+        query => query
+            .Include(o => o.Position)
+            .Include(o => o.Individual);
 
     public DirectorManagementService(
-       IOfficialRepository officialRepository,
-       IOfficialChangesLogService officialChangesLogService,
-       IPositionRepository positionRepository,
-       IPositionService positionService,
-       ICurrentUserService currentUserService,
-       ITransactionManagerService transactionManagerService,
-       ILogger<DirectorManagementService> logger)
+        IOfficialRepository officialRepository,
+        IOfficialChangesLogService officialChangesLogService,
+        IPositionRepository positionRepository,
+        IPositionService positionService,
+        ICurrentUserService currentUserService,
+        ITransactionManagerService transactionManagerService,
+        ILogger<DirectorManagementService> logger)
     {
         this._officialRepository = officialRepository;
         this._officialChangesLogService = officialChangesLogService;
@@ -43,20 +44,23 @@ public class DirectorManagementService : IDirectorManagementService
         this._logger = logger;
     }
 
-    public async Task<Result<PromoteToDirectorResponseDto>> PromoteEmployeeToDirector(Guid providerId, PromoteToDirectorRequestDto request)
+    public async Task<Result<PromoteToDirectorResponseDto>> PromoteEmployeeToDirector(Guid providerId,
+        PromoteToDirectorRequestDto request)
     {
         // check if the current user is a deputy director of the provider
         await _currentUserService.UserHasRights(new DeputyDirectorRights(providerId));
 
         if (await _positionRepository.DirectorExistsAsync(providerId))
         {
-            _logger.LogWarning("Attempted to promote new director for provider {ProviderId}, but one already exists.", providerId);
+            _logger.LogWarning("Attempted to promote new director for provider {ProviderId}, but one already exists.",
+                providerId);
             return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
             {
                 Code = "DirectorAlreadyExists",
                 Description = $"Director already exists for provider with ID: {providerId}"
             });
         }
+
         // Check if the current user is a deputy director of the provider
         var userId = _currentUserService.UserId;
         var initiator = await _officialRepository.GetByUserIdAsync(userId);
@@ -82,9 +86,11 @@ public class DirectorManagementService : IDirectorManagementService
                 Description = $"Official with ID {request.OfficialId} not found"
             });
         }
+
         if (official.Position?.ProviderId != providerId)
         {
-            _logger.LogWarning("Official {OfficialId} does not belong to provider {ProviderId}.", official.Id, providerId);
+            _logger.LogWarning("Official {OfficialId} does not belong to provider {ProviderId}.", official.Id,
+                providerId);
             return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
             {
                 Code = "WrongProvider",
@@ -113,15 +119,16 @@ public class DirectorManagementService : IDirectorManagementService
                 await _officialRepository.Update(official);
 
                 await _officialChangesLogService.SaveChangesLogAsync(
-                  official,
-                  _currentUserService.UserId,
-                  OperationType.PromotedToDirector,
-                  nameof(Position.PositionType),
-                  oldPositionType.ToString(),
-                  PositionType.Director.ToString());
+                    official,
+                    _currentUserService.UserId,
+                    OperationType.PromotedToDirector,
+                    nameof(Position.PositionType),
+                    oldPositionType.ToString(),
+                    PositionType.Director.ToString());
 
-                _logger.LogInformation("Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
-                            official.Id, providerId, newDirectorPosition.Id);
+                _logger.LogInformation(
+                    "Official {OfficialId} has been promoted to Director for provider {ProviderId}. New PositionId: {PositionId}",
+                    official.Id, providerId, newDirectorPosition.Id);
 
                 return official.ToPromoteDto(newDirectorPosition);
             });
@@ -129,7 +136,9 @@ public class DirectorManagementService : IDirectorManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to promote employee to Director. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.OfficialId);
+            _logger.LogError(ex,
+                "Failed to promote employee to Director. ProviderId: {ProviderId}, OfficialId: {OfficialId}",
+                providerId, request.OfficialId);
             return Result<PromoteToDirectorResponseDto>.Failed(new OperationError
             {
                 Code = "PromotionFailed",
@@ -138,7 +147,8 @@ public class DirectorManagementService : IDirectorManagementService
         }
     }
 
-    public async Task<Result<TransferDirectorResponseDto>> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
+    public async Task<Result<TransferDirectorResponseDto>> TransferDirectorPosition(Guid providerId,
+        TransferDirectorRequestDto request)
     {
         await _currentUserService.UserHasRights(new ProviderRights(providerId));
 
@@ -216,7 +226,8 @@ public class DirectorManagementService : IDirectorManagementService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during director transfer. ProviderId: {ProviderId}, FromOfficialId: {FromOfficialId}",
+            _logger.LogError(ex,
+                "Unexpected error during director transfer. ProviderId: {ProviderId}, FromOfficialId: {FromOfficialId}",
                 providerId, request.FromOfficialId);
             return Result<TransferDirectorResponseDto>.Failed(new OperationError
             {

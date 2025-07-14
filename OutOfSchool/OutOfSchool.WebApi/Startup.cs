@@ -516,8 +516,8 @@ public static class Startup
         services.AddTransient<ICurrentUser, CurrentUserAccessor>();
         services.AddTransient<ICurrentUserService, CurrentUserService>();
         services.AddTransient(typeof(IContactsService<,>), typeof(ContactsService<,>));
-        services.AddTransient<IDirectorManagementService, DirectorManagementService>();
-        services.AddTransient<ITransactionManagerService, TransactionManagerService>();
+        services.AddScoped<IDirectorManagementService, DirectorManagementService>();
+        services.AddScoped<ITransactionManagerService, TransactionManagerService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 

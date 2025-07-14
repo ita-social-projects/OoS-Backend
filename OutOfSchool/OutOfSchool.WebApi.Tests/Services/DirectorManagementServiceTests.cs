@@ -84,7 +84,7 @@ public class DirectorManagementServiceTests
         var requestDto = CreatePromoteRequestDto(official.Id);
 
         SetupUserHasRightsAsDeputy();
-        SetupExistingDirectorForСurrentProvider();
+        SetupExistingDirectorForCurrentProvider();
 
         var result = await _service.PromoteEmployeeToDirector(_providerId, requestDto);
 
@@ -564,12 +564,7 @@ public class DirectorManagementServiceTests
     private void SetupUserHasRightsButNotDeputy()
     {
         var userId = Guid.NewGuid().ToString();
-
-        // mock userid
-        _currentUserServiceMock
-            .Setup(x => x.UserId)
-            .Returns(userId);
-
+        
         // user have provider rights
         _currentUserServiceMock
             .Setup(x => x.UserId)
@@ -593,7 +588,7 @@ public class DirectorManagementServiceTests
             .Setup(x => x.UserHasRights(It.IsAny<DeputyDirectorRights>()))
             .ThrowsAsync(new UnauthorizedAccessException("User has no rights to perform operation"));
     }
-    private void SetupExistingDirectorForСurrentProvider()
+    private void SetupExistingDirectorForCurrentProvider()
     {
         _positionRepositoryMock
             .Setup(x => x.DirectorExistsAsync(_providerId))

@@ -18,13 +18,24 @@ public  static class TransferDirectorExtensions
         OutOfSchool.Services.Models.Official toOfficial,
         Guid providerId)
     {
+
+        if (fromOfficial?.Individual == null)
+        {
+            throw new ArgumentNullException(nameof(fromOfficial), "From official and its individual cannot be null");
+        }
+
+        if (toOfficial?.Individual == null)
+        {
+            throw new ArgumentNullException(nameof(toOfficial), "To official and its individual cannot be null");
+        }
+                   
         return new TransferDirectorResponseDto
         {
             ProviderId = providerId,
             PreviousDirectorIndividualId = fromOfficial.IndividualId,
-            PreviousDirectorFullName = $"{fromOfficial.Individual.LastName} {fromOfficial.Individual.FirstName}",
+            PreviousDirectorFullName = $"{fromOfficial.Individual.LastName?.Trim()} {fromOfficial.Individual.FirstName?.Trim()}".Trim(),
             NewDirectorIndividualId = toOfficial.IndividualId,
-            NewDirectorFullName = $"{toOfficial.Individual.LastName} {toOfficial.Individual.FirstName}",
+            NewDirectorFullName = $"{toOfficial.Individual.LastName?.Trim()} {toOfficial.Individual.FirstName?.Trim()}".Trim(),
             TransferredAt = toOfficial.ActiveFrom
         };
     }

@@ -12,7 +12,6 @@ public class DirectorManagementController : ControllerBase
 
     public DirectorManagementController(
         IDirectorManagementService directorService,
-        ICurrentUserService currentUserService,
         ILogger<DirectorManagementController> logger)
     {
         this.directorService = directorService;

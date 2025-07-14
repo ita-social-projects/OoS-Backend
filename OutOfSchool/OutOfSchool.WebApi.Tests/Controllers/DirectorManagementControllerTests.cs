@@ -15,10 +15,9 @@ using OutOfSchool.WebApi.Controllers.V1;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-class DirectorManagementControllerTests
+public class DirectorManagementControllerTests
 {
     private Mock<IDirectorManagementService> _directorServiceMock;
-    private Mock<ICurrentUserService> _currentUserServiceMock;
     private Mock<ILogger<DirectorManagementController>> _loggerMock;
     private DirectorManagementController _controller;
 
@@ -26,12 +25,9 @@ class DirectorManagementControllerTests
     public void SetUp()
     {
         _directorServiceMock = new Mock<IDirectorManagementService>();
-        _currentUserServiceMock = new Mock<ICurrentUserService>();
         _loggerMock = new Mock<ILogger<DirectorManagementController>>();
-
         _controller = new DirectorManagementController(
             _directorServiceMock.Object,
-            _currentUserServiceMock.Object,
             _loggerMock.Object);
     }
 
@@ -277,7 +273,8 @@ class DirectorManagementControllerTests
 
         // Assert
         var notFoundResult = resultAction as NotFoundObjectResult;
-        Assert.IsNotNull(notFoundResult);
-        Assert.AreEqual(new List<OperationError> { error }, notFoundResult.Value);
+        var errors = notFoundResult.Value as IEnumerable<OperationError>;
+        Assert.IsNotNull(errors);
+        Assert.IsTrue(errors.Any(e => e.Code == "OfficialsNotFound" && e.Description == "One or both officials were not found."));
     }
 }
