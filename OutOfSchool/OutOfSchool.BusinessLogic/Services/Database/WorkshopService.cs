@@ -228,7 +228,6 @@ public class WorkshopService(
 
         logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
-        // TODO: (?)
         var workshopDTO = workshop.ToDto();
 
         await TakenSeatsMappingHelper.FillTakenSeatsForWorkshopDto(workshopDTO, applicationRepository);
