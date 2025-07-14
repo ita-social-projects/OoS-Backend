@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Models.Position;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
 
 namespace OutOfSchool.BusinessLogic.Services;
@@ -17,10 +18,18 @@ public class DirectorManagementService : IDirectorManagementService
     private readonly ILogger<DirectorManagementService> _logger;
     private readonly ITransactionManagerService _transactionManagerService;
 
+    /// <summary>
+    /// Create a delegate to include other entities in Official entity
+    /// </summary>
+    private readonly Func<IQueryable<Official>, IQueryable<Official>> _includeOfficialFunc =
+    query => query
+        .Include(o => o.Position)
+        .Include(o => o.Individual);
+
     public DirectorManagementService(
        IOfficialRepository officialRepository,
        IOfficialChangesLogService officialChangesLogService,
-    IPositionRepository positionRepository,
+       IPositionRepository positionRepository,
        IPositionService positionService,
        ICurrentUserService currentUserService,
        ITransactionManagerService transactionManagerService,
@@ -131,53 +140,72 @@ public class DirectorManagementService : IDirectorManagementService
     
     public async Task<TransferDirectorResponseDto> TransferDirectorPosition(Guid providerId, TransferDirectorRequestDto request)
     {
-        // 1. Завантаження об'єктів та валідація до транзакції
-        var fromOfficial = await _officialRepository
-            .Get()
-            .Include(o => o.Position)
-            .Include(o => o.Individual)
-            .FirstOrDefaultAsync(o => o.Id == request.FromOfficialId);
-
-        var toOfficial = await _officialRepository
-            .Get()
-            .Include(o => o.Position)
-            .Include(o => o.Individual)
-            .FirstOrDefaultAsync(o => o.Id == request.ToOfficialId);
-
-        ValidateOfficialsExist(fromOfficial, toOfficial);
-        ValidateSameProvider(fromOfficial, toOfficial, providerId);
-        ValidateCurrentUserIsDirector(fromOfficial, _currentUserService.UserId);
-        //await ValidateDirectorTransfer(providerId, request.FromOfficialId, request.ToOfficialId);
-
-        // 2. Транзакція –  зміна PositionType
-        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await _currentUserService.UserHasRights(new ProviderRights(providerId));
         try
         {
-            fromOfficial.Position.PositionType = PositionType.DeputyDirector; // ??? need this
-            toOfficial.Position.PositionType = PositionType.Director;
-
-            await _positionRepository.Update(fromOfficial.Position);
-            await _positionRepository.Update(toOfficial.Position);
-            await _dbContext.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            _logger.LogDebug("Transferred director from {From} to {To} for provider {ProviderId}",
-                request.FromOfficialId, request.ToOfficialId, providerId);
-
-            return new TransferDirectorResponseDto
+            return await _officialRepository.RunInTransaction(async () =>
             {
-                ProviderId = providerId,
-                PreviousDirectorOfficialId = fromOfficial.Id,
-                PreviousDirectorFullName = $"{fromOfficial.Individual.LastName} {fromOfficial.Individual.FirstName}",
-                NewDirectorOfficialId = toOfficial.Id,
-                NewDirectorFullName = $"{toOfficial.Individual.LastName} {toOfficial.Individual.FirstName}"
-            };
+                var fromOfficial = await _officialRepository.GetByIdWithDetails(
+                    request.FromOfficialId,
+                    includeExpression: _includeOfficialFunc);
+                var toOfficial = await _officialRepository.GetByIdWithDetails(
+                    request.ToOfficialId,
+                    includeExpression: _includeOfficialFunc);
+
+                ValidateOfficialsExist(fromOfficial, toOfficial);
+                ValidateSameProvider(fromOfficial, toOfficial, providerId);
+                ValidateCurrentUserIsDirector(fromOfficial, _currentUserService.UserId);
+
+                var now = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                // swap positions between actual director and other employee
+                var tmp = toOfficial.PositionId;
+                toOfficial.PositionId = fromOfficial.PositionId;
+                fromOfficial.PositionId = tmp;
+
+                // need this?
+                var tempPosition = toOfficial.Position;
+                toOfficial.Position = fromOfficial.Position;
+                fromOfficial.Position = tempPosition;
+
+                fromOfficial.ActiveFrom = now;
+                toOfficial.ActiveFrom = now;
+
+                await _officialRepository.Update(fromOfficial);
+                await _officialRepository.Update(toOfficial);
+
+                await _officialChangesLogService.SaveChangesLogAsync(
+                    fromOfficial,
+                    _currentUserService.UserId,
+                    OperationType.TranserredToDirector,
+                    nameof(Position.PositionType),
+                    PositionType.Director.ToString(),
+                    fromOfficial.Position.PositionType.ToString());
+
+                await _officialChangesLogService.SaveChangesLogAsync(
+                    toOfficial,
+                    _currentUserService.UserId,
+                    OperationType.TranserredToDirector,
+                    nameof(Position.PositionType),
+                    fromOfficial.Position.PositionType.ToString(),
+                    PositionType.Director.ToString());
+
+                _logger.LogDebug("Transferred director from {From} to {To} for provider {ProviderId}",
+                 request.FromOfficialId, request.ToOfficialId, providerId);
+
+                return new TransferDirectorResponseDto
+                {
+                    ProviderId = providerId,
+                    PreviousDirectorIndividualId = fromOfficial.IndividualId,
+                    PreviousDirectorFullName = $"{fromOfficial.Individual.LastName} {fromOfficial.Individual.FirstName}",
+                    NewDirectorIndividualId = toOfficial.IndividualId,
+                    NewDirectorFullName = $"{toOfficial.Individual.LastName} {toOfficial.Individual.FirstName}"
+                };
+            });
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error transferring director role from {From} to {To}", request.FromOfficialId, request.ToOfficialId);
+            _logger.LogError(ex, "Failed to transfer Director position. ProviderId: {ProviderId}, OfficialId: {OfficialId}", providerId, request.FromOfficialId);
             throw;
         }
     }
@@ -191,7 +219,7 @@ public class DirectorManagementService : IDirectorManagementService
     {
         if (from == null || to == null)
         {
-            throw new ArgumentException("One or both officials not found.");
+            throw new KeyNotFoundException("One or both officials not found.");
         }
     }
 
@@ -215,58 +243,4 @@ public class DirectorManagementService : IDirectorManagementService
             throw new InvalidOperationException("Only a director can transfer the director position.");
         }
     }
-
-    private async Task ValidateDirectorTransfer(Guid providerId, Guid fromOfficialId, Guid toOfficialId)
-    {
-        var currentUserId = _currentUserService.UserId;
-
-        var fromOfficial = await _officialRepository.GetById(fromOfficialId);
-        var toOfficial = await _officialRepository.GetById(toOfficialId);
-
-        if (fromOfficial is null || toOfficial is null)
-        {
-            throw new ArgumentException("One or both officials do not exist.");
-        }
-
-        if (fromOfficial.Position.ProviderId != providerId || toOfficial.Position.ProviderId != providerId)
-        {
-            throw new InvalidOperationException("Officials must belong to the same provider.");
-        }
-
-        if (fromOfficial.Individual.UserId != currentUserId)
-        {
-            throw new UnauthorizedAccessException("Only the current director can initiate a transfer.");
-        }
-
-        if (fromOfficial.Position.PositionType != PositionType.Director)
-        {
-            throw new InvalidOperationException("Only a director can transfer the director position.");
-        }
-    }
-
-    //private async Task ValidateActiveDirector2(Guid providerId, Guid officialId)
-    //{
-    //    var official = await _officialRepository.GetById(officialId);
-
-    //    if (official == null)
-    //        throw new Exception("Current director not found.");
-
-    //    if (official.Position == null)
-    //        throw new Exception("Current director has no assigned position.");
-
-    //    if (official.Position.ProviderId != providerId)
-    //        throw new Exception("Current director does not belong to the given provider.");
-
-    //    if (official.Position.PositionType != PositionType.Director)
-    //        throw new Exception("This official is not assigned to a director position.");
-
-    //    var now = DateOnly.FromDateTime(DateTime.UtcNow);
-    //    if (official.ActiveTo != default && official.ActiveTo <= now)
-    //        throw new Exception("The director's position is no longer active.");
-
-    //    // Якщо потрібно — перевірити, що це саме той, хто ініціює дію
-    //   // var currentUserId = _currentUserService.UserId(); // ??
-    //    //if (official.IndividualId != currentUserId)
-    //     //   throw new Exception("Only the current director can initiate a transfer.");
-    //}
 }

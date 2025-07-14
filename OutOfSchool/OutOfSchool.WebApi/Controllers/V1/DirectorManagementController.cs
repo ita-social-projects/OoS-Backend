@@ -67,16 +67,16 @@ public class DirectorManagementController : ControllerBase
     /// <returns>Result status.</returns>
     [Authorize]
     [HttpPost("{providerId:guid}/transfer")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Transfer(Guid providerId, [FromBody] TransferDirectorRequestDto request)
     {
-        try
+        try // need try-catch & we hav middleware exception?
         {
-            await directorService.TransferDirectorPosition(providerId, request);
-            return NoContent();
+            var result = await directorService.TransferDirectorPosition(providerId, request);
+            return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -90,7 +90,7 @@ public class DirectorManagementController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            logger.LogWarning(ex, "Target official not found.");
+            logger.LogWarning(ex, "One or both officials not found.");
             return NotFound(ex.Message);
         }
     }

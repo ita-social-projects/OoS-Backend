@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.Official;
@@ -56,7 +55,9 @@ public class DirectorManagementServiceTests
             _loggerMock.Object
             );
     }
+   
 
+    #region PromoteEmployee
     [Test]
     public async Task Promote_Should_Throw_KeyNotFoundException_When_Official_Not_Found()
     {
@@ -233,6 +234,8 @@ public class DirectorManagementServiceTests
         _officialRepositoryMock.Verify(x => x.Update(It.Is<Official>(o => o.PositionId == createdPositionId)), Times.Once);
     }
 
+
+
     [Test]
     public async Task Promote_Should_Still_Call_ExecuteInTransactionAsync_When_Exception_Occurs()
     {
@@ -291,7 +294,226 @@ public class DirectorManagementServiceTests
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
     }
+    #endregion PromoteEmployee
 
+    #region TransferDirectorPosition
+    [Test]
+    public async Task TransferDirectorPosition_ShouldTransferPositions_WhenAllValid()
+    {
+        // Arrange
+        var fromOfficialId = Guid.NewGuid();
+        var toOfficialId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        var fromPositionId = Guid.NewGuid();
+        var toPositionId = Guid.NewGuid();
+
+        var fromOfficial = new Official
+        {
+            Id = fromOfficialId,
+            PositionId = fromPositionId,
+            Position = new Position { Id = fromPositionId, PositionType = PositionType.Director, ProviderId = _providerId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Ivan", LastName = "Ivanov", UserId = userId.ToString() }
+        };
+
+        var toOfficial = new Official
+        {
+            Id = toOfficialId,
+            PositionId = toPositionId,
+            Position = new Position { Id = toPositionId, PositionType = PositionType.DeputyDirector, ProviderId = _providerId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Petro", LastName = "Petrov" }
+        };
+
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = fromOfficialId,
+            ToOfficialId = toOfficialId
+        };
+
+        _officialRepositoryMock
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<TransferDirectorResponseDto>>>()))
+            .Returns<Func<Task<TransferDirectorResponseDto>>>(func => func());
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(fromOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(fromOfficial);
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(toOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(toOfficial);
+
+        _currentUserServiceMock
+        .Setup(x => x.UserId)
+        .Returns(userId.ToString());
+
+        // Act
+        var result = await _service.TransferDirectorPosition(_providerId, request);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(_providerId, result.ProviderId);
+        Assert.AreEqual(fromOfficial.IndividualId, result.PreviousDirectorIndividualId);
+        Assert.AreEqual("Ivanov Ivan", result.PreviousDirectorFullName);
+        Assert.AreEqual(toOfficial.IndividualId, result.NewDirectorIndividualId);
+        Assert.AreEqual("Petrov Petro", result.NewDirectorFullName);
+
+        _officialRepositoryMock.Verify(repo => repo.Update(It.IsAny<Official>()), Times.Exactly(2));
+    }
+    [Test]
+    public void TransferDirectorPosition_ShouldThrowException_WhenOfficialNotFound()
+    {
+        // Arrange
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = Guid.NewGuid(),
+            ToOfficialId = Guid.NewGuid()
+        };
+
+        _officialRepositoryMock
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<TransferDirectorResponseDto>>>()))
+            .Returns<Func<Task<TransferDirectorResponseDto>>>(func => func());
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(It.IsAny<Guid>(), String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync((Official)null);
+
+        // Act & Assert
+        Assert.ThrowsAsync<KeyNotFoundException>(() => _service.TransferDirectorPosition(_providerId, request));
+    }
+
+    [Test]
+    public void TransferDirectorPosition_ShouldThrowException_WhenOfficialsHaveDifferentProviders()
+    {
+        // Arrange
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = Guid.NewGuid(),
+            ToOfficialId = Guid.NewGuid()
+        };
+
+        var fromPositionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var otherProvideId = Guid.NewGuid();
+
+        var fromOfficial = new Official
+        {
+            Id = request.FromOfficialId,
+            PositionId = fromPositionId,
+            Position = new Position { Id = fromPositionId, PositionType = PositionType.Director, ProviderId = _providerId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Ivan", LastName = "Ivanov", UserId = userId.ToString() }
+        };
+
+        var toOfficial = new Official
+        {
+            Id = request.FromOfficialId,
+            PositionId = fromPositionId,
+            Position = new Position { Id = fromPositionId, PositionType = PositionType.Director, ProviderId = otherProvideId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Petro", LastName = "Petrov", UserId = Guid.NewGuid().ToString() }
+        };
+
+        _officialRepositoryMock
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<TransferDirectorResponseDto>>>()))
+            .Returns<Func<Task<TransferDirectorResponseDto>>>(func => func());
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(request.FromOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(fromOfficial);
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(request.ToOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(toOfficial);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(() => _service.TransferDirectorPosition(_providerId, request));
+    }
+
+    [Test]
+    public void TransferDirectorPosition_ShouldThrowException_WhenCurrentUserIsNotDirector()
+    {
+        // Arrange
+        var fromOfficialId = Guid.NewGuid();
+        var toOfficialId = Guid.NewGuid();
+
+        var fromPositionId = Guid.NewGuid();
+        var toPositionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var otherProvideId = Guid.NewGuid();
+
+        var fromOfficial = new Official
+        {
+            Id = fromOfficialId,
+            PositionId = fromPositionId,
+            Position = new Position { Id = fromPositionId, PositionType = PositionType.DeputyDirector, ProviderId = _providerId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Ivan", LastName = "Ivanov", UserId = userId.ToString() }
+        };
+
+        var toOfficial = new Official
+        {
+            Id = toOfficialId,
+            PositionId = toPositionId,
+            Position = new Position { Id = toPositionId, PositionType = PositionType.Employee, ProviderId = _providerId },
+            IndividualId = Guid.NewGuid(),
+            Individual = new Individual { FirstName = "Petro", LastName = "Petrov", UserId = Guid.NewGuid().ToString() }
+        };
+
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = fromOfficialId,
+            ToOfficialId = toOfficialId
+        };
+
+        _officialRepositoryMock
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<TransferDirectorResponseDto>>>()))
+            .Returns<Func<Task<TransferDirectorResponseDto>>>(func => func());
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(fromOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(fromOfficial);
+
+        _officialRepositoryMock
+            .Setup(repo => repo.GetByIdWithDetails(toOfficialId, String.Empty, It.IsAny<Func<IQueryable<Official>, IQueryable<Official>>>()))
+            .ReturnsAsync(toOfficial);
+
+        _currentUserServiceMock
+            .Setup(s => s.UserId)
+            .Returns(Guid.NewGuid().ToString()); // does not match with fromOfficial.UserId
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.TransferDirectorPosition(_providerId, request));
+    }
+
+    [Test]
+    public void TransferDirectorPosition_ShouldLogError_WhenExceptionThrown()
+    {
+        // Arrange
+        var request = new TransferDirectorRequestDto
+        {
+            FromOfficialId = Guid.NewGuid(),
+            ToOfficialId = Guid.NewGuid()
+        };
+
+        _officialRepositoryMock
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<TransferDirectorResponseDto>>>()))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act & Assert
+        Assert.ThrowsAsync<Exception>(() => _service.TransferDirectorPosition(_providerId, request));
+
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Failed to transfer Director position")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+    #endregion TransferDirectorPosition
     private void SetupTransactionManagerMock()
     {
         _transactionManagerServiceMock = new Mock<ITransactionManagerService>();
@@ -341,6 +563,7 @@ public class DirectorManagementServiceTests
             .Setup(x => x.UserHasRights(It.IsAny<DeputyDirectorRights>()))
             .Returns(Task.CompletedTask);
     }
+
     private void SetupUserHasRightsButNotDeputy()
     {
         var userId = Guid.NewGuid().ToString();
@@ -420,9 +643,8 @@ public class DirectorManagementServiceTests
                 FirstName = "Test",
                 LastName = "User",
                 MiddleName = "Middle",
-                Rnokpp = "1234567890"
+                Rnokpp = "1234567890",
             },
-           
         };
 
         _officialRepositoryMock
@@ -437,6 +659,15 @@ public class DirectorManagementServiceTests
         return new PromoteToDirectorRequestDto
         {
             OfficialId = officialId
+        };
+    }
+
+    private TransferDirectorRequestDto CreateTransferRequestDto(Guid fromOfficialId, Guid toOfficialId) // need review TK
+    {
+        return new TransferDirectorRequestDto
+        {
+            FromOfficialId = fromOfficialId,
+            ToOfficialId = toOfficialId
         };
     }
 }
