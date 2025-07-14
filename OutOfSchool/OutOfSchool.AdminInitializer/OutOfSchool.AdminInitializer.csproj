@@ -17,6 +17,7 @@
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
         <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     </ItemGroup>
 
