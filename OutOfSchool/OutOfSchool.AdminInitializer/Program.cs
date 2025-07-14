@@ -5,9 +5,11 @@ using Microsoft.Extensions.Hosting;
 using MySqlConnector;
 using OutOfSchool.AdminInitializer;
 using OutOfSchool.AdminInitializer.Config;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -44,10 +46,8 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
-                            .EnableRetryOnFailure(
-                                3,
-                                TimeSpan.FromSeconds(5),
-                                null)));
+                            .EnableStringComparisonTranslations()
+                            .UseMicrosoftJson()));
         services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -60,6 +60,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<AdminConfiguration>(config.GetSection(AdminConfiguration.Name));
         services.AddCustomDataProtection("IdentityServer");
         services.AddScoped<AdminInitializer>();
+        services.AddTransient<ICurrentUser>(_ => new CurrentUserAccessor(null));
+        services.AddTransient<BusinessEntityInterceptor>();
     })
     .Build();
 
