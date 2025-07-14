@@ -31,4 +31,11 @@ public interface IOfficialRepository: ISensitiveEntityRepositorySoftDeleted<Offi
     /// <param name="providerId">The unique identifier of the provider.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the user ID of the director official.</returns>
     Task<string> GetDirectorOfficialUserIdByProviderIdAsync(Guid providerId);
+
+    /// <summary>
+    /// Retrieves an official entity associated with a specific user's ID.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the official entity.</returns>
+    Task<Official> GetByUserIdAsync(string userId);
 }

@@ -41,4 +41,12 @@ public class OfficialRepository : SensitiveEntityRepositorySoftDeleted<Official>
         .Select(o => o.Individual.UserId)
         .SingleOrDefaultAsync()
         .ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<Official> GetByUserIdAsync(string userId) => await dbSet
+        .Where(o => !o.IsDeleted && o.Individual.UserId == userId)
+        .Include(o => o.Position)
+        .Include(o => o.Individual)
+        .FirstOrDefaultAsync()
+        .ConfigureAwait(false);
 }
