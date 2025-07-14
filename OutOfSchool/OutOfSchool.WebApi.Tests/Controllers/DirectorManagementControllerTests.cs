@@ -187,7 +187,7 @@ class DirectorManagementControllerTests
     }
 
     [Test]
-    public async Task Transfer_ReturnsForbid_WhenWhenResultIndicatesUnauthorized()
+    public async Task Transfer_ReturnsForbid_WhenResultIndicatesUnauthorized()
     {
         // Arrange
         var providerId = Guid.NewGuid();

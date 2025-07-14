@@ -29,7 +29,7 @@ public class TransactionManagerService : ITransactionManagerService
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                var result = await action().ConfigureAwait(false); ;
+                var result = await action().ConfigureAwait(false);
                 await transaction.CommitAsync().ConfigureAwait(false);
 
                 _logger.LogDebug("Transaction committed successfully.");

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.Official;
-
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]

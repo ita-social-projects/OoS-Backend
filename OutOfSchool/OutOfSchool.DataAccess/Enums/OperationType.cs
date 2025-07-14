@@ -11,5 +11,5 @@ public enum OperationType
     Update,
     Reinvite,
     PromotedToDirector,
-    TranserredToDirector,
+    TransferredToDirector,
 }

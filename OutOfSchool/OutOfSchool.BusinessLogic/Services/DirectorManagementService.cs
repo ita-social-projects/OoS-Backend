@@ -194,7 +194,7 @@ public class DirectorManagementService : IDirectorManagementService
                 await _officialChangesLogService.SaveChangesLogAsync(
                     fromOfficial,
                     _currentUserService.UserId,
-                    OperationType.TranserredToDirector,
+                    OperationType.TransferredToDirector,
                     nameof(Position.PositionType),
                     PositionType.Director.ToString(),
                     fromOfficial.Position.PositionType.ToString());
@@ -202,7 +202,7 @@ public class DirectorManagementService : IDirectorManagementService
                 await _officialChangesLogService.SaveChangesLogAsync(
                     toOfficial,
                     _currentUserService.UserId,
-                    OperationType.TranserredToDirector,
+                    OperationType.TransferredToDirector,
                     nameof(Position.PositionType),
                     fromOfficial.Position.PositionType.ToString(),
                     PositionType.Director.ToString());
