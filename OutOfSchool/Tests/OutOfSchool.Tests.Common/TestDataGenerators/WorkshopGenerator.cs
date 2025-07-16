@@ -16,6 +16,7 @@ public static class WorkshopGenerator
         .RuleFor(x => x.Title, f => f.Company.CompanyName())
         .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
         .RuleFor(x => x.Price, f => f.Random.Decimal())
+        .RuleFor(x => x.DateTimeRanges, f => DateTimeRangeGenerator.Generate(1))
         .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
         .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())

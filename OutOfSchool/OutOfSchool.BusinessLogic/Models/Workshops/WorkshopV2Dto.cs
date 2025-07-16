@@ -146,12 +146,12 @@ public static class WorkshopV2DtoExtensions
             Website = draft.WorkshopDraftContent?.Website,
             Facebook = draft.WorkshopDraftContent?.Facebook,
             Instagram = draft.WorkshopDraftContent?.Instagram,
-            Address = draft.WorkshopDraftContent?.Address?.ToDto(),            
+            Address = draft.WorkshopDraftContent?.Address?.ToDto(),
         };
 
     public static List<WorkshopV2Dto> ToDto(this IEnumerable<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> list)
         => list.MapToList(ToDto);
-    
+
     public static Workshop SetToModel(this WorkshopV2Dto dto, Workshop model)
     {
         model.Id = dto.Id;
@@ -159,7 +159,7 @@ public static class WorkshopV2DtoExtensions
         model.ShortTitle = dto.ShortTitle;
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
+        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges)
             .Concat(model.DateTimeRanges ?? [])
             .Distinct(new DateTimeRangeComparerWithoutFK())
             .ToList();
@@ -170,12 +170,15 @@ public static class WorkshopV2DtoExtensions
         model.AvailableSeats = dto.AvailableSeats ?? default;
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
-        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel();
+        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.SetToModel(model.WorkshopDescriptionItems)
+            .Concat(model.WorkshopDescriptionItems ?? [])
+            .Distinct(new WorkshopDescriptionItemComparerWithoutKeys())
+            .ToList();
         model.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
         model.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
-        model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
+        model.Keywords = dto.Keywords?.Count() == 0 ? null : string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
         model.ProviderId = dto.ProviderId;
         model.ActiveFrom = dto.ActiveFrom;
         model.ActiveTo = dto.ActiveTo;

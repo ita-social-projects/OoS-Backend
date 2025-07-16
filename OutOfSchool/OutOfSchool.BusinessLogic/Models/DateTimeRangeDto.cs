@@ -58,6 +58,31 @@ public static class DateTimeRangeDtoExtensions
     public static List<DateTimeRange> ToModel(this IEnumerable<DateTimeRangeDto> list)
         => list.MapToList(ToModel);
 
+    public static DateTimeRange SetToModel(this DateTimeRangeDto dto, DateTimeRange model)
+    {
+        model.Id = dto.Id;
+        model.StartTime = dto.StartTime;
+        model.EndTime = dto.EndTime;
+        model.Workdays = dto.Workdays?.ToDaysBitMask() ?? default;
+
+        return model;
+    }
+
+    public static List<DateTimeRange> SetToModel(this IEnumerable<DateTimeRangeDto> list, IEnumerable<DateTimeRange> modelList)
+    {
+        var result = new List<DateTimeRange>(modelList);
+
+        foreach (var item in list)
+        {
+            var newModelItem = new DateTimeRange();
+            result.Add(item.SetToModel(newModelItem));
+        }
+
+        modelList = result;
+
+        return (List<DateTimeRange>)modelList;
+    }
+
     public static DateTimeRangeDto ToDto(this DateTimeRangeDraft model)
         => new()
         {

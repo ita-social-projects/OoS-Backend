@@ -39,6 +39,29 @@ public static class WorkshopDescriptionItemDtoExtensions
     public static List<WorkshopDescriptionItem> ToModel(this IEnumerable<WorkshopDescriptionItemDto> list)
         => list.MapToList(ToModel);
 
+    public static WorkshopDescriptionItem SetToModel(this WorkshopDescriptionItemDto dto, WorkshopDescriptionItem model)
+    {
+        model.SectionName = dto.SectionName;
+        model.Description = dto.Description;
+
+        return model;
+    }
+
+    public static List<WorkshopDescriptionItem> SetToModel(this IEnumerable<WorkshopDescriptionItemDto> list, IEnumerable<WorkshopDescriptionItem> modelList)
+    {
+        var result = new List<WorkshopDescriptionItem>(modelList);
+
+        foreach (var item in list)
+        {
+            var newModelItem = new WorkshopDescriptionItem();
+            result.Add(item.SetToModel(newModelItem));
+        }
+
+        modelList = result;
+
+        return (List<WorkshopDescriptionItem>)modelList;
+    }
+
     public static WorkshopDescriptionItemDto ToDto(this WorkshopDescriptionItemDraft model)
         => new()
         {
