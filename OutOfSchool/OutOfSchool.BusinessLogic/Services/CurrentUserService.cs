@@ -87,6 +87,7 @@ public class CurrentUserService(
             var provider = userTypes.OfType<ProviderRights>().FirstOrDefault();
             var employee = userTypes.OfType<EmployeeRights>().FirstOrDefault();
             var employeeWorkshop = userTypes.OfType<EmployeeWorkshopRights>().FirstOrDefault();
+            var deputyDirector = userTypes.OfType<DeputyDirectorRights>().FirstOrDefault();
             var moderator = userTypes.OfType<ModeratorRights>().FirstOrDefault();
             var techAdmin = userTypes.OfType<TechAdminRights>().FirstOrDefault();
 
@@ -97,6 +98,7 @@ public class CurrentUserService(
                         UserHasRights(provider),
                         UserHasRights(employee),
                         UserHasRights(employeeWorkshop),
+                        UserHasRights(deputyDirector),
                         UserHasRights(moderator),
                         UserHasRights(techAdmin),
                     }
