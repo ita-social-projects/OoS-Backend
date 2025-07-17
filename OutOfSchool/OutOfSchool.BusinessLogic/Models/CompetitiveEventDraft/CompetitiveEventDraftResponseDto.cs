@@ -23,9 +23,8 @@ public static class CompetitiveEventDraftResponseDtoExtensions
         {
             CompetitiveEventDraftId = draft.Id,
             DraftStatus = draft.DraftStatus,
-            RejectionMessage = draft.RejectionMessage,
-            // draft does not contain ToDto()
-            // CompetitiveEventDetails = draft.ToDto() 
+            RejectionMessage = draft.RejectionMessage,            
+            CompetitiveEventDetails = draft.ToDto(),
             ProviderEdrpou = draft.Provider?.Edrpou ?? string.Empty,
             DirectorFullName = string.Empty,
             DirectorPosition = string.Empty,
