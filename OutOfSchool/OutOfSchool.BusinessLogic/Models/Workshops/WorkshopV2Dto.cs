@@ -159,10 +159,7 @@ public static class WorkshopV2DtoExtensions
         model.ShortTitle = dto.ShortTitle;
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges)
-            .Concat(model.DateTimeRanges ?? [])
-            .Distinct(new DateTimeRangeComparerWithoutFK())
-            .ToList();
+        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
         model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? default;
         model.PayRate = dto.PayRate ?? default;

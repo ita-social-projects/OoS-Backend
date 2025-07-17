@@ -14,6 +14,9 @@ public class WorkshopDescriptionItemComparerWithoutKeys : IEqualityComparer<Work
 
     public int GetHashCode(WorkshopDescriptionItem obj)
     {
+        if (obj == null)
+            return 0;
+
         var hash = default(HashCode);
         hash.Add(obj.SectionName);
         hash.Add(obj.Description);

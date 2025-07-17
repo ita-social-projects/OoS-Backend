@@ -363,8 +363,6 @@ public class WorkshopService(
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
-            await UpdateDateTimeRanges(dto.DateTimeRanges, currentWorkshop);
-
             await ChangeTeachers(currentWorkshop, dto.Teachers ?? []).ConfigureAwait(false);
 
             contactsService.PrepareUpdatedContacts(currentWorkshop, dto);
@@ -483,7 +481,6 @@ public class WorkshopService(
             ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
-            await UpdateDateTimeRanges(dto.DateTimeRanges, currentWorkshop);
 
             dto.ImageIds ??= new List<string>();
             var multipleImageChangingResult = await workshopImagesService
@@ -1224,30 +1221,10 @@ public class WorkshopService(
         }
     }
 
-    private async Task UpdateDateTimeRanges(List<DateTimeRangeDto> dtos, Workshop workshop)
-    {
-        var ranges = workshop.DateTimeRanges.Where(dtr => dtr.IsDeleted == false).ToList();
-
-        for (int i = 0; i < ranges.Count; i++)
-        {
-            if (dtos.Select(range => range.Id).Contains(ranges[i].Id))
-            {
-                dtos.Where(dto => dto.Id == ranges[i].Id).First().SetToModel(ranges[i]);
-                await dateTimeRangeRepository.Update(ranges[i]).ConfigureAwait(false);
-            }
-            else
-            {
-                await dateTimeRangeRepository.Delete(ranges[i]).ConfigureAwait(false);
-                ranges.RemoveAt(i);
-            }
-        }
-    }
-
     private async Task UpdateWorkshop()
     {
         try
         {
-            await dateTimeRangeRepository.SaveChangesAsync().ConfigureAwait(false);
             await workshopRepository.SaveChangesAsync().ConfigureAwait(false);
         }
         catch (DbUpdateException ex)

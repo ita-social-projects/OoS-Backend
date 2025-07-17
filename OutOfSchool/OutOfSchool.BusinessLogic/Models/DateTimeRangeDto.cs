@@ -78,9 +78,37 @@ public static class DateTimeRangeDtoExtensions
             result.Add(item.SetToModel(newModelItem));
         }
 
-        modelList = result;
+        return result;
+    }
 
-        return (List<DateTimeRange>)modelList;
+    public static List<DateTimeRange> SetToModel(this List<DateTimeRangeDto> dtoList, List<DateTimeRange> modelList)
+    {
+        var result = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
+
+        for (int i = 0; i < result.Count; i++)
+        {
+            if (dtoList.Select(range => range.Id).Contains(result[i].Id))          
+            {
+                var id = result[i].Id;
+                dtoList.Where(dto => dto.Id == result[i].Id).First().SetToModel(result[i]);
+                result[i].Id = id;
+            }
+            else
+            {
+                result.RemoveAt(i);
+            }
+        }
+
+        foreach (var dto in dtoList)
+        {
+            if (!result.Select(m => m.Id).Contains(dto.Id))
+            {
+                var newModelItem = new DateTimeRange();
+                result.Add(dto.SetToModel(newModelItem));
+            }
+        }
+
+        return result;
     }
 
     public static DateTimeRangeDto ToDto(this DateTimeRangeDraft model)
