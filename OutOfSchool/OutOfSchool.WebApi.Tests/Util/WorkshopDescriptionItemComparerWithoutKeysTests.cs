@@ -12,6 +12,7 @@ public class WorkshopDescriptionItemComparerWithoutKeysTests
     readonly Guid id1 = Guid.NewGuid();
     readonly Guid id2 = Guid.NewGuid();
     readonly Guid id3 = Guid.NewGuid();
+    readonly Guid workshopId = Guid.NewGuid();
 
     [Test]
     public void Distinct_WhenWorkshopDescriptionItemListHasDuplications_ReturnTwo()
@@ -19,9 +20,9 @@ public class WorkshopDescriptionItemComparerWithoutKeysTests
         // Arrange
         var list = new List<WorkshopDescriptionItem>()
         {
-            new() { Id = id1, SectionName = "section", Description = "description" },
-            new() { Id = id2, SectionName = "section", Description = "description" },
-            new() { Id = id3, SectionName = "section3", Description = "description3" }
+            new() { Id = id1, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id2, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id3, WorkshopId = workshopId, SectionName = "section3", Description = "description3" }
         };
 
         // Act
@@ -37,9 +38,9 @@ public class WorkshopDescriptionItemComparerWithoutKeysTests
         // Arrange
         var list = new List<WorkshopDescriptionItem>()
         {
-            new() { Id = id1, SectionName = "section", Description = "description" },
-            new() { Id = id2, SectionName = "section", Description = "description" },
-            new() { Id = id3, SectionName = "section3", Description = "description3" },
+            new() { Id = id1, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id2, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id3, WorkshopId = workshopId, SectionName = "section3", Description = "description3" },
             null
         };
 
@@ -56,9 +57,9 @@ public class WorkshopDescriptionItemComparerWithoutKeysTests
         // Arrange
         var list = new List<WorkshopDescriptionItem>()
         {
-            new() { Id = id1, SectionName = "section", Description = "description" },
-            new() { Id = id2, SectionName = "section", Description = "description" },
-            new() { Id = id3, SectionName = "section3", Description = "description3" },
+            new() { Id = id1, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id2, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            new() { Id = id3, WorkshopId = workshopId, SectionName = "section3", Description = "description3" },
             null,
             null
         };
@@ -68,5 +69,39 @@ public class WorkshopDescriptionItemComparerWithoutKeysTests
 
         // Assert
         Assert.AreEqual(3, result);
+    }
+
+    [Test]
+    public void Distinct_WhenWorkshopDescriptionItemListHasOnlyTwoNulls_ReturnThree()
+    {
+        // Arrange
+        var list = new List<WorkshopDescriptionItem>()
+        {
+            null,
+            null
+        };
+
+        // Act
+        var result = list.Distinct(new WorkshopDescriptionItemComparerWithoutKeys()).Count();
+
+        // Assert
+        Assert.AreEqual(1, result);
+    }
+
+    [Test]
+    public void Distinct_WhenWorkshopDescriptionItemListHasOneNullAndOneEntity_ReturnThree()
+    {
+        // Arrange
+        var list = new List<WorkshopDescriptionItem>()
+        {
+            new() { Id = id1, WorkshopId = workshopId, SectionName = "section", Description = "description" },
+            null
+        };
+
+        // Act
+        var result = list.Distinct(new WorkshopDescriptionItemComparerWithoutKeys()).Count();
+
+        // Assert
+        Assert.AreEqual(2, result);
     }
 }

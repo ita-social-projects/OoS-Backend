@@ -9,7 +9,7 @@ public class WorkshopDescriptionItemComparerWithoutKeys : IEqualityComparer<Work
         if (x == null || y == null)
             return false;
 
-        return x.SectionName.Equals(y.SectionName) && x.Description.Equals(y.Description);
+        return x.WorkshopId.Equals(y.WorkshopId) && x.SectionName.Equals(y.SectionName) && x.Description.Equals(y.Description);
     }
 
     public int GetHashCode(WorkshopDescriptionItem obj)
@@ -18,6 +18,7 @@ public class WorkshopDescriptionItemComparerWithoutKeys : IEqualityComparer<Work
             return 0;
 
         var hash = default(HashCode);
+        hash.Add(obj.WorkshopId);
         hash.Add(obj.SectionName);
         hash.Add(obj.Description);
 

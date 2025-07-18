@@ -68,20 +68,7 @@ public static class DateTimeRangeDtoExtensions
         return model;
     }
 
-    public static List<DateTimeRange> SetToModel(this IEnumerable<DateTimeRangeDto> list, IEnumerable<DateTimeRange> modelList)
-    {
-        var result = new List<DateTimeRange>(modelList);
-
-        foreach (var item in list)
-        {
-            var newModelItem = new DateTimeRange();
-            result.Add(item.SetToModel(newModelItem));
-        }
-
-        return result;
-    }
-
-    public static List<DateTimeRange> SetToModel(this List<DateTimeRangeDto> dtoList, List<DateTimeRange> modelList)
+    public static List<DateTimeRange> SetToModel(this IEnumerable<DateTimeRangeDto> dtoList, IEnumerable<DateTimeRange> modelList)
     {
         var result = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
 

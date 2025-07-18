@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
@@ -43,23 +44,33 @@ public static class WorkshopDescriptionItemDtoExtensions
     {
         model.SectionName = dto.SectionName;
         model.Description = dto.Description;
+        model.WorkshopId = dto.WorkshopId;
 
         return model;
     }
 
-    public static List<WorkshopDescriptionItem> SetToModel(this IEnumerable<WorkshopDescriptionItemDto> list, IEnumerable<WorkshopDescriptionItem> modelList)
+    public static List<WorkshopDescriptionItem> SetToModel(this IEnumerable<WorkshopDescriptionItemDto> dtoList, IEnumerable<WorkshopDescriptionItem> modelList)
     {
-        var result = new List<WorkshopDescriptionItem>(modelList);
+        var result = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
 
-        foreach (var item in list)
+        for (int i = 0; i < result.Count; i++)
         {
-            var newModelItem = new WorkshopDescriptionItem();
-            result.Add(item.SetToModel(newModelItem));
+            if (!dtoList.ToModel().Contains(result[i], new WorkshopDescriptionItemComparerWithoutKeys()))
+            {
+                result.RemoveAt(i);
+            }
         }
 
-        modelList = result;
+        foreach (var dto in dtoList)
+        {
+            if (!result.Contains(dto.ToModel(), new WorkshopDescriptionItemComparerWithoutKeys()))
+            {
+                var newModelItem = new WorkshopDescriptionItem();
+                result.Add(dto.SetToModel(newModelItem));
+            }
+        }
 
-        return (List<WorkshopDescriptionItem>)modelList;
+        return result;
     }
 
     public static WorkshopDescriptionItemDto ToDto(this WorkshopDescriptionItemDraft model)
