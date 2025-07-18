@@ -25,7 +25,7 @@ public class AddressDto
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 
-    public AllAddressPartsDto CodeficatorAddressDto { get; set; }
+    public AllAddressPartsDto CodeficatorAddress { get; set; }
 
     // Note: implementation taken from the OutOfSchool.Services.Models.Address
     public override int GetHashCode()
@@ -89,7 +89,7 @@ public static class AddressDtoExtensions
             Latitude = address.Point.GetLatitude() ?? default,
             Longitude = address.Point.GetLongitude() ?? default,
             CATOTTGId = address.CATOTTGId,
-            CodeficatorAddressDto = address.CodeficatorAddressES?.ToAllAddressPartsDto(),
+            CodeficatorAddress = address.CodeficatorAddressES?.ToAllAddressPartsDto(),
         };
 
     public static AddressDto ToDto(this ContactsAddress contactsAddress)
@@ -100,7 +100,7 @@ public static class AddressDtoExtensions
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressDto = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
+            CodeficatorAddress = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };
 
     public static List<AddressDto> ToDto(this IEnumerable<ContactsAddress> list)
