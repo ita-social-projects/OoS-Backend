@@ -68,7 +68,8 @@ public static class WorkshopV2DtoExtensions
             Website = dto.Website,
             Facebook = dto.Facebook,
             Instagram = dto.Instagram,
-            IsChampionPath = dto.IsChampionPath
+            IsChampionPath = dto.IsChampionPath,
+            NoAgeRestrictions = dto.NoAgeRestrictions,
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
