@@ -218,7 +218,8 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Arrange
         validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Rejected;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
@@ -237,6 +238,10 @@ public class SensitiveWorkshopDraftServiceTests
         // Arrange
         workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
             .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Act
         var result = await service.UpdateDraftAsModeratorAsync(draftId, validEditDto);
@@ -263,7 +268,8 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Arrange
         validWorkshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
         workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
             .ReturnsAsync((WorkshopDraft draft) => draft);
@@ -305,7 +311,8 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Arrange
         validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
@@ -320,8 +327,10 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task DeleteCoverImageAsModeratorAsync_WithNoCoverImage_ReturnsFailed()
     {
         // Arrange
-        validWorkshopDraft.CoverImageId = null;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        validWorkshopDraft.CoverImageId = null;        
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
@@ -344,6 +353,10 @@ public class SensitiveWorkshopDraftServiceTests
 
         workshopDraftRepoMock.Setup(repo => repo.Update(It.IsAny<WorkshopDraft>()))
             .ReturnsAsync((WorkshopDraft draft) => draft);
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Act
         var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
@@ -373,6 +386,10 @@ public class SensitiveWorkshopDraftServiceTests
         workshopDraftImagesServiceMock.Setup(service =>
             service.RemoveCoverImageAsync(It.IsAny<WorkshopDraft>()))
             .ThrowsAsync(new Exception("Test exception"));
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Act
         var result = await service.DeleteCoverImageAsModeratorAsync(draftId);
@@ -431,6 +448,11 @@ public class SensitiveWorkshopDraftServiceTests
     [Test]
     public async Task DeleteImageAsModeratorAsync_WithNonExistentImage_ReturnsFailed()
     {
+        // Arrange
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
+
         // Act
         var result = await service.DeleteImageAsModeratorAsync(draftId, "nonexistent-image");
 
@@ -452,6 +474,10 @@ public class SensitiveWorkshopDraftServiceTests
 
         workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
             .ReturnsAsync(1);
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Act
         var result = await service.DeleteImageAsModeratorAsync(draftId, imageId);
@@ -494,6 +520,10 @@ public class SensitiveWorkshopDraftServiceTests
         workshopDraftRepoMock.Setup(repo => repo.SaveChangesAsync(true, default))
             .ReturnsAsync(1);
 
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
+
         // Act
         var result = await service.DeleteImageAsModeratorAsync(draftId, encodedImageId);
 
@@ -513,6 +543,10 @@ public class SensitiveWorkshopDraftServiceTests
         workshopDraftImagesServiceMock.Setup(service =>
             service.RemoveImageAsync(It.IsAny<WorkshopDraft>(), imageId))
             .ThrowsAsync(new Exception("Test exception"));
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Act
         var result = await service.DeleteImageAsModeratorAsync(draftId, imageId);
@@ -572,10 +606,15 @@ public class SensitiveWorkshopDraftServiceTests
     [Test]
     public async Task DeleteManyImagesAsModeratorAsync_WithNonExistentImages_ReturnsFailed()
     {
+        // Arrange
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
+
         // Act
         var result = await service.DeleteManyImagesAsModeratorAsync(
             draftId, new List<string> { "nonexistent-image-1", "nonexistent-image-2" });
-
+        
         // Assert
         Assert.IsFalse(result.Succeeded);
         Assert.AreEqual("404", result.OperationResult.Errors.First().Code);
@@ -597,6 +636,10 @@ public class SensitiveWorkshopDraftServiceTests
                 GeneralResultMessage = "Success"
             }
         };
+
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
 
         // Add a successful result to the dictionary
         multipleImageResult.MultipleKeyValueOperationResult.Results.Add(0, OperationResult.Success);
@@ -653,6 +696,10 @@ public class SensitiveWorkshopDraftServiceTests
             }
         };
 
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
+
         // Add a successful result to the dictionary
         multipleImageResult.MultipleKeyValueOperationResult.Results.Add(0, OperationResult.Success);
 
@@ -686,6 +733,10 @@ public class SensitiveWorkshopDraftServiceTests
             service.RemoveManyImagesAsync(It.IsAny<WorkshopDraft>(), It.IsAny<IList<string>>()))
             .ThrowsAsync(new Exception("Test exception"));
 
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(validWorkshopDraft);
+
         // Act
         var result = await service.DeleteManyImagesAsModeratorAsync(draftId, imageIds);
 
@@ -716,7 +767,8 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Arrange - set status to one that's not editable
         validWorkshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         // Act
@@ -733,8 +785,9 @@ public class SensitiveWorkshopDraftServiceTests
     public async Task ValidateDraftForModerator_ValidDraftWithPendingModerationStatus_PassesValidation()
     {
         // Arrange
-        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        validWorkshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;        
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         workshopDraftImagesServiceMock.Setup(service =>
@@ -756,7 +809,8 @@ public class SensitiveWorkshopDraftServiceTests
     {
         // Arrange
         validWorkshopDraft.DraftStatus = WorkshopDraftStatus.EditedByModerator;
-        workshopDraftRepoMock.Setup(repo => repo.GetById(draftId))
+        workshopDraftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(validWorkshopDraft);
 
         workshopDraftImagesServiceMock.Setup(service =>

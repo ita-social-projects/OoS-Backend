@@ -15,7 +15,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
-using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
 using System;
