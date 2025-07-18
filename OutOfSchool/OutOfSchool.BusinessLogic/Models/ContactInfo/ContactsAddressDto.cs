@@ -23,7 +23,7 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 
-    public AllAddressPartsDto CodeficatorAddressDto { get; set; }
+    public AllAddressPartsDto CodeficatorAddress { get; set; }
 
     // Note: implementation taken from the OutOfSchool.Services.Models.Address
     [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
@@ -90,11 +90,11 @@ public static class ContactsAddressDtoExtensions
         => new()
         {
             // Id - ignored in original AM mapper
-            City = contactsAddress.CodeficatorAddressDto?.Settlement,
+            City = contactsAddress.CodeficatorAddress?.Settlement,
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressES = contactsAddress.CodeficatorAddressDto?.ToCodeficatorAddressES(),
+            CodeficatorAddressES = contactsAddress.CodeficatorAddress?.ToCodeficatorAddressES(),
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
             Point = GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
@@ -136,7 +136,7 @@ public static class ContactsAddressDtoExtensions
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressDto = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
+            CodeficatorAddress = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };
 
     public static List<ContactsAddressDto> ToContactsDto(this IEnumerable<ContactsAddress> list)

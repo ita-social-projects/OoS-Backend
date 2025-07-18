@@ -1081,7 +1081,7 @@ public class WorkshopDraftService(
             .Select(c => c.Address)
             .ToList()
             .ForEach(address =>
-                address.CodeficatorAddressDto = catottgs
+                address.CodeficatorAddress = catottgs
                     .FirstOrDefault(c => c.Id == address.CATOTTGId)
                     ?.ToAllAddressPartsDto()
             );
@@ -1136,7 +1136,7 @@ public class WorkshopDraftService(
                 .Select(c => c.Address)
                 .ToList()
                 .ForEach(address =>
-                    address.CodeficatorAddressDto = catottgs
+                    address.CodeficatorAddress = catottgs
                         .FirstOrDefault(c => c.Id == address.CATOTTGId)
                         ?.ToAllAddressPartsDto()
                 );

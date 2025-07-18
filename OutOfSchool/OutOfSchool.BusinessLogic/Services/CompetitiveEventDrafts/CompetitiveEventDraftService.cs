@@ -5,8 +5,6 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
@@ -552,7 +550,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             .Select(c => c.Address)
             .ToList()
             .ForEach(address =>
-                address.CodeficatorAddressDto = catottgs
+                address.CodeficatorAddress = catottgs
                     .FirstOrDefault(c => c.Id == address.CATOTTGId)
                     ?.ToAllAddressPartsDto()
             );
