@@ -42,7 +42,7 @@ public static class WorkshopDraftResponseDtoExtensions
 
         else if (deputy?.Individual is not null)
         {
-            dto.DirectorFullName = $"{director.Individual.FirstName} {director.Individual.LastName} {director.Individual.MiddleName}".Trim();
+            dto.DirectorFullName = $"{deputy.Individual.FirstName} {deputy.Individual.LastName} {deputy.Individual.MiddleName}".Trim();
             dto.DirectorPosition = PositionType.DeputyDirector.ToString();
         }
 
