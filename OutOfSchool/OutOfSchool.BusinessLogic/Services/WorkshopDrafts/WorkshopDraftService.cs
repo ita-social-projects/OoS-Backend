@@ -609,7 +609,7 @@ public class WorkshopDraftService(
 
         await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
-        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);
+        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);     
 
         return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
     }
@@ -647,7 +647,10 @@ public class WorkshopDraftService(
             await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
             logger.LogInformation("Cover image successfully deleted from WorkshopDraft. Id = {Id}.", draftId);
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -717,7 +720,9 @@ public class WorkshopDraftService(
             logger.LogInformation("Image successfully deleted from WorkshopDraft. Image Id = {ImageId}, Draft Id = {DraftId}.",
                 imageId, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -792,7 +797,9 @@ public class WorkshopDraftService(
             logger.LogInformation("{Count} images successfully deleted from WorkshopDraft. Draft Id = {DraftId}.",
                 imagesToDelete.Count, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
