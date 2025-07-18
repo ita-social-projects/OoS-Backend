@@ -58,6 +58,41 @@ public static class DateTimeRangeDtoExtensions
     public static List<DateTimeRange> ToModel(this IEnumerable<DateTimeRangeDto> list)
         => list.MapToList(ToModel);
 
+    public static DateTimeRange SetToModel(this DateTimeRangeDto dto, DateTimeRange model)
+    {
+        model.Id = dto.Id;
+        model.StartTime = dto.StartTime;
+        model.EndTime = dto.EndTime;
+        model.Workdays = dto.Workdays?.ToDaysBitMask() ?? default;
+
+        return model;
+    }
+
+    public static List<DateTimeRange> SetToModel(this IEnumerable<DateTimeRangeDto> dtoList, IEnumerable<DateTimeRange> modelList)
+    {
+        var activeModels = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
+        var dtoDict = dtoList.ToDictionary(dto => dto.Id);
+        var result = new List<DateTimeRange>();
+
+        // Update existing models that have matching DTOs
+        foreach (var model in activeModels)
+        {
+            if (dtoDict.TryGetValue(model.Id, out var dto))
+            {
+                result.Add(dto.SetToModel(model));
+            }
+        }
+
+        // Add new models for DTOs that don't exist in the active models
+        var existingIds = activeModels.Select(m => m.Id).ToHashSet();
+        foreach (var dto in dtoList.Where(dto => !existingIds.Contains(dto.Id)))
+        {
+            result.Add(dto.SetToModel(new DateTimeRange()));
+        }
+
+        return result;
+    }
+
     public static DateTimeRangeDto ToDto(this DateTimeRangeDraft model)
         => new()
         {
