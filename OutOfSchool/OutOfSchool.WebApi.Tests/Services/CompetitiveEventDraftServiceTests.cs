@@ -15,6 +15,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
 using System;
@@ -195,7 +196,8 @@ public class CompetitiveEventDraftServiceTests
             .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
             .ReturnsAsync(expectedResult);
         mockCompetitiveEventDraftRepository
-            .Setup(repo => repo.GetById(id))
+            .Setup(repo => repo.GetByIdWithDetails(id, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
             .ReturnsAsync(draft);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
             .Returns(Task.CompletedTask);
@@ -485,7 +487,9 @@ public class CompetitiveEventDraftServiceTests
             new CATOTTG { Id = 1, Name = "Test Codeficator" }
         };
 
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(id)).ReturnsAsync(draft);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetByIdWithDetails(id, It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
+            .ReturnsAsync(draft);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
             .Returns(Task.CompletedTask);
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
