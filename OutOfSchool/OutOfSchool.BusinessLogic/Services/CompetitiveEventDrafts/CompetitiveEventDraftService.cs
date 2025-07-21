@@ -121,9 +121,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var (updatedDraft, coverImageResult, imagesResult) = draftImageUpdateResult.Value;
 
+        // load it again to fetch full data
+        var updatedDraftWithDetails = await GetByIdWithProviderDetails(updatedDraft.Id);
+
         return Result<CompetitiveEventDraftResultDto>.Success(new CompetitiveEventDraftResultDto
         {
-            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(updatedDraft),
+            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(updatedDraftWithDetails),
             UploadingCoverImagesCompetitiveEventResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult
         });
@@ -268,7 +271,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         logger.LogDebug("Retrieving competitive event draft with ID: {Id}", id);
 
-        var draft = await GetDraftById(id).ConfigureAwait(false);
+        var draft = await GetByIdWithProviderDetails(id).ConfigureAwait(false);
 
         if (draft == null)
         {
@@ -518,7 +521,10 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             logger.LogInformation("{Count} images successfully deleted from CompetitiveEventDraft. Draft Id = {DraftId}.",
                 imagesToDelete.Count, draftId);
 
-            return Result<CompetitiveEventDraftResponseDto>.Success(competitiveEventDraft.ToResponseDto());
+            // load draft with full information
+            var draftWithDetails = await GetByIdWithProviderDetails(competitiveEventDraft.Id);
+
+            return Result<CompetitiveEventDraftResponseDto>.Success(draftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -631,6 +637,25 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     private async Task<CompetitiveEventDraft> GetDraftById(Guid id)
     {
         var draft = await competitiveEventDraftRepository.GetById(id).ConfigureAwait(false);
+
+        if (draft == null)
+        {
+            return null;
+        }
+
+        return draft;
+    }
+
+    private async Task<CompetitiveEventDraft> GetByIdWithProviderDetails(Guid id)
+    {
+        var draft = await competitiveEventDraftRepository.GetByIdWithDetails(
+            id,
+            includeExpression: p => p
+            .Include(p => p.Provider)
+            .ThenInclude(p => p.Positions)
+            .ThenInclude(o => o.Officials)
+            .ThenInclude(i => i.Individual))
+            .ConfigureAwait(false);
 
         if (draft == null)
         {

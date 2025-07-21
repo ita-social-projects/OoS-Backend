@@ -195,7 +195,8 @@ public class CompetitiveEventDraftServiceTests
             .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
             .ReturnsAsync(expectedResult);
         mockCompetitiveEventDraftRepository
-            .Setup(repo => repo.GetById(id))
+            .Setup(repo => repo.GetByIdWithDetails(id, It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
             .ReturnsAsync(draft);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
             .Returns(Task.CompletedTask);
@@ -485,7 +486,9 @@ public class CompetitiveEventDraftServiceTests
             new CATOTTG { Id = 1, Name = "Test Codeficator" }
         };
 
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(id)).ReturnsAsync(draft);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetByIdWithDetails(id, It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
+            .ReturnsAsync(draft);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
             .Returns(Task.CompletedTask);
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),

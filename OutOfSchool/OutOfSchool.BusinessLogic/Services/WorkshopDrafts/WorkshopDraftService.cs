@@ -464,6 +464,10 @@ public class WorkshopDraftService(
                 skip: filter.From,
                 take: filter.Size,
                 whereExpression: predicate)
+            .Include(d => d.Provider)
+                .ThenInclude(p => p.Positions)
+                    .ThenInclude(pos => pos.Officials)
+                        .ThenInclude(o => o.Individual)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
@@ -484,7 +488,7 @@ public class WorkshopDraftService(
     // <inheritdoc/>
     public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
     {
-        var draft = await GetWorkshopDraftById(id);
+        var draft = await GetByIdWithProviderDetails(id);
 
         await currentUserService.UserHasRights(
             new ProviderRights(draft.ProviderId),
@@ -572,7 +576,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Updating WorkshopDraft as moderator started. DraftId = {Id}.", draftId);
 
-        var workshopDraft = await GetWorkshopDraftById(draftId);
+        var workshopDraft = await GetByIdWithProviderDetails(draftId);
 
         if (workshopDraft is null)
         {
@@ -605,7 +609,7 @@ public class WorkshopDraftService(
 
         await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
-        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);
+        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);     
 
         return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
     }
@@ -643,7 +647,10 @@ public class WorkshopDraftService(
             await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
             logger.LogInformation("Cover image successfully deleted from WorkshopDraft. Id = {Id}.", draftId);
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -713,7 +720,9 @@ public class WorkshopDraftService(
             logger.LogInformation("Image successfully deleted from WorkshopDraft. Image Id = {ImageId}, Draft Id = {DraftId}.",
                 imageId, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -788,7 +797,9 @@ public class WorkshopDraftService(
             logger.LogInformation("{Count} images successfully deleted from WorkshopDraft. Draft Id = {DraftId}.",
                 imagesToDelete.Count, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -815,6 +826,30 @@ public class WorkshopDraftService(
         }
 
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
+
+        return workshopDraft;
+    }
+
+    private async Task<WorkshopDraft> GetByIdWithProviderDetails(Guid id)
+    {
+        logger.LogDebug("Getting WorkshopDraft with admin details by Id started. Looking Id = {Id}.", id);
+
+        var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(
+            id,
+            includeExpression: q => q
+            .Include(p => p.Provider)
+            .ThenInclude(p => p.Positions)
+            .ThenInclude(pos => pos.Officials)
+            .ThenInclude(i => i.Individual));
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+            nameof(id),
+                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
+        }
+
+        logger.LogDebug("Got a WorkshopDraft with admin details with Id = {Id}.", id);
 
         return workshopDraft;
     }
@@ -1242,7 +1277,7 @@ public class WorkshopDraftService(
     {
         await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
-        var workshopDraft = await GetWorkshopDraftById(draftId);
+        var workshopDraft = await GetByIdWithProviderDetails(draftId);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
