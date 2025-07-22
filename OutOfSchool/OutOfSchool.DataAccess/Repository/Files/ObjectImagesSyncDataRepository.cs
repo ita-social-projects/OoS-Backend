@@ -8,6 +8,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.Services.Repository.Files;
 
@@ -17,11 +18,13 @@ namespace OutOfSchool.Services.Repository.Files;
 public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
 {
     private readonly DbSet<Workshop> workshopSet;
+    private readonly DbSet<WorkshopDraft> workshopDraftSet;
     private readonly DbSet<Teacher> teacherSet;
     private readonly DbSet<Provider> providerSet;
     private readonly DbSet<CompetitiveEvent> competitiveEventSet;
     private readonly DbSet<CompetitiveEventDraft> competitiveEventDraftSet;
     private readonly DbSet<Image<Workshop>> workshopImagesSet;
+    private readonly DbSet<Image<WorkshopDraft>> workshopDraftImagesSet;
     private readonly DbSet<Image<Provider>> providerImagesSet;
     private readonly DbSet<Image<CompetitiveEvent>> competitiveEventImagesSet;
     private readonly DbSet<Image<CompetitiveEventDraft>> competitiveEventDraftImagesSet;
@@ -31,11 +34,13 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
         _ = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 
         workshopSet = dbContext.Set<Workshop>();
+        workshopDraftSet = dbContext.Set<WorkshopDraft>();
         teacherSet = dbContext.Set<Teacher>();
         providerSet = dbContext.Set<Provider>();
         competitiveEventSet = dbContext.Set<CompetitiveEvent>();
         competitiveEventDraftSet = dbContext.Set<CompetitiveEventDraft>();
         workshopImagesSet = dbContext.Set<Image<Workshop>>();
+        workshopDraftImagesSet = dbContext.Set<Image<WorkshopDraft>>();
         providerImagesSet = dbContext.Set<Image<Provider>>();
         competitiveEventImagesSet = dbContext.Set<Image<CompetitiveEvent>>();
         competitiveEventDraftImagesSet = dbContext.Set<Image<CompetitiveEventDraft>>();
@@ -46,6 +51,10 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
     /// <inheritdoc/>
     public async Task<List<string>> GetIntersectWorkshopCoverImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityCoverImagesIds(workshopSet, searchIds).ConfigureAwait(false);
+
+    /// <inheritdoc/>
+    public async Task<List<string>> GetIntersectWorkshopDraftCoverImagesIds(IEnumerable<string> searchIds)
+        => await GetIntersectEntityCoverImagesIds(workshopDraftSet, searchIds).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<List<string>> GetIntersectTeacherCoverImagesIds(IEnumerable<string> searchIds)
@@ -70,6 +79,10 @@ public class ObjectImagesSyncDataRepository : IObjectImagesSyncDataRepository
     /// <inheritdoc/>
     public async Task<List<string>> GetIntersectWorkshopImagesIds(IEnumerable<string> searchIds)
         => await GetIntersectEntityImagesIds(workshopImagesSet, searchIds).ConfigureAwait(false);
+
+    /// <inheritdoc/>
+    public async Task<List<string>> GetIntersectWorkshopDraftImagesIds(IEnumerable<string> searchIds)
+        => await GetIntersectEntityImagesIds(workshopDraftImagesSet, searchIds).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<List<string>> GetIntersectProviderImagesIds(IEnumerable<string> searchIds)
