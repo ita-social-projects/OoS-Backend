@@ -13,7 +13,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
-using OutOfSchool.AikomApiClient.Extensions;
+using OutOfSchool.AikomApiClient.Extensions;    
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -48,6 +48,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
+using OutOfSchool.SportsRegistryApiClient.Extensions;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
@@ -265,7 +266,10 @@ public static class Startup
         services.AddScoped<IAreaAdminService, AreaAdminService>();
 
         services.AddScoped<ICommunicationService, CommunicationService>();
-
+        
+        // External API options
+        services.AddSportsRegistryClient(configuration);
+        
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));

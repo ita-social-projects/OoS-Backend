@@ -82,5 +82,6 @@
         <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
         <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj" />
         <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.SportsRegistryApiClient\OutOfSchool.SportsRegistryApiClient.csproj" />
     </ItemGroup>
 </Project>
