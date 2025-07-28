@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <BaseVersion>8.0.0</BaseVersion>
-    <!-- TODO: Re-use base version again when we switch to Net 9 -->
+    <!-- TODO: Re-use base version again when we switch to Net 10 -->
     <DIAbstractions>8.0.2</DIAbstractions>
     <EFCoreVersion>8.0.13</EFCoreVersion>
     <OpenIdDictVersion>6.1.1</OpenIdDictVersion>
