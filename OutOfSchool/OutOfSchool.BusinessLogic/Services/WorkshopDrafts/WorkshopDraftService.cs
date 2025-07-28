@@ -1065,6 +1065,17 @@ public class WorkshopDraftService(
         return predicate;
     }
 
+    /// <summary>
+    /// Sort WorkshopDescriptionItemDto in the draft DTO,
+    /// as it's faster than doing the JSON field operations in data base.
+    /// </summary>
+    /// <param name="workshopDescriptionItems">List to sort</param>
+    /// <returns>The same list sorted by SectionName</returns>
+    private List<WorkshopDescriptionItemDto> SortWorkshopDescriptionItems(List<WorkshopDescriptionItemDto> workshopDescriptionItems)
+    {
+        return workshopDescriptionItems?.OrderBy(x => x.SectionName.ToLowerInvariant()).ToList();
+    }
+
     private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
     {
         if (workshopDraft?.WorkshopDraftContent?.InstitutionHierarchyId == null)
@@ -1100,6 +1111,8 @@ public class WorkshopDraftService(
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 
         workshopDraftResponseDto.WorkshopDetails.SubDirectionIds = await GetSubDirectionIdsForWorkshopDraft(draft);
+        
+        workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
         var catottgIds = workshopDraftResponseDto.WorkshopDetails.Contacts
             .Where(c => c?.Address != null)
@@ -1165,6 +1178,8 @@ public class WorkshopDraftService(
             responseDto.WorkshopDetails.SubDirectionIds = institutionHierarchy?.SubDirections
                 .Select(sd => sd.Id)
                 .ToList();
+            
+            responseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(responseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
             responseDto.WorkshopDetails.Contacts
                 .Where(c => c?.Address != null)

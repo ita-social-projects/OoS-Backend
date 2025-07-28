@@ -71,7 +71,7 @@ public class WorkshopService(
     /// Create a delegate to include other entities in Workshop entity
     /// </summary>
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc =
-        w => w.Include(w => w.Teachers)
+        ws => ws.Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
               .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
