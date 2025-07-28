@@ -30,6 +30,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
             .Include(ws => ws.Tags)
+            .Include(ws => ws.WorkshopDescriptionItems.OrderBy(wdi => wdi.SectionName.ToLowerInvariant()))
             .Include(ws => ws.Contacts).ThenInclude(c => c.Emails)
             .Include(ws => ws.Contacts).ThenInclude(c => c.Phones)
             .Include(ws => ws.Contacts).ThenInclude(c => c.SocialNetworks)
