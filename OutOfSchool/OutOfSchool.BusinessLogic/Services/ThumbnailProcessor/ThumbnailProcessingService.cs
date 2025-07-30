@@ -119,7 +119,6 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
     {
         var allImages = imageStorage.ListObjectsAsync(options: new ListObjectsArgs().WithRecursive(true));
 
-        //additionally check whether the miniature for a evry existing photo with the mark is_processed == true is valid and if its not correct reset it to false
         await ProcessAllImagesOnThumbnailExistenceAsync(allImages);
 
         logger.LogInformation("Thumbnail generation for unprocessed images started");
@@ -135,7 +134,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             var metadata = await (imageStorage as IMetadataStorage).GetCurrentMetadataAsync(obj.Name, cancellationToken);
 
-            if (metadata[Constants.ExternalImages.IsProcessed] == "false")
+            if (metadata.Keys.Contains(Constants.ExternalImages.IsProcessed) && metadata[Constants.ExternalImages.IsProcessed] == "false")
             {
                 unprocessedImageNames.Add(obj.Name);
             }
@@ -171,7 +170,22 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             var metadata = await (imageStorage as IMetadataStorage).GetCurrentMetadataAsync(obj.Name, cancellationToken);
 
-            if (metadata.TryGetValue("is-processed", out var isProcessed) && isProcessed == "true")
+            if (!metadata.ContainsKey(Constants.ExternalImages.IsProcessed))
+            {
+                var updatedMetadata = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase)
+                {
+                    [Constants.ExternalImages.IsProcessed] = "false"
+                };
+
+                if (imageStorage is IMetadataStorage metadataStorage)
+                {
+                    await metadataStorage.UpdateMetadataAsync(obj.Name, updatedMetadata, cancellationToken);
+                    logger.LogInformation("Image {ImageName} had no 'is-processed' flag. Set to false.", obj.Name);
+                }
+                continue;
+            }
+
+            if (metadata.TryGetValue(Constants.ExternalImages.IsProcessed, out var isProcessed) && isProcessed == "true")
             {
                 var thumbnailName = $"{obj.Name}-thumbnail";
                 var exists = await imageStorage.ExistsAsync(thumbnailName, cancellationToken);
@@ -180,7 +194,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
                 {
                     logger.LogWarning("Image {ImageName} is marked as processed, but thumbnail is missing", obj.Name);
                     var updatedMetadata = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
-                    updatedMetadata["is-processed"] = "false";
+                    updatedMetadata[Constants.ExternalImages.IsProcessed] = "false";
 
                     if (imageStorage is IMetadataStorage metadataStorage)
                     {
