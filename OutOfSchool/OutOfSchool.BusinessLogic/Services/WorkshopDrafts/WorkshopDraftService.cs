@@ -342,6 +342,12 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
+            
+            // draft -> sport registry
+            // push sport Api
+            // <- section ID 
+            // workshopDraft.sectionID = sectionId;
+            
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
