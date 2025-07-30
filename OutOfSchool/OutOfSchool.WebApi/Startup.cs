@@ -198,7 +198,7 @@ public static class Startup
             });
 
         var aikomConfiguration = services.RegisterAikomApiClient(configuration, builder.Environment);
-
+        var sportRegistryConfiguration = services.AddSportsRegistryClient(configuration);
         services.AddOpenIddict()
             .AddClient(options =>
             {
@@ -207,6 +207,7 @@ public static class Startup
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
                 options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
+                options.AddSportsRegistryOpenIddictClientRegistration(sportRegistryConfiguration);
             });
 
         services.AddCors(confg =>
@@ -266,9 +267,6 @@ public static class Startup
         services.AddScoped<IAreaAdminService, AreaAdminService>();
 
         services.AddScoped<ICommunicationService, CommunicationService>();
-        
-        // External API options
-        services.AddSportsRegistryClient(configuration);
         
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
