@@ -651,4 +651,41 @@ public class CompetitiveEventDraftControllerTests
     }
 
     #endregion
+
+    #region GetCompetitiveEventDraftIdByCompetitiveEventId
+
+    [Test]
+    public async Task GetCompetitiveEventDraftIdByCompetitiveEventId_ReturnsOk_WhenDraftExists()
+    {
+        // Arrange
+        var competitiveEventId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.GetCompetitiveEventDraftIdByCompetitiveEventId(competitiveEventId))
+            .ReturnsAsync(draftId);
+
+        // Act
+        var result = await controller.GetCompetitiveEventDraftIdByCompetitiveEventId(competitiveEventId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
+        var okResult = result as OkObjectResult;
+        Assert.That(okResult.Value, Is.EqualTo(draftId));
+    }
+
+    [Test]
+    public async Task GetCompetitiveEventDraftIdByCompetitiveEventId_ReturnsNoContent_WhenDraftDoesNotExist()
+    {
+        // Arrange
+        var competitiveEventId = Guid.NewGuid();
+        competitiveEventDraftServiceMock.Setup(s => s.GetCompetitiveEventDraftIdByCompetitiveEventId(competitiveEventId))
+            .ReturnsAsync((Guid?)null);
+
+        // Act
+        var result = await controller.GetCompetitiveEventDraftIdByCompetitiveEventId(competitiveEventId).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    #endregion
 }

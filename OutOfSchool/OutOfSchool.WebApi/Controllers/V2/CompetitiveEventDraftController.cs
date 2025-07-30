@@ -292,6 +292,27 @@ public class CompetitiveEventDraftController : ControllerBase
     }
 
     /// <summary>
+    /// Gets competitive event draft id by competitive event id.
+    /// </summary>
+    /// <param name="competitiveEventId">CompetitiveEvent's id.</param>
+    /// <returns>CompetitiveEventDraft id by given competitive event id.</returns>
+    /// <response code="200">The draft id for the given competitive event was found.</response>
+    /// <response code="204">No draft with given competitive event id was found.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method.</response>
+    [HasPermission(Permissions.CompetitiveEventEdit)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid?))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [HttpGet("/api/v{version:apiVersion}/competitions-drafts/event/{competitiveEventId}/draft-id")]
+    public async Task<IActionResult> GetCompetitiveEventDraftIdByCompetitiveEventId(Guid competitiveEventId)
+    {
+        var result = await competitiveEventDraftService.GetCompetitiveEventDraftIdByCompetitiveEventId(competitiveEventId);
+        return result.HasValue ? Ok(result) : NoContent();
+    }
+
+    /// <summary>
     /// Rejects the competitive event draft by a user with permission to moderate drafts.
     /// </summary>
     /// <param name="id">Key in the table.</param>
