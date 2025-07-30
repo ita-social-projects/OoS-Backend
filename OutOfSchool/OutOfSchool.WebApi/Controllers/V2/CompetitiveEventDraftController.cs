@@ -99,10 +99,11 @@ public class CompetitiveEventDraftController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventResponseDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}")]
@@ -144,12 +145,12 @@ public class CompetitiveEventDraftController : ControllerBase
         }
         catch (EntityDeletedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
 
         }
         catch (EntityModifiedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
         }
     }
 
@@ -168,6 +169,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("/api/v{version:apiVersion}/competitions-drafts/{id}")]
     public async Task<IActionResult> Delete(Guid id)
@@ -193,12 +195,12 @@ public class CompetitiveEventDraftController : ControllerBase
         }
         catch (EntityDeletedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
 
         }
         catch (EntityModifiedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
         }
     }
 
@@ -217,6 +219,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/send-for-moderation")]
     public async Task<IActionResult> SendForModeration(Guid id)
@@ -242,12 +245,12 @@ public class CompetitiveEventDraftController : ControllerBase
         }
         catch (EntityDeletedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
 
         }
         catch (EntityModifiedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
         }
     }
 
@@ -323,6 +326,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] CompetitiveEventDraftRejectionDto competitiveEventDraftRejection)
@@ -339,12 +343,12 @@ public class CompetitiveEventDraftController : ControllerBase
         }
         catch (EntityDeletedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
 
         }
         catch (EntityModifiedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
         }
     }
 
@@ -363,6 +367,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{id}/approve")]
     public async Task<IActionResult> Approve(Guid id)
@@ -374,12 +379,12 @@ public class CompetitiveEventDraftController : ControllerBase
         }
         catch (EntityDeletedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
 
         }
         catch (EntityModifiedConflictException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            return Conflict(ex.Message);
         }
     }
 
@@ -402,7 +407,6 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteCoverImageAsModerator(Guid draftId)
     {
