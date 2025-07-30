@@ -14,16 +14,19 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
     private readonly IObjectImageStorage imageStorage;
     private readonly ILogger<ThumbnailProcessingService> logger;
     private readonly ThumbnailGenerationOptions options;
+    private readonly ThumbnailBackgroundJobOptions backgroundJobOptions;
     public ThumbnailProcessingService(
         IImageService service,
         IObjectImageStorage imageStorage,
         ILogger<ThumbnailProcessingService> logger,
-        IOptions<ThumbnailGenerationOptions> options)
+        IOptions<ThumbnailGenerationOptions> options,
+        IOptions<ThumbnailBackgroundJobOptions> backgroundJobOptions)
     {
         this.imageService = service;
         this.imageStorage = imageStorage;
         this.logger = logger;
         this.options = options.Value;
+        this.backgroundJobOptions = backgroundJobOptions.Value;
     }
     public async Task<bool> HasThumbnail(string imageId)
         => await imageStorage.ExistsAsync(GetThumbnailId(imageId));
@@ -132,7 +135,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
 
             var metadata = await (imageStorage as IMetadataStorage).GetCurrentMetadataAsync(obj.Name, cancellationToken);
 
-            if (metadata["is-processed"] == "false")
+            if (metadata[Constants.ExternalImages.IsProcessed] == "false")
             {
                 unprocessedImageNames.Add(obj.Name);
             }
