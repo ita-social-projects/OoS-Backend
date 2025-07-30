@@ -4,9 +4,11 @@ using Microsoft.Extensions.Localization;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.BusinessLogic.Services.Workshops;
@@ -27,6 +29,7 @@ public class AdminController : Controller
     private readonly ISensitiveProviderService providerService;
     private readonly ISensitiveWorkshopsService workshopService;
     private readonly ISensitiveWorkshopDraftService workshopDraftService;
+    private readonly ISensitiveCompetitiveEventDraftService competitiveEventDraftService;
     private readonly IUserService userService;
     private readonly IWorkshopServicesCombiner workshopServicesCombiner;
 
@@ -40,6 +43,7 @@ public class AdminController : Controller
     /// <param name="workshopService">Service for managing workshop entities.</param>
     /// <param name="localizer">Localization service for shared resources.</param>
     /// <param name="workshopDraftService">Service for managing workshop draft entities.</param>
+    /// <param name="competitiveEventDraftService">Service for managing competitive event draft entities.</param>
     /// <param name="userService">Service for managing user profiles and account status.</param>
     /// <exception cref="ArgumentNullException">Thrown if any required service is null.</exception>
     public AdminController(
@@ -50,6 +54,7 @@ public class AdminController : Controller
         ISensitiveWorkshopsService workshopService,
         IStringLocalizer<SharedResource> localizer,
         ISensitiveWorkshopDraftService workshopDraftService,
+        ISensitiveCompetitiveEventDraftService competitiveEventDraftService,
         IUserService userService,
         IWorkshopServicesCombiner workshopServicesCombiner)
     {
@@ -62,6 +67,8 @@ public class AdminController : Controller
             ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
         this.workshopDraftService =
             workshopDraftService ?? throw new ArgumentNullException(nameof(workshopDraftService));
+        this.competitiveEventDraftService =
+            competitiveEventDraftService ?? throw new ArgumentNullException(nameof(competitiveEventDraftService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.workshopServicesCombiner = workshopServicesCombiner;
     }
@@ -266,6 +273,21 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> GetWorkshopDraftsByFilter([FromQuery] WorkshopDraftFilterAdministration filter) =>
          await workshopDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
+
+    /// <summary>
+    /// Retrieves competitive event drafts matching the specified administrative filter.
+    /// </summary>
+    /// <param name="filter">Criteria for filtering competitive event drafts.</param>
+    /// <returns>A <see cref="SearchResult{CompetitiveEventDraftResponseDto}"/> containing the total count and list of matching competitive event drafts, or 204 No Content if none are found.</returns>
+    [HasPermission(Permissions.WorkshopApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventDraftResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    public async Task<IActionResult> GetCompetitiveEventDraftsByFilter([FromQuery] CompetitiveEventDraftFilterAdministration filter) =>
+        await competitiveEventDraftService.FetchByFilterForAdmins(filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Retrieves the profile information and account status of the currently authorized technical staff member.

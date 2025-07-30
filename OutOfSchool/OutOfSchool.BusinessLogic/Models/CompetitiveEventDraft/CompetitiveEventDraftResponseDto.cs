@@ -2,7 +2,6 @@
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 
-
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 public class CompetitiveEventDraftResponseDto
 {
@@ -38,13 +37,13 @@ public static class CompetitiveEventDraftResponseDtoExtensions
         if (director?.Individual is not null)
         {
             dto.DirectorFullName = $"{director.Individual.FirstName} {director.Individual.LastName} {director.Individual.MiddleName}".Trim();
-            dto.DirectorPosition = PositionType.Director.ToString();
+            dto.DirectorPosition = nameof(PositionType.Director);
         }
 
         else if (deputy?.Individual is not null)
         {
             dto.DirectorFullName = $"{deputy.Individual.FirstName} {deputy.Individual.LastName} {deputy.Individual.MiddleName}".Trim();
-            dto.DirectorPosition = PositionType.DeputyDirector.ToString();
+            dto.DirectorPosition = nameof(PositionType.DeputyDirector);
         }
 
         return dto;

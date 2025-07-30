@@ -448,6 +448,7 @@ public static class Startup
         services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
 
         services.AddTransient<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
+        services.AddTransient<ISensitiveCompetitiveEventDraftService, CompetitiveEventDraftService>();
 
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
