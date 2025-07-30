@@ -10,16 +10,18 @@ namespace OutOfSchool.SportsRegistryApiClient.Extensions;
 
 public static class SportsRegistryClientExtensions
 {
-    public static IServiceCollection AddSportsRegistryClient(
+    public static SportsRegistryApiClientConfig? AddSportsRegistryClient(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.Configure<SportsRegistryApiClientConfig>(
-            configuration.GetSection(SportsRegistryApiClientConfig.SectionName));
-
+        var sportConfiguration = configuration
+            .GetSection(SportsRegistryApiClientConfig.Name)
+            .Get<SportsRegistryApiClientConfig>();
+        services.Configure<SportsRegistryApiClientConfig>(configuration.GetSection(SportsRegistryApiClientConfig.Name));
+        
         services.AddTransient<ICommunicationService, CommunicationService>();
         services.AddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
 
-        return services;
+        return sportConfiguration;
     }
 }
