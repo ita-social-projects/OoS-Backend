@@ -296,7 +296,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.That(result, Is.InstanceOf<ObjectResult>());
         var internalError = result as ObjectResult;
-        Assert.That(internalError?.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError?.StatusCode, Is.EqualTo(409));
         var errorDescription = internalError.Value;
         Assert.That(errorDescription, Does.Contain("Service error"));
     }
@@ -327,7 +327,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.That(result, Is.InstanceOf<ObjectResult>());
         var internalError = result as ObjectResult;
-        Assert.That(internalError?.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError?.StatusCode, Is.EqualTo(409));
         var errorDescription = internalError.Value;
         Assert.That(errorDescription, Does.Contain("Service error"));
     }
@@ -432,7 +432,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.IsInstanceOf<ObjectResult>(result);
         var internalError = result as ObjectResult;
-        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.StatusCode, Is.EqualTo(409));
         Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
     }
 
@@ -450,7 +450,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.IsInstanceOf<ObjectResult>(result);
         var internalError = result as ObjectResult;
-        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.StatusCode, Is.EqualTo(409));
         Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
     }
 
@@ -555,7 +555,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.IsInstanceOf<ObjectResult>(result);
         var internalError = result as ObjectResult;
-        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.StatusCode, Is.EqualTo(409));
         Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
     }
 
@@ -573,7 +573,7 @@ public class CompetitiveEventDraftControllerTests
         // Assert
         Assert.IsInstanceOf<ObjectResult>(result);
         var internalError = result as ObjectResult;
-        Assert.That(internalError.StatusCode, Is.EqualTo(500));
+        Assert.That(internalError.StatusCode, Is.EqualTo(409));
         Assert.That(internalError.Value.ToString(), Does.Contain("Service error"));
     }
 
