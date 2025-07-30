@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -10,6 +15,7 @@ using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
@@ -17,11 +23,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -56,7 +57,11 @@ public class CompetitiveEventDraftServiceTests
             mockCompetitiveEventDraftRepository.Object,
             mockImageService.Object,
             mockChangesLogService.Object,
-            mockCodeficatorRepository.Object);
+            mockCodeficatorRepository.Object,
+            new Mock<IRegionAdminService>().Object,
+            new Mock<IMinistryAdminService>().Object,
+            new Mock<ICodeficatorService>().Object,
+            new Mock<ISearchStringService>().Object);
     }
 
     #region Create

@@ -422,9 +422,6 @@ public static class Startup
         services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
         services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
 
-        services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
-        
-
         // workshop draft images in the external storage
         services.AddScoped<IEntityCoverImageInteractionService<TeacherDraft>, ImageDependentEntityImagesInteractionService<TeacherDraft>>();
         services.AddScoped<IImageDependentEntityImagesInteractionService<WorkshopDraft>, ImageDependentEntityImagesInteractionService<WorkshopDraft>>();
@@ -444,10 +441,11 @@ public static class Startup
         services.AddTransient<IOfficialService, OfficialService>();
         services.AddTransient<IOfficialChangesLogService, OfficialChangesLogService>();
 
-        services.AddTransient<IWorkshopDraftService, WorkshopDraftService>();
-        services.AddTransient<ISensitiveWorkshopDraftService, WorkshopDraftService>();
+        services.AddScoped<IWorkshopDraftService, WorkshopDraftService>();
+        services.AddScoped<ISensitiveWorkshopDraftService, WorkshopDraftService>();
 
-        services.AddTransient<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
+        services.AddScoped<ICompetitiveEventDraftService, CompetitiveEventDraftService>();
+        services.AddScoped<ISensitiveCompetitiveEventDraftService, CompetitiveEventDraftService>();
 
         services.AddTransient<IWorkshopStrategy>(sp =>
         {
