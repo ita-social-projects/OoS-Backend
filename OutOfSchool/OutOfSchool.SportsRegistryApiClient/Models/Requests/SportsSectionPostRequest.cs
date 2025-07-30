@@ -58,12 +58,12 @@ public class SportsSectionPostRequest : IValidatableObject
     [Url(ErrorMessage = "Invalid URL format. SectionUrl must be a valid URL.")]
     public string? SectionUrl { get; set; }
 
-    //[RegularExpression(@"^(https?://)?(www\.)?facebook\.com/.*$", ErrorMessage = "sectionFacebookUrl must be a valid Facebook URL.")]
-    [RegularExpression(@"^https?://(?:[\\w-]+\\.)*facebook\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
+    [RegularExpression(@"^(https?://)?(www\.)?facebook\.com/.*$", ErrorMessage = "sectionFacebookUrl must be a valid Facebook URL.")]
+    //[RegularExpression(@"^https?://(?:[\\w-]+\\.)*facebook\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
     public string? SectionFacebookUrl { get; set; }
-
-    //[RegularExpression(@"^https?://(?:[\\w-]+\\.)*instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL."
-    [RegularExpression(@"^https?://(?:www\\.)?instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
+    
+    [RegularExpression(@"^https?://(?:[\\w-]+\\.)*instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
+    //[RegularExpression(@"^https?://(?:www\\.)?instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
     public string? SectionInstagramUrl { get; set; }
 
     [Required(ErrorMessage = "sectionPracticeFormat is required.")]
@@ -105,7 +105,7 @@ public class SportsSectionPostRequest : IValidatableObject
                 new[] { nameof(SectionAgeFrom) });
         }
 
-        if (SectionAgeFrom < SectionAgeTo)
+        if (SectionAgeFrom > SectionAgeTo)
         {
             yield return new ValidationResult(
                 "SectionAgeFrom cannot be greater than SectionAgeTo.",
