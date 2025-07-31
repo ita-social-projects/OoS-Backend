@@ -279,7 +279,7 @@ public class AdminController : Controller
     /// </summary>
     /// <param name="filter">Criteria for filtering competitive event drafts.</param>
     /// <returns>A <see cref="SearchResult{CompetitiveEventDraftResponseDto}"/> containing the total count and list of matching competitive event drafts, or 204 No Content if none are found.</returns>
-    [HasPermission(Permissions.WorkshopApprove)]
+    [HasPermission(Permissions.CompetitiveEventApprove)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventDraftResponseDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -99,6 +99,7 @@ public class CompetitiveEventDraftController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="413">If the request break the limits, set in configs.</response>
     /// <response code="500">If any server error occures.</response>
+    [HasPermission(Permissions.CompetitiveEventEdit)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResultDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
