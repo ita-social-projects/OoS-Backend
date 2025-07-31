@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.Services.Models.ContactInfo;
-using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
@@ -60,26 +59,6 @@ public class AddressDto
 
 public static class AddressDtoExtensions
 {
-    public static AddressDraft ToDraft(this AddressDto address) 
-        => new()
-        {
-            Street = address.Street,
-            BuildingNumber = address.BuildingNumber,
-            Latitude = address.Latitude,
-            Longitude = address.Longitude,
-            CATOTTGId = address.CATOTTGId,
-        };
-
-    public static AddressDto ToDto(this AddressDraft address)
-        => new()
-        {
-            Street = address.Street,
-            BuildingNumber = address.BuildingNumber,
-            Latitude = address.Latitude,
-            Longitude = address.Longitude,
-            CATOTTGId = address.CATOTTGId,
-        };
-
     public static AddressDto ToDto(this AddressES address)
         => new()
         {

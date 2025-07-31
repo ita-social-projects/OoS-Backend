@@ -40,18 +40,6 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
     [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus ProviderStatus { get; set; } = ProviderStatus.Pending;
-    
-    // TODO: for backward compatibility, remove when front changes
-    public string Phone { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-
-    public string Website { get; set; } = string.Empty;
-
-    public string Facebook { get; set; } = string.Empty;
-
-    public string Instagram { get; set; } = string.Empty;
-
-    public AddressDto Address { get; set; }
 
     [MaxLength(Constants.MaxLanguageNameLength)]
     public string LanguageOfEducationName { get; set; }
@@ -123,8 +111,6 @@ public static class WorkshopDtoExtensions
 
     public static WorkshopDto ToDto(this Workshop model)
     {
-        var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
-
         return new()
         {
             Id = model.Id,
@@ -184,12 +170,6 @@ public static class WorkshopDtoExtensions
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
             ProviderStatus = model.Provider?.Status ?? default,
-            Phone = defaultContact?.Phones?.FirstOrDefault()?.Number,
-            Email = defaultContact?.Emails?.FirstOrDefault()?.Address,
-            Website = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
-            Facebook = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
-            Instagram = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
-            Address = defaultContact?.Address?.ToDto(),
             IsChampionPath = model.IsChampionPath,
         };
     }

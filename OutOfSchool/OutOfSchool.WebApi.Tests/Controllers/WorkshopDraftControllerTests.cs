@@ -8,6 +8,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Providers;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
@@ -53,9 +54,16 @@ public class WorkshopDraftControllerTests
         provider = ProviderDtoGenerator.Generate();
 
         workshopV2Dto = WorkshopV2DtoGenerator.Generate();
-        workshopV2Dto.Address = AddressDtoGenerator.Generate();
         workshopV2Dto.DateTimeRanges = DateTimeRangeDtoGenerator.Generate(5);
         workshopV2Dto.ProviderId = provider.Id;
+        workshopV2Dto.Contacts =
+        [
+            new ContactsDto
+            {
+                IsDefault = true,
+                Address = ContactsAddressDtoGenerator.Generate()
+            }
+        ];
 
         workshopDraftResultDto = new WorkshopDraftResultDto()
         {

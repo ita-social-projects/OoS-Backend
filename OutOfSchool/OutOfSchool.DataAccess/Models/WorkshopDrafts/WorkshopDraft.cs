@@ -35,6 +35,12 @@ public class WorkshopDraft :
 
     // TODO: Ensure that the content matches the new workshop model after the contact model is added.
     public WorkshopDraftContent WorkshopDraftContent { get; set; }
+    
+    /// <summary>
+    /// This property is used for searching, as nested JSON queries are not supported by EF/Pomelo at the moment.
+    /// Do not use this property for anything else.
+    /// </summary>
+    public long CATOTTGId { get; set; }
 
     public virtual Provider Provider { get; set; }
 

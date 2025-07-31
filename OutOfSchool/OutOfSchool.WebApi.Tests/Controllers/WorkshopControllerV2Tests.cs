@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,10 +18,6 @@ using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V2;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -66,7 +66,6 @@ public class WorkshopControllerV2Tests
         provider = ProviderDtoGenerator.Generate();
         workshopCreateDto = WorkshopV2DtoGenerator.Generate();
         workshopV2CreateRequestDto = WorkshopV2CreateRequestDtoGenerator.FromModel(WorkshopGenerator.Generate());
-        workshopCreateDto.Address = AddressDtoGenerator.Generate();
         workshopCreateDto.DateTimeRanges = DateTimeRangeDtoGenerator.Generate(5);
         workshopCreateDto.ProviderId = provider.Id;
         workshopResultDto = new WorkshopResultDto()
