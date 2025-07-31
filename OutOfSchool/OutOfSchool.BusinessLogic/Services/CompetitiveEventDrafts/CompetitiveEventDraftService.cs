@@ -603,8 +603,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     // <inheritdoc/>
     public async Task<Result<CompetitiveEventDraftResponseDto>> UpdateDraftAsModeratorAsync(Guid draftId, ModeratorCompetitiveEventDraftEditDto dto)
     {
-        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
+        if (dto == null)
+        {
+            logger.LogError("Parameter '{ParameterName}' is null.", nameof(dto));
+            
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Dto must not be null."
+            });
+        }
 
+        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);        
+        
         var validation = await ValidateDraftForModerator(draftId);                
 
         if (!validation.Succeeded)
