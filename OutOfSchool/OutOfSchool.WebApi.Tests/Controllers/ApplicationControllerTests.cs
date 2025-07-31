@@ -700,7 +700,6 @@ public class ApplicationControllerTests
         {
             Id = Guid.NewGuid(),
             Title = "Title6",
-            Phone = "1111111111",
             WorkshopDescriptionItems = new[]
             {
                 FakeWorkshopDescriptionItem(),
@@ -709,24 +708,11 @@ public class ApplicationControllerTests
             },
             Price = 6000,
             ProviderTitle = "ProviderTitle",
-            Website = "website6",
-            Instagram = "insta6",
-            Facebook = "facebook6",
-            Email = "email6@gmail.com",
             MaxAge = 10,
             MinAge = 4,
             CoverImageId = "image6",
             ProviderId = Guid.NewGuid(),
             InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-            Address = new AddressDto
-            {
-                Id = 55,
-                CATOTTGId = 4970,
-                Street = "Street55",
-                BuildingNumber = "BuildingNumber55",
-                Latitude = 0,
-                Longitude = 0,
-            },
             Teachers = new List<TeacherDTO>
             {
                 new TeacherDTO
@@ -763,7 +749,6 @@ public class ApplicationControllerTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Title1",
-                Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
                     FakeWorkshopDescriptionItem(),
@@ -772,24 +757,15 @@ public class ApplicationControllerTests
                 Price = 1000,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitle",
-                Website = "website1",
-                Instagram = "insta1",
-                Facebook = "facebook1",
-                Email = "email1@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image1",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
             },
             new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title2",
-                Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
                     FakeWorkshopDescriptionItem(),
@@ -797,24 +773,15 @@ public class ApplicationControllerTests
                 Price = 2000,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitle",
-                Website = "website2",
-                Instagram = "insta2",
-                Facebook = "facebook2",
-                Email = "email2@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image2",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
             },
             new WorkshopV2Dto()
             {
                 Id = Guid.NewGuid(),
                 Title = "Title3",
-                Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
                     FakeWorkshopDescriptionItem(),
@@ -824,10 +791,6 @@ public class ApplicationControllerTests
                 Price = 3000,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",
-                Website = "website3",
-                Instagram = "insta3",
-                Facebook = "facebook3",
-                Email = "email3@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image3",
@@ -837,7 +800,6 @@ public class ApplicationControllerTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Title4",
-                Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
                     FakeWorkshopDescriptionItem(),
@@ -846,10 +808,6 @@ public class ApplicationControllerTests
                 Price = 4000,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",
-                Website = "website4",
-                Instagram = "insta4",
-                Facebook = "facebook4",
-                Email = "email4@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image4",
@@ -859,7 +817,6 @@ public class ApplicationControllerTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Title5",
-                Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
                     FakeWorkshopDescriptionItem(),
@@ -867,18 +824,10 @@ public class ApplicationControllerTests
                 Price = 5000,
                 ProviderId = Guid.NewGuid(),
                 ProviderTitle = "ProviderTitleNew",
-                Website = "website5",
-                Instagram = "insta5",
-                Facebook = "facebook5",
-                Email = "email5@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
                 CoverImageId = "image5",
                 InstitutionHierarchyId = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"),
-                Address = new AddressDto
-                {
-                    CATOTTGId = 4970,
-                },
             },
         };
     }
@@ -899,7 +848,6 @@ public class ApplicationControllerTests
             DirectionIds = w.DirectionIds,
             SubDirectionIds = w.SubDirectionIds,
             ProviderId = w.ProviderId,
-            Address = w.Address,
             Rating = w.Rating,
             ProviderLicenseStatus = w.ProviderLicenseStatus,
             InstitutionHierarchyId = w.InstitutionHierarchyId,

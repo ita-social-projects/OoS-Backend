@@ -1033,12 +1033,12 @@ public class WorkshopDraftService(
 
         if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
         {
-            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.CATOTTGId));
         }
 
         if (subSettlementFilterIds != null && subSettlementFilterIds.Any())
         {
-            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.CATOTTGId));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -1055,7 +1055,7 @@ public class WorkshopDraftService(
                         x.WorkshopDraftContent.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.WorkshopDraftContent.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.WorkshopDraftContent.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                        x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                 }
 
                 predicate = predicate.And(tempPredicate);

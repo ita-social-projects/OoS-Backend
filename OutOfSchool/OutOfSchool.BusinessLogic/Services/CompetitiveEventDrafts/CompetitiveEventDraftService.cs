@@ -875,14 +875,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Count != 0)
         {
-            predicate = predicate.And(x => x.CompetitiveEventDraftContent.Contacts
-                .Any(c => c.Address != null && allowedSettlementIdsForAdmin.Contains(c.Address.CATOTTGId)));
+            predicate = predicate.And(c => allowedSettlementIdsForAdmin.Contains(c.CATOTTGId));
         }
 
         if (subSettlementFilterIds != null && subSettlementFilterIds.Count != 0)
         {
-            predicate = predicate.And(x => x.CompetitiveEventDraftContent.Contacts
-                .Any(c => c.Address != null && subSettlementFilterIds.Contains(c.Address.CATOTTGId)));
+            predicate = predicate.And(c => subSettlementFilterIds.Contains(c.CATOTTGId));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -900,8 +898,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
                             StringComparison.InvariantCultureIgnoreCase) ||
                         x.Provider.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.Provider.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.CompetitiveEventDraftContent.Contacts.Any(c =>
-                            c.Emails.Any(e => e.Address.Contains(word, StringComparison.InvariantCultureIgnoreCase)))));
+                        x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase)));
 
                 predicate = predicate.And(tempPredicate);
             }

@@ -294,7 +294,6 @@ public class ChildControllerTests
         {
             Id = Guid.NewGuid(),
             Title = "Title1",
-            Phone = "1111111111",
             WorkshopDescriptionItems = new[]
                 {
                     new WorkshopDescriptionItemDto
@@ -306,17 +305,9 @@ public class ChildControllerTests
             Price = 1000,
             ProviderId = Guid.NewGuid(),
             ProviderTitle = "ProviderTitle",
-            Website = "website1",
-            Instagram = "insta1",
-            Facebook = "facebook1",
-            Email = "email1@gmail.com",
             MaxAge = 10,
             MinAge = 4,
             CoverImageId = "image1",
-            Address = new AddressDto
-            {
-                CATOTTGId = 4970,
-            },
         };
 
         ProviderDto existingProvider = ProviderDtoGenerator.Generate();
@@ -337,7 +328,6 @@ public class ChildControllerTests
                 DirectionIds = existingWorkshop.DirectionIds,
                 SubDirectionIds = existingWorkshop.SubDirectionIds,
                 ProviderId = existingWorkshop.ProviderId,
-                Address = existingWorkshop.Address,
                 Rating = existingWorkshop.Rating,
                 ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,

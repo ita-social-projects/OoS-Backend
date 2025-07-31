@@ -57,7 +57,7 @@ public class WorkshopServicesCombinerV2(
         {
             return Result<WorkshopResultDto>.Failed(new OperationError
             {
-                Code = HttpStatusCode.BadRequest.ToString(),
+                Code = nameof(HttpStatusCode.BadRequest),
                 Description = Constants.WorkshopNotFoundErrorMessage,
             });
         }

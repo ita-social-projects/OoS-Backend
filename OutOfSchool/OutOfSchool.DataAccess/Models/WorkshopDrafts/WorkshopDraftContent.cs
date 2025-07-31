@@ -53,8 +53,6 @@ public class WorkshopDraftContent :
 
     public IEnumerable<string> Keywords { get; set; }
 
-    public AddressDraft Address { get; set; }
-
     public OwnershipType OwnershipType { get; set; }
 
     public uint AvailableSeats { get; set; }
@@ -98,17 +96,6 @@ public class WorkshopDraftContent :
     public Guid? ParentWorkshopId { get; set; }
 
     public List<Contacts> Contacts { get; set; }
-
-    //TODO: Remove later
-    public string Phone { get; set; }
-
-    public string Email { get; set; }
-
-    public string Website { get; set; }
-
-    public string Facebook { get; set; }
-
-    public string Instagram { get; set; }
     
     public bool IsChampionPath { get;set; }
 }

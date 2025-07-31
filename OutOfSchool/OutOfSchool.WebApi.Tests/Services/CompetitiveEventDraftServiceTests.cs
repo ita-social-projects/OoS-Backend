@@ -11,6 +11,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
@@ -23,6 +24,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -80,11 +82,22 @@ public class CompetitiveEventDraftServiceTests
     public async Task Create_ReturnsDraftResultDto_WhenDtoIsValid()
     {
         // Arrange
-        var dto = new CompetitiveEventV2Dto() { Id = Guid.NewGuid()};
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            Contacts =
+            [
+                new ContactsDto
+                {
+                    IsDefault = true,
+                    Address = ContactsAddressDtoGenerator.Generate()
+                }
+            ]
+        };
         var draft = dto.ToDraft();
         var catottgs = new List<CATOTTG>
         {
-            new CATOTTG { Id = 1, Name = "Test Codeficator" }
+            new() { Id = 1, Name = "Test Codeficator" }
         };
         mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
             .ReturnsAsync((CompetitiveEventDto)null);
