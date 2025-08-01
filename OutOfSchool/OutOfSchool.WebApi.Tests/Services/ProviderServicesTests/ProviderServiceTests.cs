@@ -56,6 +56,7 @@ public class ProviderServiceTests
     private Mock<IUserService> userServiceMock;
     private Mock<ICommunicationService> communicationService;
     private Mock<IWorkshopServicesCombiner> workshopServicesCombinerMock;
+    private Mock<IWorkshopDraftRepository> workshopDraftRepository;
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IOfficialRepository> officialRepo;
 
@@ -92,6 +93,7 @@ public class ProviderServiceTests
         userServiceMock = new Mock<IUserService>();
         communicationService = new Mock<ICommunicationService>();
         workshopServicesCombinerMock = new Mock<IWorkshopServicesCombiner>();
+        workshopDraftRepository = new Mock<IWorkshopDraftRepository>();
 
         var authorizationServerConfig = Options.Create(new AuthorizationServerConfig { Authority = new Uri("http://test.com") });
         searchStringServiceMock = new Mock<ISearchStringService>();
@@ -107,6 +109,7 @@ public class ProviderServiceTests
             officialRepo.Object,
             positionRepo.Object,
             workshopServicesCombinerMock.Object,
+            workshopDraftRepository.Object,
             providerImagesService.Object,
             changesLogService.Object,
             notificationService.Object,
