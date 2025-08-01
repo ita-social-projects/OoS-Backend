@@ -51,6 +51,11 @@ public class CustomPhoneNumberAttribute() : DataTypeAttribute(DataType.PhoneNumb
             return false;
         }
 
+        if (possibleDigits[0] == '0')
+        {
+            return false;
+        }
+
         return possibleDigits.IndexOfAnyExcept(DigitSearchValues) == -1;
     }
 }

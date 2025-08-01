@@ -1,15 +1,19 @@
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
+using OutOfSchool.BusinessLogic.Validators;
+using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Util.JsonTools;
-using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class ContactsDto : IContentComparable<Contacts>, IEquatable<ContactsDto>
 {
     [Required(ErrorMessage = "Title is required")]
-    [StringLength(Constants.ContactsTitleMaxLength)]
+    [MinLength(Constants.ContactsTitleMinLength)]
+    [MaxLength(Constants.ContactsTitleMaxLength)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string Title { get; set; }
     
     public bool IsDefault { get; set; }

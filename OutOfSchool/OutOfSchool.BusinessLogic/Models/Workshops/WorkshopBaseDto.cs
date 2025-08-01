@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -8,6 +7,8 @@ using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -18,11 +19,13 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Workshop short title is required")]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string ShortTitle { get; set; } = string.Empty;
     public bool NoAgeRestrictions { get; set; } = false;
 
@@ -56,11 +59,15 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
     [Required(ErrorMessage = "Available seats are required")]
-    public uint? AvailableSeats { get; set; } = uint.MaxValue;
+    [Range(1, 100000, ErrorMessage = "Number of available seats should be in a range from 1 to 100 000")]
+    public uint? AvailableSeats { get; set; }
 
     public bool CompetitiveSelection { get; set; }
 
+    [MinLength(3)]
     [MaxLength(500)]
+    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "CompetitiveSelectionDescription field is required")]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -114,7 +121,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsInclusive { get; set; } = false;
 
-    [MaxLength(500)]
+    [MinLength(3)]
+    [MaxLength(2000)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
@@ -139,7 +148,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
-    
+
+    [Required]
     [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
 
@@ -215,6 +225,38 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                     yield return new ValidationResult("Price must be less than or equal to 100000.00.", new[] { nameof(Price) });
                 }
             }
+        }
+
+        if (!Keywords.IsNullOrEmpty())
+        {
+            var keywordsList = Keywords.ToList();
+
+            if (keywordsList.Count > 5)
+            {
+                yield return new ValidationResult("Keywords list should contain no more than 5 words", new[] { nameof(Keywords) });
+            }
+
+            foreach (var keyword in keywordsList)
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    yield return new ValidationResult($"Keyword cannot be empty or whitespace.", new[] { nameof(Keywords) });
+                }
+                else if (keyword.Length > 60)
+                {
+                    yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
+                }
+            }
+        }
+
+        if (!CompetitiveSelection && !string.IsNullOrWhiteSpace(CompetitiveSelectionDescription))
+        {
+            CompetitiveSelectionDescription = null;
+        }
+
+        if (!AreThereBenefits && !string.IsNullOrWhiteSpace(PreferentialTermsOfParticipation))
+        {
+            PreferentialTermsOfParticipation = null;
         }
     }
 }

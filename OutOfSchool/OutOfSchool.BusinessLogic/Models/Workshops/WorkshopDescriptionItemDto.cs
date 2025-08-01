@@ -1,17 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
+using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Services.Models.WorkshopDrafts;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
 public class WorkshopDescriptionItemDto
 {
     [Required]
-    [MaxLength(200)]
+    [MinLength(3)]
+    [MaxLength(100)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string SectionName { get; set; }
 
     [Required]
+    [MinLength(3)]
     [MaxLength(2000)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string Description { get; set; }
 
     public Guid WorkshopId { get; set; }
