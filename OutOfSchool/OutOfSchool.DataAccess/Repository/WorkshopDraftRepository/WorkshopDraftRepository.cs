@@ -54,6 +54,24 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Update ProviderTitle and ProviderTitleEn in all workshop drafts for a provider.
+    /// </summary>
+    public async Task<IEnumerable<WorkshopDraft>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
+    {
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"UPDATE WorkshopDrafts
+              SET WorkshopDraftContent = JSON_SET(
+                  WorkshopDraftContent,
+                  '$.ProviderTitle', {0},
+                  '$.ProviderTitleEn', {1}
+              )
+              WHERE ProviderId = {2}",
+            providerTitle, providerTitleEn, providerId);
+
+        return await dbSet.Where(d => d.ProviderId == providerId).ToListAsync();
+    }
+
     /// <inheritdoc/>
     /// <exception cref="EntityDeletedConflictException">Thrown if the entity has already been deleted by another user.</exception>
     /// <exception cref="EntityModifiedConflictException">Thrown if the entity has been modified by another user before deletion.</exception>
