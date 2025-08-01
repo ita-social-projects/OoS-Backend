@@ -40,7 +40,9 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             logger.LogWarning("CreateSectionAsync called with null request.");
             throw new ArgumentNullException(nameof(request));
         }
+
         logger.LogInformation("Attempting to send workshop to Sports Registry...");
+
         var accessToken = await GetAccessTokenAsync().ConfigureAwait(false);
 
         var payload = new
@@ -51,6 +53,7 @@ public class SportsRegistryApiService : ISportsRegistryApiService
                 data = request
             }
         };
+
         var registryRequest = new Request
         {
             Url = new Uri($"{config.ApiUrl}/api/gateway/business-process/api/start-bp"),
@@ -58,8 +61,8 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             Token = accessToken,
             Data = payload,
         };
+
         logger.LogDebug("Sending request to external registry: {Url}", registryRequest.Url);
-        
 
         var response = await communicationService.SendRequest<SectionCreateResponse, ErrorResponse>(registryRequest);
 
@@ -68,7 +71,7 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             var code = result.ResultVariables.Code;
             var errors = result.ResultVariables.Errors;
 
-            if (code != "200")
+            if (!IsSuccessfulStatusCode(code))
             {
                 logger.LogError("Registry returned non-success code: {Code}. Errors: {Errors}",
                     code, JsonSerializer.Serialize(errors));
@@ -85,7 +88,7 @@ public class SportsRegistryApiService : ISportsRegistryApiService
 
         throw new InvalidOperationException($"Registry push failed: {error?.Message ?? "Unknown error"}");
     }
-
+    
     private async Task<string> GetAccessTokenAsync()
     {
         var registration = await openIddictClientService
@@ -99,5 +102,9 @@ public class SportsRegistryApiService : ISportsRegistryApiService
 
         return result.AccessToken;
     }
-
+    
+    private static bool IsSuccessfulStatusCode(string? codeRaw)
+    {
+        return int.TryParse(codeRaw, out var statusCode) && statusCode is >= 200 and < 300;
+    }
 }
