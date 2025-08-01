@@ -10,6 +10,6 @@ public class SectionCreateResponse : IResponse
 public class ResultVariables
 {
     public string Code { get; set; } = null!;
-    public Guid SectionId { get; set; }
-    public object? Errors { get; set; }
+    public string SectionId { get; set; }
+    public string? Errors { get; set; }
 }

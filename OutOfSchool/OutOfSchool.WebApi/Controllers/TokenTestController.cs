@@ -62,7 +62,7 @@ public class TokenTestController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Failed to send section to Sports Registry: {ex.Message}");
+            return StatusCode(500, $"{ex.Message}");
         }
     }
 }

@@ -43,7 +43,7 @@ public class SportsSectionPostRequest : IValidatableObject
 
     [Required(ErrorMessage = "sectionPhone is required.")]
     [PhoneListValidation]
-    public List<string> SectionPhone { get; set; } = new();
+    public List<string> SectionPhones { get; set; } = new();
 
     [Required(ErrorMessage = "sectionEmail is required.")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
@@ -82,7 +82,16 @@ public class SportsSectionPostRequest : IValidatableObject
     public List<string> SectionPhotos { get; set; } = new();
 
     public List<Guid> SectionTrainers { get; set; } = new();
+    
+    [Required(ErrorMessage = "sectionPracticePeriodDateFrom is required.")]
+    [RegularExpression(@"^\d{2}:\d{2}$", ErrorMessage = "Date must be in DD:MM format.")]
+    public string SectionPracticePeriodDateFrom { get; set; } = null!;
 
+    [Required(ErrorMessage = "sectionPracticePeriodDateTo is required.")]
+    [RegularExpression(@"^\d{2}:\d{2}$", ErrorMessage = "Date must be in DD:MM format.")]
+    public string SectionPracticePeriodDateTo { get; set; } = null!;
+
+    
     [Required(ErrorMessage = "sectionSchedule is required.")]
     [MinLength(1, ErrorMessage = "At least one section schedule is required.")]
     public List<SectionScheduleRequest> SectionSchedule { get; set; } = new();
