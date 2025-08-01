@@ -11,6 +11,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -28,6 +29,7 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 /// <param name="officialRepository">OfficialRepository.</param>
 /// <param name="positionRepository">PositionRepository.</param>
 /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
+/// <param name="workshopDraftRepository">WorkshopDraftRepository.</param>
 /// <param name="providerImagesService">Images service.</param>
 /// <param name="changesLogService">ChangesLogService.</param>
 /// <param name="notificationService">Notification service.</param>
@@ -55,6 +57,7 @@ public class ProviderService(
     IOfficialRepository officialRepository,
     IPositionRepository positionRepository,
     IWorkshopServicesCombiner workshopServiceCombiner,
+    IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
     IChangesLogService changesLogService,
     INotificationService notificationService,
@@ -73,7 +76,7 @@ public class ProviderService(
     ISearchStringService searchStringService,
     IContactsService<Provider, IHasContactsDto<Provider>> contactsService
 ) : IProviderService, ISensitiveProviderService
-{
+    {
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
     private readonly IEntityRepositorySoftDeleted<string, User> usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
@@ -605,6 +608,10 @@ public class ProviderService(
                             providerUpdateDto.FullTitleEn)
                         .ConfigureAwait(false);
 
+                    var workshopDrafts = await UpdateWorkshopDraftsProviderTitleAsync(
+                            providerUpdateDto.Id, providerUpdateDto.FullTitle, providerUpdateDto.FullTitleEn)
+                        .ConfigureAwait(false);
+
                     providerUpdateDto.SetToModel(checkProvider);
                     LogProviderChanges(checkProvider, userId);
                     await UpdateProvider().ConfigureAwait(false);
@@ -613,6 +620,12 @@ public class ProviderService(
                     {
                         logger.LogDebug("Provider's properties with Id = {ProviderId} " +
                                               "in workshops with Id = {WorkshopId} updated successfully", checkProvider?.Id, workshop?.Id);
+                    }
+
+                    foreach (var workshopDraft in workshopDrafts)
+                    {
+                        logger.LogDebug("Provider's properties with Id = {ProviderId} " +
+                                              "in workshop drafts with Id = {WorkshopDraftId} updated successfully", checkProvider?.Id, workshopDraft?.Id);
                     }
 
                     return checkProvider;
@@ -996,6 +1009,27 @@ public class ProviderService(
                     PositionId = position.Id
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
+        }
+    }
+
+    private async Task<IEnumerable<WorkshopDraft>> UpdateWorkshopDraftsProviderTitleAsync(Guid providerId, string providerTitle, string providerTitleEn)
+    {
+        logger.LogInformation("Partial updating of WorkshopDrafts with ProviderId = {ProviderId} was started.", providerId);
+        try
+        {
+            return await workshopDraftRepository
+                .UpdateProviderTitle(providerId, providerTitle, providerTitleEn)
+                .ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(
+                ex,
+                "Partial updating {EntityName} with ProviderId = {ProviderId} failed due to concurrency issue. Exception: {ExceptionMessage}",
+                nameof(WorkshopDraft),
+                providerId,
+                ex.Message);
+            throw;
         }
     }
 }
