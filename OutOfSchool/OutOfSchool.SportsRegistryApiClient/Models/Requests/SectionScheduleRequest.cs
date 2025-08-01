@@ -6,24 +6,18 @@ namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 public class SectionScheduleRequest
 {
     [Required(ErrorMessage = "sectionScheduleWeekday is required.")]
-    public string SectionScheduleWeekday { get; set; } = null!; // e.g. MONDAY
+    public Weekday SectionScheduleWeekday { get; set; }
 
     [Required(ErrorMessage = "sectionScheduleTimeFrom is required.")]
+    [RegularExpression(@"^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$", ErrorMessage = "sectionScheduleTimeFrom must be in HH:mm:ss format.")]
     public string SectionScheduleTimeFrom { get; set; } = null!; // e.g. 09:00:00
 
     [Required(ErrorMessage = "sectionScheduleTimeTo is required.")]
+    [RegularExpression(@"^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$", ErrorMessage = "sectionScheduleTimeTo must be in HH:mm:ss format.")]
     public string SectionScheduleTimeTo { get; set; } = null!;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // weekday validation
-        if (!Enum.TryParse(typeof(Weekday), SectionScheduleWeekday, ignoreCase: true, out _))
-        {
-            yield return new ValidationResult(
-                $"Invalid weekday for : '{SectionScheduleWeekday}'. Must be one of: {string.Join(", ", Enum.GetNames(typeof(Weekday)))}",
-                new[] { nameof(SectionScheduleWeekday) });
-        }
-
         // time vaidation
         if (TimeSpan.TryParse(SectionScheduleTimeFrom, out var timeFrom) &&
             TimeSpan.TryParse(SectionScheduleTimeTo, out var timeTo))
@@ -35,7 +29,7 @@ public class SectionScheduleRequest
                     new[] { nameof(SectionScheduleTimeFrom), nameof(SectionScheduleTimeTo) });
             }
         }
-        else
+        else 
         {
             yield return new ValidationResult(
                      $"Invalid time format for SectionScheduleTimeFrom '{SectionScheduleTimeFrom}' or SectionScheduleTimeTo '{SectionScheduleTimeTo}'. Expected format is HH:mm:ss.",

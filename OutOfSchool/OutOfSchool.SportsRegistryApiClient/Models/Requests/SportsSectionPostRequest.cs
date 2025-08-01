@@ -8,14 +8,14 @@ public class SportsSectionPostRequest : IValidatableObject
     [Required(ErrorMessage = "organizationCode is required.")]
     [RegularExpression(@"^[0-9]{8}$", ErrorMessage = "Sport organization code must be exactly 8 digits.")]
     public string OrganizationCode { get; set; } = null!;
-    
+
     [Required(ErrorMessage = "sectionName is required.")]
     public string SectionName { get; set; } = null!;
-    
+
     [Required(ErrorMessage = "sectionSportKindDictIdCode is required.")]
     [Range(1, int.MaxValue, ErrorMessage = "sectionSportKindDictIdCode must be a non-negative Integer.")]
     public int SectionSportKindDictIdCode { get; set; }
-    
+
     [Required(ErrorMessage = "sectionAgeFrom is required.")]
     [Range(0, RegistryConstants.MaxAge, ErrorMessage = "sectionAgeFrom must be a non-negative Integer less than or equal to 120.")]
     public int SectionAgeFrom { get; set; }
@@ -23,7 +23,7 @@ public class SportsSectionPostRequest : IValidatableObject
     [Required(ErrorMessage = "sectionAgeTo is required.")]
     [Range(0, RegistryConstants.MaxAge, ErrorMessage = "sectionAgeTo must be a non-negative Integer less than or equal to 120.")]
     public int SectionAgeTo { get; set; }
-   
+
     public bool SectionIsInShlyahProject { get; set; }
 
     [Required(ErrorMessage = "sectionAddressRegionDictIdCode is required.")]
@@ -61,18 +61,18 @@ public class SportsSectionPostRequest : IValidatableObject
     [RegularExpression(@"^(https?://)?(www\.)?facebook\.com/.*$", ErrorMessage = "sectionFacebookUrl must be a valid Facebook URL.")]
     //[RegularExpression(@"^https?://(?:[\\w-]+\\.)*facebook\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
     public string? SectionFacebookUrl { get; set; }
-    
+
     [RegularExpression(@"^https?://(?:[\\w-]+\\.)*instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
     //[RegularExpression(@"^https?://(?:www\\.)?instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
     public string? SectionInstagramUrl { get; set; }
 
     [Required(ErrorMessage = "sectionPracticeFormat is required.")]
-    public string SectionPracticeFormat { get; set; } = null!; // OFFLINE / ONLINE
+    public SectionPracticeFormat SectionPracticeFormat { get; set; } // OFFLINE / ONLINE / HYBRID
     public string? SectionSelectionCriteria { get; set; }
 
     [Required(ErrorMessage = "sectionPracticeCost is required.")]
     [Range(0, 100000.0, ErrorMessage = "sectionPracticeCost cannot be negative or exceed 100000.")]
-    public double SectionPracticeCost { get; set; }
+    public decimal SectionPracticeCost { get; set; }
 
     [Required(ErrorMessage = "sectionMaxStudentsAmount is required.")]
     [Range(1, 1000, ErrorMessage = "sectionMaxStudentsAmount must be between 1 and 1000.")]
@@ -82,7 +82,7 @@ public class SportsSectionPostRequest : IValidatableObject
     public List<string> SectionPhotos { get; set; } = new();
 
     public List<Guid> SectionTrainers { get; set; } = new();
-    
+
     [Required(ErrorMessage = "sectionPracticePeriodDateFrom is required.")]
     [RegularExpression(@"^\d{2}:\d{2}$", ErrorMessage = "Date must be in DD:MM format.")]
     public string SectionPracticePeriodDateFrom { get; set; } = null!;
@@ -91,21 +91,13 @@ public class SportsSectionPostRequest : IValidatableObject
     [RegularExpression(@"^\d{2}:\d{2}$", ErrorMessage = "Date must be in DD:MM format.")]
     public string SectionPracticePeriodDateTo { get; set; } = null!;
 
-    
+
     [Required(ErrorMessage = "sectionSchedule is required.")]
     [MinLength(1, ErrorMessage = "At least one section schedule is required.")]
     public List<SectionScheduleRequest> SectionSchedule { get; set; } = new();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // practice format validation
-        if (!Enum.TryParse<SectionPracticeFormat>(SectionPracticeFormat, out _))
-        {
-            yield return new ValidationResult(
-                 $"Invalid practice format: '{SectionPracticeFormat}'. Must be one of: {string.Join(", ", Enum.GetNames(typeof(SectionPracticeFormat)))}",
-                new[] { nameof(SectionPracticeFormat) });
-        }
-
         // section age validation
         if (SectionAgeFrom < 0 || SectionAgeTo < 0)
         {
@@ -119,29 +111,6 @@ public class SportsSectionPostRequest : IValidatableObject
             yield return new ValidationResult(
                 "SectionAgeFrom cannot be greater than SectionAgeTo.",
                 new[] { nameof(SectionAgeFrom), nameof(SectionAgeTo) });
-        }
-
-        // schedule completeness validation (every record must have all 3 fields)
-        for (int i = 0; i < SectionSchedule.Count; i++)
-        {
-            var schedule = SectionSchedule[i];
-
-            var hasAnyValue =
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleWeekday) ||
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeFrom) ||
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeTo);
-
-            var hasAllValues =
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleWeekday) &&
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeFrom) &&
-                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeTo);
-
-            if (hasAnyValue && !hasAllValues)
-            {
-                yield return new ValidationResult(
-                    $"Schedule entry {i + 1} is missing required fields.",
-                    new[] { nameof(SectionSchedule) });
-            }
         }
 
         // validate section photo URLs
@@ -158,5 +127,18 @@ public class SportsSectionPostRequest : IValidatableObject
                     new[] { nameof(SectionPhotos) });
             }
         }
+
+        // validate section practice period dates
+        if (DateTime.TryParseExact(SectionPracticePeriodDateFrom, "dd:MM", null, System.Globalization.DateTimeStyles.None, out var dateFrom) &&
+            DateTime.TryParseExact(SectionPracticePeriodDateTo, "dd:MM", null, System.Globalization.DateTimeStyles.None, out var dateTo))
+        {
+            if (dateFrom > dateTo)
+            {
+                yield return new ValidationResult(
+                    "Practice period start date cannot be after end date.",
+                    new[] { nameof(SectionPracticePeriodDateFrom), nameof(SectionPracticePeriodDateTo) });
+            }
+        }
+
     }
 }
