@@ -1,81 +1,153 @@
-using System.Text.Json.Serialization;
-
+using OutOfSchool.SportsRegistryApiClient.Models.Enums;
+using OutOfSchool.SportsRegistryApiClient.Validators;
+using System.ComponentModel.DataAnnotations;
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
-public class SportsSectionPostRequest
+public class SportsSectionPostRequest : IValidatableObject
 {
-    [JsonPropertyName("organizationCode")]
+    [Required(ErrorMessage = "organizationCode is required.")]
+    [RegularExpression(@"^[0-9]{8}$", ErrorMessage = "Sport organization code must be exactly 8 digits.")]
     public string OrganizationCode { get; set; } = null!;
-
-    [JsonPropertyName("sectionName")]
+    
+    [Required(ErrorMessage = "sectionName is required.")]
     public string SectionName { get; set; } = null!;
-
-    [JsonPropertyName("sectionSportKindDictIdCode")]
+    
+    [Required(ErrorMessage = "sectionSportKindDictIdCode is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "sectionSportKindDictIdCode must be a non-negative Integer.")]
     public int SectionSportKindDictIdCode { get; set; }
-
-    [JsonPropertyName("sectionAgeFrom")]
+    
+    [Required(ErrorMessage = "sectionAgeFrom is required.")]
+    [Range(0, RegistryConstants.MaxAge, ErrorMessage = "sectionAgeFrom must be a non-negative Integer less than or equal to 120.")]
     public int SectionAgeFrom { get; set; }
 
-    [JsonPropertyName("sectionAgeTo")]
+    [Required(ErrorMessage = "sectionAgeTo is required.")]
+    [Range(0, RegistryConstants.MaxAge, ErrorMessage = "sectionAgeTo must be a non-negative Integer less than or equal to 120.")]
     public int SectionAgeTo { get; set; }
-
-    [JsonPropertyName("sectionIsInShlyahProject")]
+   
     public bool SectionIsInShlyahProject { get; set; }
 
-    [JsonPropertyName("sectionAddressLocalityDictIdCode")]
+    [Required(ErrorMessage = "sectionAddressRegionDictIdCode is required.")]
     public string SectionAddressLocalityDictIdCode { get; set; } = null!;
 
-    [JsonPropertyName("sectionAddressStreet")]
+    [Required(ErrorMessage = "sectionAddressStreet is required.")]
     public string SectionAddressStreet { get; set; } = null!;
 
-    [JsonPropertyName("sectionAddressHouse")]
+    [Required(ErrorMessage = "sectionAddressHouse is required.")]
     public string SectionAddressHouse { get; set; } = null!;
 
-    [JsonPropertyName("sectionDescription")]
+    [Required(ErrorMessage = "sectionDescription is required.")]
     public string SectionDescription { get; set; } = null!;
 
-    [JsonPropertyName("sectionRegistrationFlow")]
+    [Required(ErrorMessage = "sectionRegistrationFlow is required.")]
     public string SectionRegistrationFlow { get; set; } = null!;
 
-    [JsonPropertyName("sectionPhones")]
-    public List<string> SectionPhones { get; set; } = new();
+    [Required(ErrorMessage = "sectionPhone is required.")]
+    [PhoneListValidation]
+    public List<string> SectionPhone { get; set; } = new();
 
-    [JsonPropertyName("sectionEmail")]
+    [Required(ErrorMessage = "sectionEmail is required.")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
     public string SectionEmail { get; set; } = null!;
 
-    [JsonPropertyName("sectionRegistrationFormUrl")]
+    [Required(ErrorMessage = "sectionRegistrationFormUrl is required.")]
+    [Url(ErrorMessage = "sectionRegistrationFormUrl must be a valid URL.")]
+    //[RegularExpression(@"^https?://(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d{1,5})?(/[^\\s]*)?$",
+    //ErrorMessage = "sectionRegistrationFormUrl must be a valid HTTP or HTTPS URL.")]
     public string SectionRegistrationFormUrl { get; set; } = null!;
 
-    [JsonPropertyName("sectionUrl")]
-    public string SectionUrl { get; set; } = null!;
+    [Url(ErrorMessage = "Invalid URL format. SectionUrl must be a valid URL.")]
+    public string? SectionUrl { get; set; }
 
-    [JsonPropertyName("sectionFacebookUrl")]
-    public string SectionFacebookUrl { get; set; } = null!;
+    //[RegularExpression(@"^(https?://)?(www\.)?facebook\.com/.*$", ErrorMessage = "sectionFacebookUrl must be a valid Facebook URL.")]
+    [RegularExpression(@"^https?://(?:[\\w-]+\\.)*facebook\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
+    public string? SectionFacebookUrl { get; set; }
 
-    [JsonPropertyName("sectionInstagramUrl")]
-    public string SectionInstagramUrl { get; set; } = null!;
+    //[RegularExpression(@"^https?://(?:[\\w-]+\\.)*instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL."
+    [RegularExpression(@"^https?://(?:www\\.)?instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
+    public string? SectionInstagramUrl { get; set; }
 
-    [JsonPropertyName("sectionPracticeFormat")]
-    public string SectionPracticeFormat { get; set; } = null!;
+    [Required(ErrorMessage = "sectionPracticeFormat is required.")]
+    public string SectionPracticeFormat { get; set; } = null!; // OFFLINE / ONLINE
+    public string? SectionSelectionCriteria { get; set; }
 
-    [JsonPropertyName("sectionSelectionCriteria")]
-    public string SectionSelectionCriteria { get; set; } = null!;
-
-    [JsonPropertyName("sectionPracticeCost")]
+    [Required(ErrorMessage = "sectionPracticeCost is required.")]
+    [Range(0, 100000.0, ErrorMessage = "sectionPracticeCost cannot be negative or exceed 100000.")]
     public double SectionPracticeCost { get; set; }
 
-    [JsonPropertyName("sectionMaxStudentsAmount")]
+    [Required(ErrorMessage = "sectionMaxStudentsAmount is required.")]
+    [Range(1, 1000, ErrorMessage = "sectionMaxStudentsAmount must be between 1 and 1000.")]
     public int SectionMaxStudentsAmount { get; set; }
 
-    [JsonPropertyName("sectionTitlePhoto")]
-    public string SectionTitlePhoto { get; set; } = null!;
-
-    [JsonPropertyName("sectionPhotos")]
+    public string? SectionTitlePhoto { get; set; }
     public List<string> SectionPhotos { get; set; } = new();
 
-    [JsonPropertyName("sectionTrainers")]
     public List<Guid> SectionTrainers { get; set; } = new();
 
-    [JsonPropertyName("sectionSchedule")]
+    [Required(ErrorMessage = "sectionSchedule is required.")]
+    [MinLength(1, ErrorMessage = "At least one section schedule is required.")]
     public List<SectionScheduleRequest> SectionSchedule { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // practice format validation
+        if (!Enum.TryParse<SectionPracticeFormat>(SectionPracticeFormat, out _))
+        {
+            yield return new ValidationResult(
+                 $"Invalid practice format: '{SectionPracticeFormat}'. Must be one of: {string.Join(", ", Enum.GetNames(typeof(SectionPracticeFormat)))}",
+                new[] { nameof(SectionPracticeFormat) });
+        }
+
+        // section age validation
+        if (SectionAgeFrom < 0 || SectionAgeTo < 0)
+        {
+            yield return new ValidationResult(
+                "Age values cannot be negative.",
+                new[] { nameof(SectionAgeFrom) });
+        }
+
+        if (SectionAgeFrom < SectionAgeTo)
+        {
+            yield return new ValidationResult(
+                "SectionAgeFrom cannot be greater than SectionAgeTo.",
+                new[] { nameof(SectionAgeFrom), nameof(SectionAgeTo) });
+        }
+
+        // schedule completeness validation (every record must have all 3 fields)
+        for (int i = 0; i < SectionSchedule.Count; i++)
+        {
+            var schedule = SectionSchedule[i];
+
+            var hasAnyValue =
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleWeekday) ||
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeFrom) ||
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeTo);
+
+            var hasAllValues =
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleWeekday) &&
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeFrom) &&
+                !string.IsNullOrWhiteSpace(schedule.SectionScheduleTimeTo);
+
+            if (hasAnyValue && !hasAllValues)
+            {
+                yield return new ValidationResult(
+                    $"Schedule entry {i + 1} is missing required fields.",
+                    new[] { nameof(SectionSchedule) });
+            }
+        }
+
+        // validate section photo URLs
+        if (SectionPhotos != null && SectionPhotos.Any())
+        {
+            var invalidUrls = SectionPhotos
+                .Where(url => !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                .ToList();
+
+            if (invalidUrls.Any())
+            {
+                yield return new ValidationResult(
+                    $"Invalid photo URLs: {string.Join(", ", invalidUrls)}",
+                    new[] { nameof(SectionPhotos) });
+            }
+        }
+    }
 }
