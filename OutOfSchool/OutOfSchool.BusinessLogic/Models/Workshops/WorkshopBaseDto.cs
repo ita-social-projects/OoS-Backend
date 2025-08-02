@@ -248,15 +248,5 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 }
             }
         }
-
-        if (!CompetitiveSelection && !string.IsNullOrWhiteSpace(CompetitiveSelectionDescription))
-        {
-            CompetitiveSelectionDescription = null;
-        }
-
-        if (!AreThereBenefits && !string.IsNullOrWhiteSpace(PreferentialTermsOfParticipation))
-        {
-            PreferentialTermsOfParticipation = null;
-        }
     }
 }

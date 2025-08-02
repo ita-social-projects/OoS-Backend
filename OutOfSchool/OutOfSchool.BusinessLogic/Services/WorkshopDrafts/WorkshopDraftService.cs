@@ -112,7 +112,8 @@ public class WorkshopDraftService(
         }
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
-        
+        NormalizeConditionalFields(workshopV2Dto);
+
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
         // The result is the created draft with all its related teachers.
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
@@ -1307,5 +1308,22 @@ public class WorkshopDraftService(
         }
 
         return Result<WorkshopDraft>.Success(workshopDraft);
+    }
+
+    /// <summary>
+    /// Sets conditional fields in the DTO to null if their corresponding flags are false.
+    /// </summary>
+    /// <param name="dto">Workshop dto.</param>
+    private void NormalizeConditionalFields(WorkshopV2Dto dto)
+    {
+        if (!dto.CompetitiveSelection)
+        {
+            dto.CompetitiveSelectionDescription = null;
+        }
+
+        if (!dto.AreThereBenefits)
+        {
+            dto.PreferentialTermsOfParticipation = null;
+        }
     }
 }

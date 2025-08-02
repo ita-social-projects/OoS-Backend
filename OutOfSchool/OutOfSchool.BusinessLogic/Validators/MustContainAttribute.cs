@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace OutOfSchool.BusinessLogic.Validators;
+/// <summary>
+/// Attribute to validate that a string contains at least one character of a specified type.
+/// </summary>
 public class MustContainAttribute : ValidationAttribute
 {
     private readonly RequiredCharacterType requiredCharacterType;
