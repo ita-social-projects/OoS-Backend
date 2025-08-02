@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -142,6 +143,100 @@ public class SensitiveCompetitiveEventDraftServiceTest
            Times.Once);
     }
     
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_UpdatesContactsCorrectly_WhenContactsProvided()
+    {
+        // Arrange
+        var existingAddress = new Address { Street = "123 Main St" };
+        var existingContact = new Contacts{};
+
+        var competitiveEventDraft = GetCompetitiveEventDraft(draftId);
+        competitiveEventDraft.CompetitiveEventDraftContent.Contacts.Add(existingContact);
+
+        var addressDto = new AddressDto { Street = "123 Main St" };
+        var contactDto = new ContactsDto{};
+
+        var dto = GetModeratorCompetitiveEventDraftEditDto();
+        dto.Contacts = new List<ContactsDto> { contactDto };
+
+        currentUserServiceMock
+            .Setup(x => x.UserHasRights(It.IsAny<ModeratorRights>(), It.IsAny<TechAdminRights>()))
+            .Returns(Task.CompletedTask);
+
+        draftRepoMock
+            .Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(competitiveEventDraft);
+
+        draftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
+            .ReturnsAsync(competitiveEventDraft);
+
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, dto);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+        Assert.AreEqual(CompetitiveEventDraftStatus.EditedByModerator, competitiveEventDraft.DraftStatus);
+        
+        var updatedContact = competitiveEventDraft.CompetitiveEventDraftContent.Contacts
+            .FirstOrDefault(c => c.Title == "Main Office");
+
+        Assert.NotNull(updatedContact, "Contact should be found");
+        Assert.AreEqual("Main Office", updatedContact.Title);
+        
+        draftRepoMock.Verify(x => x.Update(It.IsAny<CompetitiveEventDraft>()), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateDraftAsModeratorAsync_DoesNotUpdateNonMatchingContacts_WhenContactsProvided()
+    {
+        // Arrange
+        var existingContact = new Contacts
+        {
+            Title = "Main Office",            
+        };
+
+        var competitiveEventDraft = GetCompetitiveEventDraft(draftId);
+        competitiveEventDraft.CompetitiveEventDraftContent.Contacts.Add(existingContact);
+        
+        var nonMatchingContactDto = new ContactsDto
+        {
+            Title = "Branch Office", 
+        };
+
+        var dto = GetModeratorCompetitiveEventDraftEditDto();
+        dto.Contacts = new List<ContactsDto> { nonMatchingContactDto };
+
+        currentUserServiceMock
+            .Setup(x => x.UserHasRights(It.IsAny<ModeratorRights>(), It.IsAny<TechAdminRights>()))
+            .Returns(Task.CompletedTask);
+
+        draftRepoMock
+            .Setup(x => x.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(competitiveEventDraft);
+
+        draftRepoMock.Setup(repo => repo.GetByIdWithDetails(draftId, It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<CompetitiveEventDraft>, IQueryable<CompetitiveEventDraft>>>()))
+            .ReturnsAsync(competitiveEventDraft);
+
+        var originalPhone = existingContact.Phones.First().Number;        
+
+        // Act
+        var result = await service.UpdateDraftAsModeratorAsync(draftId, dto);
+
+        // Assert
+        Assert.IsTrue(result.Succeeded);
+
+        // Verify that the original contact was NOT updated (since title didn't match)
+        var unchangedContact = competitiveEventDraft.CompetitiveEventDraftContent.Contacts
+            .FirstOrDefault(c => c.Title == "Main Office");
+
+        Assert.NotNull(unchangedContact, "Original contact should still exist");
+        Assert.AreEqual(originalPhone, unchangedContact.Phones.First().Number, "Phone should remain unchanged");        
+
+        draftRepoMock.Verify(x => x.Update(It.IsAny<CompetitiveEventDraft>()), Times.Once);
+    }
+
     private CompetitiveEventDraft GetCompetitiveEventDraft(Guid draftId)
     {
         return new CompetitiveEventDraft
