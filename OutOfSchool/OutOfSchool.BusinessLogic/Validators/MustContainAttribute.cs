@@ -10,10 +10,10 @@ public class MustContainAttribute : ValidationAttribute
 {
     private readonly RequiredCharacterType requiredCharacterType;
 
-    private static readonly Regex LatinLetterRegex = new(@"[A-Za-z]");
-    private static readonly Regex CyrillicLetterRegex = new(@"[А-Яа-я]");
-    private static readonly Regex AnyLetterRegex = new(@"\p{L}");
-    private static readonly Regex DigitRegex = new(@"\d");
+    private static readonly Regex LatinLetterRegex = new(@"[A-Za-z]", RegexOptions.NonBacktracking);
+    private static readonly Regex CyrillicLetterRegex = new(@"[А-Яа-я]", RegexOptions.NonBacktracking);
+    private static readonly Regex AnyLetterRegex = new(@"\p{L}", RegexOptions.NonBacktracking);
+    private static readonly Regex DigitRegex = new(@"\d", RegexOptions.NonBacktracking);
 
     public MustContainAttribute(RequiredCharacterType requiredCharacterType)
     {
