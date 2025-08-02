@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.WebApi.Controllers.V2;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -330,6 +331,40 @@ public class CompetitiveEventDraftControllerTests
         Assert.That(internalError?.StatusCode, Is.EqualTo(409));
         var errorDescription = internalError.Value;
         Assert.That(errorDescription, Does.Contain("Service error"));
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsOk_WhenSuccessful()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new ModeratorCompetitiveEventDraftEditDto
+        {
+            Title = "Test title",
+            ShortTitle = "Short title",            
+        };
+
+        var responseDto = new CompetitiveEventDraftResponseDto
+        {
+            CompetitiveEventDraftId = id,
+            DraftStatus = CompetitiveEventDraftStatus.EditedByModerator,
+            CompetitiveEventDetails = new CompetitiveEventV2Dto { Id = id }
+        };
+
+        sensitiveCompetitiveEventDraftServiceMock
+            .Setup(s => s.UpdateDraftAsModeratorAsync(id, dto))
+            .ReturnsAsync(Result<CompetitiveEventDraftResponseDto>.Success(responseDto));
+
+        // Act
+        var result = await controller.UpdateAsModerator(id, dto);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = result as OkObjectResult;
+        Assert.That(okResult?.Value, Is.InstanceOf<Result<CompetitiveEventDraftResponseDto>>());
+        var response = okResult?.Value as Result<CompetitiveEventDraftResponseDto>;
+        Assert.That(response.Succeeded, Is.True);
+        Assert.That(response.Value.CompetitiveEventDraftId, Is.EqualTo(id));
     }
 
     #endregion

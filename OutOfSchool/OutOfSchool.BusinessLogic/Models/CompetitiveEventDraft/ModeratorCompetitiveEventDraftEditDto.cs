@@ -10,9 +10,19 @@ public class ModeratorCompetitiveEventDraftEditDto
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]    
-    public string ShortTitle { get; set; }
+    public string ShortTitle { get; set; }    
 
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
+
+    public string AdditionalDescription { get; set; }
+
+    public string VenueName { get; set; }
+
+    public string TermsOfParticipation { get; set; }
+
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    public string Benefits { get; set; }
 
     public IEnumerable<ContactsDto> Contacts { get; set; } = [];
 }
@@ -24,6 +34,11 @@ public static class ModeratorCompetitiveEventDraftEditDtoExtensions
         model.CompetitiveEventDraftContent.Title = dto.Title;
         model.CompetitiveEventDraftContent.ShortTitle = dto.ShortTitle;
         model.CompetitiveEventDraftContent.DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure;
+        model.CompetitiveEventDraftContent.AdditionalDescription = dto.AdditionalDescription;
+        model.CompetitiveEventDraftContent.VenueName = dto.VenueName;
+        model.CompetitiveEventDraftContent.TermsOfParticipation = dto.TermsOfParticipation;
+        model.CompetitiveEventDraftContent.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
+        model.CompetitiveEventDraftContent.Benefits = dto.Benefits;
 
         UpdateContactsForModeration(model.CompetitiveEventDraftContent.Contacts, dto.Contacts);
 
