@@ -1314,7 +1314,7 @@ public class WorkshopDraftService(
     /// Sets conditional fields in the DTO to null if their corresponding flags are false.
     /// </summary>
     /// <param name="dto">Workshop dto.</param>
-    private void NormalizeConditionalFields(WorkshopV2Dto dto)
+    private static void NormalizeConditionalFields(WorkshopV2Dto dto)
     {
         if (!dto.CompetitiveSelection)
         {
