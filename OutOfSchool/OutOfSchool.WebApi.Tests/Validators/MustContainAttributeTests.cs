@@ -81,7 +81,7 @@ public class MustContainAttributeTests
     {
         var attribute = new MustContainAttribute(type);
         var result = attribute.GetValidationResult(input, new ValidationContext(new object()));
-        Assert.IsNotNull(result);0
+        Assert.IsNotNull(result);
         Assert.AreEqual("Field must contain at least one letter.", result.ErrorMessage);
     }
 
