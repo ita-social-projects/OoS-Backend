@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
@@ -13,7 +14,7 @@ public static class WorkshopDraftToSportSectionExtensions
         {
             OrganizationCode = draft.Provider.Edrpou,
             SectionName = content.Title,
-            
+
             //SectionSportKindDictIdCode = 1,  не мапити //Ідентифікатор виду спорту з довідника 
 
             SectionAgeFrom = content.MinAge,
@@ -29,10 +30,10 @@ public static class WorkshopDraftToSportSectionExtensions
 
             SectionRegistrationFlow = content.EnrollmentProcedureDescription,
 
-            SectionPhones = defaultContact?.Phones.Select(p => p.Number).Distinct().ToList()?? [],
+            SectionPhones = defaultContact?.Phones.Select(p => p.Number).Distinct().ToList() ?? [],
 
             SectionEmail = content.Contacts.Where(c => c.IsDefault).FirstOrDefault().Emails.FirstOrDefault().Address,
-            
+
             SectionRegistrationFormUrl = null, // what field does it map from?
 
             SectionUrl = defaultContact?.SocialNetworks
@@ -43,14 +44,14 @@ public static class WorkshopDraftToSportSectionExtensions
 
             SectionInstagramUrl = defaultContact?.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
-            
+
             SectionPracticeFormat = content.FormOfLearning.ToSectionPracticeFormat(), // ONLINE / OFFLINE / HYBRID
 
             SectionSelectionCriteria = content.CompetitiveSelectionDescription,
 
             SectionPracticeCost = content.Price,
 
-            SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue 
+            SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue
             ? 1000 : (int)content.AvailableSeats,
 
             //SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId) // TODO
@@ -66,14 +67,23 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd:MM"),
             SectionPracticePeriodDateTo = content.StudyPeriodEndDate.ToString("dd:MM"),
 
-            SectionSchedule = content.DateTimeRanges?
-            .SelectMany(r => r.Workdays.Select(day => new SectionScheduleRequest
-            {
-                SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
-                SectionScheduleTimeFrom = r.StartTime.ToString("HH:mm:ss"),
-                SectionScheduleTimeTo = r.EndTime.ToString("HH:mm:ss"),
-            }))
-            .ToList() ?? new(),
+            //SectionSchedule = content.DateTimeRanges?
+            //.SelectMany(r => r.Workdays.Select(day => new SectionScheduleRequest
+            //{
+            //    SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
+            //    SectionScheduleTimeFrom = r.StartTime.ToString("HH:mm:ss"),
+            //    SectionScheduleTimeTo = r.EndTime.ToString("HH:mm:ss"),
+            //}))
+            //.ToList() ?? new(),
+            SectionSchedule = content.DateTimeRanges?.SelectMany(r =>
+                 r.Workdays
+                .SelectMany(flags => DecomposeFlags(flags)
+                .Select(day => new SectionScheduleRequest
+                {
+                    SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
+                    SectionScheduleTimeFrom = r.StartTime.ToString("HH:mm:ss"),
+                    SectionScheduleTimeTo = r.EndTime.ToString("HH:mm:ss"),
+                }))).ToList() ?? new(),
         };
     }
     public static SectionPracticeFormat ToSectionPracticeFormat(this FormOfLearning formOfLearning)
@@ -86,4 +96,10 @@ public static class WorkshopDraftToSportSectionExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(formOfLearning), formOfLearning, "Unsupported learning format. Must be Online, Offline or Mixed."),
         };
     }
+    public static IEnumerable<DaysBitMask> DecomposeFlags(DaysBitMask flags)
+    {
+        return Enum.GetValues<DaysBitMask>()
+            .Where(d => d != DaysBitMask.None && flags.HasFlag(d));
+    }
+
 }
