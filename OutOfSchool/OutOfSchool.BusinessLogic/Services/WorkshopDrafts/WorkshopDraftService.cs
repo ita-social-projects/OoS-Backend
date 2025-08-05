@@ -64,7 +64,8 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IOptions<InstitutionOptions> institutionSettings
+    IOptions<InstitutionOptions> institutionSettings,
+    IOptions<ImageStorageOptions> imageStorageOptions
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
@@ -342,12 +343,13 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            
             // draft -> sport registry
             // push sport Api
             // <- section ID 
             // workshopDraft.sectionID = sectionId;
-            
+            var options = imageStorageOptions.Value.BaseImageUrl;
+            var sportSectionPostRequest = workshopDraft.ToSportSectionPostRequest(options);
+
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
