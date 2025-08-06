@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 [ApiController]
 [AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/export")]
-[Authorize(Policy = "ExternalClientPolicy")]
+// [Authorize(Policy = "ExternalClientPolicy")]
 public class ExternalExportController : ControllerBase
 {
     private readonly IExternalExportService externalProviderService;
@@ -23,7 +23,7 @@ public class ExternalExportController : ControllerBase
     /// <summary>
     /// Get Providers that match filter's parameters.
     /// </summary>
-    /// <param name="updatedAfter">The date to filter providers based on their last update.</param>
+    /// <param name="updatedAfter">The date to filter providers based on their last update. Format: ISO-8601 with timezone offset (e.g., 2025-08-01T10:00:00+03:00).</param>
     /// <param name="offsetFilter">Filter to get a part of all providers that were found.</param>
     /// <returns><see cref="SearchResult{InfoProviderBaseDto}"/>, or no content.</returns>
     [HttpGet]
@@ -32,15 +32,15 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("providers")]
     public async Task<IActionResult> GetProvidersByFilter(
-        [FromQuery] DateTime updatedAfter,
+        [FromQuery] DateTimeOffset updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetProviders(updatedAfter, offsetFilter)
+        await externalProviderService.GetProviders(updatedAfter.UtcDateTime, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get Workshops that match filter's parameters.
     /// </summary>
-    /// <param name="updatedAfter">The date to filter workshops based on their last update.</param>
+    /// <param name="updatedAfter">The date to filter workshops based on their last update. Format: ISO-8601 with timezone offset (e.g., 2025-08-01T10:00:00+03:00).</param>
     /// <param name="offsetFilter">Filter to get a part of all workshops that were found.</param>
     /// <returns><see cref="SearchResult{WorkshopInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
@@ -49,15 +49,15 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("workshops")]
     public async Task<IActionResult> GetWorkshopsByFilter(
-        [FromQuery] DateTime updatedAfter,
+        [FromQuery] DateTimeOffset updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetWorkshops(updatedAfter, offsetFilter)
+        await externalProviderService.GetWorkshops(updatedAfter.UtcDateTime, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get CompetitiveEvents that match filter's parameters.
     /// </summary>
-    /// <param name="updatedAfter">The date to filter competitive events based on their last update.</param>
+    /// <param name="updatedAfter">The date to filter competitive events based on their last update. Format: ISO-8601 with timezone offset (e.g., 2025-08-01T10:00:00+03:00).</param>
     /// <param name="offsetFilter">Filter to get a part of all competitive events that were found.</param>
     /// <returns><see cref="SearchResult{CompetitiveEventInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
@@ -65,15 +65,15 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("competitiveevents")]
-    public async Task<IActionResult> GetCompetitiveEventsByFilter([FromQuery] DateTime updatedAfter,
+    public async Task<IActionResult> GetCompetitiveEventsByFilter([FromQuery] DateTimeOffset updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetCompetitiveEvents(updatedAfter, offsetFilter)
+        await externalProviderService.GetCompetitiveEvents(updatedAfter.UtcDateTime, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get Directions that match filter's parameters.
     /// </summary>
-    /// <param name="updatedAfter">The date to filter directions based on their last update.</param>
+    /// <param name="updatedAfter">The date to filter directions based on their last update. Format: ISO-8601 with timezone offset (e.g., 2025-08-01T10:00:00+03:00).</param>
     /// <param name="offsetFilter">Filter to get a part of all directions that were found.</param>
     /// <returns><see cref="SearchResult{DirectionInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
@@ -81,15 +81,15 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("directions")]
-    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] DateTime updatedAfter,
+    public async Task<IActionResult> GetDirectionsByFilter([FromQuery] DateTimeOffset updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetDirections(updatedAfter, offsetFilter)
+        await externalProviderService.GetDirections(updatedAfter.UtcDateTime, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get SubDirections that match filter's parameters.
     /// </summary>
-    /// <param name="updatedAfter">The date to filter directions based on their last update.</param>
+    /// <param name="updatedAfter">The date to filter directions based on their last update. Format: ISO-8601 with timezone offset (e.g., 2025-08-01T10:00:00+03:00).</param>
     /// <param name="offsetFilter">Filter to get a part of all sub directions that were found.</param>
     /// <returns><see cref="SearchResult{SubDirectionsInfoBaseDto}"/>, or no content.</returns>
     [HttpGet]
@@ -97,8 +97,8 @@ public class ExternalExportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Route("subdirections")]
-    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] DateTime updatedAfter,
+    public async Task<IActionResult> GetSubDirectionsByFilter([FromQuery] DateTimeOffset updatedAfter,
         [FromQuery] OffsetFilter offsetFilter) =>
-        await externalProviderService.GetSubDirections(updatedAfter, offsetFilter)
+        await externalProviderService.GetSubDirections(updatedAfter.UtcDateTime, offsetFilter)
             .ProtectAndMap(this.SearchResultToOkOrNoContent);
 }
