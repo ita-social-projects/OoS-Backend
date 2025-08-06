@@ -445,6 +445,28 @@ public class CompetitiveEventDraftController : ControllerBase
         return this.ToActionResult(result);
     }
 
+    /// <summary>
+    /// Updates competitive event draft  by a user with permission to moderate drafts.
+    /// </summary>
+    /// <param name="draftId">The ID of the draft.</param>
+    /// <param name="dto">The competitive event draft dto to update</param>
+    /// <returns>Returns <see cref="CompetitiveEventDraftResponseDto"/></returns>
+    [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{draftId}/moderator-edit")]
+    [HasPermission(Permissions.CompetitiveEventApprove)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateAsModerator(Guid draftId, [FromBody] ModeratorCompetitiveEventDraftEditDto dto)
+    {
+        var result = await sensitiveCompetitiveEventDraftService.UpdateDraftAsModeratorAsync(draftId, dto);
+
+        return this.ToActionResult(result);
+    }
+
     private async Task<IActionResult> ValidateProvider(Guid providerId)
     {
         var isBlocked = await providerService.IsBlocked(providerId).ConfigureAwait(false);

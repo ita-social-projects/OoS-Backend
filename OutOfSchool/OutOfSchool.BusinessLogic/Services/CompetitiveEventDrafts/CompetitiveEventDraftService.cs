@@ -600,6 +600,54 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
     }
 
+    // <inheritdoc/>
+    public async Task<Result<CompetitiveEventDraftResponseDto>> UpdateDraftAsModeratorAsync(Guid draftId, ModeratorCompetitiveEventDraftEditDto dto)
+    {
+        if (dto == null)
+        {
+            logger.LogError("Parameter '{ParameterName}' is null.", nameof(dto));
+            
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Dto must not be null."
+            });
+        }
+
+        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);        
+        
+        var validation = await ValidateDraftForModerator(draftId);                
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<CompetitiveEventDraftResponseDto>();
+        }
+
+        var competitiveEventDraft = validation.Value;
+
+        try
+        {            
+            dto.ToDraft(competitiveEventDraft);
+            competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.EditedByModerator;
+
+            await competitiveEventDraftRepository.Update(competitiveEventDraft);            
+            var draftWithDetails = await GetByIdWithProviderDetails(competitiveEventDraft.Id);
+
+            logger.LogInformation("Competitive event was updated by moderator.");
+
+            return Result<CompetitiveEventDraftResponseDto>.Success(draftWithDetails.ToResponseDto());
+        }
+        catch (Exception ex) 
+        {
+            logger.LogError(ex, "Error occurred while updating CompetitiveEventDraft with ID {DraftId}.", draftId);
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while updating CompetitiveEventDraft."
+            });
+        }
+    }
+
     private async Task<CompetitiveEventDraftResponseDto> MapCompetitiveEventDraftWithDetails(CompetitiveEventDraft draft)
     {
         var competitiveEventDraftResponseDto = draft.ToResponseDto();

@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.WebApi.Controllers.V2;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -330,6 +331,109 @@ public class CompetitiveEventDraftControllerTests
         Assert.That(internalError?.StatusCode, Is.EqualTo(409));
         var errorDescription = internalError.Value;
         Assert.That(errorDescription, Does.Contain("Service error"));
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsOk_WhenSuccessful()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new ModeratorCompetitiveEventDraftEditDto
+        {
+            Title = "Test title",
+            ShortTitle = "Short title",
+        };
+        
+        var responseDto = new CompetitiveEventDraftResponseDto
+        {
+            CompetitiveEventDraftId = id,
+            DraftStatus = CompetitiveEventDraftStatus.EditedByModerator,
+            CompetitiveEventDetails = new CompetitiveEventV2Dto { Id = id }
+        };
+
+        sensitiveCompetitiveEventDraftServiceMock
+            .Setup(s => s.UpdateDraftAsModeratorAsync(id, dto))
+            .ReturnsAsync(Result<CompetitiveEventDraftResponseDto>.Success(responseDto));
+
+        // Act
+        var result = await controller.UpdateAsModerator(id, dto);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = result as OkObjectResult;
+        
+        Assert.That(okResult?.Value, Is.InstanceOf<CompetitiveEventDraftResponseDto>());
+        var response = okResult?.Value as CompetitiveEventDraftResponseDto;
+
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.CompetitiveEventDraftId, Is.EqualTo(id));
+        Assert.That(response.DraftStatus, Is.EqualTo(CompetitiveEventDraftStatus.EditedByModerator));
+
+        sensitiveCompetitiveEventDraftServiceMock.Verify(
+            s => s.UpdateDraftAsModeratorAsync(id, dto),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsNotFound_WhenDraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new ModeratorCompetitiveEventDraftEditDto
+        {
+            Title = "Test title",
+            ShortTitle = "Short title"
+        };
+
+        sensitiveCompetitiveEventDraftServiceMock
+            .Setup(s => s.UpdateDraftAsModeratorAsync(id, dto))
+            .ReturnsAsync(Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "Draft not found."
+            }));
+
+        // Act
+        var result = await controller.UpdateAsModerator(id, dto);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+
+        sensitiveCompetitiveEventDraftServiceMock.Verify(
+            s => s.UpdateDraftAsModeratorAsync(id, dto),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateAsModerator_ReturnsInternalServerError_WhenServiceThrowsException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new ModeratorCompetitiveEventDraftEditDto
+        {
+            Title = "Test title",
+            ShortTitle = "Short title"
+        };
+
+        sensitiveCompetitiveEventDraftServiceMock
+            .Setup(s => s.UpdateDraftAsModeratorAsync(id, dto))
+            .ReturnsAsync(Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while updating CompetitiveEventDraft."
+            }));
+
+        // Act
+        var result = await controller.UpdateAsModerator(id, dto);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var objectResult = result as ObjectResult;
+        Assert.That(objectResult?.StatusCode, Is.EqualTo(500));
+
+        sensitiveCompetitiveEventDraftServiceMock.Verify(
+            s => s.UpdateDraftAsModeratorAsync(id, dto),
+            Times.Once);
     }
 
     #endregion

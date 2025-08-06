@@ -30,4 +30,12 @@ public interface ISensitiveCompetitiveEventDraftService
     /// <param name="imageIds">A collection of externalStorageIds of images to delete.</param>
     /// <returns>A <see cref="Result{CompetitiveEventDraftResponseDto}"/> with the updated draft or error information.</returns>
     Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageIds);
-} 
+
+    /// <summary>
+    /// Updates competitive event draft on behalf of a moderator.
+    /// </summary>
+    /// <param name="draftId">The ID of the competitive event draft.</param>
+    /// <param name="dto">Edited competitive event daraft.</param>
+    /// <returns>A <see cref="Result{CompetitiveEventDraftResponseDto}"/> with the updated draft or error information.</returns>
+    Task<Result<CompetitiveEventDraftResponseDto>> UpdateDraftAsModeratorAsync(Guid draftId, ModeratorCompetitiveEventDraftEditDto dto);
+}
