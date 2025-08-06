@@ -2,11 +2,12 @@
 using OutOfSchool.Services.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public static class WorkshopDraftToSportSectionExtensions
 {
-    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, string baseImageUrl)
+    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, [NotNull] string baseImageUrl) // check not null
     {
         var content = draft.WorkshopDraftContent;
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);

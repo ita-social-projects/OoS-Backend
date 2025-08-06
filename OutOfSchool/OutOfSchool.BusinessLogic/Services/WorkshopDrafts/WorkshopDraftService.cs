@@ -347,9 +347,8 @@ public class WorkshopDraftService(
             // push sport Api
             // <- section ID 
             // workshopDraft.sectionID = sectionId;
-            var options = imageStorageOptions.Value.BaseImageUrl;
-            var sportSectionPostRequest = workshopDraft.ToSportSectionPostRequest(options);
-
+            //var baseUrl = imageStorageOptions.Value.BaseImageUrl;
+            //var sportSectionPostRequest = workshopDraft.ToSportSectionPostRequest(baseUrl);
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
