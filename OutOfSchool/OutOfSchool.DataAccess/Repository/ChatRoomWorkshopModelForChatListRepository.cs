@@ -89,7 +89,7 @@ public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModel
                     Id = item.Workshop.Id,
                     Title = item.Workshop.Title,
                     ProviderId = item.Workshop.ProviderId,
-                    ProviderTitle = item.Workshop.ProviderTitle,
+                    ProviderTitle = item.Workshop.Provider.FullTitle,
                 },
                 ParentId = item.ParentId,
                 Parent = new ParentInfoForChatList()

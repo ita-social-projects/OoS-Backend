@@ -16,13 +16,4 @@ public interface IWorkshopDraftRepository : IEntityRepository<Guid, WorkshopDraf
     /// Returns an empty collection if no drafts are found.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="providerId"/> is <c>null</c>.</exception>
     Task<IEnumerable<WorkshopDraft>> GetByProviderIdAsync(Guid providerId);
-
-    /// <summary>
-    /// Update ProviderTitle and ProviderTitleEn in all workshop drafts for a provider.
-    /// </summary>
-    /// <param name="providerId">Id of Provider to be searched by.</param>
-    /// <param name="providerTitle">Full Title of Provider to be changed.</param>
-    /// <param name="providerTitleEn">Full English Title of Provider to be changed.</param>
-    /// <returns>List of WorkshopDrafts for the specified provider.</returns>
-    Task<IEnumerable<WorkshopDraft>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn);
 }
