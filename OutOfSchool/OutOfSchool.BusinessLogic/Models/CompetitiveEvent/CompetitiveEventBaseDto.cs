@@ -36,6 +36,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [Required]
     public int CoverageId { get; set; }
 
+    [FromForm]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
 
@@ -90,6 +91,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
 
+    [FromForm]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> SubDirectionIds { get; set; } = [];
 }

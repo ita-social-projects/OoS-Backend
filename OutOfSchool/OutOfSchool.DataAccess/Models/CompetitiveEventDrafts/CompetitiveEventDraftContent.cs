@@ -1,4 +1,5 @@
 ﻿using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.ContactInfo;
 using System;
 using System.Collections.Generic;
@@ -54,4 +55,8 @@ public class CompetitiveEventDraftContent : IHasContacts
     public bool CompetitiveSelection { get; set; }
 
     public List<Contacts> Contacts { get; set; }
+
+    public List<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
+    
+    public List<long> SubDirectionIds { get; set; }       
 }
