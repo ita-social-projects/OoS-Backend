@@ -19,7 +19,7 @@ public static class WorkshopInfoForChatListDtoExtensions
         => new()
         {
             Id = model.Id,
-            ProviderTitle = model.ProviderTitle,
+            ProviderTitle = model.Provider?.FullTitle,
             Title = model.Title,
             ProviderId = model.ProviderId,
         };
