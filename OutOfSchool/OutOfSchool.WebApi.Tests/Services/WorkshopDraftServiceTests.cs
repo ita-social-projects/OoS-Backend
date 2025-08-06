@@ -56,6 +56,7 @@ public class WorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
+    private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
 
     private string userId;
 
@@ -101,6 +102,13 @@ public class WorkshopDraftServiceTests
         institutionOptionsMock.Setup(x => x.Value)
             .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
       
+        imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
+        imageStorageOptionsMock.Setup(x => x.Value)
+            .Returns(new ImageStorageOptions
+            {
+                BaseImageUrl = "https://replace_me.com/images/"
+            });
+
         userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
@@ -120,7 +128,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
         SetupInstitutionHierarchy();
     }
 
@@ -1009,7 +1018,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    new Mock<IChangesLogService>().Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
