@@ -584,8 +584,8 @@ public class ApplicationService : IApplicationService
             var tempPredicate = PredicateBuilder.False<Application>();
             tempPredicate = tempPredicate
                 .Or(a => a.Workshop.Title == filter.SearchString)
-                .Or(a => a.Workshop.ProviderTitle.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
-                .Or(a => a.Workshop.ProviderTitleEn.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
+                .Or(a => a.Workshop.Provider.FullTitle.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
+                .Or(a => a.Workshop.Provider.FullTitleEn.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase))
                 .Or(a => a.Child.FirstName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.MiddleName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase)
                          || a.Child.LastName.StartsWith(filter.SearchString, StringComparison.InvariantCultureIgnoreCase));

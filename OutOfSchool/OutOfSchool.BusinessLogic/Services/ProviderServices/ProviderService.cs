@@ -11,7 +11,6 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
-using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 
@@ -604,12 +603,8 @@ public class ProviderService(
                 checkProvider = await providerRepository.RunInTransaction(async () =>
                 {
                     var workshops = await workshopServiceCombiner
-                        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle,
+                        .UpdateProviderTitleES(providerUpdateDto.Id, providerUpdateDto.FullTitle,
                             providerUpdateDto.FullTitleEn)
-                        .ConfigureAwait(false);
-
-                    var workshopDrafts = await UpdateWorkshopDraftsProviderTitleAsync(
-                            providerUpdateDto.Id, providerUpdateDto.FullTitle, providerUpdateDto.FullTitleEn)
                         .ConfigureAwait(false);
 
                     providerUpdateDto.SetToModel(checkProvider);
@@ -619,13 +614,7 @@ public class ProviderService(
                     foreach (var workshop in workshops)
                     {
                         logger.LogDebug("Provider's properties with Id = {ProviderId} " +
-                                              "in workshops with Id = {WorkshopId} updated successfully", checkProvider?.Id, workshop?.Id);
-                    }
-
-                    foreach (var workshopDraft in workshopDrafts)
-                    {
-                        logger.LogDebug("Provider's properties with Id = {ProviderId} " +
-                                              "in workshop drafts with Id = {WorkshopDraftId} updated successfully", checkProvider?.Id, workshopDraft?.Id);
+                                              "in workshops with Id = {WorkshopId} updated successfully in ElasticSearch", checkProvider?.Id, workshop?.Id);
                     }
 
                     return checkProvider;
@@ -1009,27 +998,6 @@ public class ProviderService(
                     PositionId = position.Id
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
-        }
-    }
-
-    private async Task<IEnumerable<WorkshopDraft>> UpdateWorkshopDraftsProviderTitleAsync(Guid providerId, string providerTitle, string providerTitleEn)
-    {
-        logger.LogInformation("Partial updating of WorkshopDrafts with ProviderId = {ProviderId} was started.", providerId);
-        try
-        {
-            return await workshopDraftRepository
-                .UpdateProviderTitle(providerId, providerTitle, providerTitleEn)
-                .ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogError(
-                ex,
-                "Partial updating {EntityName} with ProviderId = {ProviderId} failed due to concurrency issue. Exception: {ExceptionMessage}",
-                nameof(WorkshopDraft),
-                providerId,
-                ex.Message);
-            throw;
         }
     }
 }

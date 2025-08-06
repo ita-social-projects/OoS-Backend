@@ -261,6 +261,24 @@ public class WorkshopService(
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<Workshop>> GetAllByProviderId(Guid providerId)
+    {
+        logger.LogInformation("Getting all Workshops by ProviderId started. Looking ProviderId = {ProviderId}.", providerId);
+
+        var workshops = await workshopRepository.GetByFilter(
+            whereExpression: x => x.ProviderId == providerId && x.Status != WorkshopStatus.Archived);
+
+        if (workshops == null || !workshops.Any())
+            {
+            logger.LogInformation("There aren't Workshops for Provider with Id = {ProviderId}.", providerId);
+            return [];
+        }
+        logger.LogInformation("From Workshop table were successfully received {Count} records.", workshops.Count());
+
+        return workshops;
+    }
+
+    /// <inheritdoc/>
     public async Task<SearchResult<WorkshopProviderViewCard>> GetByProviderId(Guid id, WorkshopFilterTitle filter)
     {
         logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
@@ -544,24 +562,6 @@ public class WorkshopService(
             UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
-    }
-
-    /// <inheritdoc/>
-    /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
-    {
-        logger.LogInformation("Partial updating of Workshops with ProviderId = {ProviderId} was started.", providerId);
-
-        try
-        {
-            return await workshopRepository.UpdateProviderTitle(providerId, providerTitle, providerTitleEn).ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            logger.LogError(exception,
-                $"Partial updating {nameof(Workshop)} with ProviderId = {providerId} was failed. Exception: {exception.Message}");
-            throw; // TODO Probably should not rethrow this exception to the higher level. See pull request [Provicevk/unified responses #843] as future decision
-        }
     }
 
     /// <inheritdoc/>
@@ -942,8 +942,8 @@ public class WorkshopService(
                     tempPredicate = tempPredicate.Or(
                         x => x.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.Contacts.Any(c => c.Emails.Any(e => e.Address.Contains(word, StringComparison.InvariantCultureIgnoreCase))));
                 }
 
@@ -1327,8 +1327,6 @@ public class WorkshopService(
 
         createdWorkshop.Provider = await providerRepository.GetById(createdWorkshop.ProviderId).ConfigureAwait(false);
         createdWorkshop.ProviderOwnership = createdWorkshop.Provider.Ownership;
-        createdWorkshop.ProviderTitle = createdWorkshop.Provider.FullTitle;
-        createdWorkshop.ProviderTitleEn = createdWorkshop.Provider.FullTitleEn;
 
         if (!dto.Teachers.IsNullOrEmpty())
         {
