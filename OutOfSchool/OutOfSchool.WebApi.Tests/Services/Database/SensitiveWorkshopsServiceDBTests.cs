@@ -457,8 +457,14 @@ public class SensitiveWorkshopsServiceDBTests
             workshop.ShortTitle = config.ShortTitle;
             workshop.LanguageOfEducationId = language.Id;
             workshop.LanguageOfEducation = language;
-            workshop.ProviderTitle = config.ProviderTitle;
-            workshop.ProviderTitleEn = config.ProviderTitleEn;
+
+            workshop.Provider = new Provider
+            {
+                FullTitle = config.ProviderTitle,
+                FullTitleEn = config.ProviderTitleEn,
+                Edrpou = "12345678",
+            };
+
             workshop.Contacts.FirstOrDefault()?.Emails.Add(new()
             {
                 Type = "Test",
