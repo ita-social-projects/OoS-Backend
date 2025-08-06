@@ -56,7 +56,6 @@ public class ProviderService(
     IOfficialRepository officialRepository,
     IPositionRepository positionRepository,
     IWorkshopServicesCombiner workshopServiceCombiner,
-    IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
     IChangesLogService changesLogService,
     INotificationService notificationService,

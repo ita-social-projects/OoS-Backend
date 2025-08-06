@@ -78,7 +78,6 @@ public class ProviderServiceTests
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
-        var workshopDraftRepository = new Mock<IWorkshopDraftRepository>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();
         notificationService = new Mock<INotificationService>(MockBehavior.Strict);
@@ -112,7 +111,6 @@ public class ProviderServiceTests
             officialRepositoryMock.Object,
             positionRepositoryMock.Object,
             workshopServicesCombiner.Object,
-            workshopDraftRepository.Object,
             providerImagesService.Object,
             changesLogService.Object,
             notificationService.Object,
