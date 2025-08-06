@@ -1,6 +1,6 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
-using System.Collections.Generic;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Enums;
 
@@ -13,14 +13,15 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.SpecialNeedsType, f => f.Random.Enum<SpecialNeedsType>())
         .RuleFor(w => w.IsInclusive, f => f.Random.Bool())
         .RuleFor(w => w.EducationalShift, f => f.Random.Enum<EducationalShift>())
-        .RuleFor(w => w.LanguageOfEducationId, f => f.Random.Long(1, uint.MaxValue))
         .RuleFor(w => w.AgeComposition, f => f.Random.Enum<AgeComposition>())
+        .RuleFor(w => w.AreThereBenefits, f => f.Random.Bool())
+        .RuleFor(w => w.IsChampionPath, f => f.Random.Bool())
         .RuleFor(w => w.WorkshopType, f => f.Random.Enum<WorkshopType>())
         .RuleFor(w => w.ParentWorkshopId, f => null)
         .RuleFor(w => w.IsPaid, f => true)
         .RuleFor(w => w.Price, f => f.Random.Decimal())
         .RuleFor(w => w.PayRate, f => f.PickRandom<PayRateType>())
-        .RuleFor(x => x.Base64ImageFiles, f => f.Make(5, () => f.Random.Word()))
+        .RuleFor(w => w.PreferentialTermsOfParticipation, f => f.Lorem.Paragraph())
         .CustomInstantiator(f =>
         {
             var dto = new WorkshopRequiredPropertiesDto();

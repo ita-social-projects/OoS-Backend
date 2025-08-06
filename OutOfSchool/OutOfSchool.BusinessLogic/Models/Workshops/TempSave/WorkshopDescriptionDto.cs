@@ -13,6 +13,7 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
+    // ???
     public List<long> DirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -24,8 +25,19 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
 
+    // ???
     [ConditionalRequired("EnableWorkshopTags")]
     [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
+
+    [Required(ErrorMessage = "Property CompetitiveSelection is required")]
+    public bool CompetitiveSelection { get; set; }
+
+    [MaxLength(500)]
+    public string CompetitiveSelectionDescription { get; set; }
+
+    [ConditionalMinLength("Images", 1, ErrorMessage = "At least one image is required")]
+    [ConditionalMaxLength("Images", 10, ErrorMessage = "The image collection must contain less than 10 items")]
+    public List<string> Base64ImageFiles { get; set; }
 }

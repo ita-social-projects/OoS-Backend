@@ -78,4 +78,45 @@ public class ConditionalValidationAttributes
             return ValidationResult.Success;
         }
     }
+
+    /// <summary>
+    /// Attribute to conditionally validate the maximum length of a field based on a feature flag.
+    /// </summary>
+    public class ConditionalMaxLengthAttribute : ValidationAttribute
+    {
+        private readonly string _featureFlagName;
+        private readonly int _maxLength;
+
+        public ConditionalMaxLengthAttribute(string featureFlag, int maxLength)
+        {
+            _featureFlagName = featureFlag;
+            _maxLength = maxLength;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var featureManager = (IFeatureManager)validationContext.GetService(typeof(IFeatureManager));
+
+            if (featureManager == null)
+            {
+                return new ValidationResult("IFeatureManager service is not registered.");
+            }
+
+            bool enabled = featureManager.IsEnabledAsync(_featureFlagName).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            if (enabled)
+            {
+                var result = value switch
+                {
+                    string str when str.Length > _maxLength => new ValidationResult(ErrorMessage ?? $"The field must be less than {_maxLength} characters long when the feature is enabled."),
+                    ICollection collection when collection.Count > _maxLength => new ValidationResult(ErrorMessage ?? $"The collection must contain less than {_maxLength} items when the feature is enabled."),
+                    _ => ValidationResult.Success
+                };
+
+                return result;
+            }
+
+            return ValidationResult.Success;
+        }
+    }
 }

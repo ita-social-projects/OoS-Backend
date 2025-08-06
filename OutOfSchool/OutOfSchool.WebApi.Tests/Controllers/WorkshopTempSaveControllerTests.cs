@@ -280,6 +280,6 @@ public class WorkshopTempSaveControllerTests
     private static WorkshopMainRequiredPropertiesDto GetBaseWorkshopDtoFakeDraft() =>
         WorkshopMainRequiredPropertiesDtoGenerator.Generate();
 
-    private static WorkshopRequiredPropertiesDto GetDerivedWorkshopDtoFakeDraft() =>
-        WorkshopRequiredPropertiesDtoGenerator.Generate();
+    private static WorkshopDescriptionDto GetDerivedWorkshopDtoFakeDraft() =>
+        WorkshopDescriptionDtoGenerator.Generate();
 }
