@@ -20,6 +20,7 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.IsPaid, f => true)
         .RuleFor(w => w.Price, f => f.Random.Decimal())
         .RuleFor(w => w.PayRate, f => f.PickRandom<PayRateType>())
+        .RuleFor(x => x.Base64ImageFiles, f => f.Make(5, () => f.Random.Word()))
         .CustomInstantiator(f =>
         {
             var dto = new WorkshopRequiredPropertiesDto();

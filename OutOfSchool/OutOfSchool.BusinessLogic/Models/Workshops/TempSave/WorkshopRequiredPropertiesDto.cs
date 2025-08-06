@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -52,4 +53,8 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public Guid? InstitutionHierarchyId { get; set; }
 
     public bool IsChampionPath { get; set; } = false;
+
+    [ConditionalRequired("Images")]
+    [ConditionalMinLength("Images", 1, ErrorMessage = "At least one image is required")]
+    public List<string> Base64ImageFiles { get; set; }
 }

@@ -6,6 +6,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -65,6 +66,9 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Language of education is required")]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
+
+    [ConditionalRequired("Images")]
+    public string Base64CoverImage { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
