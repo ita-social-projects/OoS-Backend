@@ -72,8 +72,7 @@ public class ExternalExportService(
 
             Expression<Func<Provider, bool>> filterExpression = updatedAfter == default
                 ? provider => !provider.IsDeleted
-                : provider => provider.CreatedAt > updatedAfter || provider.UpdatedAt > updatedAfter ||
-                              provider.Workshops.Any(w => w.UpdatedAt > updatedAfter || w.CreatedAt > updatedAfter);
+                : provider => provider.CreatedAt >= updatedAfter || provider.UpdatedAt >= updatedAfter;
 
             var providers = await providerRepository.Get(
                     skip: offsetFilter.From,
@@ -113,8 +112,8 @@ public class ExternalExportService(
 
             Expression<Func<Workshop, bool>> filterExpression = updatedAfter == default
                 ? workshop => !workshop.IsDeleted
-                : workshop => workshop.CreatedAt > updatedAfter || workshop.UpdatedAt > updatedAfter ||
-                              workshop.DeleteDate > updatedAfter;
+                : workshop => workshop.CreatedAt >= updatedAfter || workshop.UpdatedAt >= updatedAfter ||
+                              workshop.DeleteDate >= updatedAfter;
 
             var workshops = await workshopRepository.Get(
                     skip: offsetFilter.From,
@@ -154,9 +153,9 @@ public class ExternalExportService(
 
             Expression<Func<CompetitiveEvent, bool>> filterExpression = updatedAfter == default
                 ? competitiveEvent => !competitiveEvent.IsDeleted
-                : competitiveEvent => competitiveEvent.CreatedAt > updatedAfter ||
-                                      competitiveEvent.UpdatedAt > updatedAfter ||
-                                      competitiveEvent.DeleteDate > updatedAfter;
+                : competitiveEvent => competitiveEvent.CreatedAt >= updatedAfter ||
+                                      competitiveEvent.UpdatedAt >= updatedAfter ||
+                                      competitiveEvent.DeleteDate >= updatedAfter;
 
             var events = await competitiveEventRepository.Get(
                     skip: offsetFilter.From,
@@ -195,7 +194,7 @@ public class ExternalExportService(
 
             Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
                 ? direction => !direction.IsDeleted
-                : direction => direction.UpdatedAt > updatedAfter;
+                : direction => direction.UpdatedAt >= updatedAfter;
 
             // Is deleted expression is added automatically by repo
             var directions = await directionRepository
@@ -233,7 +232,7 @@ public class ExternalExportService(
 
             Expression<Func<SubDirection, bool>> filterExpression = updatedAfter == default
                 ? subDirection => !subDirection.IsDeleted
-                : subDirection => subDirection.UpdatedAt > updatedAfter;
+                : subDirection => subDirection.UpdatedAt >= updatedAfter;
 
             var subDirections = await subDirectionRepository
                 .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: filterExpression)
