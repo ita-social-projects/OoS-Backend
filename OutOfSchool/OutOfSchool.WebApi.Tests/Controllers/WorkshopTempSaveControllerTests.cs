@@ -23,7 +23,7 @@ public class WorkshopTempSaveControllerTests
     private WorkshopTempSaveController controller;
     private ClaimsPrincipal user;
     private WorkshopMainRequiredPropertiesDto baseDto;
-    private WorkshopRequiredPropertiesDto derivedDto;
+    private WorkshopDescriptionDto derivedDto;
 
     [SetUp]
     public void Setup()

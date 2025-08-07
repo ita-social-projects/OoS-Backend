@@ -11,7 +11,6 @@ public static class WorkshopDescriptionDtoGenerator
     private static readonly Faker<WorkshopDescriptionDto> Faker = new Faker<WorkshopDescriptionDto>()
 
         .RuleFor(w => w.WorkshopDescriptionItems, f => WorkshopDescriptionItemDtoGenerator.Generate(4))
-        .RuleFor(w => w.DirectionIds, f => f.Make(3, () => f.Random.Long(1, 50)))
         .RuleFor(w => w.Keywords, f => f.Make(3, () => f.Random.Word()))
         .RuleFor(w => w.EnrollmentProcedureDescription, f => f.Lorem.Paragraph())
         .RuleFor(w => w.Coverage, f => f.Random.Enum<Coverage>())

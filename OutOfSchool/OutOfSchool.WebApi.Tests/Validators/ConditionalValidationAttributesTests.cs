@@ -293,7 +293,6 @@ public class ConditionalValidationAttributesTests
         var result = attribute.GetValidationResult(null, validationContext);
 
         // Assert
-        Assert.IsNull(result);
         Assert.AreEqual(ValidationResult.Success, result);
     }
 
@@ -315,7 +314,6 @@ public class ConditionalValidationAttributesTests
         var result = attribute.GetValidationResult(string.Empty, validationContext);
 
         // Assert
-        Assert.IsNull(result);
         Assert.AreEqual(ValidationResult.Success, result);
     }
 
@@ -374,7 +372,7 @@ public class ConditionalValidationAttributesTests
         var featureFlagName = "TestFeature";
         var maxLength = 10;
         var value = "Invalid value";
-        var attribute = new ConditionalMinLengthAttribute(featureFlagName, maxLength);
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
         var featureManager = new Mock<IFeatureManager>();
         var serviceProvider = new Mock<IServiceProvider>();
 

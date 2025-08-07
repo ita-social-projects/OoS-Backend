@@ -62,6 +62,7 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
 
+    // This property uses only for storing dto in Redis
     [ConditionalRequired("Images", ErrorMessage = "The cover image is required")]
     public string Base64CoverImage { get; set; }
 
