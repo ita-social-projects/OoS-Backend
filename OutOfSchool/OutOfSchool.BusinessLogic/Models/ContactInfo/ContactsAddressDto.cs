@@ -1,19 +1,27 @@
+using Elastic.Clients.Elasticsearch;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Validators;
+using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Elastic.Clients.Elasticsearch;
-using OutOfSchool.BusinessLogic.Models.Codeficator;
-using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IEquatable<ContactsAddressDto>
 {
     [Required(ErrorMessage = "Street is required")]
+    [MinLength(1)]
     [MaxLength(60)]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9'.\-\(\)]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, and the following symbols: ' . - ( )")]
+    [MustContain(RequiredCharacterType.CyrillicLetter)]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]
+    [MinLength(1)]
     [MaxLength(15)]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9\/\-\.]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, and the following symbols: / - .")]
+    [MustContain(RequiredCharacterType.Digit)]
     public string BuildingNumber { get; set; } = string.Empty;
 
     public double Latitude { get; set; }

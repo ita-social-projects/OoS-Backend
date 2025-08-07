@@ -71,7 +71,7 @@ public static class Constants
     /// <summary>
     /// Shortest possible phone number length without '+' prefix.
     /// </summary>
-    public const int MinPhoneNumberLength = 7;
+    public const int MinPhoneNumberLength = 9;
 
     /// <summary>
     /// Longest possible phone number length without '+' prefix.
@@ -221,7 +221,12 @@ public static class Constants
     /// Maximum allowed length for a teacher's description.
     /// </summary>
     public const int TeacherDescriptionLength = 300;
-    
+
+    /// <summary>
+    /// Minimum allowed length for contacts title.
+    /// </summary>
+    public const int ContactsTitleMinLength = 3;
+
     /// <summary>
     /// Maximum allowed length for contacts title.
     /// </summary>
@@ -281,6 +286,16 @@ public static class Constants
     /// Sets maximum length for language name.
     /// </summary>
     public const int MaxLanguageNameLength = 25;
+
+    /// <summary>
+    /// Minimum allowed length for phone number's type.
+    /// </summary>
+    public const int PhoneNumberTypeMinLength = 3;
+
+    /// <summary>
+    /// Maximum allowed length for phone number's type.
+    /// </summary>
+    public const int PhoneNumberTypeMaxLength = 60;
 
     public static class ExternalImages
     {
