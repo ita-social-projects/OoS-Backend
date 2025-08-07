@@ -11,7 +11,7 @@ public class MustContainAttribute : ValidationAttribute
     private readonly RequiredCharacterType requiredCharacterType;
 
     private static readonly Regex LatinLetterRegex = new(@"[A-Za-z]", RegexOptions.NonBacktracking);
-    private static readonly Regex CyrillicLetterRegex = new(@"[А-Яа-я]", RegexOptions.NonBacktracking);
+    private static readonly Regex CyrillicLetterRegex = new(@"\p{IsCyrillic}", RegexOptions.NonBacktracking);
     private static readonly Regex AnyLetterRegex = new(@"\p{L}", RegexOptions.NonBacktracking);
     private static readonly Regex DigitRegex = new(@"\d", RegexOptions.NonBacktracking);
 
