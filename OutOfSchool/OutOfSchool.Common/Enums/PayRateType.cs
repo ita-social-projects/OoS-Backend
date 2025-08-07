@@ -6,7 +6,7 @@ namespace OutOfSchool.Common.Enums;
 public enum PayRateType
 {
     None,
-    Classes,
+    Class,
     Month,
     Day,
     Year,

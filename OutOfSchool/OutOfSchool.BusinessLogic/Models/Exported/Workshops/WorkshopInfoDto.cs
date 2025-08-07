@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
-using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
@@ -49,7 +48,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
+    public PayRateType? PayRate { get; set; } = PayRateType.Class;
 
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
