@@ -7,6 +7,7 @@ public class ConditionalValidationAttributes
     /// <summary>
     /// Attribute to conditionally require a field based on a feature flag.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
     public class ConditionalRequiredAttribute : ValidationAttribute
     {
         private readonly string _featureFlagName;
@@ -39,6 +40,7 @@ public class ConditionalValidationAttributes
     /// <summary>
     /// Attribute to conditionally validate the minimum length of a field based on a feature flag.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
     public class ConditionalMinLengthAttribute : ValidationAttribute
     {
         private readonly string _featureFlagName;
@@ -82,6 +84,7 @@ public class ConditionalValidationAttributes
     /// <summary>
     /// Attribute to conditionally validate the maximum length of a field based on a feature flag.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
     public class ConditionalMaxLengthAttribute : ValidationAttribute
     {
         private readonly string _featureFlagName;
