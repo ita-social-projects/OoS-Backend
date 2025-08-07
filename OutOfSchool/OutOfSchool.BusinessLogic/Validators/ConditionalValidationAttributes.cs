@@ -108,8 +108,8 @@ public class ConditionalValidationAttributes
             {
                 var result = value switch
                 {
-                    string str when str.Length > _maxLength => new ValidationResult(ErrorMessage ?? $"The field must be less than {_maxLength} characters long when the feature is enabled."),
-                    ICollection collection when collection.Count > _maxLength => new ValidationResult(ErrorMessage ?? $"The collection must contain less than {_maxLength} items when the feature is enabled."),
+                    string str when str.Length > _maxLength => new ValidationResult(ErrorMessage ?? $"The field must be less than {_maxLength + 1} characters long when the feature is enabled."),
+                    ICollection collection when collection.Count > _maxLength => new ValidationResult(ErrorMessage ?? $"The collection must contain less than {_maxLength + 1} items when the feature is enabled."),
                     _ => ValidationResult.Success
                 };
 

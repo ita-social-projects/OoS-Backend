@@ -13,7 +13,6 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
-    // ???
     public List<long> DirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -25,7 +24,6 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
 
-    // ???
     [ConditionalRequired("EnableWorkshopTags")]
     [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

@@ -22,7 +22,7 @@ public class ConditionalValidationAttributesTests
         var attribute = new ConditionalRequiredAttribute(featureFlagName);
         var featureManager = new Mock<IFeatureManager>();
         var serviceProvider = new Mock<IServiceProvider>();
-        
+
         featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
         serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
 
@@ -202,7 +202,7 @@ public class ConditionalValidationAttributesTests
         var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
 
         // Act
-        var result = attribute.GetValidationResult(new List<string> { "one", "two", "three"}, validationContext);
+        var result = attribute.GetValidationResult(new List<string> { "one", "two", "three" }, validationContext);
 
         // Assert
         Assert.IsNotNull(result);
@@ -226,6 +226,164 @@ public class ConditionalValidationAttributesTests
 
         // Act
         var result = attribute.GetValidationResult("Valid Value", validationContext);
+
+        // Assert
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
+    #endregion
+
+    #region ConditionalMaxLengthAttribute
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenFeatureManagerIsNotRegistered_ReturnsFalse()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 5;
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult("Some Value", validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual("IFeatureManager service is not registered.", result.ErrorMessage);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenEnabledFeatureAndValueIsValid_ReturnsSuccess()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 11;
+        string value = "Valid Value";
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(value, validationContext);
+
+        // Assert
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenEnabledFeatureAndValueIsNull_ReturnsSuccess()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 5;
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(null, validationContext);
+
+        // Assert
+        Assert.IsNull(result);
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenEnabledFeatureAndValueIsEmptyString_ReturnsSuccess()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 5;
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(string.Empty, validationContext);
+
+        // Assert
+        Assert.IsNull(result);
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenEnabledFeatureAndStringValueIsTooLong_ReturnsFalse()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 10;
+        string value = "Invalid Value";
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(value, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual($"The field must be less than {maxLength + 1} characters long when the feature is enabled.", result.ErrorMessage);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenEnabledFeatureAndCollecctionValueIsTooBig_ReturnsFalse()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 5;
+        var value = new List<string> { "one", "two", "three", "four", "five", "six", "seven" };
+        var attribute = new ConditionalMaxLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(true);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(value, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual($"The collection must contain less than {maxLength + 1} items when the feature is enabled.", result.ErrorMessage);
+    }
+
+    [Test]
+    public void ConditionalMaxLengthAttributeIsValid_WhenDisabledFeature_ReturnsSuccess()
+    {
+        // Arrange
+        var featureFlagName = "TestFeature";
+        var maxLength = 10;
+        var value = "Invalid value";
+        var attribute = new ConditionalMinLengthAttribute(featureFlagName, maxLength);
+        var featureManager = new Mock<IFeatureManager>();
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        featureManager.Setup(f => f.IsEnabledAsync(featureFlagName)).ReturnsAsync(false);
+        serviceProvider.Setup(s => s.GetService(typeof(IFeatureManager))).Returns(featureManager.Object);
+        var validationContext = new ValidationContext(instance: new object(), serviceProvider: serviceProvider.Object, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(value, validationContext);
 
         // Assert
         Assert.AreEqual(ValidationResult.Success, result);
