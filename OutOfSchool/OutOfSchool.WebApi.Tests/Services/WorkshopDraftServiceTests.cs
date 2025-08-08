@@ -611,7 +611,7 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
 
-        workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
+        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>,IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);

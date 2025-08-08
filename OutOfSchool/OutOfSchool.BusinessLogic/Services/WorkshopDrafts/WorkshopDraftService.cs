@@ -291,7 +291,7 @@ public class WorkshopDraftService(
     {
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
