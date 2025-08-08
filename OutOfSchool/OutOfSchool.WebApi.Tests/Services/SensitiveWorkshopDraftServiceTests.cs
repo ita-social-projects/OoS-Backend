@@ -31,6 +31,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -55,7 +56,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepository;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
-
+    private Mock<ISportsRegistryApiService> sportsRegistryApiService;
     private string userId;
     private WorkshopDraft validWorkshopDraft;
     private Guid draftId;
@@ -66,7 +67,7 @@ public class SensitiveWorkshopDraftServiceTests
     public void SetUp()
     {
         workshopDraftRepoMock = new Mock<IWorkshopDraftRepository>();
-
+        sportsRegistryApiService = new Mock<ISportsRegistryApiService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
         tagRepositoryMock = new Mock<IEntityRepository<long, Tag>>();
@@ -93,6 +94,7 @@ public class SensitiveWorkshopDraftServiceTests
 
         service = new WorkshopDraftService(
                    logger.Object,
+                   sportsRegistryApiService.Object,
                    languageServiceMock.Object,
                    workshopDraftRepoMock.Object,
                    workshopDraftImagesServiceMock.Object,
