@@ -291,7 +291,7 @@ public class WorkshopDraftService(
     {
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
@@ -331,7 +331,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await GetWorkshopDraftByIdWithImages(id);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
@@ -826,7 +826,26 @@ public class WorkshopDraftService(
                 paramName: $"There are no records in workshopDrafts table with such id - {id}.");
         }
 
-        logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
+        logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
+
+        return workshopDraft;
+    }
+    
+    private async Task<WorkshopDraft> GetWorkshopDraftByIdWithImages(Guid id)
+    {
+        logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
+
+        var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(id, includeExpression: query =>
+            query.Include(wd => wd.Images));
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+                nameof(id),
+                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
+        }
+
+        logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
 
         return workshopDraft;
     }

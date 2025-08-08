@@ -136,9 +136,16 @@ public class WorkshopService(
 
             if (dto.ImageFiles?.Count > 0)
             {
-                workshop.Images = new List<Image<Workshop>>();
+                workshop.Images = [];
                 imagesUploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles)
                     .ConfigureAwait(false);
+            }
+            // we are saving draft as new workshop
+            else if (dto.ImageIds?.Count > 0)
+            {
+                workshop.Images ??= [];
+                workshop.Images.AddRange(dto.ImageIds.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct()
+                    .Select(id => new Image<Workshop> {ExternalStorageId = id}));
             }
 
             Result<string> uploadingCoverImageResult = null;
