@@ -64,7 +64,11 @@ public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquat
                 new[] { nameof(Url) });
             yield break;
         }
-        if (!Regex.IsMatch(Url, Constants.SocialNetworkUrlRegex))
+        
+        // Ensure absolute HTTPS URL first, then apply pattern match (case-insensitive).
+       if (!Uri.TryCreate(Url, UriKind.Absolute, out var uri) ||
+       !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+       !Regex.IsMatch(uri.AbsoluteUri, Constants.SocialNetworkUrlRegex, RegexOptions.IgnoreCase))
         {
             yield return new ValidationResult(
                 "Url must follow the format: https://example.com/username",

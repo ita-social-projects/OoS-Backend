@@ -12,8 +12,8 @@ public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 
     [DataType(DataType.EmailAddress)]
     [Required(ErrorMessage = "Email address is required")]
-    [StringLength(Constants.MaxEmailAddressLength,ErrorMessage = "Email address cannot exceed 256 characters")]
-    [RegularExpression(Constants.EmailRegexViewModel,ErrorMessage = "Email must contain '@' and a domain (e.g., name@example.com)")]
+    [StringLength(Constants.MaxEmailAddressLength, ErrorMessage = "Email address cannot exceed 256 characters")]
+    [EmailAddress(ErrorMessage = "Invalid email address format (e.g., name@example.com)")]
     public string Address { get; set; } = null!;
 
     public override bool Equals(object obj)
