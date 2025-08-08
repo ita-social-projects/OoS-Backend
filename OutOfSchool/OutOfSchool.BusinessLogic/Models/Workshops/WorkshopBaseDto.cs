@@ -59,7 +59,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
     [Required(ErrorMessage = "Available seats are required")]
-    [Range(1, 100000, ErrorMessage = "Number of available seats should be in a range from 1 to 100 000")]
+    [Range(1, uint.MaxValue)]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
