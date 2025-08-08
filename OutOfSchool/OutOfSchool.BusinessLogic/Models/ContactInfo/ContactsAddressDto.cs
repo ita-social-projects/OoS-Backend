@@ -13,14 +13,14 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [Required(ErrorMessage = "Street is required")]
     [MinLength(1)]
     [MaxLength(60)]
-    [RegularExpression(@"^[\p{IsCyrillic}0-9'.\-\(\)\s]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, and the following symbols: ' . - ( )")]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9'.\-\(\) ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: ' . - ( )")]
     [MustContain(RequiredCharacterType.CyrillicLetter)]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]
     [MinLength(1)]
     [MaxLength(15)]
-    [RegularExpression(@"^[\p{IsCyrillic}0-9\/\-\.\s]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, and the following symbols: / - .")]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9\/\-\. ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: / - .")]
     [MustContain(RequiredCharacterType.Digit)]
     public string BuildingNumber { get; set; } = string.Empty;
 
