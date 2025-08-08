@@ -1,6 +1,4 @@
-
-using System.Net.Mime;
-using System.Text.Json;
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
@@ -32,19 +30,28 @@ public class SportsRegistryApiService : ISportsRegistryApiService
         this.communicationService = communicationService ?? throw new ArgumentNullException(nameof(communicationService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-    
-    public async Task<SectionCreateResponse> CreateSectionAsync(SportsSectionPostRequest request)
+
+    public async Task<Either<ErrorResponse, SectionCreateResponse>> CreateSectionAsync(SportsSectionPostRequest request)
     {
         if (request is null)
         {
-            logger.LogWarning("CreateSectionAsync called with null request.");
-            throw new ArgumentNullException(nameof(request));
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Request is null"
+            };
         }
 
-        logger.LogInformation("Attempting to send workshop to Sports Registry...");
+        var tokenResult = await GetAccessTokenAsync();
 
-        var accessToken = await GetAccessTokenAsync().ConfigureAwait(false);
+        return await tokenResult
+            .Map(accessToken => BuildRequest(request, accessToken))
+            .FlatMapAsync(registryRequest =>
+                communicationService.SendRequest<SectionCreateResponse, ErrorResponse>(registryRequest)).ConfigureAwait(false);
+    }
 
+    private Request BuildRequest(SportsSectionPostRequest request, string accessToken)
+    {
         var payload = new
         {
             businessProcessDefinitionKey = RegistryConstants.BusinessProcessDefinitionKey,
@@ -54,57 +61,39 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             }
         };
 
-        var registryRequest = new Request
+        return new Request
         {
             Url = new Uri($"{config.ApiUrl}/api/gateway/business-process/api/start-bp"),
             HttpMethodType = HttpMethodType.Post,
             Token = accessToken,
-            Data = payload,
+            Data = payload
         };
+    }
 
-        logger.LogDebug("Sending request to external registry: {Url}", registryRequest.Url);
-
-        var response = await communicationService.SendRequest<SectionCreateResponse, ErrorResponse>(registryRequest);
-
-        if (response.TryGetRight(out var result))
+    private async Task<Either<ErrorResponse, string>> GetAccessTokenAsync()
+    {
+        try
         {
-            var code = result.ResultVariables.Code;
-            var errors = result.ResultVariables.Errors;
+            var registration = await openIddictClientService
+                .GetClientRegistrationByProviderNameAsync("sportsregistry")
+                .ConfigureAwait(false);
 
-            if (!IsSuccessfulStatusCode(code))
+            var result = await openIddictClientService.AuthenticateWithClientCredentialsAsync(new()
             {
-                logger.LogError("Registry returned non-success code: {Code}. Errors: {Errors}",
-                    code, JsonSerializer.Serialize(errors));
-                throw new InvalidOperationException($"Registry response code {code}. Errors: {JsonSerializer.Serialize(errors)}");
-            }
+                RegistrationId = registration.RegistrationId
+            }).ConfigureAwait(false);
 
-            logger.LogInformation("Section successfully pushed. SectionId: {SectionId}", result.ResultVariables.SectionId);
-            return result;
+            return result.AccessToken;
         }
-
-        response.TryGetLeft(out var error);
-        logger.LogError("Request failed. Status: {Status}. Message: {Message}. Body: {Body}",
-            error?.HttpStatusCode, error?.Message, error?.ApiErrorResponse);
-
-        throw new InvalidOperationException($"Registry push failed: {error?.Message ?? "Unknown error"}");
-    }
-    
-    private async Task<string> GetAccessTokenAsync()
-    {
-        var registration = await openIddictClientService
-            .GetClientRegistrationByProviderNameAsync("sportsregistry")
-            .ConfigureAwait(false);
-
-        var result = await openIddictClientService.AuthenticateWithClientCredentialsAsync(new()
+        catch (Exception ex)
         {
-            RegistrationId = registration.RegistrationId
-        });
-
-        return result.AccessToken;
-    }
-    
-    private static bool IsSuccessfulStatusCode(string? codeRaw)
-    {
-        return int.TryParse(codeRaw, out var statusCode) && statusCode is >= 200 and < 300;
+            logger.LogError(ex, "Failed to get access token from Sports Registry");
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.InternalServerError,
+                Message = "Failed to get access token",
+                Content = ex.Message
+            };
+        }
     }
 }

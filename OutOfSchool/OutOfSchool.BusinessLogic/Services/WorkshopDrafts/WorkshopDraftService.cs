@@ -19,6 +19,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -48,6 +49,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="changesLogService">Service for changes log.</param>
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
+    ISportsRegistryApiService sportsRegistryApiService,
     ILanguageService languageService,
     IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
@@ -343,11 +345,36 @@ public class WorkshopDraftService(
         if (workshopDraft.WorkshopId == null)
         {
             
-            // draft -> sport registry
-            // push sport Api
-            // <- section ID 
-            // workshopDraft.sectionID = sectionId;
-            
+             /*
+             /#1#/ workshopDraft.Workshop.Provider = minsport?
+            if (workshopDraft.Workshop.WorkshopType == WorkshopType.Section)
+            {
+
+                var sectionRequest = workshopDraft.ToSportsRegistryRequest();
+                var result = await sportsRegistryApiService.CreateSectionAsync(sectionRequest);
+
+                result.Match(
+                    error =>
+                    {
+                        var firstError = error.ApiErrorResponse?.ApiErrors?.FirstOrDefault();
+
+                        logger.LogError(
+                            "Failed to sync section to Sports Registry. Code = {Code}, Message = {Message}",
+                            firstError?.Code ?? error.HttpStatusCode.ToString(),
+                            firstError?.Message ?? error.Message ?? "Unknown");
+
+                        throw new InvalidOperationException($"Registry sync failed: {firstError?.Message ?? error.Message}");
+                    },
+                    success =>
+                    {
+                        workshopDraft.SectionId = success.ResultVariables.SectionId;
+
+                        logger.LogInformation("Section synced to Sports Registry. SectionId = {SectionId}",
+                            success.ResultVariables.SectionId);
+
+                        return true;
+                    });#1#
+            }*/
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
