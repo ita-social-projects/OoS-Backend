@@ -27,6 +27,8 @@ public static class Constants
     public const string NameErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )";
 
     public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
+    
+    public const string SocialNetworkUrlRegex = @"^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(\/[A-Za-z0-9._\-\/%]+)+$";
 
     public const string PasswordValidationErrorMessage = "Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&)";
 
