@@ -31,6 +31,7 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
     {
        try
        {
+            entity.Images.ForEach(i => dbContext.Entry(i).State = EntityState.Deleted);
             dbContext.Entry(entity).State = EntityState.Deleted;
 
             await dbContext.SaveChangesAsync()
@@ -42,7 +43,7 @@ public class WorkshopDraftRepository : EntityRepository<Guid, WorkshopDraft>, IW
             {
                 throw;
             }
-        }
+       }
     }
 
     /// <inheritdoc/>
