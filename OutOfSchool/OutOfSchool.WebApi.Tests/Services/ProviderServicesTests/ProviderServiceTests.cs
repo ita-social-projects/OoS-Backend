@@ -43,6 +43,7 @@ public class ProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IEntityRepositorySoftDeleted<string, User>> usersRepositoryMock;
+    private Mock<IEntityRepositorySoftDeleted<Guid, ProviderSectionItem>> providerSectionItemRepositoryMock;
     private Mock<INotificationService> notificationService;
     private Mock<IInstitutionAdminRepository> institutionAdminRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -69,7 +70,7 @@ public class ProviderServiceTests
         fakeUser = UserGenerator.Generate();
 
         providersRepositoryMock = new Mock<IProviderRepository>();
-
+        providerSectionItemRepositoryMock = new Mock<IEntityRepositorySoftDeleted<Guid, ProviderSectionItem>>();
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var individualRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
@@ -100,6 +101,7 @@ public class ProviderServiceTests
         providerService = new ProviderService(
             providersRepositoryMock.Object,
             usersRepositoryMock.Object,
+            providerSectionItemRepositoryMock.Object,
             logger.Object,
             localizer.Object,
             addressRepo.Object,
