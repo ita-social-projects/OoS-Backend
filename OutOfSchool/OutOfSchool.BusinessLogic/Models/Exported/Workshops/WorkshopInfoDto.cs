@@ -95,7 +95,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
-    public string LanguageOfEducation { get; set; }
+    public string? LanguageOfEducation { get; set; }
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
@@ -141,7 +141,7 @@ public static class WorkshopInfoDtoExtensions
         => new()
         {
             Id = model.Id,
-            IsDeleted = model.IsDeleted,
+            IsDeleted = model.Status == WorkshopStatus.Archived,
             ProviderId = model.ProviderId,
             ParentWorkshopId = model.ParentWorkshopId,
             Status = model.Status,
@@ -182,7 +182,7 @@ public static class WorkshopInfoDtoExtensions
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
             Contacts = model.Contacts?.ToInfoDto(),
-            LanguageOfEducation = model.LanguageOfEducation.Name,
+            LanguageOfEducation = model.LanguageOfEducation?.Name,
         };
 
     public static List<WorkshopInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Workshop> list)

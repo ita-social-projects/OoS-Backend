@@ -17,7 +17,7 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
     /// <param name="fromDraft">Flag to signal if the updated value is taken from draft.</param>
-    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopCreateUpdateDto}"/>
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopResultDto}"/>
     /// that indicates the success or failure of the operation.
     /// If the operation succeeds, the <see cref="Result{WorkshopResultDto}.Value"/> property
     /// contains the updated <see cref="WorkshopResultDto"/>.

@@ -494,7 +494,7 @@ public class WorkshopService(
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
-            dto.ImageIds ??= new List<string>();
+            dto.ImageIds ??= [];
             var multipleImageChangingResult = await workshopImagesService
                 .ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
@@ -520,6 +520,7 @@ public class WorkshopService(
             dto.SetToModel(currentWorkshop);
             if (fromDraft)
             {
+                currentWorkshop.Images ??= [];
                 var newIdsToAdd = dto.ImageIds.Where(id =>
                     !currentWorkshop.Images.Select(i => i.ExternalStorageId).Contains(id));
 
