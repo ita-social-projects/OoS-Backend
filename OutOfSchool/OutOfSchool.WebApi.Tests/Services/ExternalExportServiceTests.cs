@@ -144,6 +144,10 @@ public class ExternalExportServiceTests
         var offsetFilter = new OffsetFilter { Size = 10 };
 
         var fakeWorkshops = WorkshopGenerator.Generate(3);
+        fakeWorkshops.ForEach(w => w.LanguageOfEducation = new ()
+        {
+            Name = "test"
+        });
 
         mockApplicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
             .ReturnsAsync([]);
