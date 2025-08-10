@@ -58,8 +58,9 @@ public interface IWorkshopService
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
+    /// <param name="fromDraft">Flag to signal if the updated value is taken from draft.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto);
+    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto, bool fromDraft = false);
 
     /// <summary>
     /// Update status field for existing entity in the database.
