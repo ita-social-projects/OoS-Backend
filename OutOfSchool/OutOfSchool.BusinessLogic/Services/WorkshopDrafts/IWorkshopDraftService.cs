@@ -21,6 +21,7 @@ public interface IWorkshopDraftService
     /// Data transfer object containing information required to create the draft, 
     /// including workshop details, teacher details, and optional images.
     /// </param>
+    /// <param name="fromWorkshop">Flag to signal if the new draft is created from existing workshop.</param>
     /// <returns>
     /// A <see cref="WorkshopDraftResultDto"/> containing the details of the created draft, 
     /// including any results or status from image processing operations.
@@ -31,7 +32,7 @@ public interface IWorkshopDraftService
     /// <exception cref="InvalidDataException">
     /// Thrown when the workshop does not contain a list of teachers or the list is empty.
     /// </exception>
-    Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto);
+    Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto, bool fromWorkshop = false);
 
     /// <summary>
     /// Update existing workshop draft.   

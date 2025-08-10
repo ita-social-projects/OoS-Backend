@@ -126,7 +126,7 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Once);
 
         // Act
@@ -152,7 +152,7 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Never);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
         // Act
@@ -176,7 +176,7 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(true).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Never);
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
         // Act
@@ -200,7 +200,7 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(true).Verifiable(Times.Once);
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
         // Act
@@ -226,7 +226,7 @@ public class WorkshopControllerV2Tests
             .ReturnsAsync(false).Verifiable(Times.Once);
         userServiceMoq.Setup(x => x.IsBlocked(It.IsAny<string>()))
             .ReturnsAsync(false).Verifiable(Times.Once);
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopCreateDto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Never);
 
         // Act

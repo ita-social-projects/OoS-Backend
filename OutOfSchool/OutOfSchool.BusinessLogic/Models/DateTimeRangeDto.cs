@@ -68,27 +68,27 @@ public static class DateTimeRangeDtoExtensions
         return model;
     }
 
-    public static List<DateTimeRange> SetToModel(this IEnumerable<DateTimeRangeDto> dtoList, IEnumerable<DateTimeRange> modelList)
+    public static List<DateTimeRange> SetToModel(this List<DateTimeRangeDto> dtoList, IEnumerable<DateTimeRange> modelList)
     {
         var activeModels = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
-        var dtoDict = dtoList.ToDictionary(dto => dto.Id);
         var result = new List<DateTimeRange>();
+
+        var existingDtos = dtoList.Where(dto => dto.Id > 0).ToList();
+        var newDtos = dtoList.Where(dto => dto.Id <= 0).ToList();
+
+        var existingDtoDict = existingDtos.ToDictionary(dto => dto.Id);
 
         // Update existing models that have matching DTOs
         foreach (var model in activeModels)
         {
-            if (dtoDict.TryGetValue(model.Id, out var dto))
+            if (existingDtoDict.TryGetValue(model.Id, out var dto))
             {
                 result.Add(dto.SetToModel(model));
             }
         }
 
-        // Add new models for DTOs that don't exist in the active models
-        var existingIds = activeModels.Select(m => m.Id).ToHashSet();
-        foreach (var dto in dtoList.Where(dto => !existingIds.Contains(dto.Id)))
-        {
-            result.Add(dto.SetToModel(new DateTimeRange()));
-        }
+        // Add new models for all new DTOs (those with ID = 0)
+        result.AddRange(newDtos.Select(newDto => newDto.ToModel()));
 
         return result;
     }

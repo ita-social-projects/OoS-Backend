@@ -6,6 +6,8 @@ using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -48,6 +50,7 @@ public class ExternalExportService(
                   .ThenInclude(i => i.SubDirections)
                   .ThenInclude(sb => sb.Direction)
                   .Include(w => w.DefaultTeacher)
+                  .Include(w => w.LanguageOfEducation)
                   .IncludeContactsWithCodeficatorHierarchy();
 
     /// <summary>
@@ -111,7 +114,7 @@ public class ExternalExportService(
             offsetFilter ??= new OffsetFilter();
 
             Expression<Func<Workshop, bool>> filterExpression = updatedAfter == default
-                ? workshop => !workshop.IsDeleted
+                ? workshop => workshop.Status != WorkshopStatus.Archived
                 : workshop => workshop.CreatedAt >= updatedAfter || workshop.UpdatedAt >= updatedAfter ||
                               workshop.DeleteDate >= updatedAfter;
 
@@ -152,7 +155,7 @@ public class ExternalExportService(
             offsetFilter ??= new OffsetFilter();
 
             Expression<Func<CompetitiveEvent, bool>> filterExpression = updatedAfter == default
-                ? competitiveEvent => !competitiveEvent.IsDeleted
+                ? competitiveEvent => competitiveEvent.State != CompetitiveEventStates.Archived
                 : competitiveEvent => competitiveEvent.CreatedAt >= updatedAfter ||
                                       competitiveEvent.UpdatedAt >= updatedAfter ||
                                       competitiveEvent.DeleteDate >= updatedAfter;

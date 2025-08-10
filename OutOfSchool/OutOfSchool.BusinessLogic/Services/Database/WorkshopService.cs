@@ -479,7 +479,7 @@ public class WorkshopService(
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto)
+    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto, bool fromDraft = false)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -494,7 +494,7 @@ public class WorkshopService(
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
-            dto.ImageIds ??= new List<string>();
+            dto.ImageIds ??= [];
             var multipleImageChangingResult = await workshopImagesService
                 .ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
@@ -518,6 +518,14 @@ public class WorkshopService(
                 (uint)dto.AvailableSeats, currentWorkshop).ConfigureAwait(false);
 
             dto.SetToModel(currentWorkshop);
+            if (fromDraft)
+            {
+                currentWorkshop.Images ??= [];
+                var newIdsToAdd = dto.ImageIds.Where(id =>
+                    !currentWorkshop.Images.Select(i => i.ExternalStorageId).Contains(id));
+
+                currentWorkshop.Images.AddRange(newIdsToAdd.Select(id => new Image<Workshop> { ExternalStorageId = id}));
+            }
 
             var changingCoverImageResult = await workshopImagesService
                 .ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);

@@ -14,11 +14,11 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -34,7 +34,6 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
 /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
 /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
-/// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
 /// <param name="options">Provides configuration settings for upload concurrency.</param>    
 /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
 /// <param name="languageService"> Service for  language managing</param>
@@ -54,7 +53,6 @@ public class WorkshopDraftService(
     IProviderService providerService,
     ICurrentUserService currentUserService,
     IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
-    IEntityRepository<long, Tag> tagRepository,
     IOptions<UploadConcurrencySettings> options,
     IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
     IRegionAdminService regionAdminService,
@@ -76,7 +74,7 @@ public class WorkshopDraftService(
         i => i.Include(i => i.SubDirections);
 
     // <inheritdoc/>
-    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto)
+    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto, bool fromWorkshop = false)
     {
         if (workshopV2Dto == null)
         {
@@ -120,15 +118,18 @@ public class WorkshopDraftService(
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
             .ConfigureAwait(false);
 
-        var tags = await tagRepository.GetByFilter(
-            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
-            .ConfigureAwait(false);
-
         // Concurrently uploads images for both teacher drafts and the workshop draft.
         var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
             createdDraftWithAssociatedTeachers,
             workshopV2Dto)
            .ConfigureAwait(false);
+
+        if (fromWorkshop)
+        {
+            createdDraftWithAssociatedTeachers.Images ??= [];
+            createdDraftWithAssociatedTeachers.Images.AddRange(
+                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> {ExternalStorageId = id}));
+        }
 
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
@@ -168,10 +169,6 @@ public class WorkshopDraftService(
 
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
-            .ConfigureAwait(false);
-
-        var tags = await tagRepository.GetByFilter(
-            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
             .ConfigureAwait(false);
 
         var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
@@ -347,7 +344,7 @@ public class WorkshopDraftService(
         }
         else
         {
-            await workshopServicesCombinerV2.Update(workshopDraft.ToDto());
+            await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
         }
 
         await workshopDraftRepository.Delete(workshopDraft);
@@ -395,7 +392,12 @@ public class WorkshopDraftService(
                 take: filter.Size,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId),
+                orderBy: new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>()
+                {
+                    {wd => wd.CreatedAt, SortDirection.Descending},
+                    {wd => wd.ModifiedAt, SortDirection.Descending},
+                }).ToListAsync().ConfigureAwait(false);
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
                 whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id))
@@ -536,7 +538,7 @@ public class WorkshopDraftService(
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
-            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;
+            return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
