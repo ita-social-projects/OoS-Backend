@@ -33,7 +33,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -50,7 +49,6 @@ public class WorkshopDraftServiceTests
     private Mock<ILanguageService> languageServiceMoq;
     private Mock<IProviderService> providerServiceMoq;
     private Mock<ICurrentUserService> currentUserServiceMoq;
-    private Mock<IEntityRepository<long, Tag>> tagRepositoryMoq;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Moq;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMoq;
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
@@ -68,7 +66,6 @@ public class WorkshopDraftServiceTests
         currentUserServiceMoq = new Mock<ICurrentUserService>();
         institutionHierarchyServiceMock = new  Mock<IInstitutionHierarchyService>();
         providerServiceMoq = new Mock<IProviderService>();
-        tagRepositoryMoq = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
@@ -110,7 +107,6 @@ public class WorkshopDraftServiceTests
                    providerServiceMoq.Object,
                    currentUserServiceMoq.Object,
                    teacherDraftImagesService.Object,
-                   tagRepositoryMoq.Object,
                    options.Object,
                    workshopServiceCombinerV2Moq.Object,
                    regionAdminService.Object,
@@ -164,12 +160,6 @@ public class WorkshopDraftServiceTests
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
-        tagRepositoryMoq
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Tag, bool>>>(), 
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>()).Verifiable(Times.Once);
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<Expression<Func<CATOTTG, bool>>>(),
@@ -182,7 +172,6 @@ public class WorkshopDraftServiceTests
         //Assert 
         currentUserServiceMoq.VerifyAll();
         workshopDraftRepoMoq.VerifyAll();
-        tagRepositoryMoq.VerifyAll();
 
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
@@ -239,13 +228,6 @@ public class WorkshopDraftServiceTests
         providerServiceMoq
             .Setup(x => x.GetLicenseStatusAndOwnershipAsync(It.IsAny<Guid>()))
             .ReturnsAsync(Tuple.Create(ProviderLicenseStatus.Approved, OwnershipType.State));
-
-        tagRepositoryMoq
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Tag, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>());
 
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -330,13 +312,6 @@ public class WorkshopDraftServiceTests
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
-
-        tagRepositoryMoq
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Tag, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>());
 
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
             It.IsAny<int>(),
@@ -687,7 +662,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>()))
+        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
             .Verifiable(Times.Once);
 
         // Act
@@ -833,7 +808,7 @@ public class WorkshopDraftServiceTests
 
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(workshopDto).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>()))
+        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false))
             .ReturnsAsync(Result<WorkshopResultDto>.Success(workshopResultDto)).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x =>
             x.Get(It.IsAny<int>(),
@@ -999,7 +974,6 @@ public class WorkshopDraftServiceTests
                    providerServiceMoq.Object,
                    currentUserServiceMoq.Object,
                    teacherDraftImagesService.Object,
-                   tagRepositoryMoq.Object,
                    options.Object,
                    workshopServiceCombinerV2Moq.Object,
                    regionAdminService.Object,

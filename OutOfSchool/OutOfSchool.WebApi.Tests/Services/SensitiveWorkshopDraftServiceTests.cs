@@ -30,7 +30,6 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -44,7 +43,6 @@ public class SensitiveWorkshopDraftServiceTests
 
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
-    private Mock<IEntityRepository<long, Tag>> tagRepositoryMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
     private Mock<ILanguageService> languageServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
@@ -69,7 +67,6 @@ public class SensitiveWorkshopDraftServiceTests
 
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
-        tagRepositoryMock = new Mock<IEntityRepository<long, Tag>>();
         workshopServiceCombinerV2Mock = new Mock<IWorkshopServicesCombinerV2>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
         searchStringServiceMock = new Mock<ISearchStringService>();
@@ -99,7 +96,6 @@ public class SensitiveWorkshopDraftServiceTests
                    providerServiceMock.Object,
                    currentUserServiceMock.Object,
                    teacherDraftImagesService.Object,
-                   tagRepositoryMock.Object,
                    options.Object,
                    workshopServiceCombinerV2Mock.Object,
                    regionAdminServiceMock.Object,

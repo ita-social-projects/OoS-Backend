@@ -55,6 +55,8 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     public FormOfLearning FormOfLearning { get; set; }
 
     public uint AvailableSeats { get; set; } = uint.MaxValue;
+    
+    public bool IsSeatsLimit => AvailableSeats != uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
 
@@ -93,8 +95,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     [EnumDataType(typeof(SpecialNeedsType), ErrorMessage = Constants.EnumErrorMessage)]
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
-    // TODO: Need to implement
-    public string LanguageOfEducation { get; set; } = "українська";
+    public string LanguageOfEducation { get; set; }
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
@@ -133,7 +134,7 @@ public static class WorkshopInfoDtoExtensions
         => new()
         {
             Id = model.Id,
-            IsDeleted = model.IsDeleted,
+            IsDeleted = model.Status == WorkshopStatus.Archived,
         };
 
     public static WorkshopInfoDto ToInfoDto(this Workshop model)
@@ -181,8 +182,9 @@ public static class WorkshopInfoDtoExtensions
             AgeComposition = model.AgeComposition,
             Coverage = model.Coverage,
             Contacts = model.Contacts?.ToInfoDto(),
+            LanguageOfEducation = model.LanguageOfEducation.Name,
         };
 
     public static List<WorkshopInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<Workshop> list)
-        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
+        => list.MapToList(x => x.Status == WorkshopStatus.Archived ? x.ToBaseInfoDto() : x.ToInfoDto());
 }

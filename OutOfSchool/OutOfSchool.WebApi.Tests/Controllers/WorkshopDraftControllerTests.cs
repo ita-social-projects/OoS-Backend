@@ -92,7 +92,7 @@ public class WorkshopDraftControllerTests
     public async Task CreateWorkshopDraft_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
     {
         // Arrange        
-        workshopDraftServiceMoq.Setup(x => x.Create(workshopV2Dto))
+        workshopDraftServiceMoq.Setup(x => x.Create(workshopV2Dto, false))
             .ReturnsAsync(workshopDraftResultDto).Verifiable(Times.Once);
         providerServiceMoq.Setup(x => x.IsBlocked(It.IsAny<Guid>()))            
             .ReturnsAsync(false).Verifiable(Times.Once);
