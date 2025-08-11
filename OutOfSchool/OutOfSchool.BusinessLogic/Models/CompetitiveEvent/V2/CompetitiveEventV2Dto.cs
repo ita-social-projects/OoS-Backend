@@ -47,7 +47,7 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             Contacts = model.Contacts?.ToDto(),
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
-            Coverage = model.Coverage?.ToDto(),        
+            Coverage = model.Coverage?.ToDto(),            
         };
 
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
@@ -84,7 +84,9 @@ public static class CompetitiveEventV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
             CoverageId = draft.CoverageId,
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
-            SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? []
+            SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
+                             draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
+            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()            
         };
     }
 
@@ -105,7 +107,7 @@ public static class CompetitiveEventV2DtoExtensions
             CoverImageId = competitiveEventV2Dto.CoverImageId,
             CoverageId = competitiveEventV2Dto.CoverageId,
             CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
-            CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
+            CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),            
             // This is needed for search
             CATOTTGId = competitiveEventV2Dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
         };
@@ -136,6 +138,9 @@ public static class CompetitiveEventV2DtoExtensions
             ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
             ShortTitle = competitiveEventV2Dto.ShortTitle,
             Title = competitiveEventV2Dto.Title,
-            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation
+            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,            
+            VenueName = competitiveEventV2Dto.VenueName,
+            SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? new List<long>(),
+            CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),            
         };
 }
