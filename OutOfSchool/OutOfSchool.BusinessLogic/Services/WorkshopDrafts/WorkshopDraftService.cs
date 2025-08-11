@@ -341,10 +341,9 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            
-             /*
-             /#1#/ workshopDraft.Workshop.Provider = minsport?
-            if (workshopDraft.Workshop.WorkshopType == WorkshopType.Section)
+            /*if (string.Equals(workshopDraft.Workshop?.Provider?.Institution?.Title,
+                institutionSettings.Value.MinistryOfSportTitle,
+                StringComparison.OrdinalIgnoreCase))
             {
 
                 var sectionRequest = workshopDraft.ToSportsRegistryRequest();
@@ -370,7 +369,7 @@ public class WorkshopDraftService(
                             success.ResultVariables.SectionId);
 
                         return true;
-                    });#1#
+                    });
             }*/
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
