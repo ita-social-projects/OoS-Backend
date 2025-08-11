@@ -36,6 +36,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -57,6 +58,7 @@ public class WorkshopDraftServiceTests
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
+    private Mock<ISportsRegistryApiService> sportsRegistryApiService;
 
     private string userId;
 
@@ -75,7 +77,7 @@ public class WorkshopDraftServiceTests
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
-
+        sportsRegistryApiService = new Mock<ISportsRegistryApiService>();
         institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(
             It.IsAny<Guid>(),
             It.IsAny<string>(),
@@ -112,6 +114,7 @@ public class WorkshopDraftServiceTests
         userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
+                   sportsRegistryApiService.Object,
                    languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
@@ -1002,6 +1005,7 @@ public class WorkshopDraftServiceTests
 
         var service = new WorkshopDraftService(
                    logger.Object,
+                   sportsRegistryApiService.Object,
                    new Mock<ILanguageService>().Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
