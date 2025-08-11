@@ -597,10 +597,7 @@ public class ProviderService(
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
 
-            if (providerUpdateDto.ProviderSectionItems != null)
-            {
-                await UpdateProviderSectionItems(checkProvider.Id, providerUpdateDto.ProviderSectionItems).ConfigureAwait(false);
-            }
+            await UpdateProviderSectionItems(checkProvider.Id, providerUpdateDto.ProviderSectionItems).ConfigureAwait(false);
 
             if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {
@@ -1007,6 +1004,11 @@ public class ProviderService(
 
     private async Task UpdateProviderSectionItems(Guid providerId, IEnumerable<ProviderSectionItemDto> dtoSectionItems)
     {
+        if (dtoSectionItems == null)
+        {
+            return;
+        }
+
         var providerSectionItems = await providerSectionItemRepository.GetByFilter(x => x.ProviderId == providerId)
             .ConfigureAwait(false);
         var providerSectionItemsDict = providerSectionItems.ToDictionary(key => key.Id, value => value);
@@ -1035,7 +1037,7 @@ public class ProviderService(
                     Description = dtoItem.Description
                 };
 
-                await providerSectionItemRepository.Create(newEntity);
+                await providerSectionItemRepository.Create(newEntity).ConfigureAwait(false);
             }
         }
 
