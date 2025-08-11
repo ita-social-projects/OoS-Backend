@@ -343,12 +343,12 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            /*if (string.Equals(workshopDraft.Workshop?.Provider?.Institution?.Title,
+            if (string.Equals(workshopDraft.Workshop?.Provider?.Institution?.Title,
                 institutionSettings.Value.MinistryOfSportTitle,
                 StringComparison.OrdinalIgnoreCase))
             {
 
-                var sectionRequest = workshopDraft.ToSportsRegistryRequest();
+                var sectionRequest = workshopDraft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
                 var result = await sportsRegistryApiService.CreateSectionAsync(sectionRequest);
 
                 result.Match(
@@ -365,14 +365,14 @@ public class WorkshopDraftService(
                     },
                     success =>
                     {
-                        workshopDraft.SectionId = success.ResultVariables.SectionId;
+                        //workshopDraft.SectionId = success.ResultVariables.SectionId; TODO: need to be uncommented after creating of function rec
 
                         logger.LogInformation("Section synced to Sports Registry. SectionId = {SectionId}",
                             success.ResultVariables.SectionId);
 
                         return true;
                     });
-            }*/
+            }
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
