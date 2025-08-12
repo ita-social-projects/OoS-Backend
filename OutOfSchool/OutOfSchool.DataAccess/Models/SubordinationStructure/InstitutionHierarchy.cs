@@ -28,4 +28,13 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>, ISoftDeleted
     public virtual Institution Institution { get; set; }
 
     public virtual List<SubDirection> SubDirections { get; set; }
+
+    #region Sports Registry Fields
+
+    public long? SportRegistryIdCode { get; set; }
+
+    [MaxLength(10)]
+    public string? SportsSectionNumeral { get; set; }
+
+    #endregion
 }
