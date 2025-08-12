@@ -1,9 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.Services.Enums;
-using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
+namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
 
 public class TeacherDraftDto
 {
