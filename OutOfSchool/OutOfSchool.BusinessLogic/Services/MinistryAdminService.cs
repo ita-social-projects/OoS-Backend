@@ -1,14 +1,13 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.Common.Communication;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using OutOfSchool.BusinessLogic.Services.SearchString;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -100,8 +99,8 @@ public class MinistryAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<MinistryAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 
@@ -223,7 +222,7 @@ public class MinistryAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert.DeserializeObject<MinistryAdminBaseDto>(result.Result.ToString()).ToMinistryAdminDto()
+                ? JsonSerializerHelper.Deserialize<MinistryAdminBaseDto>(result.Result.ToString()).ToMinistryAdminDto()
                 : null);
     }
 
@@ -269,8 +268,8 @@ public class MinistryAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -320,8 +319,8 @@ public class MinistryAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -385,8 +384,8 @@ public class MinistryAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 

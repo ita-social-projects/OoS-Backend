@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Collections;
+﻿using System.Collections;
 
 namespace OutOfSchool.BusinessLogic.Services.Logging;
 
@@ -52,11 +51,11 @@ public class NestedObjectChangeLogger : INestedObjectChangeLogger
             {
                 var oldValueStr = Truncate(
                     valueProjector?.ProjectValue(prop.PropertyType, oldValue)
-                    ?? JsonConvert.SerializeObject(oldValue));
+                    ?? JsonSerializerHelper.Serialize(oldValue));
 
                 var newValueStr = Truncate(
                     valueProjector?.ProjectValue(prop.PropertyType, newValue)
-                    ?? JsonConvert.SerializeObject(newValue));
+                    ?? JsonSerializerHelper.Serialize(newValue));
 
                 // Add a new change log entry
                 logs.Add(new ChangesLog

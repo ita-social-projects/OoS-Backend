@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Communication;
@@ -129,8 +128,8 @@ public class AreaAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<AreaAdminBaseDto>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<AreaAdminBaseDto>(result.Result.ToString())
                 : null);
     }
 
@@ -270,7 +269,7 @@ public class AreaAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert.DeserializeObject<AreaAdminBaseDto>(result.Result.ToString()).ToDto()
+                ? JsonSerializerHelper.Deserialize<AreaAdminBaseDto>(result.Result.ToString()).ToDto()
                 : null);
     }
 
@@ -319,8 +318,8 @@ public class AreaAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -374,8 +373,8 @@ public class AreaAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
@@ -438,8 +437,8 @@ public class AreaAdminService(
                     Message = r.Message,
                 })
             .Map(result => result.Result is not null
-                ? JsonConvert
-                    .DeserializeObject<ActionResult>(result.Result.ToString())
+                ? JsonSerializerHelper
+                    .Deserialize<ActionResult>(result.Result.ToString())
                 : null);
     }
 
