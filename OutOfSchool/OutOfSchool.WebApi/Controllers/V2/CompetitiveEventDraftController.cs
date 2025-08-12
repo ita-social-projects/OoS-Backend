@@ -453,6 +453,7 @@ public class CompetitiveEventDraftController : ControllerBase
     /// <returns>Returns <see cref="CompetitiveEventDraftResponseDto"/></returns>
     [HttpPut("/api/v{version:apiVersion}/competitions-drafts/{draftId}/moderator-edit")]
     [HasPermission(Permissions.CompetitiveEventApprove)]
+    [Consumes("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompetitiveEventDraftResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

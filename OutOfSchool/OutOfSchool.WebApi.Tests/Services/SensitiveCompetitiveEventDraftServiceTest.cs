@@ -1,24 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Images;
-using OutOfSchool.BusinessLogic.Services;
-using OutOfSchool.Services.Models.CompetitiveEventDrafts;
-using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.BusinessLogic.Services.SearchString;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
-using OutOfSchool.Services.Enums.CompetitiveEventStatus;
-using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models.ContactInfo;
-using System.Collections.Generic;
-using OutOfSchool.BusinessLogic.Models.ContactInfo;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
+using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -159,7 +160,17 @@ public class SensitiveCompetitiveEventDraftServiceTest
             TermsOfParticipation = "Updated Terms",
             PreferentialTermsOfParticipation = "Updated Preferential Terms",
             Benefits = "Updated Benefits",
-            Contacts = new List<ContactsDto>()
+            Contacts = new List<ContactsDto>(),
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
+            {
+                new CompetitiveEventDescriptionItemDto
+                {
+                    Id = Guid.NewGuid(),
+                    SectionName = "Updated Section",
+                    Description = "Updated Description",
+                    CompetitiveEventId = Guid.NewGuid()
+                }
+            }            
         };
 
         var competitiveEventDraft = GetCompetitiveEventDraft(draftId);
@@ -198,7 +209,7 @@ public class SensitiveCompetitiveEventDraftServiceTest
         return new CompetitiveEventDraft
         {
             Id = draftId,
-            DraftStatus = CompetitiveEventDraftStatus.PendingModeration,
+            DraftStatus = CompetitiveEventDraftStatus.PendingModeration,            
             CompetitiveEventDraftContent = new CompetitiveEventDraftContent
             {
                 Title = "Some title",
@@ -252,7 +263,18 @@ public class SensitiveCompetitiveEventDraftServiceTest
                 {
                     Title = "pppp"
                 }
+            },
+            CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>
+            {
+                new CompetitiveEventDescriptionItemDto
+                {
+                    Id = Guid.NewGuid(),
+                    SectionName = "Test Section",
+                    Description = "Test Description",
+                    CompetitiveEventId = Guid.NewGuid()
+                }
             }
+            
         };
     }
 }
