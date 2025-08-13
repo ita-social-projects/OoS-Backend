@@ -17,43 +17,41 @@ public class ProviderSectionItemDto
 
 public static class ProviderSectionItemDtoExtensions
 {
-    public static ProviderSectionItem SetToModel(this ProviderSectionItemDto dto, ProviderSectionItem model)
+    public static ProviderSectionItem SetToModel(this ProviderSectionItemDto dto, ProviderSectionItem model, Guid providerId)
     {
-        model.Id = dto.Id;
         model.Name = dto.SectionName;
         model.Description = dto.Description;
-        model.ProviderId = dto.ProviderId;
+        model.ProviderId = providerId;
 
         return model;
     }
 
     public static List<ProviderSectionItem> SetToModel(this IEnumerable<ProviderSectionItemDto> dtoList, IEnumerable<ProviderSectionItem> modelList, Guid providerId)
     {
-        var providerSectionItemsDict = modelList.Where(x => !x.IsDeleted).ToDictionary(key => key.Id);
-        var result = new List<ProviderSectionItem>();
+        var result = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
+        var modelIds = result.ToDictionary(x => x.Id);
+        var dtoIds = dtoList.Where(x => x.Id != Guid.Empty).Select(x => x.Id).ToHashSet();
 
-        foreach (var dtoItem in dtoList)
+        foreach (var model in result.ToList())
         {
-            var id = dtoItem.Id == Guid.Empty ? Guid.NewGuid() : dtoItem.Id;
-
-            if (providerSectionItemsDict.TryGetValue(id, out var existingItem))
+            if (!dtoIds.Contains(model.Id))
             {
-                existingItem.Name = dtoItem.SectionName;
-                existingItem.Description = dtoItem.Description;
+                result.Remove(model);
+                modelIds.Remove(model.Id);
+            }
+        }
 
-                result.Add(existingItem);
-                providerSectionItemsDict.Remove(id);
+        foreach (var dto in dtoList)
+        {
+            if (modelIds.TryGetValue(dto.Id, out var existingItem))
+            {
+                existingItem.Name = dto.SectionName;
+                existingItem.Description = dto.Description;
             }
             else
             {
-                var newEntity = new ProviderSectionItem()
-                {
-                    Id = id,
-                    Description = dtoItem.Description,
-                    Name = dtoItem.SectionName,
-                    ProviderId = providerId
-                };
-                result.Add(newEntity);
+                var newModelItem = new ProviderSectionItem();
+                result.Add(dto.SetToModel(newModelItem, providerId));
             }
         }
 
