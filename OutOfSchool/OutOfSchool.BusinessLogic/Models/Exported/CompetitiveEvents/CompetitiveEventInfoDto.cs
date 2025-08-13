@@ -132,6 +132,8 @@ public static class CompetitiveEventInfoDtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             CompetitiveSelectionDescription = model.AdditionalDescription,
             Contacts = model.Contacts?.ToInfoDto(),
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? []
         };
 
     public static List<CompetitiveEventInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
