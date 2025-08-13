@@ -21,7 +21,6 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 /// </summary>
 /// <param name="providerRepository">Provider repository.</param>
 /// <param name="usersRepository">UsersRepository.</param>
-/// <param name="providerSectionItemRepository">ProviderSectionItemRepository.</param>
 /// <param name="logger">Logger.</param>
 /// <param name="localizer">Localizer.</param>
 /// <param name="addressRepository">AddressRepository.</param>
@@ -49,7 +48,6 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 public class ProviderService(
     IProviderRepository providerRepository,
     IEntityRepositorySoftDeleted<string, User> usersRepository,
-    IEntityRepositorySoftDeleted<Guid, ProviderSectionItem> providerSectionItemRepository,
     ILogger<ProviderService> logger,
     IStringLocalizer<SharedResource> localizer,
     IEntityRepositorySoftDeleted<long, Address> addressRepository,
@@ -597,8 +595,6 @@ public class ProviderService(
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
 
-            await UpdateProviderSectionItems(checkProvider.Id, providerUpdateDto.ProviderSectionItems).ConfigureAwait(false);
-
             if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {
                 checkProvider = await providerRepository.RunInTransaction(async () =>
@@ -999,54 +995,6 @@ public class ProviderService(
                     PositionId = position.Id
                 }).ConfigureAwait(false);
             uploadResponse.CountOfCreatedOfficials++;
-        }
-    }
-
-    private async Task UpdateProviderSectionItems(Guid providerId, IEnumerable<ProviderSectionItemDto> dtoSectionItems)
-    {
-        if (dtoSectionItems == null)
-        {
-            return;
-        }
-
-        var providerSectionItems = await providerSectionItemRepository.GetByFilter(x => x.ProviderId == providerId)
-            .ConfigureAwait(false);
-        var providerSectionItemsDict = providerSectionItems.ToDictionary(key => key.Id, value => value);
-
-        var dtoSectionItemsIds = new HashSet<Guid>();
-
-        foreach (var dtoItem in dtoSectionItems)
-        {
-            var id = dtoItem.Id == Guid.Empty ? Guid.NewGuid() : dtoItem.Id;
-            dtoSectionItemsIds.Add(id);
-
-            if (providerSectionItemsDict.TryGetValue(id, out var existingItem))
-            {
-                existingItem.Name = dtoItem.SectionName;
-                existingItem.Description = dtoItem.Description;
-
-                await providerSectionItemRepository.Update(existingItem).ConfigureAwait(false);
-            }
-            else
-            {
-                var newEntity = new ProviderSectionItem
-                {
-                    Id = id,
-                    ProviderId = providerId,
-                    Name = dtoItem.SectionName,
-                    Description = dtoItem.Description
-                };
-
-                await providerSectionItemRepository.Create(newEntity).ConfigureAwait(false);
-            }
-        }
-
-        foreach (var existingItem in providerSectionItemsDict)
-        {
-            if (!dtoSectionItemsIds.Contains(existingItem.Key))
-            {
-                await providerSectionItemRepository.Delete(existingItem.Value).ConfigureAwait(false);
-            }
         }
     }
 }

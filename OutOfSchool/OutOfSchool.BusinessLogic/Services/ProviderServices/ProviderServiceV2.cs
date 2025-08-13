@@ -15,7 +15,6 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 public class ProviderServiceV2(
     IProviderRepository providerRepository,
     IEntityRepositorySoftDeleted<string, User> usersRepository,
-    IEntityRepositorySoftDeleted<Guid, ProviderSectionItem> providerSectionItemRepository,
     ILogger<ProviderServiceV2> logger,
     IStringLocalizer<SharedResource> localizer,
     IEntityRepositorySoftDeleted<long, Address> addressRepository,
@@ -43,7 +42,6 @@ public class ProviderServiceV2(
 ) : ProviderService(
     providerRepository,
     usersRepository,
-    providerSectionItemRepository,
     logger,
     localizer,
     addressRepository,
