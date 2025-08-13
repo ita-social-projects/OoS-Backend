@@ -28,18 +28,11 @@ public static class ProviderSectionItemDtoExtensions
 
     public static List<ProviderSectionItem> SetToModel(this IEnumerable<ProviderSectionItemDto> dtoList, IEnumerable<ProviderSectionItem> modelList, Guid providerId)
     {
-        var result = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
-        var modelIds = result.ToDictionary(x => x.Id);
+        var result = modelList.Where(dtr => !dtr.IsDeleted).ToList();
         var dtoIds = dtoList.Where(x => x.Id != Guid.Empty).Select(x => x.Id).ToHashSet();
 
-        foreach (var model in result.ToList())
-        {
-            if (!dtoIds.Contains(model.Id))
-            {
-                result.Remove(model);
-                modelIds.Remove(model.Id);
-            }
-        }
+        result.RemoveAll(x => !dtoIds.Contains(x.Id));
+        var modelIds = result.ToDictionary(x => x.Id);
 
         foreach (var dto in dtoList)
         {
