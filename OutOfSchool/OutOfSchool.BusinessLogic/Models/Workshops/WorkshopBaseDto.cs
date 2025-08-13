@@ -59,7 +59,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
     [Required(ErrorMessage = "Available seats are required")]
-    [Range(1, uint.MaxValue)]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
@@ -130,8 +129,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsChampionPath { get; set; } = false;
 
+    [MinLength(3)]
     [MaxLength(500)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
@@ -196,9 +197,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
             MinAge = 0;
             MaxAge = 120;
         }
-        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
+        else if (MinAge.HasValue && MaxAge.HasValue && MinAge >= MaxAge)
         {
-            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+            yield return new ValidationResult("Min age should be less than Max age", new[] { nameof(MinAge), nameof(MaxAge) });
         }
 
         // validate Price and PayRate when IsPaid is true
@@ -247,6 +248,11 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                     yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
                 }
             }
+        }
+
+        if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
+        {
+            yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", new[] { nameof(AvailableSeats) });
         }
     }
 }
