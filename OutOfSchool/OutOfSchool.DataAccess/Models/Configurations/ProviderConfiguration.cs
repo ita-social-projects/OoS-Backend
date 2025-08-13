@@ -44,10 +44,5 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
 
         builder.Property(x => x.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate();
-
-        builder.HasMany(x => x.ProviderSectionItems)
-            .WithOne(x => x.Provider)
-            .HasForeignKey(x => x.ProviderId)
-            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }
