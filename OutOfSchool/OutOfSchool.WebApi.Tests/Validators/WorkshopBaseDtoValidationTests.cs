@@ -55,7 +55,7 @@ public class WorkshopBaseDtoTests
 
         // Assert
         results.Should().ContainSingle(result =>
-            result.ErrorMessage.Contains("Min age should be less than or equal to Max age"));
+            result.ErrorMessage.Contains("Min age should be less than Max age"));
     }
 
     #region Helpers
