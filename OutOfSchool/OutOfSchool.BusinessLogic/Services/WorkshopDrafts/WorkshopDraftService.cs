@@ -19,6 +19,7 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -48,13 +49,13 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="changesLogService">Service for changes log.</param>
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
+    ISportsRegistryProviderService sportsRegistryApiService,
     ILanguageService languageService,
     IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
     IProviderService providerService,
     ICurrentUserService currentUserService,
     IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
-    IEntityRepository<long, Tag> tagRepository,
     IOptions<UploadConcurrencySettings> options,
     IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
     IRegionAdminService regionAdminService,
@@ -349,7 +350,7 @@ public class WorkshopDraftService(
             {
 
                 var sectionRequest = workshopDraft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
-                var result = await sportsRegistryApiService.CreateSectionAsync(sectionRequest);
+                var result = await sportsRegistryApiService.RegisterSectionAsync(sectionRequest);
 
                 result.Match(
                     error =>
