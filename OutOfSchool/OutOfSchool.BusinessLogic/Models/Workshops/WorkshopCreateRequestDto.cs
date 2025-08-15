@@ -12,7 +12,6 @@ public class WorkshopCreateRequestDto : WorkshopContactsDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<TeacherDTO> Teachers { get; set; }
     
-    public bool IsChampionPath {get; set; }
     public Guid? DefaultTeacherId { get; set; }
 }
 
