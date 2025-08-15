@@ -808,14 +808,14 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.Draft)
+        if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
         {
-            logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status.", competitiveEventDraftUpdateDto.Id);
+            logger.LogWarning("Competitive event draft with ID {DraftId} can't be updated.", competitiveEventDraftUpdateDto.Id);
             return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
            MultipleImageChangingResult imagesResult)>.Failed(new OperationError
            {
                Code = "400",
-               Description = "Competitive event draft can only be updated when it is in Draft status."
+               Description = "Competitive event draft can't be updated when it is in PendingModeration status."
            });
         }
 
