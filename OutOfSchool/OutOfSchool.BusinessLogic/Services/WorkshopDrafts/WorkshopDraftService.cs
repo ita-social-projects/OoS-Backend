@@ -63,7 +63,8 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IOptions<InstitutionOptions> institutionSettings
+    IOptions<InstitutionOptions> institutionSettings,
+    IOptions<ImageStorageOptions> imageStorageOptions
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;

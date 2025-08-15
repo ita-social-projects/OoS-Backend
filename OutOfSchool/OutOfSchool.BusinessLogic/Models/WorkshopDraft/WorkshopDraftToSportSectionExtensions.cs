@@ -6,7 +6,7 @@ using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public static class WorkshopDraftToSportSectionExtensions
 {
-    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft)
+    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, string baseImageUrl)
     {
         var content = draft.WorkshopDraftContent;
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
@@ -54,12 +54,13 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue
             ? 1000 : (int)content.AvailableSeats,
 
-            //SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId) // TODO
-            //? null
-            //: $"{baseUrl}{draft.CoverImageId}", //  add full url (baseurl)
+            SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId) 
+            ? null
+            : CombineImageUrl(baseImageUrl, draft.CoverImageId),
 
-            SectionPhotos = draft.Images? // TODO
-            .Select(img => img.ExternalStorageId)
+            SectionPhotos = draft.Images? 
+            .Where(img => !string.IsNullOrWhiteSpace(img.ExternalStorageId))
+            .Select(img => CombineImageUrl(baseImageUrl, img.ExternalStorageId))
             .ToList() ?? new(),
 
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
@@ -101,5 +102,8 @@ public static class WorkshopDraftToSportSectionExtensions
         return Enum.GetValues<DaysBitMask>()
             .Where(d => d != DaysBitMask.None && flags.HasFlag(d));
     }
-
+    private static string CombineImageUrl(string baseUrl, string imageId)
+    {
+        return $"{baseUrl.TrimEnd('/')}/{imageId.TrimStart('/')}";  //$"{baseImageUrl}{draft.CoverImageId}"
+    }
 }

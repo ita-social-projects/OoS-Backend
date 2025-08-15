@@ -177,6 +177,7 @@ public static class Startup
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
         services.Configure<InstitutionOptions>(configuration.GetSection(InstitutionOptions.Name));
+        services.Configure<ImageStorageOptions>(configuration.GetSection(ImageStorageOptions.Name));
 
         services.AddMemoryCache();
 
