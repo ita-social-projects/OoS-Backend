@@ -61,6 +61,7 @@ public class WorkshopDraftServiceTests
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Mock<ISportsRegistryApiService> sportsRegistryApiService;
+    private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
 
     private string userId;
 
@@ -105,6 +106,13 @@ public class WorkshopDraftServiceTests
         institutionOptionsMock.Setup(x => x.Value)
             .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
       
+        imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
+        imageStorageOptionsMock.Setup(x => x.Value)
+            .Returns(new ImageStorageOptions
+            {
+                BaseImageUrl = "https://replace_me.com/images/"
+            });
+
         userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
@@ -124,7 +132,8 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
         SetupInstitutionHierarchy();
     }
 
@@ -320,6 +329,13 @@ public class WorkshopDraftServiceTests
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
+
+        tagRepositoryMoq
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<Tag, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
+            .ReturnsAsync(Enumerable.Empty<Tag>());
 
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
             It.IsAny<int>(),
@@ -642,7 +658,7 @@ public class WorkshopDraftServiceTests
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
 
-        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>,IQueryable<WorkshopDraft>>>()))
+        workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);

@@ -85,6 +85,7 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         var institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+        var imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
 
         userId = "someUserId";
 
@@ -105,7 +106,8 @@ public class SensitiveWorkshopDraftServiceTests
                    institutionHierarchyRepositoryMock.Object,
                    codeficatorRepository.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
 
         SetupModeratorTestData();
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
