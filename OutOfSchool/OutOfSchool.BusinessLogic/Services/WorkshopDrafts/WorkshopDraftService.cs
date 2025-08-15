@@ -54,6 +54,7 @@ public class WorkshopDraftService(
     IProviderService providerService,
     ICurrentUserService currentUserService,
     IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
+    IEntityRepository<long, Tag> tagRepository,
     IOptions<UploadConcurrencySettings> options,
     IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
     IRegionAdminService regionAdminService,
