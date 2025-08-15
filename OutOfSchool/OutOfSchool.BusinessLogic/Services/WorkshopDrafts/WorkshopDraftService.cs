@@ -34,6 +34,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
 /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
 /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
+/// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
 /// <param name="options">Provides configuration settings for upload concurrency.</param>    
 /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
 /// <param name="languageService"> Service for  language managing</param>
@@ -288,7 +289,7 @@ public class WorkshopDraftService(
     {
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
+        var workshopDraft = await GetWorkshopDraftById(id);
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
@@ -328,7 +329,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftByIdWithImages(id);
+        var workshopDraft = await GetWorkshopDraftById(id);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
@@ -341,11 +342,36 @@ public class WorkshopDraftService(
         if (workshopDraft.WorkshopId == null)
         {
             
-            // draft -> sport registry
-            // push sport Api
-            // <- section ID 
-            // workshopDraft.sectionID = sectionId;
-            
+             /*
+             /#1#/ workshopDraft.Workshop.Provider = minsport?
+            if (workshopDraft.Workshop.WorkshopType == WorkshopType.Section)
+            {
+
+                var sectionRequest = workshopDraft.ToSportsRegistryRequest();
+                var result = await sportsRegistryApiService.CreateSectionAsync(sectionRequest);
+
+                result.Match(
+                    error =>
+                    {
+                        var firstError = error.ApiErrorResponse?.ApiErrors?.FirstOrDefault();
+
+                        logger.LogError(
+                            "Failed to sync section to Sports Registry. Code = {Code}, Message = {Message}",
+                            firstError?.Code ?? error.HttpStatusCode.ToString(),
+                            firstError?.Message ?? error.Message ?? "Unknown");
+
+                        throw new InvalidOperationException($"Registry sync failed: {firstError?.Message ?? error.Message}");
+                    },
+                    success =>
+                    {
+                        workshopDraft.SectionId = success.ResultVariables.SectionId;
+
+                        logger.LogInformation("Section synced to Sports Registry. SectionId = {SectionId}",
+                            success.ResultVariables.SectionId);
+
+                        return true;
+                    });#1#
+            }*/
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
         else
@@ -398,12 +424,7 @@ public class WorkshopDraftService(
                 take: filter.Size,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId),
-                orderBy: new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>()
-                {
-                    {wd => wd.CreatedAt, SortDirection.Descending},
-                    {wd => wd.ModifiedAt, SortDirection.Descending},
-                }).ToListAsync().ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
                 whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id))
@@ -544,7 +565,7 @@ public class WorkshopDraftService(
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
-            return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
+            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);

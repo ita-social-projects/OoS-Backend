@@ -38,4 +38,8 @@
     <ItemGroup>
         <Watch Include="wwwroot\**" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Archive.zip" />
+    </ItemGroup>
 </Project>

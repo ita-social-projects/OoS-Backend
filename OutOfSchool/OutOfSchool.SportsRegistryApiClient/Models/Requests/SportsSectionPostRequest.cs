@@ -1,6 +1,9 @@
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Validators;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using OutOfSchool.SportsRegistryApiClient.Enums;
+
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
 public class SportsSectionPostRequest : IValidatableObject
@@ -95,6 +98,10 @@ public class SportsSectionPostRequest : IValidatableObject
     [Required(ErrorMessage = "sectionSchedule is required.")]
     [MinLength(1, ErrorMessage = "At least one section schedule is required.")]
     public List<SectionScheduleRequest> SectionSchedule { get; set; } = new();
+
+    [Required(ErrorMessage = "sectionPozashkillyaModerationStatus is required.")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public ModerationStatus SectionPozashkillyaModerationStatus { get; set; } = ModerationStatus.Draft;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
