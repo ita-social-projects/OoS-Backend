@@ -7,6 +7,7 @@ using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
 using OutOfSchool.SportsRegistryApiClient.Config;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using OutOfSchool.SportsRegistryApiClient.Models;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
@@ -54,6 +55,7 @@ public class SportsRegistryApiService : ISportsRegistryApiService
     {
         var payload = new
         {
+            
             businessProcessDefinitionKey = RegistryConstants.BusinessProcessDefinitionKey,
             startVariables = new
             {

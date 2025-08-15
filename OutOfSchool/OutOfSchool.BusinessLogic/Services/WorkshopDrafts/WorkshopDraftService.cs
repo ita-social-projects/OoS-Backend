@@ -331,7 +331,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
@@ -343,9 +343,9 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            if (string.Equals(workshopDraft.Workshop?.Provider?.Institution?.Title,
+            if (string.Equals(workshopDraft.Provider?.Institution?.Title,
                 institutionSettings.Value.MinistryOfSportTitle,
-                StringComparison.OrdinalIgnoreCase))
+                 StringComparison.OrdinalIgnoreCase))
             {
 
                 var sectionRequest = workshopDraft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
@@ -903,7 +903,27 @@ public class WorkshopDraftService(
 
         return workshopDraft;
     }
+    
+    private async Task<WorkshopDraft> GetByIdWithProviderAndWorkshop(Guid id)
+    {
+        logger.LogDebug("Getting WorkshopDraft with provider and workshop details by Id {Id}.", id);
 
+        var draft = await workshopDraftRepository.GetByIdWithDetails(
+            id,
+            includeExpression: q => q
+                .Include(d => d.Provider)
+                .ThenInclude(p => p.Institution)); 
+
+        if (draft is null)
+            throw new ArgumentException($"No draft with id {id}.", nameof(id));
+
+        logger.LogDebug("Got WorkshopDraft {Id}. Provider loaded={HasProv}, Workshop loaded={HasWs}",
+            id, draft.Provider != null, draft.Workshop != null);
+
+        return draft;
+    }
+
+    
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
     {
         var workshopDraft = workshopV2Dto.ToDraft();

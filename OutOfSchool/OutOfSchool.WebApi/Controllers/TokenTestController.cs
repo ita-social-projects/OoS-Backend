@@ -10,7 +10,7 @@ public class TokenTestController : ControllerBase
 {
     private readonly ISportsRegistryProviderService provider;
 
-    public TokenTestController(ISportsRegistryProviderService provider)
+    public TokenTestController(ISportsRegistryProviderService provider, ISportsRegistryApiService api)
     {
         this.provider = provider;
     }

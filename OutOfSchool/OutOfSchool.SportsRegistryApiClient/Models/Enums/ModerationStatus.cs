@@ -5,10 +5,10 @@ namespace OutOfSchool.SportsRegistryApiClient.Enums;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ModerationStatus
 {
-    active,
-    Inactive,
-    OnModeration,
-    Archived,
-    Deleted,
-    Draft
+    ACTIVE,
+    INACTIVE,
+    ONMODERATION,
+    ARCHIVED,
+    DELETED,
+    DRAFT
 }

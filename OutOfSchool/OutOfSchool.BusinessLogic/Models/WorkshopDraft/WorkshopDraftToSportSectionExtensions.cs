@@ -9,21 +9,21 @@ public static class WorkshopDraftToSportSectionExtensions
 {
     public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, [NotNull] string baseImageUrl) // check not null
     {
-        var content = draft.WorkshopDraftContent;
+        var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft.WorkshopDraftContent));; 
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
         return new SportsSectionPostRequest
         {
             OrganizationCode = draft.Provider.Edrpou,
             SectionName = content.Title,
 
-            //SectionSportKindDictIdCode = 1,  не мапити //Ідентифікатор виду спорту з довідника 
+            SectionSportKindDictIdCode = 55,
 
             SectionAgeFrom = content.MinAge,
             SectionAgeTo = content.MaxAge,
 
             SectionIsInShlyahProject = content.IsChampionPath,
 
-            SectionAddressLocalityDictIdCode = defaultContact?.Address?.CATOTTGId.ToString(), // is it OK?
+            SectionAddressLocalityDictIdCode = "UA26100070020012343", /*defaultContact?.Address?.CATOTTGId.ToString() , // is it OK?*/
             SectionAddressStreet = defaultContact?.Address?.Street,
             SectionAddressHouse = defaultContact?.Address?.BuildingNumber,
 
@@ -31,12 +31,17 @@ public static class WorkshopDraftToSportSectionExtensions
 
             SectionRegistrationFlow = content.EnrollmentProcedureDescription,
 
-            SectionPhones = defaultContact?.Phones.Select(p => p.Number).Distinct().ToList() ?? [],
+            SectionPhones = defaultContact?.Phones?
+                .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
+                .Distinct().ToList() ?? new(),
 
-            SectionEmail = content.Contacts.Where(c => c.IsDefault).FirstOrDefault().Emails.FirstOrDefault().Address,
+            SectionEmail = content.Contacts?
+                .FirstOrDefault(c => c.IsDefault)?
+                .Emails?
+                .FirstOrDefault()?
+                .Address,
 
-            SectionRegistrationFormUrl = null, // what field does it map from?
-
+            SectionRegistrationFormUrl = "https://forms.example.com/football-registration",
             SectionUrl = defaultContact?.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
 
@@ -59,15 +64,20 @@ public static class WorkshopDraftToSportSectionExtensions
             ? null
             : CombineImageUrl(baseImageUrl, draft.CoverImageId),
 
-            SectionPhotos = draft.Images? 
+            /*SectionPhotos = draft.Images?
             .Where(img => !string.IsNullOrWhiteSpace(img.ExternalStorageId))
             .Select(img => CombineImageUrl(baseImageUrl, img.ExternalStorageId))
             .ToList() ?? new(),
-
+            */
+            SectionPhotos = [
+                "https://images.unsplash.com/photo-1529778873920-4da4926a72c2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y3V0ZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D",
+                "https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo2_clr_160x56px.svg",
+                "https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo3_clr_160x56px.svg"
+            ],
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
-            SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd:MM"),
-            SectionPracticePeriodDateTo = content.StudyPeriodEndDate.ToString("dd:MM"),
+            SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
+            SectionPracticePeriodDateTo   = content.StudyPeriodEndDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
 
             //SectionSchedule = content.DateTimeRanges?
             //.SelectMany(r => r.Workdays.Select(day => new SectionScheduleRequest

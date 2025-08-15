@@ -101,7 +101,7 @@ public class SportsSectionPostRequest : IValidatableObject
 
     [Required(ErrorMessage = "sectionPozashkillyaModerationStatus is required.")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public ModerationStatus SectionPozashkillyaModerationStatus { get; set; } = ModerationStatus.Draft;
+    public ModerationStatus SectionPozashkillyaModerationStatus { get; set; } = ModerationStatus.DRAFT;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
