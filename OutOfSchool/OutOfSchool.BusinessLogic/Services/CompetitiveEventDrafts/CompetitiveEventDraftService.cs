@@ -685,7 +685,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
                         DirectionId = s.DirectionId,
                         SubDirectionId = s.Id
                     })
-            .ToList() ?? [];
+            .ToList();
 
         return competitiveEventDraftResponseDto;
     }
