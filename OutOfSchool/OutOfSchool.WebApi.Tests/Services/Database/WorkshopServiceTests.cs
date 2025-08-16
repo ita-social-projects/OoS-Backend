@@ -125,7 +125,7 @@ public class WorkshopServiceTests
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
     }
 
     #region Create

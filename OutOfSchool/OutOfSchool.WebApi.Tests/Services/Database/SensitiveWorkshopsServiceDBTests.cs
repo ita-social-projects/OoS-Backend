@@ -107,7 +107,7 @@ public class SensitiveWorkshopsServiceDBTests
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
         
         MockInstitutionHierarchy();
         dbContext.Database.EnsureDeleted();

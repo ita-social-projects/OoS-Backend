@@ -364,8 +364,7 @@ public class WorkshopService(
         var (workshopType, isChampionPath) = await ValidateInstitutionHierarchy(dto.InstitutionHierarchyId, dto.WorkshopType);
         dto.WorkshopType = workshopType;
         dto.IsChampionPath = isChampionPath;
-
-        //  await ValidateInstitutionHierarchy(dto).ConfigureAwait(false);   
+        
         async Task<Workshop> UpdateWorkshopLocally()
         {
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
@@ -1382,7 +1381,7 @@ public class WorkshopService(
         var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId.Value).ConfigureAwait(false);
 
         // If the institution is "Мінспорт", set workshopType and isChampionPath; otherwise, use default values
-        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals(institutionOptions.Value.MinistryOfSportId, StringComparison.OrdinalIgnoreCase);
+        var isChampionPath = institutionHierarchyDto.Institution.Id.ToString().Equals(institutionOptions.Value.MinistryOfSportId, StringComparison.OrdinalIgnoreCase);
         if (isChampionPath)
         {
             workshopType = WorkshopType.Section;

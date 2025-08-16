@@ -60,8 +60,7 @@ public class WorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
-    private Mock<ISportsRegistryApiService> sportsRegistryApiService;
-    private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
+    private Mock<ISportsRegistryProviderService> sportRegistryProviderServiceMock;
     private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
 
     private string userId;
@@ -80,7 +79,7 @@ public class WorkshopDraftServiceTests
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
-        sportsRegistryApiService = new Mock<ISportsRegistryApiService>();
+        sportRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
         institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(
             It.IsAny<Guid>(),
             It.IsAny<string>(),
@@ -105,7 +104,7 @@ public class WorkshopDraftServiceTests
         
         institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
       
         imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
         imageStorageOptionsMock.Setup(x => x.Value)
@@ -117,7 +116,7 @@ public class WorkshopDraftServiceTests
         userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
-                   sportsRegistryApiService.Object,
+                   sportRegistryProviderServiceMock.Object,
                    languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
@@ -133,6 +132,7 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
+                   institutionHierarchyServiceMock.Object,
                    institutionOptionsMock.Object,
                    imageStorageOptionsMock.Object);
         SetupInstitutionHierarchy();
@@ -331,12 +331,12 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
 
-        tagRepositoryMoq
+        /*tagRepositoryMoq
             .Setup(x => x.GetByFilter(
                 It.IsAny<Expression<Func<Tag, bool>>>(),
                 It.IsAny<string>(),
                 It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>());
+            .ReturnsAsync(Enumerable.Empty<Tag>());*/
 
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
             It.IsAny<int>(),
@@ -993,7 +993,7 @@ public class WorkshopDraftServiceTests
 
         var service = new WorkshopDraftService(
                    logger.Object,
-                   sportsRegistryApiService.Object,
+                   sportRegistryProviderServiceMock.Object,
                    new Mock<ILanguageService>().Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
@@ -1009,7 +1009,9 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    new Mock<IChangesLogService>().Object,
-                   institutionOptionsMock.Object);
+                   institutionHierarchyServiceMock.Object,
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
