@@ -23,6 +23,7 @@ using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -39,6 +40,7 @@ public class CompetitiveEventDraftServiceTests
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>> mockImageService;
     private Mock<ICodeficatorRepository> mockCodeficatorRepository;
     private Mock<IChangesLogService> mockChangesLogService;
+    private Mock<IEntityRepositorySoftDeleted<long, SubDirection>> mockSubDirectionRepository;
 
 
 [SetUp]
@@ -51,6 +53,7 @@ public class CompetitiveEventDraftServiceTests
         mockImageService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
         mockCodeficatorRepository = new Mock<ICodeficatorRepository>();
         mockChangesLogService = new Mock<IChangesLogService>();
+        mockSubDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, SubDirection>>();
 
         competitiveEventDraftService = new CompetitiveEventDraftService(
             mockLogger.Object,
@@ -63,7 +66,8 @@ public class CompetitiveEventDraftServiceTests
             new Mock<IRegionAdminService>().Object,
             new Mock<IMinistryAdminService>().Object,
             new Mock<ICodeficatorService>().Object,
-            new Mock<ISearchStringService>().Object);
+            new Mock<ISearchStringService>().Object,
+            mockSubDirectionRepository.Object);
     }
 
     #region Create

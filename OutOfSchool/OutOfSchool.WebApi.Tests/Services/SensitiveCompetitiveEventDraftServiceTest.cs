@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -32,6 +33,7 @@ public class SensitiveCompetitiveEventDraftServiceTest
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>> imageServiceMock;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<ICodeficatorRepository> codeficatorRepoMock;
+    private Mock<IEntityRepositorySoftDeleted<long, SubDirection>> mockSubDirectionRepository;
 
     Guid draftId = Guid.NewGuid();
 
@@ -45,7 +47,7 @@ public class SensitiveCompetitiveEventDraftServiceTest
         imageServiceMock = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
         changesLogServiceMock = new Mock<IChangesLogService>();
         codeficatorRepoMock = new Mock<ICodeficatorRepository>();
-
+        mockSubDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, SubDirection>>();
 
         service = new CompetitiveEventDraftService(
             loggerMock.Object,
@@ -58,7 +60,8 @@ public class SensitiveCompetitiveEventDraftServiceTest
             new Mock<IRegionAdminService>().Object,
             new Mock<IMinistryAdminService>().Object,
             new Mock<ICodeficatorService>().Object,
-            new Mock<ISearchStringService>().Object);
+            new Mock<ISearchStringService>().Object,
+            mockSubDirectionRepository.Object);
     }
 
     [Test]
