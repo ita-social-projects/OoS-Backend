@@ -1382,7 +1382,7 @@ public class WorkshopService(
         var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId.Value).ConfigureAwait(false);
 
         // If the institution is "Мінспорт", set workshopType and isChampionPath; otherwise, use default values
-        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals(institutionOptions.Value.MinistryOfSportTitle, StringComparison.OrdinalIgnoreCase);
+        var isChampionPath = institutionHierarchyDto.Institution.Title.Equals(institutionOptions.Value.MinistryOfSportId, StringComparison.OrdinalIgnoreCase);
         if (isChampionPath)
         {
             workshopType = WorkshopType.Section;

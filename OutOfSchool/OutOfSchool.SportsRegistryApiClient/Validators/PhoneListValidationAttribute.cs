@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 
 namespace OutOfSchool.SportsRegistryApiClient.Validators;
-public class PhoneListValidationAttribute :ValidationAttribute
+public class PhoneListValidationAttribute : ValidationAttribute
 {
     override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {

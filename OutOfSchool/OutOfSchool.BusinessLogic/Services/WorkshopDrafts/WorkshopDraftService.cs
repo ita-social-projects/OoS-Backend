@@ -65,6 +65,7 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
+    IInstitutionHierarchyService institutionHierarchyService,
     IOptions<InstitutionOptions> institutionSettings,
     IOptions<ImageStorageOptions> imageStorageOptions
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
@@ -344,12 +345,24 @@ public class WorkshopDraftService(
 
         if (workshopDraft.WorkshopId == null)
         {
-            if (string.Equals(workshopDraft.Provider?.Institution?.Title,
-                institutionSettings.Value.MinistryOfSportTitle,
+            if (string.Equals(workshopDraft.Provider?.Institution?.Id.ToString(),
+                institutionSettings.Value.MinistryOfSportId,
                  StringComparison.OrdinalIgnoreCase))
             {
 
                 var sectionRequest = workshopDraft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
+
+                if (!long.TryParse(sectionRequest.SectionAddressLocalityDictIdCode, out var catottgId))
+                {
+                    //  works, when no catottgId is provided, for safety
+                    throw new InvalidOperationException(
+                        $"Invalid CATOTTG Id: {sectionRequest.SectionAddressLocalityDictIdCode}");
+                }
+
+                sectionRequest.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+
+                sectionRequest.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(workshopDraft);
+
                 var result = await sportsRegistryApiService.RegisterSectionAsync(sectionRequest);
 
                 result.Match(
@@ -1342,7 +1355,7 @@ public class WorkshopDraftService(
         }
         
         dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals(
-            institutionSettings.Value.MinistryOfSportTitle,
+            institutionSettings.Value.MinistryOfSportId,
             StringComparison.OrdinalIgnoreCase);
 
         if (dto.IsChampionPath)
@@ -1396,4 +1409,35 @@ public class WorkshopDraftService(
             dto.PreferentialTermsOfParticipation = null;
         }
     }
+    /// <summary>
+    /// Asynchronously retrieves the sport kind dictionary ID code associated with the specified workshop draft.
+    /// </summary>
+    /// <param name="workshopDraft">The workshop draft containing the necessary data to determine the sport kind dictionary ID code.</param>
+    /// <returns>The sport kind dictionary ID code as an integer.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the <paramref name="workshopDraft"/> is missing a valid InstitutionHierarchyId, if the corresponding
+    /// institution hierarchy cannot be found, or if the SportRegistryIdCode is not set.</exception>
+    private async Task<int> GetSectionSportKindDictIdCodeAsync(WorkshopDraft workshopDraft)
+    {
+        if (workshopDraft.WorkshopDraftContent?.InstitutionHierarchyId is not Guid institutionHierarchyId ||
+            institutionHierarchyId == Guid.Empty)
+        {
+            throw new InvalidOperationException("InstitutionHierarchyId is missing in WorkshopDraftContent.");
+        }
+
+        var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId);
+
+        if (institutionHierarchyDto is null)
+        {
+            throw new InvalidOperationException($"InstitutionHierarchy with Id {institutionHierarchyId} not found.");
+        }
+
+        if (institutionHierarchyDto.SportRegistryIdCode is null)
+        {
+            throw new InvalidOperationException(
+                $"SportRegistryIdCode is missing for InstitutionHierarchy with Id {institutionHierarchyId}.");
+        }
+
+        return (int)institutionHierarchyDto.SportRegistryIdCode;
+    }
+
 }

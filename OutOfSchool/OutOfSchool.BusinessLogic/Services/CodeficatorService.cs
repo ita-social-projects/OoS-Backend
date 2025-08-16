@@ -99,6 +99,12 @@ public class CodeficatorService(ICodeficatorRepository codeficatorRepository) : 
         return result;
     }
 
+    public async Task<string> GetCodeById(long id)
+    {
+        var entity = await codeficatorRepository.GetById(id);
+        return entity?.Code;
+    }
+
     #region privateMethods
 
     private static Expression<Func<CATOTTG, bool>> GetFilter(long? parentId, CodeficatorCategory level)

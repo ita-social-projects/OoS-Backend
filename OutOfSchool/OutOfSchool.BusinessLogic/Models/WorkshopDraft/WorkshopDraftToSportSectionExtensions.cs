@@ -1,5 +1,6 @@
 ﻿using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Images; // ??
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Diagnostics.CodeAnalysis;
@@ -16,14 +17,15 @@ public static class WorkshopDraftToSportSectionExtensions
             OrganizationCode = draft.Provider.Edrpou,
             SectionName = content.Title,
 
-            SectionSportKindDictIdCode = 55,
+            //SectionSportKindDictIdCode = 55,
 
             SectionAgeFrom = content.MinAge,
             SectionAgeTo = content.MaxAge,
 
             SectionIsInShlyahProject = content.IsChampionPath,
 
-            SectionAddressLocalityDictIdCode = "UA26100070020012343", /*defaultContact?.Address?.CATOTTGId.ToString() , // is it OK?*/
+           
+            SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),// "123456" defaultContact?.Address?.CATOTTGId.ToString(), // "UA26100070020012343",
             SectionAddressStreet = defaultContact?.Address?.Street,
             SectionAddressHouse = defaultContact?.Address?.BuildingNumber,
 
@@ -36,12 +38,12 @@ public static class WorkshopDraftToSportSectionExtensions
                 .Distinct().ToList() ?? new(),
 
             SectionEmail = content.Contacts?
-                .FirstOrDefault(c => c.IsDefault)?
+                .FirstOrDefault(c => c.IsDefault)? // defaultContact
                 .Emails?
                 .FirstOrDefault()?
                 .Address,
 
-            SectionRegistrationFormUrl = "https://forms.example.com/football-registration",
+            SectionRegistrationFormUrl = "https://forms.example.com/football-registration", // replace with actual URL if available
             SectionUrl = defaultContact?.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
 
@@ -60,41 +62,25 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue
             ? 1000 : (int)content.AvailableSeats,
 
-            SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId) 
+            SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId)
             ? null
             : CombineImageUrl(baseImageUrl, draft.CoverImageId),
 
-            /*SectionPhotos = draft.Images?
-            .Where(img => !string.IsNullOrWhiteSpace(img.ExternalStorageId))
-            .Select(img => CombineImageUrl(baseImageUrl, img.ExternalStorageId))
-            .ToList() ?? new(),
-            */
-            SectionPhotos = [
-                "https://images.unsplash.com/photo-1529778873920-4da4926a72c2?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y3V0ZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D",
-                "https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo2_clr_160x56px.svg",
-                "https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo3_clr_160x56px.svg"
-            ],
+            SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
+
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
             SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
             SectionPracticePeriodDateTo   = content.StudyPeriodEndDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
 
-            //SectionSchedule = content.DateTimeRanges?
-            //.SelectMany(r => r.Workdays.Select(day => new SectionScheduleRequest
-            //{
-            //    SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
-            //    SectionScheduleTimeFrom = r.StartTime.ToString("HH:mm:ss"),
-            //    SectionScheduleTimeTo = r.EndTime.ToString("HH:mm:ss"),
-            //}))
-            //.ToList() ?? new(),
             SectionSchedule = content.DateTimeRanges?.SelectMany(r =>
                  r.Workdays
                 .SelectMany(flags => DecomposeFlags(flags)
                 .Select(day => new SectionScheduleRequest
                 {
                     SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
-                    SectionScheduleTimeFrom = r.StartTime.ToString("HH:mm:ss"),
-                    SectionScheduleTimeTo = r.EndTime.ToString("HH:mm:ss"),
+                    SectionScheduleTimeFrom = r.StartTime.ToString("HH':'mm':'ss", CultureInfo.InvariantCulture),
+                    SectionScheduleTimeTo = r.EndTime.ToString("HH':'mm':'ss", CultureInfo.InvariantCulture),
                 }))).ToList() ?? new(),
         };
     }
@@ -115,6 +101,17 @@ public static class WorkshopDraftToSportSectionExtensions
     }
     private static string CombineImageUrl(string baseUrl, string imageId)
     {
-        return $"{baseUrl.TrimEnd('/')}/{imageId.TrimStart('/')}";  //$"{baseImageUrl}{draft.CoverImageId}"
+        return $"{baseUrl?.TrimEnd().TrimEnd('/')}/{imageId?.TrimStart().TrimStart('/')}"; // need this stronger check?
+        //return $"{baseUrl.TrimEnd('/')}/{imageId.TrimStart('/')}";
+    }
+    private static List<string> MapSectionPhotos<T>(IEnumerable<Image<T>> images, string baseUrl)
+    {
+        if (images == null) return new();
+
+        return images
+            .Where(img => !string.IsNullOrWhiteSpace(img.ExternalStorageId))
+            .Select(img => CombineImageUrl(baseUrl, img.ExternalStorageId))
+            .Distinct()
+            .ToList();
     }
 }
