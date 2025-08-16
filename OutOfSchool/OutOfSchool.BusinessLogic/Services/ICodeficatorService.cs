@@ -53,4 +53,7 @@ public interface ICodeficatorService
     /// <param name="catottgId">CATOTTG id</param>
     /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
     public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
+
+    public Task<string> GetCodeById(long id); // add comments later
+
 }
