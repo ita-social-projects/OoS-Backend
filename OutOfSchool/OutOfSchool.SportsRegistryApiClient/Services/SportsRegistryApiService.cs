@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
@@ -34,21 +35,17 @@ public class SportsRegistryApiService : ISportsRegistryApiService
 
     public async Task<Either<ErrorResponse, SectionCreateResponse>> CreateSectionAsync(SportsSectionPostRequest request)
     {
-        if (request is null)
-        {
-            return new ErrorResponse
-            {
-                HttpStatusCode = HttpStatusCode.BadRequest,
-                Message = "Request is null"
-            };
-        }
-
         var tokenResult = await GetAccessTokenAsync();
 
-        return await tokenResult
+        var httpResult =  await tokenResult
             .Map(accessToken => BuildRequest(request, accessToken))
             .FlatMapAsync(registryRequest =>
                 communicationService.SendRequest<SectionCreateResponse, ErrorResponse>(registryRequest)).ConfigureAwait(false);
+
+        return httpResult.FlatMap(resp =>
+            isRegistrySuccess(resp)
+                ? (Either<ErrorResponse, SectionCreateResponse>)resp
+                : ToRegistryError(resp));
     }
 
     private Request BuildRequest(SportsSectionPostRequest request, string accessToken)
@@ -93,9 +90,60 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             return new ErrorResponse
             {
                 HttpStatusCode = HttpStatusCode.InternalServerError,
-                Message = "Failed to get access token",
-                Content = ex.Message
+                Message = "Failed to get access token: ",
+                Content = ex.Message,
             };
         }
     }
+    #region ApiResponseInterpretation
+
+    private static bool isRegistrySuccess(SectionCreateResponse response)
+    {
+        var codeStr = response?.ResultVariables?.Code;
+        var errorRaw = response?.ResultVariables?.Errors;
+        
+        var hasErrors = !string.IsNullOrEmpty(errorRaw);
+        
+        return int.TryParse(codeStr, out var code)
+        && code is >= 200 and < 300
+        && !hasErrors;
+    }
+
+    private static ErrorResponse ToRegistryError(SectionCreateResponse response)
+    {
+        var codeStr = response?.ResultVariables?.Code;
+        var errorsRaw = response?.ResultVariables?.Errors;
+        var details = NormalizeErrorsContent(errorsRaw);
+        
+        return new ErrorResponse
+        {
+            HttpStatusCode = MapToHttpStatusCode(codeStr),
+            Message = "Sports Registry returned errors.",
+            Content = details
+        };
+    }
+    private static HttpStatusCode MapToHttpStatusCode(string? codeStr)
+        => int.TryParse(codeStr, out var code) && Enum.IsDefined(typeof(HttpStatusCode), code)
+            ? (HttpStatusCode)code
+            : HttpStatusCode.BadRequest;
+    
+    private static string? NormalizeErrorsContent(string? errorsRaw)
+    {
+        if (string.IsNullOrWhiteSpace(errorsRaw))
+            return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(errorsRaw);
+            return JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        }
+        catch
+        {
+            return errorsRaw;
+        }
+    }
+    #endregion
 }

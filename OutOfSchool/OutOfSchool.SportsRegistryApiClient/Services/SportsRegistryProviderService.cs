@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Models;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
@@ -21,32 +22,43 @@ public class SportsRegistryProviderService : ISportsRegistryProviderService
 
     public async Task<Either<ErrorResponse, SectionCreateResponse>> RegisterSectionAsync(SportsSectionPostRequest request)
     {
-        logger.LogInformation("Registering new section in Sports Registry for organization: {OrganizationCode}", request.OrganizationCode);
+        if (request is null)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Request payload is null."
+            };
+        }
 
+        logger.LogInformation(
+            $"Registering section in Sports Registry. With organization code: ={request.OrganizationCode}");
         var result = await apiService.CreateSectionAsync(request).ConfigureAwait(false);
 
         return result.Match<Either<ErrorResponse, SectionCreateResponse>>(
-            error => error,
+            error =>
+            {
+                var message = string.IsNullOrWhiteSpace(error.Message)
+                    ? "Sports Registry returned errors."
+                    : error.Message;
+
+                logger.LogWarning(
+                    "Sports Registry error. Status={Status}, Message={Message}, OrgCode={OrgCode}",
+                    error.HttpStatusCode, message, request.OrganizationCode);
+
+                return new ErrorResponse
+                {
+                    HttpStatusCode = error.HttpStatusCode,
+                    Message = message
+                };
+            },
             success =>
             {
-                var code = success.ResultVariables?.Code;
-                var errors = success.ResultVariables?.Errors;
-
-                if (!IsSuccessStatusCode(code))
-                {
-                    return new ErrorResponse
-                    {
-                        HttpStatusCode = System.Net.HttpStatusCode.BadRequest,
-                        Message = $"Registry returned error code {code}",
-                        Content = errors
-                    };
-                }
+                logger.LogInformation(
+                    "Section registered successfully. OrgCode={OrgCode}, SectionId created in external API={ExternalId}",
+                    request.OrganizationCode,
+                    success.ResultVariables.SectionId);
                 return success;
             });
-    }
-
-    private bool IsSuccessStatusCode(string? code)
-    {
-        return int.TryParse(code, out var statusCode) && statusCode is >= 200 and < 300;
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
 namespace OutOfSchool.WebApi.Controllers;
 
@@ -9,29 +10,33 @@ namespace OutOfSchool.WebApi.Controllers;
 public class TokenTestController : ControllerBase
 {
     private readonly ISportsRegistryProviderService provider;
-
-    public TokenTestController(ISportsRegistryProviderService provider, ISportsRegistryApiService api)
+    public TokenTestController(ISportsRegistryProviderService provider) 
     {
         this.provider = provider;
     }
-
+    
     [HttpPost("create-section")]
-    public async Task<IActionResult> CreateSection([FromBody] SportsSectionPostRequest request)
+    [ProducesResponseType(typeof(SectionCreateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateSection([FromBody] SportsSectionPostRequest request, CancellationToken ct)
     {
-        if (request == null)
+        if (request is null)
         {
-            return BadRequest("Request body is empty or malformed.");
+            return BadRequest(new { message = "Request body is empty or malformed." });
         }
 
-        var result = await provider.RegisterSectionAsync(request);
+        var result = await provider.RegisterSectionAsync(request).ConfigureAwait(false);
 
         return result.Match<IActionResult>(
-            error => StatusCode((int)error.HttpStatusCode, new
-            {
-                error.Message,
-                error.Content,
-                error.ApiErrorResponse
-            }),
+            error => StatusCode(
+                (int)error.HttpStatusCode,
+                new
+                {
+                    message = string.IsNullOrWhiteSpace(error.Message) 
+                        ? "Failed to register section in Sports Registry." 
+                        : error.Message,
+                }),
             success => Ok(success));
     }
 }
