@@ -17,7 +17,7 @@ public class SportsSectionPostRequest : IValidatableObject
 
     [Required(ErrorMessage = "sectionSportKindDictIdCode is required.")]
     [Range(1, int.MaxValue, ErrorMessage = "sectionSportKindDictIdCode must be a non-negative Integer.")]
-    public int SectionSportKindDictIdCode { get; set; }
+    public long SectionSportKindDictIdCode { get; set; }
 
     [Required(ErrorMessage = "sectionAgeFrom is required.")]
     [Range(0, RegistryConstants.MaxAge, ErrorMessage = "sectionAgeFrom must be a non-negative Integer less than or equal to 120.")]

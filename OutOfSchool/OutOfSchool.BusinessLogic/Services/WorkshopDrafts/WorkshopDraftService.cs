@@ -334,58 +334,16 @@ public class WorkshopDraftService(
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
-
-        if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
-            workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
-        {
-            throw new ArgumentException("This WorkshopDraft can`t be approved.");
-        }
-
+        
+        EnsureDraftIsApprovable(workshopDraft);
+        
         //TODO: Add image loading later
 
         if (workshopDraft.WorkshopId == null)
         {
-            if (string.Equals(workshopDraft.Provider?.Institution?.Id.ToString(),
-                institutionSettings.Value.MinistryOfSportId,
-                 StringComparison.OrdinalIgnoreCase))
+            if (IsMinistryOfSport(workshopDraft))
             {
-
-                var sectionRequest = workshopDraft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
-
-                if (!long.TryParse(sectionRequest.SectionAddressLocalityDictIdCode, out var catottgId))
-                {
-                    //  works, when no catottgId is provided, for safety
-                    throw new InvalidOperationException(
-                        $"Invalid CATOTTG Id: {sectionRequest.SectionAddressLocalityDictIdCode}");
-                }
-
-                sectionRequest.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
-
-                sectionRequest.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(workshopDraft);
-
-                var result = await sportsRegistryApiService.RegisterSectionAsync(sectionRequest);
-
-                result.Match(
-                    error =>
-                    {
-                        var firstError = error.ApiErrorResponse?.ApiErrors?.FirstOrDefault();
-
-                        logger.LogError(
-                            "Failed to sync section to Sports Registry. Code = {Code}, Message = {Message}",
-                            firstError?.Code ?? error.HttpStatusCode.ToString(),
-                            firstError?.Message ?? error.Message ?? "Unknown");
-
-                        throw new InvalidOperationException($"Registry sync failed: {firstError?.Message ?? error.Message}");
-                    },
-                    success =>
-                    {
-                        //workshopDraft.SectionId = success.ResultVariables.SectionId; TODO: need to be uncommented after creating of function rec
-
-                        logger.LogInformation("Section synced to Sports Registry. SectionId = {SectionId}",
-                            success.ResultVariables.SectionId);
-
-                        return true;
-                    });
+                await SyncSectionWithRegistryAsync(workshopDraft);
             }
             await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
         }
@@ -1416,7 +1374,7 @@ public class WorkshopDraftService(
     /// <returns>The sport kind dictionary ID code as an integer.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the <paramref name="workshopDraft"/> is missing a valid InstitutionHierarchyId, if the corresponding
     /// institution hierarchy cannot be found, or if the SportRegistryIdCode is not set.</exception>
-    private async Task<int> GetSectionSportKindDictIdCodeAsync(WorkshopDraft workshopDraft)
+    private async Task<long> GetSectionSportKindDictIdCodeAsync(WorkshopDraft workshopDraft)
     {
         if (workshopDraft.WorkshopDraftContent?.InstitutionHierarchyId is not Guid institutionHierarchyId ||
             institutionHierarchyId == Guid.Empty)
@@ -1437,7 +1395,71 @@ public class WorkshopDraftService(
                 $"SportRegistryIdCode is missing for InstitutionHierarchy with Id {institutionHierarchyId}.");
         }
 
-        return (int)institutionHierarchyDto.SportRegistryIdCode;
+        return (long)institutionHierarchyDto.SportRegistryIdCode;
+    }
+    
+    private async Task SyncSectionWithRegistryAsync(WorkshopDraft draft)
+    {
+        // Build a request
+        var request = draft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
+
+        if (!long.TryParse(request.SectionAddressLocalityDictIdCode, out var catottgId))
+        {
+            throw new InvalidOperationException(
+                $"Invalid CATOTTG Id: {request.SectionAddressLocalityDictIdCode}");
+        }
+
+        request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+        request.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
+
+        // 2) try to check api 
+        var apiCreationResponse = await sportsRegistryApiService.RegisterSectionAsync(request);
+
+        // 3) Processing of a result 
+        apiCreationResponse.Match(
+            error =>
+            {
+                var details = error.Content ?? error.Message ?? "Unknown";
+                logger.LogError("Failed to sync section to Sports Registry. Code={Code}, Message={Message}",
+                    (int)error.HttpStatusCode, details);
+
+                // NOTE: Maybe create a specific type of exception in future (TODO) 
+                throw new InvalidOperationException($"Registry sync failed: {details}");
+            },
+            success =>
+            {
+                var createdRegistryId  = success.ResultVariables.SectionId;
+                logger.LogInformation($"Workshop draft was successfully synced to Sports Registry. ID of created workshop in sport registry: {createdRegistryId}");
+                return true; 
+            }
+        );
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="draft"></param>
+    /// <exception cref="ArgumentException"></exception>
+    private static void EnsureDraftIsApprovable(WorkshopDraft draft)
+    {
+        var status = draft?.DraftStatus;
+        if (status is null ||
+            (status != WorkshopDraftStatus.PendingModeration &&
+             status != WorkshopDraftStatus.EditedByModerator))
+        {
+            throw new ArgumentException("This WorkshopDraft can’t be approved.");
+        }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="draft"></param>
+    /// <returns></returns>
+    private bool IsMinistryOfSport(WorkshopDraft draft)
+    {
+        var institutionId = draft?.Provider?.Institution?.Id.ToString();
+        var expected = institutionSettings.Value.MinistryOfSportId;
+        return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
     }
 
 }

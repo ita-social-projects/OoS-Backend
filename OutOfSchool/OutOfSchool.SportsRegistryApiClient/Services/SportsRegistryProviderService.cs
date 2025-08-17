@@ -38,13 +38,11 @@ public class SportsRegistryProviderService : ISportsRegistryProviderService
         return result.Match<Either<ErrorResponse, SectionCreateResponse>>(
             error =>
             {
-                var message = string.IsNullOrWhiteSpace(error.Message)
-                    ? "Sports Registry returned errors."
-                    : error.Message;
+                var message = $"{error.Message} List of errors: {error.Content}";
 
                 logger.LogWarning(
-                    "Sports Registry error. Status={Status}, Message={Message}, OrgCode={OrgCode}",
-                    error.HttpStatusCode, message, request.OrganizationCode);
+                    "Sports Registry error. Status={Status}, Message={Message}",
+                    error.HttpStatusCode, message);
 
                 return new ErrorResponse
                 {

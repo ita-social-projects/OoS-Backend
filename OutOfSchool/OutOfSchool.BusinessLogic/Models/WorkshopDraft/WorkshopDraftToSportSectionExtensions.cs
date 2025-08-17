@@ -17,15 +17,13 @@ public static class WorkshopDraftToSportSectionExtensions
             OrganizationCode = draft.Provider.Edrpou,
             SectionName = content.Title,
 
-            //SectionSportKindDictIdCode = 55,
-
             SectionAgeFrom = content.MinAge,
             SectionAgeTo = content.MaxAge,
 
             SectionIsInShlyahProject = content.IsChampionPath,
 
            
-            SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),// "123456" defaultContact?.Address?.CATOTTGId.ToString(), // "UA26100070020012343",
+            SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),
             SectionAddressStreet = defaultContact?.Address?.Street,
             SectionAddressHouse = defaultContact?.Address?.BuildingNumber,
 
@@ -66,8 +64,8 @@ public static class WorkshopDraftToSportSectionExtensions
             ? null
             : CombineImageUrl(baseImageUrl, draft.CoverImageId),
 
-            SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
-
+            //SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
+            SectionPhotos  = ["https://img1.png", "https://img2.png"],
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
             SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
