@@ -67,7 +67,7 @@ public class WorkshopServiceTests
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
     private Guid providerId;
     private Guid studySubjectId;
-
+    private Guid ministryOfSportId;
 
     [SetUp]
     public void SetUp()
@@ -124,8 +124,16 @@ public class WorkshopServiceTests
                     );
         languageServiceMock.Setup(s => s.GetById(It.IsAny<long>()))
             .ReturnsAsync((long id) => new LanguageDto { Id = id, Name = "English" });
+
+        ministryOfSportId = Guid.NewGuid();
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = ministryOfSportId.ToString() });
+
+        institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto { Id = ministryOfSportId, Title = "Мінспорт" }
+            });
     }
 
     #region Create
@@ -272,7 +280,7 @@ public class WorkshopServiceTests
     }
     
     [Test]
-    public async Task Create_WhenInstitutionTitleIsMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
+    public async Task Create_WhenInstitutionIdMatchesMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
@@ -281,15 +289,13 @@ public class WorkshopServiceTests
 
         SetupCreate(createdEntity);
 
-        institutionHierarchyServiceMock.Setup(s => s.GetById(createdEntity.InstitutionHierarchyId.Value))
-            .ReturnsAsync(new InstitutionHierarchyDto
-            {
-                Institution = new InstitutionDto { Title = "Мінспорт" }
-            });
+        SetupInstitutionHierarchyAsMinSport(createdEntity.InstitutionHierarchyId.Value);
+
         featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
         var dto = WorkshopCreateRequestDtoGenerator.FromModel(createdEntity);
         workshopRepository.Setup(w => w.Create(It.IsAny<Workshop>()))
             .ReturnsAsync((Workshop w) => w); 
+        
         // Act
         var result = await workshopService.Create(dto).ConfigureAwait(false);
 
@@ -552,7 +558,7 @@ public class WorkshopServiceTests
     }
     
     [Test]
-    public async Task CreateV2_WhenInstitutionTitleIsMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
+    public async Task CreateV2_WhenInstitutionIdMatchesMinSport_ShouldSetWorkshopTypeToSectionAndIsChampionPathTrue()
     {
         // Arrange
         var createdEntity = WorkshopGenerator.Generate().WithProvider();
@@ -561,11 +567,7 @@ public class WorkshopServiceTests
 
         SetupCreateV2(createdEntity);
 
-        institutionHierarchyServiceMock.Setup(s => s.GetById(createdEntity.InstitutionHierarchyId.Value))
-            .ReturnsAsync(new InstitutionHierarchyDto
-            {
-                Institution = new InstitutionDto { Title = "Мінспорт" }
-            });
+        SetupInstitutionHierarchyAsMinSport(createdEntity.InstitutionHierarchyId.Value);
 
         featureManagerMock.Setup(f => f.IsEnabledAsync("EnableWorkshopGroupTypeField")).ReturnsAsync(true);
 
@@ -1161,12 +1163,7 @@ public class WorkshopServiceTests
             .Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
             .ReturnsAsync(new List<WorkshopTakenSeats>());
         
-        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
-            .ReturnsAsync(new InstitutionHierarchyDto
-            {
-                Institution = new InstitutionDto { Title = "Мінспорт" }
-            });
-
+        SetupInstitutionHierarchyAsMinSport(dto.InstitutionHierarchyId.Value);
         // Act
         var result = await workshopService.Update(dto).ConfigureAwait(false);
 
@@ -1258,11 +1255,7 @@ public class WorkshopServiceTests
 
         SetupUpdate(workshop);
 
-        institutionHierarchyServiceMock.Setup(s => s.GetById(dto.InstitutionHierarchyId.Value))
-            .ReturnsAsync(new InstitutionHierarchyDto
-            {
-                Institution = new InstitutionDto { Title = "Мінспорт" }
-            });
+        SetupInstitutionHierarchyAsMinSport(dto.InstitutionHierarchyId.Value);
 
         applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>()))
             .ReturnsAsync(new List<WorkshopTakenSeats>());
@@ -1693,6 +1686,18 @@ public class WorkshopServiceTests
             .ReturnsAsync(new InstitutionHierarchyDto
             {
                 Institution = new InstitutionDto { Title = "Мінспорт"}
+            });
+    }
+    private void SetupInstitutionHierarchyAsMinSport(Guid institutionHierarchyId)
+    {
+        institutionHierarchyServiceMock.Setup(s => s.GetById(institutionHierarchyId))
+            .ReturnsAsync(new InstitutionHierarchyDto
+            {
+                Institution = new InstitutionDto
+                {
+                    Id = ministryOfSportId,
+                    Title = "Мінспорт"
+                }
             });
     }
 

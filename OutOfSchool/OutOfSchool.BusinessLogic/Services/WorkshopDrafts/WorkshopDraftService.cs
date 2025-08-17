@@ -1312,7 +1312,7 @@ public class WorkshopDraftService(
           throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
         }
         
-        dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals(
+        dto.IsChampionPath = institutionHierarchy.Institution.Id.ToString().Equals(
             institutionSettings.Value.MinistryOfSportId,
             StringComparison.OrdinalIgnoreCase);
 
