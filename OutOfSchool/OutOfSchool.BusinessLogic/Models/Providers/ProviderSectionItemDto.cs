@@ -17,16 +17,15 @@ public class ProviderSectionItemDto
 
 public static class ProviderSectionItemDtoExtensions
 {
-    public static ProviderSectionItem SetToModel(this ProviderSectionItemDto dto, ProviderSectionItem model, Guid providerId)
+    public static ProviderSectionItem SetToModel(this ProviderSectionItemDto dto, ProviderSectionItem model)
     {
         model.Name = dto.SectionName;
         model.Description = dto.Description;
-        model.ProviderId = providerId;
 
         return model;
     }
 
-    public static List<ProviderSectionItem> SetToModel(this IEnumerable<ProviderSectionItemDto> dtoList, IEnumerable<ProviderSectionItem> modelList, Guid providerId)
+    public static List<ProviderSectionItem> SetToModel(this IEnumerable<ProviderSectionItemDto> dtoList, IEnumerable<ProviderSectionItem> modelList)
     {
         var result = modelList.Where(dtr => !dtr.IsDeleted).ToList();
         var dtoIds = dtoList.Where(x => x.Id != Guid.Empty).Select(x => x.Id).ToHashSet();
@@ -44,7 +43,7 @@ public static class ProviderSectionItemDtoExtensions
             else
             {
                 var newModelItem = new ProviderSectionItem();
-                result.Add(dto.SetToModel(newModelItem, providerId));
+                result.Add(dto.SetToModel(newModelItem));
             }
         }
 
