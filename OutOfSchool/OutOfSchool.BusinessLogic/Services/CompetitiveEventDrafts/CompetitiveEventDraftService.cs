@@ -675,9 +675,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             );
 
         competitiveEventDraftResponseDto.CompetitiveEventDetails.DirectionSubDirectionIds = (await subDirectionRepository
-            .GetByFilter(
-                         whereExpression: sd => competitiveEventDraftResponseDto.CompetitiveEventDetails.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted,
-                         includeExpression: q => q.Include(sd => sd.Direction))
+            .GetByFilter(whereExpression: sd => competitiveEventDraftResponseDto.CompetitiveEventDetails.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)
             .ConfigureAwait(false))
             .Select(
                     s => new DirectionSubDirectionIdsDto
