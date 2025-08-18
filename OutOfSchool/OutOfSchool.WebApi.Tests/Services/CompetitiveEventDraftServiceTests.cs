@@ -111,7 +111,8 @@ public class CompetitiveEventDraftServiceTests
 
         var subDirections = new List<SubDirection>
         {
-            new() { Id = 54, DirectionId = 14, Description = "description", IsDeleted = true, Title = "title"  }
+            new() { Id = 54, DirectionId = 14, Description = "description1", IsDeleted = false, Title = "title1"  },
+            new() { Id = 9, DirectionId = 10, Description = "description2", IsDeleted = true, Title = "title2"  }
         };
 
         mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
@@ -133,7 +134,8 @@ public class CompetitiveEventDraftServiceTests
         mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
             It.IsAny<Expression<Func<SubDirection, bool>>>(),
             It.IsAny<string>(),
-            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>())).ReturnsAsync(subDirections);
+            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted));
 
         // Act
         var result = await competitiveEventDraftService.Create(dto);
@@ -141,8 +143,9 @@ public class CompetitiveEventDraftServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<CompetitiveEventDraftResultDto>(result);
-        Assert.AreEqual(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds[0].DirectionId, directionSubDirectionIds[0].DirectionId);
-        Assert.AreEqual(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds[0].SubDirectionId, directionSubDirectionIds[0].SubDirectionId);
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds, Has.Count.EqualTo(1));
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds
+              .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
     }
 
     #endregion
