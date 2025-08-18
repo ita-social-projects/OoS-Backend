@@ -1,4 +1,8 @@
-﻿using OutOfSchool.BusinessLogic.Models.ContactInfo;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using CompetitiveEventDraftModel = OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft;
@@ -24,6 +28,11 @@ public class ModeratorCompetitiveEventDraftEditDto
 
     public string Benefits { get; set; }
 
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
+    public IEnumerable<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
+
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<ContactsDto> Contacts { get; set; } = [];
 }
 
@@ -38,7 +47,8 @@ public static class ModeratorCompetitiveEventDraftEditDtoExtensions
         model.CompetitiveEventDraftContent.VenueName = dto.VenueName;
         model.CompetitiveEventDraftContent.TermsOfParticipation = dto.TermsOfParticipation;
         model.CompetitiveEventDraftContent.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
-        model.CompetitiveEventDraftContent.Benefits = dto.Benefits;
+        model.CompetitiveEventDraftContent.Benefits = dto.Benefits;       
+        model.CompetitiveEventDraftContent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToDraft();
 
         UpdateContactsForModeration(model.CompetitiveEventDraftContent.Contacts, dto.Contacts);
 
