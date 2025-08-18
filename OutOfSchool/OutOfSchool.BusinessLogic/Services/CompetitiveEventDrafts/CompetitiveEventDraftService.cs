@@ -12,6 +12,7 @@ using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> logger,
@@ -24,7 +25,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     IRegionAdminService regionAdminService,
     IMinistryAdminService ministryAdminService,
     ICodeficatorService codeficatorService,
-    ISearchStringService searchStringService) : ICompetitiveEventDraftService, ISensitiveCompetitiveEventDraftService
+    ISearchStringService searchStringService,
+    IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository) : ICompetitiveEventDraftService, ISensitiveCompetitiveEventDraftService
 {
 
     // <inheritdoc/>
@@ -81,7 +83,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public async Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id,CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    public async Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id, CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
         if (competitiveEventDraftUpdateDto == null || competitiveEventDraftUpdateDto.CompetitiveEventV2Dto == null)
         {
@@ -606,7 +608,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         if (dto == null)
         {
             logger.LogError("Parameter '{ParameterName}' is null.", nameof(dto));
-            
+
             return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
             {
                 Code = "400",
@@ -614,9 +616,9 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             });
         }
 
-        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);        
-        
-        var validation = await ValidateDraftForModerator(draftId);                
+        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
+
+        var validation = await ValidateDraftForModerator(draftId);
 
         if (!validation.Succeeded)
         {
@@ -626,18 +628,18 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         var competitiveEventDraft = validation.Value;
 
         try
-        {            
+        {
             dto.ToDraft(competitiveEventDraft);
             competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.EditedByModerator;
 
-            await competitiveEventDraftRepository.Update(competitiveEventDraft);            
+            await competitiveEventDraftRepository.Update(competitiveEventDraft);
             var draftWithDetails = await GetByIdWithProviderDetails(competitiveEventDraft.Id);
 
             logger.LogInformation("Competitive event was updated by moderator.");
 
             return Result<CompetitiveEventDraftResponseDto>.Success(draftWithDetails.ToResponseDto());
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             logger.LogError(ex, "Error occurred while updating CompetitiveEventDraft with ID {DraftId}.", draftId);
             return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
@@ -672,6 +674,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
                     ?.ToAllAddressPartsDto()
             );
 
+        competitiveEventDraftResponseDto.CompetitiveEventDetails.DirectionSubDirectionIds = (await subDirectionRepository
+            .GetByFilter(
+                         whereExpression: sd => competitiveEventDraftResponseDto.CompetitiveEventDetails.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted,
+                         includeExpression: q => q.Include(sd => sd.Direction))
+            .ConfigureAwait(false))
+            .Select(
+                    s => new DirectionSubDirectionIdsDto
+                    {
+                        DirectionId = s.DirectionId,
+                        SubDirectionId = s.Id
+                    })
+            .ToList();
+
         return competitiveEventDraftResponseDto;
     }
 
@@ -680,11 +695,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         var competitiveEventDraft = competitiveEventV2Dto.ToDraft();
 
         competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.Draft;
-        
+
         var createdDraft = await competitiveEventDraftRepository
             .Create(competitiveEventDraft)
             .ConfigureAwait(false);
-        
+
         return createdDraft;
     }
 
