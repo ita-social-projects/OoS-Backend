@@ -88,8 +88,8 @@ public static class WorkshopESExtensions
             ShortTitle = dto.ShortTitle,
             CoverImageId = dto.CoverImageId,
             ProviderId = dto.ProviderId,
-            ProviderTitle = dto.ProviderTitle,
-            ProviderTitleEn = dto.ProviderTitleEn,
+            ProviderTitle = dto.Provider?.FullTitle,
+            ProviderTitleEn = dto.Provider?.FullTitleEn,
             // ProviderStatus = dto.Provider.Status, - was absent in original mapping
             ProviderOwnership = dto.ProviderOwnership,
             Description = dto.WorkshopDescriptionItems.Where(x => !x.IsDeleted)

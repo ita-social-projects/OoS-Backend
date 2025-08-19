@@ -1075,8 +1075,8 @@ public class WorkshopDraftService(
                     tempPredicate = tempPredicate.Or(
                         x => x.WorkshopDraftContent.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.WorkshopDraftContent.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                 }
 

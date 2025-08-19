@@ -85,6 +85,13 @@ public interface IWorkshopService
     Task<SearchResult<WorkshopDto>> GetAll(OffsetFilter offsetFilter);
 
     /// <summary>
+    /// Gets all workshops for a specific provider.
+    /// </summary>
+    /// <param name="providerId">The provider's identifier.</param>
+    /// <returns>Collection of workshops belonging to the specified provider.</returns>
+    Task<IEnumerable<Workshop>> GetAllByProviderId(Guid providerId);
+
+    /// <summary>
     /// Get all workshops (Id, Title) by provider Id.
     /// </summary>
     /// <param name="providerId">Provider's key.</param>
@@ -136,15 +143,6 @@ public interface IWorkshopService
            Guid providerId,
            int page,
            int pageSize);
-
-    /// <summary>
-    /// Update ProviderTitle property in all workshops with specified provider.
-    /// </summary>
-    /// <param name="providerId">Id of Provider to be searched by.</param>
-    /// <param name="providerTitle">Full Title of Provider to be changed.</param>
-    /// <param name="providerTitleEn">Full English Title of Provider to be changed.</param>
-    /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn);
 
     /// <summary>
     /// Update IsBloked property in all workshops with specified provider.

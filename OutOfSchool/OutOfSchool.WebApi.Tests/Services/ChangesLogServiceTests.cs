@@ -373,7 +373,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ApplicationId == application.Id));
         Assert.True(result.Entities.All(x => x.WorkshopTitle == application.Workshop.Title));
         Assert.True(result.Entities.All(x => application.Workshop.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name == x.WorkshopCity)));
-        Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
+        Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.Provider.FullTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }
@@ -432,7 +432,7 @@ public class ChangesLogServiceTests
         Assert.True(result.Entities.All(x => x.ApplicationId == application.Id));
         Assert.True(result.Entities.All(x => x.WorkshopTitle == application.Workshop.Title));
         Assert.True(result.Entities.All(x => application.Workshop.Contacts.Any(c => c.IsDefault && c.Address.CATOTTG.Name == x.WorkshopCity)));
-        Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.ProviderTitle));
+        Assert.True(result.Entities.All(x => x.ProviderTitle == application.Workshop.Provider.FullTitle));
         Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         Assert.True(result.Entities.All(x => x.UpdatedDate.Kind == DateTimeKind.Utc));
     }

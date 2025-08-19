@@ -133,9 +133,9 @@ public class WorkshopServicesCombiner(
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
+    public async Task<IEnumerable<Workshop>> UpdateProviderTitleES(Guid providerId, string providerTitle, string providerTitleEn)
     {
-        var workshops = await workshopService.UpdateProviderTitle(providerId, providerTitle, providerTitleEn).ConfigureAwait(false);
+        var workshops = await workshopService.GetAllByProviderId(providerId).ConfigureAwait(false);
 
         foreach (var workshop in workshops)
         {
