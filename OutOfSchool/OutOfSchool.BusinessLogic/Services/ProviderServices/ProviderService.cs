@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Individual;
@@ -13,6 +12,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -594,7 +594,6 @@ public class ProviderService(
             ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
-
 
             if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {

@@ -72,7 +72,6 @@ public class ProviderServiceTests
         fakeUser = UserGenerator.Generate();
 
         providersRepositoryMock = new Mock<IProviderRepository>();
-
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();

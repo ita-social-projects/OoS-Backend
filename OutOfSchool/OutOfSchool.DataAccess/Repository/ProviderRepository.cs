@@ -69,6 +69,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
          .ThenInclude(c => c.Parent)
          .ThenInclude(c => c.Parent)
          .ThenInclude(c => c.Parent)
+         .Include(p => p.ProviderSectionItems)
          .SingleOrDefaultAsync(provider => !provider.IsDeleted && provider.Id == id);
     }
 

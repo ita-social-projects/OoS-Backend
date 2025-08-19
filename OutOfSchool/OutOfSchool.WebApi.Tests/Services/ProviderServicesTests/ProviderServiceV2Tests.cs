@@ -67,7 +67,6 @@ public class ProviderServiceV2Tests
         fakeUser = UserGenerator.Generate();
 
         providersRepositoryMock = new Mock<IProviderRepository>();
-
         usersRepositoryMock = ProviderTestsHelper.CreateUsersRepositoryMock(fakeUser);
         var addressRepo = new Mock<IEntityRepositorySoftDeleted<long, Address>>();
         var individualRepo = new Mock<ISensitiveEntityRepositorySoftDeleted<Individual>>();
