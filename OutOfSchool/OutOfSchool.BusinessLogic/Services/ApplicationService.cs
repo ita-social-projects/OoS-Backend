@@ -27,6 +27,7 @@ public class ApplicationService : IApplicationService
     /// </summary>
     private readonly Func<IQueryable<Application>, IQueryable<Application>> includeFunc =
         a => a.Include(a => a.Workshop)
+                .ThenInclude(w => w.Provider)
               .Include(a => a.Child)
               .Include(a => a.Parent);
 
