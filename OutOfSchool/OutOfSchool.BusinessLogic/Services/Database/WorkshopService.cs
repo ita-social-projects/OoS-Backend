@@ -71,7 +71,9 @@ public class WorkshopService(
     /// Create a delegate to include other entities in Workshop entity
     /// </summary>
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> includeFunc =
-        ws => ws.Include(w => w.Teachers)
+        ws => ws
+              .Include(w => w.Provider)
+              .Include(w => w.Teachers)
               .Include(w => w.DateTimeRanges)
               .Include(w => w.InstitutionHierarchy)
               .Include(w => w.Contacts).ThenInclude(c => c.Address).ThenInclude(a => a.CATOTTG)
@@ -265,8 +267,7 @@ public class WorkshopService(
     {
         logger.LogInformation("Getting all Workshops by ProviderId started. Looking ProviderId = {ProviderId}.", providerId);
 
-        var workshops = await workshopRepository.GetByFilter(
-            whereExpression: x => x.ProviderId == providerId && x.Status != WorkshopStatus.Archived);
+        var workshops = await workshopRepository.GetByFilter(whereExpression: x => x.ProviderId == providerId);
 
         if (workshops == null || !workshops.Any())
             {
@@ -743,6 +744,7 @@ public class WorkshopService(
                 take: 0,
                 whereExpression: filterPredicate,
                 orderBy: null)
+            .Include(w => w.Provider)
             .Where(w => neighbours
                 .Select(n => n.Value)
                 .Any(hash => w.Contacts.Any(c => c.IsDefault && c.Address.GeoHash == hash)));
