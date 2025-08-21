@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -20,6 +18,8 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -469,26 +469,7 @@ public class WorkshopDraftService(
             allowedSettlementIdsForAdmin,
             subSettlementsIdsByFilter,
             searchTerms);
-
-        var orderBy = new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>();
-        if (searchTerms.Any())
-        {
-            var scoreExpression = BuildRelevanceScore(searchTerms);
-            var scoreObj = Box(scoreExpression);
-            orderBy.Add(scoreObj, SortDirection.Descending);
-        }
-
-        orderBy.AddRange(new[]
-        {
-            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.CreatedAt, SortDirection.Ascending),
-            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(
-                wd => wd.DraftStatus == WorkshopDraftStatus.PendingModeration ? 0
-                    : wd.DraftStatus == WorkshopDraftStatus.EditedByModerator ? 1
-                    : 2,
-                SortDirection.Ascending),
-            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.ModifiedAt, SortDirection.Ascending),
-            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.Id, SortDirection.Ascending)
-        });
+        var orderBy = BuildSortOrder(searchTerms);
 
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
@@ -1450,5 +1431,30 @@ public class WorkshopDraftService(
         var p = ex.Parameters[0];
         var bodyAsObject = Expression.Convert(ex.Body, typeof(object));
         return Expression.Lambda<Func<T, object>>(bodyAsObject, p);
+    }
+
+    private static Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection> BuildSortOrder(string[] searchTerms)
+    {
+        var orderBy = new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>();
+        if (searchTerms.Any())
+        {
+            var scoreExpression = BuildRelevanceScore(searchTerms);
+            var scoreObj = Box(scoreExpression);
+            orderBy.Add(scoreObj, SortDirection.Descending);
+        }
+
+        orderBy.AddRange(new[]
+        {
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.CreatedAt, SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(
+                wd => wd.DraftStatus == WorkshopDraftStatus.PendingModeration ? 0
+                    : wd.DraftStatus == WorkshopDraftStatus.EditedByModerator ? 1
+                    : 2,
+                SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.ModifiedAt, SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.Id, SortDirection.Ascending)
+        });
+
+        return orderBy;
     }
 }
