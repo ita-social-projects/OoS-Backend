@@ -1092,25 +1092,22 @@ public class WorkshopDraftService(
             predicate = predicate.And(x => subSettlementFilterIds.Contains(x.CATOTTGId));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        if (searchTerms.Any())
         {
-            if (searchTerms.Any())
+            var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
+            foreach (var word in searchTerms)
             {
-                var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
-                foreach (var word in searchTerms)
-                {
-                    var contains = "%" + word + "%";
-                    tempPredicate = tempPredicate.Or(
-                        x =>
-                            EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.Title), contains) ||
-                            EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.ShortTitle), contains) ||
-                            EF.Functions.Like(x.Provider.FullTitle, contains) ||
-                            EF.Functions.Like(x.Provider.FullTitleEn, contains) ||
-                            EF.Functions.Like(x.Provider.Edrpou, contains));
-                }
-
-                predicate = predicate.And(tempPredicate);
+                var contains = "%" + word + "%";
+                tempPredicate = tempPredicate.Or(
+                    x =>
+                        EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.Title), contains) ||
+                        EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.ShortTitle), contains) ||
+                        EF.Functions.Like(x.Provider.FullTitle, contains) ||
+                        EF.Functions.Like(x.Provider.FullTitleEn, contains) ||
+                        EF.Functions.Like(x.Provider.Edrpou, contains));
             }
+
+            predicate = predicate.And(tempPredicate);
         }
 
         return predicate;
@@ -1377,9 +1374,9 @@ public class WorkshopDraftService(
         }
     }
 
-    private static Expression<Func<WorkshopDraft, int>> BuildRelevanceScore(string[] tokens)
+    private static Expression<Func<WorkshopDraft, int>> BuildRelevanceScore(string[] searchTerms)
     {
-        if (tokens == null || tokens.Length == 0)
+        if (searchTerms == null || searchTerms.Length == 0)
         {
             return wd => 0;
         }
@@ -1411,41 +1408,41 @@ public class WorkshopDraftService(
             => Expression.Condition(cond, Expression.Constant(w), Expression.Constant(0));
         Expression Like(Expression e, string pattern)
             => Expression.Call(null, likeMethod, efFunctions, e, Expression.Constant(pattern));
-        Expression AndProvNotNull(Expression cond)
+        Expression ProvNotNull(Expression cond)
             => Expression.AndAlso(Expression.NotEqual(provider, Expression.Constant(null, provider.Type)), cond);
 
-        Expression sum = Expression.Constant(0);
+        Expression score = Expression.Constant(0);
 
-        foreach (var t in tokens.Distinct())
+        foreach (var t in searchTerms)
         {
             var eq = Expression.Constant(t);
             var starts = t + "%";
             var contains = "%" + t + "%";
 
             var jt = JsonUnquote(title);
-            sum = Expression.Add(sum, AddWeighted(Expression.Equal(jt, eq), 100));
-            sum = Expression.Add(sum, AddWeighted(Like(jt, starts), 80));
-            sum = Expression.Add(sum, AddWeighted(Like(jt, contains), 50));
+            score = Expression.Add(score, AddWeighted(Expression.Equal(jt, eq), 100));
+            score = Expression.Add(score, AddWeighted(Like(jt, starts), 80));
+            score = Expression.Add(score, AddWeighted(Like(jt, contains), 50));
 
             var jst = JsonUnquote(shortTitle);
-            sum = Expression.Add(sum, AddWeighted(Expression.Equal(jst, eq), 60));
-            sum = Expression.Add(sum, AddWeighted(Like(jst, starts), 48));
-            sum = Expression.Add(sum, AddWeighted(Like(jst, contains), 30));
+            score = Expression.Add(score, AddWeighted(Expression.Equal(jst, eq), 60));
+            score = Expression.Add(score, AddWeighted(Like(jst, starts), 48));
+            score = Expression.Add(score, AddWeighted(Like(jst, contains), 30));
 
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Expression.Equal(providerFullTitle, eq)), 40));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerFullTitle, starts)), 32));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerFullTitle, contains)), 20));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerFullTitle, eq)), 40));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitle, starts)), 32));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitle, contains)), 20));
 
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Expression.Equal(providerFullTitleEn, eq)), 40));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerFullTitleEn, starts)), 32));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerFullTitleEn, contains)), 20));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerFullTitleEn, eq)), 40));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitleEn, starts)), 32));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitleEn, contains)), 20));
 
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Expression.Equal(providerEdrpou, eq)), 30));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerEdrpou, starts)), 24));
-            sum = Expression.Add(sum, AddWeighted(AndProvNotNull(Like(providerEdrpou, contains)), 15));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerEdrpou, eq)), 30));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerEdrpou, starts)), 24));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerEdrpou, contains)), 15));
         }
 
-        return Expression.Lambda<Func<WorkshopDraft, int>>(sum, wd);
+        return Expression.Lambda<Func<WorkshopDraft, int>>(score, wd);
     }
 
     private static Expression<Func<T, object>> Box<T>(Expression<Func<T, int>> ex)
