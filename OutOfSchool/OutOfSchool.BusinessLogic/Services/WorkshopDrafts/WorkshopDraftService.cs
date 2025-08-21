@@ -1398,6 +1398,15 @@ public class WorkshopDraftService(
         return (long)institutionHierarchyDto.SportRegistryIdCode;
     }
     
+    /// <summary>
+    /// Synchronizes the workshop draft section with the external Sports Registry.
+    /// Builds a request from the draft, validates identifiers, 
+    /// sends the request to the registry API, and updates the draft with the created registry ID.
+    /// </summary>
+    /// <param name="draft">The workshop draft to be synchronized.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the draft contains invalid data or the registry synchronization fails.
+    /// </exception>
     private async Task SyncSectionWithRegistryAsync(WorkshopDraft draft)
     {
         // Build a request
@@ -1437,10 +1446,11 @@ public class WorkshopDraftService(
     }
     
     /// <summary>
-    /// 
+    /// Ensures that the workshop draft can be approved.
+    /// Throws an exception if the draft has an invalid status for approval.
     /// </summary>
-    /// <param name="draft"></param>
-    /// <exception cref="ArgumentException"></exception>
+    /// <param name="draft">The workshop draft to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when the draft cannot be approved.</exception>
     private static void EnsureDraftIsApprovable(WorkshopDraft draft)
     {
         var status = draft?.DraftStatus;
@@ -1452,15 +1462,14 @@ public class WorkshopDraftService(
         }
     }
     /// <summary>
-    /// 
+    /// Determines whether the draft belongs to the Ministry of Sport.
     /// </summary>
-    /// <param name="draft"></param>
-    /// <returns></returns>
+    /// <param name="draft">The workshop draft.</param>
+    /// <returns><c>true</c> if the provider is associated with the Ministry of Sport; otherwise, <c>false</c>.</returns>
     private bool IsMinistryOfSport(WorkshopDraft draft)
     {
         var institutionId = draft?.Provider?.Institution?.Id.ToString();
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
     }
-
 }

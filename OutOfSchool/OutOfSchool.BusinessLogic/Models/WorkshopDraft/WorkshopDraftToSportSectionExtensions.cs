@@ -4,6 +4,7 @@ using OutOfSchool.Services.Models.Images; // ??
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Diagnostics.CodeAnalysis;
+using OutOfSchool.SportsRegistryApiClient.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public static class WorkshopDraftToSportSectionExtensions
@@ -21,7 +22,7 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionAgeTo = content.MaxAge,
 
             SectionIsInShlyahProject = content.IsChampionPath,
-
+            SectionPozashkillyaModerationStatus = ModerationStatus.ACTIVE,
            
             SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),
             SectionAddressStreet = defaultContact?.Address?.Street,
