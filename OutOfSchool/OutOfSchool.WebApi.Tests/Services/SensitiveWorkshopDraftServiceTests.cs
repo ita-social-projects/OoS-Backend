@@ -904,7 +904,7 @@ public class SensitiveWorkshopDraftServiceTests
                     It.Is<int>(x => x == filter.From),
                     It.Is<int>(x => x == filter.Size),
                     It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.Is<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>(x => x == null)))
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(workshopDraftsReturned.AsTestAsyncEnumerableQuery());
     }
 

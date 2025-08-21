@@ -458,10 +458,10 @@ public class WorkshopDraftService(
                 .ConfigureAwait(false);
         }
 
-        var searchTerms = searchStringService.SplitSearchString(filter.SearchString)
+        var searchTerms = !string.IsNullOrWhiteSpace(filter.SearchString) ? searchStringService.SplitSearchString(filter.SearchString)
                .Where(s => !string.IsNullOrWhiteSpace(s))
                .Distinct()
-               .ToArray();
+               .ToArray() : Array.Empty<string>();
 
         var predicate = PredicateBuildForAdminds(
             filter,
