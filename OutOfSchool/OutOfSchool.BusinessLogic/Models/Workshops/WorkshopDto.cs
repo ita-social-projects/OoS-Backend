@@ -43,6 +43,8 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
 
     [MaxLength(Constants.MaxLanguageNameLength)]
     public string LanguageOfEducationName { get; set; }
+    
+    public Guid? MinsportSectionId { get; set; }
 }
 
 public static class WorkshopDtoExtensions
@@ -171,6 +173,7 @@ public static class WorkshopDtoExtensions
             ProviderOwnership = model.ProviderOwnership,
             ProviderStatus = model.Provider?.Status ?? default,
             IsChampionPath = model.IsChampionPath,
+            MinsportSectionId = model.MinsportSectionId,
         };
     }
 

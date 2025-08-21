@@ -43,5 +43,9 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
             .WithMany()
             .HasForeignKey(x => x.LanguageOfEducationId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Property(x => x.MinsportSectionId)
+            .HasColumnType("UUID(16)")
+            .IsRequired(false);
     }
 }

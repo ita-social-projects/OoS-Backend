@@ -64,8 +64,7 @@ public static class WorkshopDraftToSportSectionExtensions
             ? null
             : CombineImageUrl(baseImageUrl, draft.CoverImageId),
 
-            //SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
-            SectionPhotos  = ["https://img1.png", "https://img2.png"],
+            SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
             SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),

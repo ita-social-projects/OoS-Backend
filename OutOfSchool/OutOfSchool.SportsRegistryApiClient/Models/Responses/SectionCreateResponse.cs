@@ -9,7 +9,7 @@ public class SectionCreateResponse : IResponse
 
 public class ResultVariables
 {
-    public string Code { get; set; } = null!;
-    public string SectionId { get; set; }
+    public string? Code { get; set; }
+    public Guid? SectionId { get; set; }
     public string? Errors { get; set; }
 }

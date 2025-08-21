@@ -79,7 +79,6 @@ public class WorkshopDraftServiceTests
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
         sportRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
-
         ministryOfSportId = Guid.NewGuid();
         institutionHierarchyId = Guid.NewGuid();
         institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(

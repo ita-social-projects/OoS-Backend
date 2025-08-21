@@ -161,4 +161,13 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public List<Contacts> Contacts { get; set; } = [];
 
     #endregion
+    
+    #region Minsport external API integration
+
+    /// <summary>
+    /// ID of the section in the Ministry of Sport Registry (UUID).
+    /// </summary>
+    public Guid? MinsportSectionId { get; set; }
+
+    #endregion
 }

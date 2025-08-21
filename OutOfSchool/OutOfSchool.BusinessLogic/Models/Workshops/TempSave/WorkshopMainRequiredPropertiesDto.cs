@@ -65,6 +65,8 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Language of education is required")]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
+    
+    public Guid? MinsportSectionId { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

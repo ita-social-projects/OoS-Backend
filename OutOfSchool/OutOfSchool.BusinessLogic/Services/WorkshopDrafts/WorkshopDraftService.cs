@@ -1409,7 +1409,7 @@ public class WorkshopDraftService(
                 $"Invalid CATOTTG Id: {request.SectionAddressLocalityDictIdCode}");
         }
 
-        request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+        request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId).ConfigureAwait(false);
         request.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
 
         // 2) try to check api 
@@ -1429,6 +1429,7 @@ public class WorkshopDraftService(
             success =>
             {
                 var createdRegistryId  = success.ResultVariables.SectionId;
+                draft.WorkshopDraftContent.MinsportSectionId = createdRegistryId;
                 logger.LogInformation($"Workshop draft was successfully synced to Sports Registry. ID of created workshop in sport registry: {createdRegistryId}");
                 return true; 
             }

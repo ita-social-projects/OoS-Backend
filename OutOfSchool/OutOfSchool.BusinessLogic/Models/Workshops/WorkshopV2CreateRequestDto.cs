@@ -62,6 +62,7 @@ public static class WorkshopV2CreateRequestDtoExtensions
             IsChampionPath = dto.IsChampionPath,
             // If we're converting from draft, we need to keep cover image
             CoverImageId = dto.CoverImageId.IsNullOrEmpty() ? null : dto.CoverImageId,
+            MinsportSectionId = dto.MinsportSectionId,
         };
 
     public static WorkshopV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft)
@@ -108,5 +109,6 @@ public static class WorkshopV2CreateRequestDtoExtensions
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
             IsChampionPath = draft.WorkshopDraftContent?.IsChampionPath ?? default,
+            MinsportSectionId = draft.WorkshopDraftContent?.MinsportSectionId ?? Guid.Empty,
         };
 }
