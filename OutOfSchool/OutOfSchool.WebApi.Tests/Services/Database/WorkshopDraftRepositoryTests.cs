@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -102,11 +103,17 @@ public class WorkshopDraftRepositoryTests
 
     private async Task Seed()
     {
-        using var context = GetContext();
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        await using var context = GetContext();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
 
         var worshopV2Dtos = WorkshopV2DtoGenerator.Generate(3);
+        worshopV2Dtos.ForEach(w => w.Contacts = [
+        new ContactsDto
+        {
+            IsDefault = true,
+            Address = ContactsAddressDtoGenerator.Generate()
+        }]);
 
         workshopDrafts = worshopV2Dtos.ToDraft();
 

@@ -7,9 +7,12 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class PhoneNumberDto : IContentComparable<PhoneNumber>, IEquatable<PhoneNumberDto>
 {
-    [StringLength(Constants.ContactsTitleMaxLength, ErrorMessage = "Phone type cannot exceed 60 characters")]
+    [Required]
+    [MinLength(Constants.PhoneNumberTypeMinLength, ErrorMessage = "Phone type should contain at least 3 characters")]
+    [MaxLength(Constants.PhoneNumberTypeMaxLength, ErrorMessage = "Phone type cannot exceed 60 characters")]
     public string Type { get; set; } = null!;
 
+    [Required]
     [DataType(DataType.PhoneNumber)]
     [CustomPhoneNumber(ErrorMessage = Constants.PhoneErrorMessage)]
     [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]

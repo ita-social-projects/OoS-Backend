@@ -59,7 +59,7 @@ public static class CodeficatorDtoExtensions
     public static List<CodeficatorDto> ToCodeficatorDto(this IEnumerable<CATOTTG> list)
         => list.MapToList(ToCodeficatorDto);
 
-    public static CodeficatorAddressDto ToCodeficatorAddressDto(this OutOfSchool.Services.Models.CATOTTG catottg)
+    public static CodeficatorAddressDto ToCodeficatorAddressDto(this CATOTTG catottg)
         => new()
         {
             Id = catottg.Id,
@@ -74,6 +74,6 @@ public static class CodeficatorDtoExtensions
             Order = catottg.Order,
         };
 
-    public static List<CodeficatorAddressDto> ToCodeficatorAddressDto(this IEnumerable<OutOfSchool.Services.Models.CATOTTG> list)
+    public static List<CodeficatorAddressDto> ToCodeficatorAddressDto(this IEnumerable<CATOTTG> list)
         => list.MapToList(ToCodeficatorAddressDto);
 }

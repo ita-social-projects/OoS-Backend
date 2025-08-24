@@ -269,7 +269,7 @@ public class CompetitiveEventService(
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId));
+        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId), new ModeratorRights(), new TechAdminRights());
 
         // TODO: Use this code when the CompetitiveEvent entity will have hierarchy.
         //if (dto.ParentId.HasValue && !await Exists((Guid)dto.ParentId).ConfigureAwait(false))
@@ -321,7 +321,7 @@ public class CompetitiveEventService(
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId));
+        await currentUserService.UserHasRights(new ProviderRights(dto.OrganizerOfTheEventId), new ModeratorRights(), new TechAdminRights());
 
         logger.LogDebug("Updating CompetitiveEvent with Id = {dtoId} started.", dto.Id);
 

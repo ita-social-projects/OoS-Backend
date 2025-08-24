@@ -128,7 +128,7 @@ public class WorkshopServicesCombinerV2Tests
 
         workshopService.Setup(x => x.GetById(newWorkshopV2Dto.Id, true))
             .ReturnsAsync(currentWorkshopDto);
-        workshopService.Setup(x => x.UpdateV2(newWorkshopV2Dto))
+        workshopService.Setup(x => x.UpdateV2(newWorkshopV2Dto, false))
             .ReturnsAsync(workshopResultDto);
         elasticsearchSynchronizationService.Setup(
             x => x.AddNewRecordToElasticsearchSynchronizationTable(

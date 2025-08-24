@@ -86,4 +86,29 @@ public static class PermissionsForRoleDTOExtensions
         
         return model;
     }
+
+    public static PositionCreateUpdateDto ToDirectorCreateDto(this OutOfSchool.Services.Models.Position position)
+    {
+        if (position == null)
+        {
+            throw new ArgumentNullException(nameof(position));
+        }
+
+        return new PositionCreateUpdateDto
+        {
+            FullName = "Директор ЗО",
+            ShortName = "Директор",
+            GenitiveName = "Директору",
+            SeatsAmount = position.SeatsAmount,
+            Language = position.Language,
+            Rate = position.Rate,
+            Tariff = position.Tariff,
+            ClassifierType = position.ClassifierType,
+            Department = position.Department,
+            IsForRuralAreas = position.IsForRuralAreas,
+            IsTeachingPosition = false,
+            PositionType = PositionType.Director,
+            Description = position.Description
+        };
+    }
 }

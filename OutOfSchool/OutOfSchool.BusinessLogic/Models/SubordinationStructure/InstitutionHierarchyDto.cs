@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 
@@ -20,6 +21,10 @@ public class InstitutionHierarchyDto
     public InstitutionDto Institution { get; set; }
 
     public List<SubDirectionDto> SubDirections { get; set; }
+    
+    // Not needed on frontend, used in service logic
+    [JsonIgnore]
+    public long? SportRegistryIdCode { get; set; }
 }
 
 public static class InstitutionHierarchyDtoExtensions
@@ -52,12 +57,13 @@ public static class InstitutionHierarchyDtoExtensions
         => new()
         {
             Id = model.Id,
-            Title = model.Title,
+            Title = model.SportsSectionNumeral.IsNullOrEmpty() ? model.Title : $"{model.SportsSectionNumeral}. {model.Title}",
             HierarchyLevel = model.HierarchyLevel,
             ParentId = model.ParentId,
             InstitutionId = model.InstitutionId,
             Institution = model.Institution?.ToDto(),
-            SubDirections = model.SubDirections?.ToDto() ?? []
+            SubDirections = model.SubDirections?.ToDto() ?? [],
+            SportRegistryIdCode = model.SportRegistryIdCode,
         };
 
     public static List<InstitutionHierarchyDto> ToDto(this IEnumerable<InstitutionHierarchy> list)

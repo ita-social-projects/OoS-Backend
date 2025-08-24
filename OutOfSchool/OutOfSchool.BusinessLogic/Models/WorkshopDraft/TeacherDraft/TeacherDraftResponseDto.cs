@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
+﻿using OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDraft;
+
+namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft.TeacherDrafts;
 
 public class TeacherDraftResponseDto : TeacherDraftDto
 {

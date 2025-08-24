@@ -24,7 +24,6 @@ public class JsonModelBinder : IModelBinder
                 return Task.CompletedTask;
             }
         }
-
         return Task.CompletedTask;
     }
 }

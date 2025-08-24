@@ -1,9 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
-using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
@@ -34,13 +32,10 @@ public static class WorkshopV2DtoExtensions
             ActiveTo = dto.ActiveTo,
             TagIds = (dto.Tags ?? []).Select(x => x.Id).Concat(dto.TagIds ?? []).ToList(),
             Title = dto.Title,
-            ProviderTitle = dto.ProviderTitle,
-            ProviderTitleEn = dto.ProviderTitleEn,
             IsPaid = dto.IsPaid,
             StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
             StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
             Keywords = dto.Keywords,
-            Address = dto.Address?.ToDraft(),
             OwnershipType = dto.ProviderOwnership,
             AvailableSeats = dto.AvailableSeats ?? default,
             IncludedStudyGroupsIds = dto.IncludedStudyGroups?.Select(x => x.Id).ToList() ?? [],
@@ -63,29 +58,29 @@ public static class WorkshopV2DtoExtensions
             WorkshopType = dto.WorkshopType,
             ParentWorkshopId = dto.ParentWorkshopId,
             Contacts = dto.Contacts?.ToModel() ?? [],
-            Phone = dto.Phone,
-            Email = dto.Email,
-            Website = dto.Website,
-            Facebook = dto.Facebook,
-            Instagram = dto.Instagram,
-            IsChampionPath = dto.IsChampionPath
+            IsChampionPath = dto.IsChampionPath,
+            NoAgeRestrictions = dto.NoAgeRestrictions,
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
     {
         model.ProviderId = dto.ProviderId;
-        model.WorkshopId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
+        model.WorkshopId = dto.Id == Guid.Empty ? null : dto.Id;
         model.WorkshopDraftContent = dto.ToDraftContent();
+        // This is needed for search
+        model.CATOTTGId = dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0;
     }
 
     public static OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft ToDraft(this WorkshopV2Dto dto)
         => new()
         {
             ProviderId = dto.ProviderId,
-            WorkshopId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id,
+            WorkshopId = dto.Id == Guid.Empty ? null : dto.Id,
             CoverImageId = dto.CoverImageId,
             WorkshopDraftContent = dto.ToDraftContent(),
             Teachers = dto.Teachers?.ToDraft(),
+            // This is needed for search
+            CATOTTGId = dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
         };
 
     public static List<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> ToDraft(this IEnumerable<WorkshopV2Dto> list)
@@ -114,8 +109,8 @@ public static class WorkshopV2DtoExtensions
             Keywords = draft.WorkshopDraftContent?.Keywords ?? [],
             Teachers = draft.Teachers?.Where(x => !x.IsDefaultTeacher).ToDto() ?? [],
             ProviderId = draft.ProviderId,
-            ProviderTitle = draft.WorkshopDraftContent?.ProviderTitle,
-            ProviderTitleEn = draft.WorkshopDraftContent?.ProviderTitleEn,
+            ProviderTitle = draft.Provider?.FullTitle,
+            ProviderTitleEn = draft.Provider?.FullTitleEn,
             ProviderLicenseStatus = draft.WorkshopDraftContent?.ProviderLicenseStatus ?? default,
             ActiveFrom = draft.WorkshopDraftContent?.ActiveFrom ?? default,
             ActiveTo = draft.WorkshopDraftContent?.ActiveTo ?? default,
@@ -141,17 +136,11 @@ public static class WorkshopV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             Status = draft.WorkshopDraftContent?.WorkshopStatus ?? default,
             ProviderOwnership = draft.WorkshopDraftContent?.OwnershipType ?? default,
-            Phone = draft.WorkshopDraftContent?.Phone,
-            Email = draft.WorkshopDraftContent?.Email,
-            Website = draft.WorkshopDraftContent?.Website,
-            Facebook = draft.WorkshopDraftContent?.Facebook,
-            Instagram = draft.WorkshopDraftContent?.Instagram,
-            Address = draft.WorkshopDraftContent?.Address?.ToDto(),            
         };
 
     public static List<WorkshopV2Dto> ToDto(this IEnumerable<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> list)
         => list.MapToList(ToDto);
-    
+
     public static Workshop SetToModel(this WorkshopV2Dto dto, Workshop model)
     {
         model.Id = dto.Id;
@@ -159,10 +148,7 @@ public static class WorkshopV2DtoExtensions
         model.ShortTitle = dto.ShortTitle;
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
-            .Concat(model.DateTimeRanges ?? [])
-            .Distinct(new DateTimeRangeComparerWithoutFK())
-            .ToList();
+        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
         model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? default;
         model.PayRate = dto.PayRate ?? default;
@@ -170,12 +156,15 @@ public static class WorkshopV2DtoExtensions
         model.AvailableSeats = dto.AvailableSeats ?? default;
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
-        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.ToModel();
+        model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.SetToModel(model.WorkshopDescriptionItems)
+            .Concat(model.WorkshopDescriptionItems ?? [])
+            .Distinct(new WorkshopDescriptionItemComparerWithoutKeys())
+            .ToList();
         model.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
         model.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
         model.DefaultTeacher = dto.DefaultTeacher?.ToModel(dto.DefaultTeacher.Id, dto.DefaultTeacher.WorkshopId);
-        model.Keywords = string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
+        model.Keywords = dto.Keywords?.Count() == 0 ? null : string.Join(Constants.MappingSeparator, dto.Keywords?.Distinct() ?? []);
         model.ProviderId = dto.ProviderId;
         model.ActiveFrom = dto.ActiveFrom;
         model.ActiveTo = dto.ActiveTo;
@@ -199,8 +188,6 @@ public static class WorkshopV2DtoExtensions
 
     public static WorkshopV2Dto ToV2Dto(this Workshop model)
     {
-        var defaultContact = model.Contacts?.FirstOrDefault(c => c.IsDefault);
-
         return new()
         {
             Id = model.Id,
@@ -228,8 +215,8 @@ public static class WorkshopV2DtoExtensions
             Keywords = model.Keywords?.Split(Constants.MappingSeparator, StringSplitOptions.None),
             Teachers = model.Teachers?.ToNotDeletedDto() ?? [],
             ProviderId = model.ProviderId,
-            ProviderTitle = model.ProviderTitle,
-            ProviderTitleEn = model.ProviderTitleEn,
+            ProviderTitle = model.Provider?.FullTitle,
+            ProviderTitleEn = model.Provider?.FullTitleEn,
             ProviderLicenseStatus = model.Provider?.LicenseStatus ?? default,
             ActiveFrom = model.ActiveFrom,
             ActiveTo = model.ActiveTo,
@@ -260,12 +247,6 @@ public static class WorkshopV2DtoExtensions
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
             ProviderStatus = model.Provider?.Status ?? default,
-            Phone = defaultContact?.Phones?.FirstOrDefault()?.Number,
-            Email = defaultContact?.Emails?.FirstOrDefault()?.Address,
-            Website = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
-            Facebook = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
-            Instagram = defaultContact?.SocialNetworks?.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
-            Address = defaultContact?.Address?.ToDto(),
         };
     }
 

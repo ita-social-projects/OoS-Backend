@@ -24,6 +24,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Required(ErrorMessage = "Type of age composition is required")]
     [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
+
     [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
 
@@ -39,7 +40,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "PayRate is required")]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
+    public PayRateType? PayRate { get; set; } = PayRateType.Class;
 
     public bool AreThereBenefits { get; set; } = default;
 

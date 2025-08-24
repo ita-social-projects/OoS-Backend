@@ -1,19 +1,27 @@
+using Elastic.Clients.Elasticsearch;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Validators;
+using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Elastic.Clients.Elasticsearch;
-using OutOfSchool.BusinessLogic.Models.Codeficator;
-using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IEquatable<ContactsAddressDto>
 {
     [Required(ErrorMessage = "Street is required")]
+    [MinLength(1)]
     [MaxLength(60)]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9'.\-\(\) ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: ' . - ( )")]
+    [MustContain(RequiredCharacterType.CyrillicLetter)]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]
+    [MinLength(1)]
     [MaxLength(15)]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9\/\-\. ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: / - .")]
+    [MustContain(RequiredCharacterType.Digit)]
     public string BuildingNumber { get; set; } = string.Empty;
 
     public double Latitude { get; set; }
@@ -23,7 +31,7 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [Required(ErrorMessage = "CATOTTGId is required")]
     public long CATOTTGId { get; set; }
 
-    public AllAddressPartsDto CodeficatorAddressDto { get; set; }
+    public AllAddressPartsDto CodeficatorAddress { get; set; }
 
     // Note: implementation taken from the OutOfSchool.Services.Models.Address
     [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
@@ -90,11 +98,11 @@ public static class ContactsAddressDtoExtensions
         => new()
         {
             // Id - ignored in original AM mapper
-            City = contactsAddress.CodeficatorAddressDto?.Settlement,
+            City = contactsAddress.CodeficatorAddress?.Settlement,
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressES = contactsAddress.CodeficatorAddressDto?.ToCodeficatorAddressES(),
+            CodeficatorAddressES = contactsAddress.CodeficatorAddress?.ToCodeficatorAddressES(),
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
             Point = GeoLocation.LatitudeLongitude(new LatLonGeoLocation()
@@ -136,7 +144,7 @@ public static class ContactsAddressDtoExtensions
             Latitude = contactsAddress.Latitude,
             Longitude = contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
-            CodeficatorAddressDto = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
+            CodeficatorAddress = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };
 
     public static List<ContactsAddressDto> ToContactsDto(this IEnumerable<ContactsAddress> list)

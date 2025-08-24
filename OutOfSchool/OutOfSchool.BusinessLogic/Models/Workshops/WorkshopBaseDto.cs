@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -18,11 +19,13 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [Required(ErrorMessage = "Workshop title is required")]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Workshop short title is required")]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string ShortTitle { get; set; } = string.Empty;
     public bool NoAgeRestrictions { get; set; } = false;
 
@@ -45,7 +48,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Classes;
+    public PayRateType? PayRate { get; set; } = PayRateType.Class;
 
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
@@ -60,7 +63,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool CompetitiveSelection { get; set; }
 
+    [MinLength(3)]
     [MaxLength(500)]
+    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "CompetitiveSelectionDescription field is required")]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -114,15 +120,19 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsInclusive { get; set; } = false;
 
-    [MaxLength(500)]
+    [MinLength(3)]
+    [MaxLength(2000)]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
 
     public bool IsChampionPath { get; set; } = false;
 
+    [MinLength(3)]
     [MaxLength(500)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
+    [MustContain(RequiredCharacterType.AnyLetter)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
@@ -139,7 +149,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
     public Coverage Coverage { get; set; } = Coverage.School;
-    
+
+    [Required]
     [EnumDataType(typeof(WorkshopType), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
 
@@ -186,9 +197,62 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
             MinAge = 0;
             MaxAge = 120;
         }
-        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
+        else if (MinAge.HasValue && MaxAge.HasValue && MinAge >= MaxAge)
         {
-            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+            yield return new ValidationResult("Min age should be less than Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+        }
+
+        // validate Price and PayRate when IsPaid is true
+        if (IsPaid)
+        {
+            if (PayRate == null || PayRate == PayRateType.None)
+            {
+                yield return new ValidationResult("Pay rate must be specified when the workshop is paid.", new[] { nameof(PayRate) });
+            }
+
+            if (!Price.HasValue)
+            {
+                yield return new ValidationResult("Price must be specified when the workshop is paid.", new[] { nameof(Price) });
+            }
+            else
+            {
+                if (Price < 1.00m)
+                {
+                    yield return new ValidationResult("Price must be at least 1.00 if the workshop is paid.", new[] { nameof(Price) });
+                }
+
+                if (Price > 100000.00m)
+                {
+                    yield return new ValidationResult("Price must be less than or equal to 100000.00.", new[] { nameof(Price) });
+                }
+            }
+        }
+
+        if (!Keywords.IsNullOrEmpty())
+        {
+            var keywordsList = Keywords.ToList();
+
+            if (keywordsList.Count > 5)
+            {
+                yield return new ValidationResult("Keywords list should contain no more than 5 words", new[] { nameof(Keywords) });
+            }
+
+            foreach (var keyword in keywordsList)
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    yield return new ValidationResult($"Keyword cannot be empty or whitespace.", new[] { nameof(Keywords) });
+                }
+                else if (keyword.Length > 60)
+                {
+                    yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
+                }
+            }
+        }
+
+        if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
+        {
+            yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", new[] { nameof(AvailableSeats) });
         }
     }
 }

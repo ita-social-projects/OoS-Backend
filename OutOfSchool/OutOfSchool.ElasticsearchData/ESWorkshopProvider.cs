@@ -569,7 +569,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
     {
         if (filter.PayRate != PayRateType.None)
         {
-            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.PayRate))
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.PayRate.Suffix(WorkshopES.KeywordSuffix)))
             {
                 Value = filter.PayRate.ToString(),
             });

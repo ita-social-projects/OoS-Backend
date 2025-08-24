@@ -58,8 +58,9 @@ public interface IWorkshopService
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
+    /// <param name="fromDraft">Flag to signal if the updated value is taken from draft.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopResultDto"/>.</returns>
-    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto);
+    Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto, bool fromDraft = false);
 
     /// <summary>
     /// Update status field for existing entity in the database.
@@ -82,6 +83,13 @@ public interface IWorkshopService
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
     /// The task result contains the <see cref="SearchResult{TEntity}"/> that contains found elements.</returns>
     Task<SearchResult<WorkshopDto>> GetAll(OffsetFilter offsetFilter);
+
+    /// <summary>
+    /// Gets all workshops for a specific provider.
+    /// </summary>
+    /// <param name="providerId">The provider's identifier.</param>
+    /// <returns>Collection of workshops belonging to the specified provider.</returns>
+    Task<IEnumerable<Workshop>> GetAllByProviderId(Guid providerId);
 
     /// <summary>
     /// Get all workshops (Id, Title) by provider Id.
@@ -135,15 +143,6 @@ public interface IWorkshopService
            Guid providerId,
            int page,
            int pageSize);
-
-    /// <summary>
-    /// Update ProviderTitle property in all workshops with specified provider.
-    /// </summary>
-    /// <param name="providerId">Id of Provider to be searched by.</param>
-    /// <param name="providerTitle">Full Title of Provider to be changed.</param>
-    /// <param name="providerTitleEn">Full English Title of Provider to be changed.</param>
-    /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn);
 
     /// <summary>
     /// Update IsBloked property in all workshops with specified provider.

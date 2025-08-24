@@ -85,6 +85,10 @@ public class ExternalExportControllerTests
     {
         // Arrange
         var fakeWorkshops = WorkshopGenerator.Generate(5);
+        fakeWorkshops.ForEach(w => w.LanguageOfEducation = new ()
+        {
+            Name = "test"
+        });
 
         _ = mockExternalExportService
             .Setup(x => x.GetWorkshops(It.IsAny<DateTime>(), It.IsAny<OffsetFilter>()))

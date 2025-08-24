@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.Extensions.Localization;
+﻿using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Individual;
@@ -13,6 +12,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 
@@ -28,6 +28,7 @@ namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
 /// <param name="officialRepository">OfficialRepository.</param>
 /// <param name="positionRepository">PositionRepository.</param>
 /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
+/// <param name="workshopDraftRepository">WorkshopDraftRepository.</param>
 /// <param name="providerImagesService">Images service.</param>
 /// <param name="changesLogService">ChangesLogService.</param>
 /// <param name="notificationService">Notification service.</param>
@@ -73,7 +74,7 @@ public class ProviderService(
     ISearchStringService searchStringService,
     IContactsService<Provider, IHasContactsDto<Provider>> contactsService
 ) : IProviderService, ISensitiveProviderService
-{
+    {
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
     private readonly IEntityRepositorySoftDeleted<string, User> usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
@@ -595,13 +596,12 @@ public class ProviderService(
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
 
-
             if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {
                 checkProvider = await providerRepository.RunInTransaction(async () =>
                 {
                     var workshops = await workshopServiceCombiner
-                        .UpdateProviderTitle(providerUpdateDto.Id, providerUpdateDto.FullTitle,
+                        .UpdateProviderTitleES(providerUpdateDto.Id, providerUpdateDto.FullTitle,
                             providerUpdateDto.FullTitleEn)
                         .ConfigureAwait(false);
 
@@ -612,7 +612,7 @@ public class ProviderService(
                     foreach (var workshop in workshops)
                     {
                         logger.LogDebug("Provider's properties with Id = {ProviderId} " +
-                                              "in workshops with Id = {WorkshopId} updated successfully", checkProvider?.Id, workshop?.Id);
+                                              "in workshops with Id = {WorkshopId} updated successfully in ElasticSearch", checkProvider?.Id, workshop?.Id);
                     }
 
                     return checkProvider;

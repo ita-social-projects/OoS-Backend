@@ -23,7 +23,7 @@ public class WorkshopTempSaveControllerTests
     private WorkshopTempSaveController controller;
     private ClaimsPrincipal user;
     private WorkshopMainRequiredPropertiesDto baseDto;
-    private WorkshopRequiredPropertiesDto derivedDto;
+    private WorkshopDescriptionDto derivedDto;
 
     [SetUp]
     public void Setup()
@@ -280,6 +280,6 @@ public class WorkshopTempSaveControllerTests
     private static WorkshopMainRequiredPropertiesDto GetBaseWorkshopDtoFakeDraft() =>
         WorkshopMainRequiredPropertiesDtoGenerator.Generate();
 
-    private static WorkshopRequiredPropertiesDto GetDerivedWorkshopDtoFakeDraft() =>
-        WorkshopRequiredPropertiesDtoGenerator.Generate();
+    private static WorkshopDescriptionDto GetDerivedWorkshopDtoFakeDraft() =>
+        WorkshopDescriptionDtoGenerator.Generate();
 }

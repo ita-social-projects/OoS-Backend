@@ -6,6 +6,8 @@ using OutOfSchool.BusinessLogic.Models.Exported.Directions;
 using OutOfSchool.BusinessLogic.Models.Exported.Providers;
 using OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -48,6 +50,7 @@ public class ExternalExportService(
                   .ThenInclude(i => i.SubDirections)
                   .ThenInclude(sb => sb.Direction)
                   .Include(w => w.DefaultTeacher)
+                  .Include(w => w.LanguageOfEducation)
                   .IncludeContactsWithCodeficatorHierarchy();
 
     /// <summary>
@@ -58,6 +61,7 @@ public class ExternalExportService(
                     .Include(ce => ce.Parent)
                     .Include(ce => ce.CompetitiveEventAccountingType)
                     .Include(ce => ce.Coverage)
+                    .Include(ce => ce.Images)
                     .Include(ce => ce.SubDirections)
                     .ThenInclude(s => s.Direction)
                     .IncludeContactsWithCodeficatorHierarchy();
@@ -72,8 +76,7 @@ public class ExternalExportService(
 
             Expression<Func<Provider, bool>> filterExpression = updatedAfter == default
                 ? provider => !provider.IsDeleted
-                : provider => provider.UpdatedAt > updatedAfter ||
-                              provider.Workshops.Any(w => w.UpdatedAt > updatedAfter);
+                : provider => provider.CreatedAt >= updatedAfter || provider.UpdatedAt >= updatedAfter;
 
             var providers = await providerRepository.Get(
                     skip: offsetFilter.From,
@@ -112,8 +115,9 @@ public class ExternalExportService(
             offsetFilter ??= new OffsetFilter();
 
             Expression<Func<Workshop, bool>> filterExpression = updatedAfter == default
-                ? workshop => !workshop.IsDeleted
-                : workshop => workshop.UpdatedAt > updatedAfter || workshop.DeleteDate > updatedAfter;
+                ? workshop => workshop.Status != WorkshopStatus.Archived
+                : workshop => workshop.CreatedAt >= updatedAfter || workshop.UpdatedAt >= updatedAfter ||
+                              workshop.DeleteDate >= updatedAfter;
 
             var workshops = await workshopRepository.Get(
                     skip: offsetFilter.From,
@@ -152,8 +156,10 @@ public class ExternalExportService(
             offsetFilter ??= new OffsetFilter();
 
             Expression<Func<CompetitiveEvent, bool>> filterExpression = updatedAfter == default
-                ? competitiveEvent => !competitiveEvent.IsDeleted
-                : competitiveEvent => competitiveEvent.UpdatedAt > updatedAfter || competitiveEvent.DeleteDate > updatedAfter;
+                ? competitiveEvent => competitiveEvent.State != CompetitiveEventStates.Archived
+                : competitiveEvent => competitiveEvent.CreatedAt >= updatedAfter ||
+                                      competitiveEvent.UpdatedAt >= updatedAfter ||
+                                      competitiveEvent.DeleteDate >= updatedAfter;
 
             var events = await competitiveEventRepository.Get(
                     skip: offsetFilter.From,
@@ -192,7 +198,7 @@ public class ExternalExportService(
 
             Expression<Func<Direction, bool>> filterExpression = updatedAfter == default
                 ? direction => !direction.IsDeleted
-                : direction => direction.UpdatedAt > updatedAfter;
+                : direction => direction.UpdatedAt >= updatedAfter;
 
             // Is deleted expression is added automatically by repo
             var directions = await directionRepository
@@ -230,7 +236,7 @@ public class ExternalExportService(
 
             Expression<Func<SubDirection, bool>> filterExpression = updatedAfter == default
                 ? subDirection => !subDirection.IsDeleted
-                : subDirection => subDirection.UpdatedAt > updatedAfter;
+                : subDirection => subDirection.UpdatedAt >= updatedAfter;
 
             var subDirections = await subDirectionRepository
                 .Get(skip: offsetFilter.From, take: offsetFilter.Size, whereExpression: filterExpression)

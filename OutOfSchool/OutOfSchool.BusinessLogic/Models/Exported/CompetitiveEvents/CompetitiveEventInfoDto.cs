@@ -2,6 +2,7 @@
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.CompetitiveEvents;
 
@@ -95,7 +96,7 @@ public static class CompetitiveEventInfoDtoExtensions
         => new()
         {
             Id = model.Id,
-            IsDeleted = model.IsDeleted,
+            IsDeleted = model.State == CompetitiveEventStates.Archived,
         };
 
     public static CompetitiveEventInfoDto ToInfoDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
@@ -131,8 +132,10 @@ public static class CompetitiveEventInfoDtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             CompetitiveSelectionDescription = model.AdditionalDescription,
             Contacts = model.Contacts?.ToInfoDto(),
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? []
         };
 
     public static List<CompetitiveEventInfoBaseDto> ToBaseOrInfoDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
-        => list.MapToList(x => x.IsDeleted ? x.ToBaseInfoDto() : x.ToInfoDto());
+        => list.MapToList(x => x.State == CompetitiveEventStates.Archived ? x.ToBaseInfoDto() : x.ToInfoDto());
 }

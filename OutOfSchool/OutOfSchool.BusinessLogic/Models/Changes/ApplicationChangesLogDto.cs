@@ -24,6 +24,6 @@ public static class ApplicationChangesLogDtoExtensions
             ApplicationId = changesLog.EntityIdGuid ?? default,
             WorkshopTitle = application.Workshop?.Title,
             WorkshopCity = application.Workshop?.Contacts?.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTG?.Name,
-            ProviderTitle = application.Workshop?.ProviderTitle,
+            ProviderTitle = application.Workshop?.Provider?.FullTitle,
         };
 }

@@ -13,6 +13,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
@@ -35,7 +36,6 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
 /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
 /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
-/// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
 /// <param name="options">Provides configuration settings for upload concurrency.</param>    
 /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
 /// <param name="languageService"> Service for  language managing</param>
@@ -55,7 +55,6 @@ public class WorkshopDraftService(
     IProviderService providerService,
     ICurrentUserService currentUserService,
     IEntityCoverImageInteractionService<TeacherDraft> teacherDraftImagesService,
-    IEntityRepository<long, Tag> tagRepository,
     IOptions<UploadConcurrencySettings> options,
     IWorkshopServicesCombinerV2 workshopServicesCombinerV2,
     IRegionAdminService regionAdminService,
@@ -77,7 +76,7 @@ public class WorkshopDraftService(
         i => i.Include(i => i.SubDirections);
 
     // <inheritdoc/>
-    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto)
+    public async Task<WorkshopDraftResultDto> Create(WorkshopV2Dto workshopV2Dto, bool fromWorkshop = false)
     {
         if (workshopV2Dto == null)
         {
@@ -113,15 +112,12 @@ public class WorkshopDraftService(
         }
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
-        
+        NormalizeConditionalFields(workshopV2Dto);
+
         // Executes the creation of a workshop draft along with its associated teachers within a database transaction.
         // The result is the created draft with all its related teachers.
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
-            .ConfigureAwait(false);
-
-        var tags = await tagRepository.GetByFilter(
-            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
             .ConfigureAwait(false);
 
         // Concurrently uploads images for both teacher drafts and the workshop draft.
@@ -129,6 +125,13 @@ public class WorkshopDraftService(
             createdDraftWithAssociatedTeachers,
             workshopV2Dto)
            .ConfigureAwait(false);
+
+        if (fromWorkshop)
+        {
+            createdDraftWithAssociatedTeachers.Images ??= [];
+            createdDraftWithAssociatedTeachers.Images.AddRange(
+                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> {ExternalStorageId = id}));
+        }
 
         await workshopDraftRepository.SaveChangesAsync()
             .ConfigureAwait(false);
@@ -168,10 +171,6 @@ public class WorkshopDraftService(
 
         var createdDraftWithAssociatedTeachers = await workshopDraftRepository
             .RunInTransaction(() => CreateWorkshopDraft(workshopV2Dto))
-            .ConfigureAwait(false);
-
-        var tags = await tagRepository.GetByFilter(
-            x => createdDraftWithAssociatedTeachers.WorkshopDraftContent.TagIds.Contains(x.Id))
             .ConfigureAwait(false);
 
         var uploadImagesResult = await UploadWorkshopAndTeacherImagesAsync(
@@ -291,7 +290,7 @@ public class WorkshopDraftService(
     {
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
@@ -331,7 +330,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await GetWorkshopDraftByIdWithImages(id);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
@@ -347,7 +346,7 @@ public class WorkshopDraftService(
         }
         else
         {
-            await workshopServicesCombinerV2.Update(workshopDraft.ToDto());
+            await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
         }
 
         await workshopDraftRepository.Delete(workshopDraft);
@@ -395,7 +394,12 @@ public class WorkshopDraftService(
                 take: filter.Size,
                 whereExpression: x => filter.ExcludedId == null
                     ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+                    : (x.ProviderId == id && x.Id != filter.ExcludedId),
+                orderBy: new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>()
+                {
+                    {wd => wd.CreatedAt, SortDirection.Descending},
+                    {wd => wd.ModifiedAt, SortDirection.Descending},
+                }).ToListAsync().ConfigureAwait(false);
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
                 whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id))
@@ -465,6 +469,10 @@ public class WorkshopDraftService(
                 skip: filter.From,
                 take: filter.Size,
                 whereExpression: predicate)
+            .Include(d => d.Provider)
+                .ThenInclude(p => p.Positions)
+                    .ThenInclude(pos => pos.Officials)
+                        .ThenInclude(o => o.Individual)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
@@ -485,7 +493,7 @@ public class WorkshopDraftService(
     // <inheritdoc/>
     public async Task<WorkshopDraftResponseDto> GetWorkshopDraftByIdMapped(Guid id)
     {
-        var draft = await GetWorkshopDraftById(id);
+        var draft = await GetByIdWithProviderDetails(id);
 
         await currentUserService.UserHasRights(
             new ProviderRights(draft.ProviderId),
@@ -532,7 +540,7 @@ public class WorkshopDraftService(
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
-            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;
+            return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
@@ -573,7 +581,7 @@ public class WorkshopDraftService(
 
         logger.LogDebug("Updating WorkshopDraft as moderator started. DraftId = {Id}.", draftId);
 
-        var workshopDraft = await GetWorkshopDraftById(draftId);
+        var workshopDraft = await GetByIdWithProviderDetails(draftId);
 
         if (workshopDraft is null)
         {
@@ -606,7 +614,7 @@ public class WorkshopDraftService(
 
         await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
-        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);
+        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);     
 
         return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
     }
@@ -644,7 +652,10 @@ public class WorkshopDraftService(
             await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
             logger.LogInformation("Cover image successfully deleted from WorkshopDraft. Id = {Id}.", draftId);
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -714,7 +725,9 @@ public class WorkshopDraftService(
             logger.LogInformation("Image successfully deleted from WorkshopDraft. Image Id = {ImageId}, Draft Id = {DraftId}.",
                 imageId, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -789,7 +802,9 @@ public class WorkshopDraftService(
             logger.LogInformation("{Count} images successfully deleted from WorkshopDraft. Draft Id = {DraftId}.",
                 imagesToDelete.Count, draftId);
 
-            return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
+            var workshopDraftWithDetails = await GetByIdWithProviderDetails(draftId);
+
+            return Result<WorkshopDraftResponseDto>.Success(workshopDraftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -815,7 +830,50 @@ public class WorkshopDraftService(
                 paramName: $"There are no records in workshopDrafts table with such id - {id}.");
         }
 
-        logger.LogDebug("Got a WorkshopDraft with Id = {Id}.", id);
+        logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
+
+        return workshopDraft;
+    }
+    
+    private async Task<WorkshopDraft> GetWorkshopDraftByIdWithImages(Guid id)
+    {
+        logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
+
+        var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(id, includeExpression: query =>
+            query.Include(wd => wd.Images));
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+                nameof(id),
+                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
+        }
+
+        logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
+
+        return workshopDraft;
+    }
+
+    private async Task<WorkshopDraft> GetByIdWithProviderDetails(Guid id)
+    {
+        logger.LogDebug("Getting WorkshopDraft with admin details by Id started. Looking Id = {Id}.", id);
+
+        var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(
+            id,
+            includeExpression: q => q
+            .Include(p => p.Provider)
+            .ThenInclude(p => p.Positions)
+            .ThenInclude(pos => pos.Officials)
+            .ThenInclude(i => i.Individual));
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+            nameof(id),
+                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
+        }
+
+        logger.LogDebug("Got a WorkshopDraft with admin details with Id = {Id}.", id);
 
         return workshopDraft;
     }
@@ -999,12 +1057,12 @@ public class WorkshopDraftService(
 
         if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Any())
         {
-            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+            predicate = predicate.And(x => allowedSettlementIdsForAdmin.Contains(x.CATOTTGId));
         }
 
         if (subSettlementFilterIds != null && subSettlementFilterIds.Any())
         {
-            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.WorkshopDraftContent.Address.CATOTTGId));
+            predicate = predicate.And(x => subSettlementFilterIds.Contains(x.CATOTTGId));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchString))
@@ -1019,9 +1077,9 @@ public class WorkshopDraftService(
                     tempPredicate = tempPredicate.Or(
                         x => x.WorkshopDraftContent.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
                         x.WorkshopDraftContent.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.Email.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                        x.Provider.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -1029,6 +1087,17 @@ public class WorkshopDraftService(
         }
 
         return predicate;
+    }
+
+    /// <summary>
+    /// Sort WorkshopDescriptionItemDto in the draft DTO,
+    /// as it's faster than doing the JSON field operations in data base.
+    /// </summary>
+    /// <param name="workshopDescriptionItems">List to sort</param>
+    /// <returns>The same list sorted by SectionName</returns>
+    private List<WorkshopDescriptionItemDto> SortWorkshopDescriptionItems(List<WorkshopDescriptionItemDto> workshopDescriptionItems)
+    {
+        return workshopDescriptionItems?.OrderBy(x => x.SectionName.ToLowerInvariant()).ToList();
     }
 
     private async Task<List<long>> GetDirectionIdsForWorkshopDraft(WorkshopDraft workshopDraft)
@@ -1066,6 +1135,8 @@ public class WorkshopDraftService(
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 
         workshopDraftResponseDto.WorkshopDetails.SubDirectionIds = await GetSubDirectionIdsForWorkshopDraft(draft);
+        
+        workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
         var catottgIds = workshopDraftResponseDto.WorkshopDetails.Contacts
             .Where(c => c?.Address != null)
@@ -1082,7 +1153,7 @@ public class WorkshopDraftService(
             .Select(c => c.Address)
             .ToList()
             .ForEach(address =>
-                address.CodeficatorAddressDto = catottgs
+                address.CodeficatorAddress = catottgs
                     .FirstOrDefault(c => c.Id == address.CATOTTGId)
                     ?.ToAllAddressPartsDto()
             );
@@ -1131,13 +1202,15 @@ public class WorkshopDraftService(
             responseDto.WorkshopDetails.SubDirectionIds = institutionHierarchy?.SubDirections
                 .Select(sd => sd.Id)
                 .ToList();
+            
+            responseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(responseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
             responseDto.WorkshopDetails.Contacts
                 .Where(c => c?.Address != null)
                 .Select(c => c.Address)
                 .ToList()
                 .ForEach(address =>
-                    address.CodeficatorAddressDto = catottgs
+                    address.CodeficatorAddress = catottgs
                         .FirstOrDefault(c => c.Id == address.CATOTTGId)
                         ?.ToAllAddressPartsDto()
                 );
@@ -1249,7 +1322,7 @@ public class WorkshopDraftService(
     {
         await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
-        var workshopDraft = await GetWorkshopDraftById(draftId);
+        var workshopDraft = await GetByIdWithProviderDetails(draftId);
 
         if (workshopDraft.DraftStatus != WorkshopDraftStatus.PendingModeration &&
             workshopDraft.DraftStatus != WorkshopDraftStatus.EditedByModerator)
@@ -1264,5 +1337,22 @@ public class WorkshopDraftService(
         }
 
         return Result<WorkshopDraft>.Success(workshopDraft);
+    }
+
+    /// <summary>
+    /// Sets conditional fields in the DTO to null if their corresponding flags are false.
+    /// </summary>
+    /// <param name="dto">Workshop dto.</param>
+    private static void NormalizeConditionalFields(WorkshopV2Dto dto)
+    {
+        if (!dto.CompetitiveSelection)
+        {
+            dto.CompetitiveSelectionDescription = null;
+        }
+
+        if (!dto.AreThereBenefits)
+        {
+            dto.PreferentialTermsOfParticipation = null;
+        }
     }
 }

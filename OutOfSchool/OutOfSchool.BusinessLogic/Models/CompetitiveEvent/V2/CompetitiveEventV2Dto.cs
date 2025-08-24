@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
-using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
+using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasImages
@@ -47,7 +47,14 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveSelection = model.CompetitiveSelection,
             Contacts = model.Contacts?.ToDto(),
             SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
-            Coverage = model.Coverage?.ToDto(),        
+            Coverage = model.Coverage?.ToDto(),
+            DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(
+                s => new DirectionSubDirectionIdsDto
+                {
+                    DirectionId = s.DirectionId,
+                    SubDirectionId = s.Id
+                })
+            .ToList() ?? []
         };
 
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
@@ -84,7 +91,9 @@ public static class CompetitiveEventV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
             CoverageId = draft.CoverageId,
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
-            SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? []
+            SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
+                             draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
+            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()
         };
     }
 
@@ -93,17 +102,21 @@ public static class CompetitiveEventV2DtoExtensions
         draft.ProviderId = dto.OrganizerOfTheEventId;
         draft.CompetitiveEventId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
         draft.CompetitiveEventDraftContent = dto.ToDraftContent();
+        // This is needed for search
+        draft.CATOTTGId = dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0;
     }
 
     public static OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft ToDraft(this CompetitiveEventV2Dto competitiveEventV2Dto)
         => new()
         {
             ProviderId = competitiveEventV2Dto.OrganizerOfTheEventId,
-            CompetitiveEventId = competitiveEventV2Dto.Id == Guid.Empty ? (Guid?)null : competitiveEventV2Dto.Id,
+            CompetitiveEventId = competitiveEventV2Dto.Id == Guid.Empty ? null : competitiveEventV2Dto.Id,
             CoverImageId = competitiveEventV2Dto.CoverImageId,
             CoverageId = competitiveEventV2Dto.CoverageId,
             CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
             CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
+            // This is needed for search
+            CATOTTGId = competitiveEventV2Dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
         };
 
     public static List<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft> ToDraft(this IEnumerable<CompetitiveEventV2Dto> list)
@@ -116,7 +129,7 @@ public static class CompetitiveEventV2DtoExtensions
             AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
             Benefits = competitiveEventV2Dto.Benefits,
             CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
-            Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<OutOfSchool.Services.Models.ContactInfo.Contacts>(),
+            Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<Contacts>(),
             DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
             MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
             MinimumAge = competitiveEventV2Dto.MinimumAge,
@@ -132,6 +145,9 @@ public static class CompetitiveEventV2DtoExtensions
             ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
             ShortTitle = competitiveEventV2Dto.ShortTitle,
             Title = competitiveEventV2Dto.Title,
-            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation
+            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
+            VenueName = competitiveEventV2Dto.VenueName,
+            SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? new List<long>(),
+            CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
         };
 }

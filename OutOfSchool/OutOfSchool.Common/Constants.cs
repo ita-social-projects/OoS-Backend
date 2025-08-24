@@ -27,6 +27,10 @@ public static class Constants
     public const string NameErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )";
 
     public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
+    
+    public const string SocialNetworkUrlRegex =
+        @"^(?<scheme>https?):\/\/(?<host>(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?::(?<port>\d{1,5}))?(?<path>\/[A-Za-z0-9._~!$&'()*+,;=:@%\-\/]*)?(?:\?(?<query>[A-Za-z0-9._~!$&'()*+,;=:@%\/?\-]*))?(?:\#(?<fragment>[A-Za-z0-9._~!$&'()*+,;=:@%\/?\-]*))?$";
+
 
     public const string PasswordValidationErrorMessage = "Password must be at least 8 characters long, including upper and lower case letters, digits and special characters (@$!%*?&)";
 
@@ -71,7 +75,7 @@ public static class Constants
     /// <summary>
     /// Shortest possible phone number length without '+' prefix.
     /// </summary>
-    public const int MinPhoneNumberLength = 7;
+    public const int MinPhoneNumberLength = 9;
 
     /// <summary>
     /// Longest possible phone number length without '+' prefix.
@@ -221,7 +225,12 @@ public static class Constants
     /// Maximum allowed length for a teacher's description.
     /// </summary>
     public const int TeacherDescriptionLength = 300;
-    
+
+    /// <summary>
+    /// Minimum allowed length for contacts title.
+    /// </summary>
+    public const int ContactsTitleMinLength = 3;
+
     /// <summary>
     /// Maximum allowed length for contacts title.
     /// </summary>
@@ -281,6 +290,16 @@ public static class Constants
     /// Sets maximum length for language name.
     /// </summary>
     public const int MaxLanguageNameLength = 25;
+
+    /// <summary>
+    /// Minimum allowed length for phone number's type.
+    /// </summary>
+    public const int PhoneNumberTypeMinLength = 3;
+
+    /// <summary>
+    /// Maximum allowed length for phone number's type.
+    /// </summary>
+    public const int PhoneNumberTypeMaxLength = 60;
 
     public static class ExternalImages
     {

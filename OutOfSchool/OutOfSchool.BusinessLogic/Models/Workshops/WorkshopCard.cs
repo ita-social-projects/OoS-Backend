@@ -52,8 +52,8 @@ public static class WorkshopCardExtensions
         => new()
         {
             Id = workshop.Id,
-            ProviderTitle = workshop.ProviderTitle,
-            ProviderTitleEn = workshop.ProviderTitleEn,
+            ProviderTitle = workshop.Provider?.FullTitle,
+            ProviderTitleEn = workshop.Provider?.FullTitleEn,
             ProviderOwnership = workshop.ProviderOwnership,
             ProviderId = workshop.ProviderId,
             ProviderLicenseStatus = workshop.Provider?.LicenseStatus ?? default,

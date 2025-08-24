@@ -849,6 +849,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
 
+                    b.Property<long>("CATOTTGId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("CompetitiveEventAccountingTypeId")
                         .HasColumnType("int");
 
@@ -2055,7 +2058,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg5Pj08P0hHSUZQUVtdXF5ycHFvbnx6e3l4fZCOj42MkVRnlg==",
+                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg5Pj08P0hHSUZQUVtdXF5ycHFvbnx6e3l4fZCOj42MkVRnlpo=",
                             RoleName = "TechAdmin"
                         },
                         new
@@ -2076,35 +2079,35 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 4L,
                             Description = "employee permissions",
-                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlg==",
+                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlpiXmQ==",
                             RoleName = "Employee"
                         },
                         new
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1NzgoLDkUUFFGVG5bXnp4eXt9joyNj5Fnlg==",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoLDkUUFFGVG5bXnp4eXt9joyNj5Fnlpo=",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUeHmOjI2PkVteZ5Y=",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUeHmOjI2PkVteZ5aa",
                             RoleName = "RegionAdmin"
                         },
                         new
                         {
                             Id = 7L,
                             Description = "area admin permissions",
-                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUjI1bXmeW",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUjI1bXmeWmg==",
                             RoleName = "AreaAdmin"
                         },
                         new
                         {
                             Id = 8L,
                             Description = "moderator permissions",
-                            PackedPermissions = "ZTI3OVpbXmZU",
+                            PackedPermissions = "ZTI3OVpbXmZUlpo=",
                             RoleName = "Moderator"
                         });
                 });
@@ -3009,6 +3012,13 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("UUID(16)");
+
+                    b.Property<long?>("SportRegistryIdCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SportsSectionNumeral")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("Title")
                         .HasMaxLength(200)
@@ -3983,15 +3993,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("ProviderOwnership")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProviderTitle")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<string>("ProviderTitleEn")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
                     b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -4129,6 +4130,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
+
+                    b.Property<long>("CATOTTGId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("CoverImageId")
                         .HasColumnType("char(255)");

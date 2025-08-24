@@ -30,6 +30,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
             .Include(ws => ws.DateTimeRanges)
             .Include(ws => ws.Images)
             .Include(ws => ws.Tags)
+            .Include(ws => ws.WorkshopDescriptionItems.OrderBy(wdi => wdi.SectionName.ToLower()))
             .Include(ws => ws.Contacts).ThenInclude(c => c.Emails)
             .Include(ws => ws.Contacts).ThenInclude(c => c.Phones)
             .Include(ws => ws.Contacts).ThenInclude(c => c.SocialNetworks)
@@ -52,20 +53,6 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
     public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
     {
         return await dbSet.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
-    }
-
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
-    {
-        var workshops = db.Workshops.Where(ws => ws.ProviderId == providerId);
-
-        await workshops.ExecuteUpdateAsync(settter => settter
-                .SetProperty(ws => ws.ProviderTitle, providerTitle)
-                .SetProperty(ws => ws.ProviderTitleEn, providerTitleEn))
-            .ConfigureAwait(false);
-
-        await db.SaveChangesAsync();
-
-        return await workshops.ToListAsync();
     }
 
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)

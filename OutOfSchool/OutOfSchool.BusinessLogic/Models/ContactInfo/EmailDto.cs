@@ -6,11 +6,14 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 {
-    [StringLength(Constants.MaxEmailTypeLength, ErrorMessage = "Email type cannot exceed 60 characters")]
+    [Required(ErrorMessage = "Email type is required")]
+    [StringLength(Constants.MaxEmailTypeLength, MinimumLength = 3,ErrorMessage = "Email type must be between 3 and 60 characters")]
     public string Type { get; set; } = null!;
 
     [DataType(DataType.EmailAddress)]
-    [StringLength(Constants.MaxEmailAddressLength)]
+    [Required(ErrorMessage = "Email address is required")]
+    [StringLength(Constants.MaxEmailAddressLength, ErrorMessage = "Email address cannot exceed 256 characters")]
+    [EmailAddress(ErrorMessage = "Invalid email address format (e.g., name@example.com)")]
     public string Address { get; set; } = null!;
 
     public override bool Equals(object obj)

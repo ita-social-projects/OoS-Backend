@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models.ContactInfo;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
-public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquatable<SocialNetworkDto>
+public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquatable<SocialNetworkDto>, IValidatableObject
 {
     [EnumDataType(typeof(SocialNetworkContactType), ErrorMessage = Constants.EnumErrorMessage)]
     public SocialNetworkContactType Type { get; set; }
@@ -44,6 +45,35 @@ public sealed class SocialNetworkDto : IContentComparable<SocialNetwork>, IEquat
         // We don't really care for "Non-readonly property referenced in 'GetHashCode()'"
         // As it is used for hashset uniques check before mapping to entity
         return HashCode.Combine(Type, Url?.ToUpperInvariant());
+    }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        bool requiresUrl =
+            Type == SocialNetworkContactType.Instagram ||
+            Type == SocialNetworkContactType.Facebook ||
+            Type == SocialNetworkContactType.Website;
+
+        if (!requiresUrl)
+            yield break;
+
+        if (string.IsNullOrWhiteSpace(Url))
+        {
+            yield return new ValidationResult(
+                "Url is required when type is Instagram, Facebook or Website.",
+                new[] { nameof(Url) });
+            yield break;
+        }
+        
+        // Ensure absolute HTTPS URL first, then apply pattern match (case-insensitive).
+       if (!Uri.TryCreate(Url, UriKind.Absolute, out var uri) ||
+       !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+       !Regex.IsMatch(uri.AbsoluteUri, Constants.SocialNetworkUrlRegex, RegexOptions.IgnoreCase))
+        {
+            yield return new ValidationResult(
+                "Url must follow the format: https://example.com/username",
+                new[] { nameof(Url) });
+        }
     }
 
     public bool ContentEquals(SocialNetwork other)

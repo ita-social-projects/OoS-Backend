@@ -1,11 +1,11 @@
-﻿using OutOfSchool.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.CompetitiveEventDrafts;
 
@@ -38,6 +38,12 @@ public class CompetitiveEventDraft : TrackableBaseEntity,
     public string CoverImageId { get; set; }
 
     public CompetitiveEventDraftContent CompetitiveEventDraftContent { get; set; }
+    
+    /// <summary>
+    /// This property is used for searching, as nested JSON queries are not supported by EF/Pomelo at the moment.
+    /// Do not use this property for anything else.
+    /// </summary>
+    public long CATOTTGId { get; set; }
 
     public virtual Provider Provider { get; set; }
 

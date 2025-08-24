@@ -50,14 +50,14 @@ public class WorkshopServicesCombinerV2(
         return creationResult;
     }
 
-    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto)
+    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto, bool fromDraft = false)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)
         {
             return Result<WorkshopResultDto>.Failed(new OperationError
             {
-                Code = HttpStatusCode.BadRequest.ToString(),
+                Code = nameof(HttpStatusCode.BadRequest),
                 Description = Constants.WorkshopNotFoundErrorMessage,
             });
         }
@@ -80,7 +80,7 @@ public class WorkshopServicesCombinerV2(
             });
         }
 
-        var updatedWorkshop = await workshopService.UpdateV2(dto).ConfigureAwait(false);
+        var updatedWorkshop = await workshopService.UpdateV2(dto, fromDraft).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,

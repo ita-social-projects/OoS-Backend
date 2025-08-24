@@ -16,11 +16,13 @@ public class PositionService(
 {
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
-        await currentUserService.UserHasRights(new ProviderRights(providerId));
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new DeputyDirectorRights(providerId));
 
         var position = createDto.ToModel();
         position.ProviderId = providerId;
-
+        var now = DateOnly.FromDateTime(DateTime.UtcNow);
+        position.ActiveFrom = now;
+        position.ActiveTo = new DateOnly(2999, 12, 31);
         var createdPosition = await positionRepository.Create(position);
         logger.LogDebug("Created position with id: {PositionId}", position.Id);
         return createdPosition.ToDto();

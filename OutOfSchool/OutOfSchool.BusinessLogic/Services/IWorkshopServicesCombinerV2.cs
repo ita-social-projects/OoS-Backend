@@ -16,13 +16,14 @@ public interface IWorkshopServicesCombinerV2 : IWorkshopServicesCombiner
     /// Update existing entity in the database.
     /// </summary>
     /// <param name="dto">Entity that will be to updated.</param>
-    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopCreateUpdateDto}"/>
+    /// <param name="fromDraft">Flag to signal if the updated value is taken from draft.</param>
+    /// <returns>A <see cref="Task{TResult}"/> containing a <see cref="Result{WorkshopResultDto}"/>
     /// that indicates the success or failure of the operation.
     /// If the operation succeeds, the <see cref="Result{WorkshopResultDto}.Value"/> property
     /// contains the updated <see cref="WorkshopResultDto"/>.
     /// If the operation fails, the <see cref="Result{WorkshopResultDto}.OperationResult"/> property
     /// contains error information.</returns>
-    Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto);
+    Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto, bool fromDraft = false);
 
     /// <summary>
     ///  Delete entity.

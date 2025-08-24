@@ -1,17 +1,18 @@
-﻿using OutOfSchool.BusinessLogic.Common;
+﻿using System.Linq.Expressions;
+using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
-using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
-using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 
 namespace OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> logger,
@@ -20,7 +21,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     ICompetitiveEventDraftRepository competitiveEventDraftRepository,
     IImageDependentEntityImagesInteractionService<CompetitiveEventDraft> competitiveEventDraftImagesService,
     IChangesLogService changesLogService,
-    ICodeficatorRepository codeficatorRepository) : ICompetitiveEventDraftService
+    ICodeficatorRepository codeficatorRepository,
+    IRegionAdminService regionAdminService,
+    IMinistryAdminService ministryAdminService,
+    ICodeficatorService codeficatorService,
+    ISearchStringService searchStringService,
+    IEntityRepositorySoftDeleted<long, SubDirection> subDirectionRepository) : ICompetitiveEventDraftService, ISensitiveCompetitiveEventDraftService
 {
 
     // <inheritdoc/>
@@ -77,7 +83,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public async Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id,CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
+    public async Task<Result<CompetitiveEventDraftResultDto>> Update(Guid id, CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
         if (competitiveEventDraftUpdateDto == null || competitiveEventDraftUpdateDto.CompetitiveEventV2Dto == null)
         {
@@ -123,9 +129,12 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var (updatedDraft, coverImageResult, imagesResult) = draftImageUpdateResult.Value;
 
+        // load it again to fetch full data
+        var updatedDraftWithDetails = await GetByIdWithProviderDetails(updatedDraft.Id);
+
         return Result<CompetitiveEventDraftResultDto>.Success(new CompetitiveEventDraftResultDto
         {
-            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(updatedDraft),
+            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(updatedDraftWithDetails),
             UploadingCoverImagesCompetitiveEventResult = coverImageResult?.UploadingResult?.OperationResult,
             UploadingImagesResults = imagesResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult
         });
@@ -270,7 +279,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         logger.LogDebug("Retrieving competitive event draft with ID: {Id}", id);
 
-        var draft = await GetDraftById(id).ConfigureAwait(false);
+        var draft = await GetByIdWithProviderDetails(id).ConfigureAwait(false);
 
         if (draft == null)
         {
@@ -461,6 +470,63 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
+    public async Task<SearchResult<CompetitiveEventDraftResponseDto>> FetchByFilterForAdmins(CompetitiveEventDraftFilterAdministration filter = null)
+    {
+        logger.LogDebug("Started retrieving Competitive Event Drafts by filter for admins.");
+
+        filter ??= new CompetitiveEventDraftFilterAdministration();
+
+        var (adminInstitutionId, catottgIdAdmin) = await GetAdminInstitutionAndCatottgIds();
+
+        var allowedSettlementIdsForAdmin = Enumerable.Empty<long>();
+        var subSettlementsIdsByFilter = Enumerable.Empty<long>();
+
+        if (catottgIdAdmin > 0)
+        {
+            allowedSettlementIdsForAdmin = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(catottgIdAdmin)
+                .ConfigureAwait(false);
+        }
+
+        if (filter.CATOTTGId > 0)
+        {
+            subSettlementsIdsByFilter = await codeficatorService
+                .GetAllChildrenIdsByParentIdAsync(filter.CATOTTGId)
+                .ConfigureAwait(false);
+        }
+
+        var predicate = PredicateBuildForAdmins(
+            filter,
+            adminInstitutionId,
+            allowedSettlementIdsForAdmin.ToList(),
+            subSettlementsIdsByFilter.ToList());
+
+        var competitiveEventDrafts = await competitiveEventDraftRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                whereExpression: predicate)
+            .Include(d => d.Provider)
+                .ThenInclude(p => p.Positions)
+                    .ThenInclude(pos => pos.Officials)
+                        .ThenInclude(o => o.Individual)
+            .AsNoTracking()
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        var competitiveEventDraftsCount = await competitiveEventDraftRepository
+            .Count(predicate)
+            .ConfigureAwait(false);
+
+        logger.LogDebug("Retrieved {DraftsCount} matching records by filter for admins", competitiveEventDraftsCount);
+
+        return new SearchResult<CompetitiveEventDraftResponseDto>()
+        {
+            TotalAmount = competitiveEventDraftsCount,
+            Entities = await MapCompetitiveEventDraftsCollectionWithDetails(competitiveEventDrafts),
+        };
+    }
+
+    // <inheritdoc/>
     public async Task<Result<CompetitiveEventDraftResponseDto>> DeleteImagesAsModeratorAsync(Guid draftId, IEnumerable<string> imageIds)
     {
         logger.LogDebug("Deleting multiple images as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
@@ -520,7 +586,10 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             logger.LogInformation("{Count} images successfully deleted from CompetitiveEventDraft. Draft Id = {DraftId}.",
                 imagesToDelete.Count, draftId);
 
-            return Result<CompetitiveEventDraftResponseDto>.Success(competitiveEventDraft.ToResponseDto());
+            // load draft with full information
+            var draftWithDetails = await GetByIdWithProviderDetails(competitiveEventDraft.Id);
+
+            return Result<CompetitiveEventDraftResponseDto>.Success(draftWithDetails.ToResponseDto());
         }
         catch (Exception ex)
         {
@@ -529,6 +598,54 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             {
                 Code = "500",
                 Description = "An error occurred while deleting the images."
+            });
+        }
+    }
+
+    // <inheritdoc/>
+    public async Task<Result<CompetitiveEventDraftResponseDto>> UpdateDraftAsModeratorAsync(Guid draftId, ModeratorCompetitiveEventDraftEditDto dto)
+    {
+        if (dto == null)
+        {
+            logger.LogError("Parameter '{ParameterName}' is null.", nameof(dto));
+
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Dto must not be null."
+            });
+        }
+
+        logger.LogDebug("Updating competitive event as moderator started. CompetitiveEventDraft Id = {Id}.", draftId);
+
+        var validation = await ValidateDraftForModerator(draftId);
+
+        if (!validation.Succeeded)
+        {
+            return validation.ToFailedResult<CompetitiveEventDraftResponseDto>();
+        }
+
+        var competitiveEventDraft = validation.Value;
+
+        try
+        {
+            dto.ToDraft(competitiveEventDraft);
+            competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.EditedByModerator;
+
+            await competitiveEventDraftRepository.Update(competitiveEventDraft);
+            var draftWithDetails = await GetByIdWithProviderDetails(competitiveEventDraft.Id);
+
+            logger.LogInformation("Competitive event was updated by moderator.");
+
+            return Result<CompetitiveEventDraftResponseDto>.Success(draftWithDetails.ToResponseDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while updating CompetitiveEventDraft with ID {DraftId}.", draftId);
+            return Result<CompetitiveEventDraftResponseDto>.Failed(new OperationError
+            {
+                Code = "500",
+                Description = "An error occurred while updating CompetitiveEventDraft."
             });
         }
     }
@@ -552,10 +669,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             .Select(c => c.Address)
             .ToList()
             .ForEach(address =>
-                address.CodeficatorAddressDto = catottgs
+                address.CodeficatorAddress = catottgs
                     .FirstOrDefault(c => c.Id == address.CATOTTGId)
                     ?.ToAllAddressPartsDto()
             );
+
+        competitiveEventDraftResponseDto.CompetitiveEventDetails.DirectionSubDirectionIds = (await subDirectionRepository
+            .GetByFilter(whereExpression: sd => competitiveEventDraftResponseDto.CompetitiveEventDetails.SubDirectionIds.Contains(sd.Id) && !sd.IsDeleted)
+            .ConfigureAwait(false))
+            .Select(
+                    s => new DirectionSubDirectionIdsDto
+                    {
+                        DirectionId = s.DirectionId,
+                        SubDirectionId = s.Id
+                    })
+            .ToList();
 
         return competitiveEventDraftResponseDto;
     }
@@ -565,11 +693,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         var competitiveEventDraft = competitiveEventV2Dto.ToDraft();
 
         competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.Draft;
-        
+
         var createdDraft = await competitiveEventDraftRepository
             .Create(competitiveEventDraft)
             .ConfigureAwait(false);
-        
+
         return createdDraft;
     }
 
@@ -642,6 +770,25 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return draft;
     }
 
+    private async Task<CompetitiveEventDraft> GetByIdWithProviderDetails(Guid id)
+    {
+        var draft = await competitiveEventDraftRepository.GetByIdWithDetails(
+            id,
+            includeExpression: p => p
+            .Include(p => p.Provider)
+            .ThenInclude(p => p.Positions)
+            .ThenInclude(o => o.Officials)
+            .ThenInclude(i => i.Individual))
+            .ConfigureAwait(false);
+
+        if (draft == null)
+        {
+            return null;
+        }
+
+        return draft;
+    }
+
     private async Task<Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
            MultipleImageChangingResult imagesResult)>> UpdateDraftWithImagesAsync(CompetitiveEventDraftUpdateDto competitiveEventDraftUpdateDto)
     {
@@ -674,14 +821,14 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-        if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.Draft)
+        if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
         {
-            logger.LogWarning("Competitive event draft with ID {DraftId} is not in Draft status.", competitiveEventDraftUpdateDto.Id);
+            logger.LogWarning("Competitive event draft with ID {DraftId} can't be updated.", competitiveEventDraftUpdateDto.Id);
             return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
            MultipleImageChangingResult imagesResult)>.Failed(new OperationError
            {
                Code = "400",
-               Description = "Competitive event draft can only be updated when it is in Draft status."
+               Description = "Competitive event draft can't be updated when it is in PendingModeration status."
            });
         }
 
@@ -735,5 +882,125 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         return Result<CompetitiveEventDraft>.Success(competitiveEventDraft);
+    }
+
+    private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
+    {
+        if (currentUserService.IsMinistryAdmin())
+        {
+            var userId = currentUserService.UserId;
+            var ministryAdmin = await ministryAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
+            return (ministryAdmin.InstitutionId, 0);
+        }
+        else if (currentUserService.IsRegionAdmin())
+        {
+            var userId = currentUserService.UserId;
+            var regionAdmin = await regionAdminService
+                .GetByUserId(userId)
+                .ConfigureAwait(false);
+
+            if (regionAdmin == null)
+            {
+                logger.LogError("Region admin with the specified ID: {UserId} not found", userId);
+                throw new InvalidOperationException($"Region admin with the specified ID: {userId} not found");
+            }
+
+            return (regionAdmin.InstitutionId, regionAdmin.CATOTTGId);
+        }
+
+        return (Guid.Empty, 0);
+    }
+
+    private Expression<Func<CompetitiveEventDraft, bool>> PredicateBuildForAdmins(
+        CompetitiveEventDraftFilterAdministration filter,
+        Guid adminInstitutionId,
+        List<long> allowedSettlementIdsForAdmin,
+        List<long> subSettlementFilterIds)
+    {
+        var predicate = PredicateBuilder.True<CompetitiveEventDraft>();
+
+        predicate = predicate.And(x => filter.CompetitiveEventDraftStatuses.Contains(x.DraftStatus));
+
+        if (adminInstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.Provider.InstitutionId == adminInstitutionId);
+        }
+
+        if (filter.InstitutionId != Guid.Empty)
+        {
+            predicate = predicate.And(x => x.Provider.InstitutionId == filter.InstitutionId);
+        }
+
+        if (allowedSettlementIdsForAdmin != null && allowedSettlementIdsForAdmin.Count != 0)
+        {
+            predicate = predicate.And(c => allowedSettlementIdsForAdmin.Contains(c.CATOTTGId));
+        }
+
+        if (subSettlementFilterIds != null && subSettlementFilterIds.Count != 0)
+        {
+            predicate = predicate.And(c => subSettlementFilterIds.Contains(c.CATOTTGId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var searchTerms = searchStringService.SplitSearchString(filter.SearchString);
+
+            if (searchTerms.Length != 0)
+            {
+                var tempPredicate = PredicateBuilder.False<CompetitiveEventDraft>();
+                tempPredicate = searchTerms.Aggregate(tempPredicate,
+                    (current, word) => current.Or(x =>
+                        x.CompetitiveEventDraftContent.Title.Contains(word,
+                            StringComparison.InvariantCultureIgnoreCase) ||
+                        x.CompetitiveEventDraftContent.ShortTitle.Contains(word,
+                            StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.FullTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
+                        x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase)));
+
+                predicate = predicate.And(tempPredicate);
+            }
+        }
+
+        return predicate;
+    }
+
+    private async Task<List<CompetitiveEventDraftResponseDto>> MapCompetitiveEventDraftsCollectionWithDetails(List<CompetitiveEventDraft> competitiveEventDrafts)
+    {
+        if (!competitiveEventDrafts.Any())
+            return new List<CompetitiveEventDraftResponseDto>();
+
+        var catottgIds = competitiveEventDrafts
+            .Where(ced => ced.CompetitiveEventDraftContent.Contacts != null)
+            .SelectMany(ced => ced.CompetitiveEventDraftContent.Contacts)
+            .Where(c => c?.Address != null)
+            .Select(c => c.Address.CATOTTGId)
+            .Distinct()
+            .ToList();
+
+        var catottgs = await codeficatorRepository.Get(
+                whereExpression: c => catottgIds.Contains(c.Id))
+            .ToListAsync();
+
+        return competitiveEventDrafts.Select(draft =>
+        {
+            var responseDto = draft.ToResponseDto();
+
+            responseDto.CompetitiveEventDetails.Contacts
+                .Where(c => c?.Address != null)
+                .Select(c => c.Address)
+                .ToList()
+                .ForEach(address =>
+                    address.CodeficatorAddress = catottgs
+                        .FirstOrDefault(c => c.Id == address.CATOTTGId)
+                        ?.ToAllAddressPartsDto()
+                );
+
+            return responseDto;
+
+        }).ToList();
     }
 }

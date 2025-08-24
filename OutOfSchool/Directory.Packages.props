@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <BaseVersion>8.0.0</BaseVersion>
-    <!-- TODO: Re-use base version again when we switch to Net 9 -->
+    <!-- TODO: Re-use base version again when we switch to Net 10 -->
     <DIAbstractions>8.0.2</DIAbstractions>
     <EFCoreVersion>8.0.13</EFCoreVersion>
     <OpenIdDictVersion>6.1.1</OpenIdDictVersion>
@@ -124,6 +124,6 @@
     <PackageVersion Include="Elastic.Apm.Elasticsearch" Version="$(ElasticApmVersion)" />
     <PackageVersion Include="Elastic.Apm.StackExchange.Redis" Version="$(ElasticApmVersion)" />
     <!-- Ecryption Library -->
-    <PackageVersion Include="IIT.EUSignCP" Version="1.3.1.2" />
+    <PackageVersion Include="IIT.EUSignCP" Version="1.3.1.4" />
   </ItemGroup>
 </Project>
