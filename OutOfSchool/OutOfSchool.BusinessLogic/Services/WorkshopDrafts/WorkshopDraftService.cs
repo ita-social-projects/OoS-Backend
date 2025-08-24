@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
@@ -14,11 +12,15 @@ using OutOfSchool.BusinessLogic.Services.SearchString;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -1281,7 +1283,7 @@ public class WorkshopDraftService(
         var institutionHierarchy = await institutionHierarchyRepository
             .GetById(dto.InstitutionHierarchyId.Value)
             .ConfigureAwait(false);
-
+         
         if (institutionHierarchy == null)
         {
             throw new InvalidOperationException($"InstitutionHierarchy with ID = {dto.InstitutionHierarchyId} was not found.");
@@ -1289,7 +1291,13 @@ public class WorkshopDraftService(
         
         if (institutionHierarchy.Institution == null)
         {
-          throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
+            throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
+        }
+
+        if (!institutionHierarchy.InstitutionId.Equals(dto.InstitutionId))
+        {
+            throw new InstitutionIdDifferenceException(
+                $"InstitutionHierarchy with ID = {dto.InstitutionHierarchyId} does not match the provided InstitutionId = {dto.InstitutionId}.");
         }
         
         dto.IsChampionPath = institutionHierarchy.Institution.Title.Equals(

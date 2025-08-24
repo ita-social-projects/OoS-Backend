@@ -47,4 +47,10 @@ public static class InstitutionHierarchyGenerator
         institution.HierarchyLevel = level;
         return institution;
     }
+
+    public static InstitutionHierarchy WithInstitution(this InstitutionHierarchy hierarchy, Institution institution)
+    {
+        hierarchy.Institution = institution;
+        return hierarchy;
+    }
 }

@@ -73,12 +73,23 @@ public class WorkshopDraftController : ControllerBase
         // TODO: After implementing the new workshop model, add validation to check if the parent workshop is nested.
         // A workshop must have only one level of nesting.
 
-        var result = await workshopDraftService.Create(workshopV2Dto);
+        try
+        {
+            var result = await workshopDraftService.Create(workshopV2Dto);
 
-        return CreatedAtAction(
+            return CreatedAtAction(
             nameof(Create),
             new { id = result.WorkshopDraft.WorkshopDraftId },
             result);
+        }
+        catch(InstitutionIdDifferenceException ex)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
     }
 
     [HasPermission(Permissions.WorkshopEdit)]
