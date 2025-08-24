@@ -140,16 +140,25 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var institutionHierarchyId = Guid.NewGuid();
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
-        workshop.InstitutionHierarchyId = institutionHierarchyId;
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "Мінспорт" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage().WithInstitutionHierarchy(institutionHierarchy);
         
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
-        
+        workshopV2Dto.InstitutionId = institutionId;
+
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
-            InstitutionHierarchyId = institutionHierarchyId
+            InstitutionHierarchyId = institutionHierarchyId,
+            InstitutionId = institutionId
         };
         var workshopResponse = workshopDraft.ToResponseDto();
 
@@ -158,6 +167,7 @@ public class WorkshopDraftServiceTests
             {
                 Id = institutionHierarchyId,
                 Institution = new Institution { Title = "Мінспорт" },
+                InstitutionId = institutionId
             });
         languageServiceMoq.Setup(x => x.GetById(workshop.LanguageOfEducationId))
             .ReturnsAsync(new LanguageDto { Id = workshop.LanguageOfEducationId, Name = workshop.LanguageOfEducation.Name });
@@ -187,6 +197,8 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
+        result.WorkshopDraft.WorkshopDetails.InstitutionId.Should().Be(institutionId);
+        result.WorkshopDraft.WorkshopDetails.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
     }
     [Test]
     public void Create_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
@@ -208,25 +220,33 @@ public class WorkshopDraftServiceTests
     public async Task Create_WhenInstitutionIsMinSport_ShouldSetChampionPathAndSectionType()
     {
         // Arrange
+        var institutionId = Guid.NewGuid();
         var institutionHierarchyId = Guid.NewGuid();
         var languageId = 1L;
         var languageName = "Українська";
 
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "Мінспорт" })
+            .WithLevel(1);
+
         var workshop = WorkshopGenerator.Generate()
+            .WithInstitutionHierarchy(institutionHierarchy)
             .WithProvider()
             .WithTeachers()
             .WithLanguage(languageId, languageName);
 
-        workshop.InstitutionHierarchyId = institutionHierarchyId;
-
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.InstitutionId = institutionId;
 
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(institutionHierarchyId))
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
-                Institution = new Institution { Title = "Мінспорт" },
+                InstitutionId = institutionId,
+                Institution = new Institution { Title = "Мінспорт" }
             });
 
         languageServiceMoq.Setup(x => x.GetById(languageId))
@@ -267,6 +287,7 @@ public class WorkshopDraftServiceTests
             WorkshopDraftContent = new WorkshopDraftContent
             {
                 InstitutionHierarchyId = institutionHierarchyId,
+                InstitutionId = institutionId,
                 IsChampionPath = true,
                 WorkshopType = WorkshopType.Section
             },
@@ -290,6 +311,7 @@ public class WorkshopDraftServiceTests
         details.IsChampionPath.Should().BeTrue("Institution is Мінспорт");
         details.WorkshopType.Should().Be(WorkshopType.Section, "Institution is Мінспорт");
         details.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
+        details.InstitutionId.Should().Be(institutionId);
     }
     
     [Test]
@@ -297,27 +319,45 @@ public class WorkshopDraftServiceTests
     {
         // Arrange
         var institutionHierarchyId = Guid.NewGuid();
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "NotMinSport" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate()
+            .WithInstitutionHierarchy(institutionHierarchy)
+            .WithProvider()
+            .WithTeachers()
+            .WithLanguage();
+
         workshop.InstitutionHierarchyId = institutionHierarchyId;
 
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.InstitutionId = institutionId;
         workshopV2Dto.WorkshopType = WorkshopType.Workshop;
 
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
             InstitutionHierarchyId = institutionHierarchyId,
+            InstitutionId = institutionId
         };
         
         var expectedResponse = workshopDraft.ToResponseDto();
         expectedResponse.WorkshopDetails.IsChampionPath = false;
         expectedResponse.WorkshopDetails.WorkshopType = WorkshopType.Workshop;
+        expectedResponse.WorkshopDetails.InstitutionId = institutionId;
+        expectedResponse.WorkshopDetails.InstitutionHierarchyId = institutionHierarchyId;
 
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(institutionHierarchyId))
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
+                InstitutionId = institutionId,
                 Institution = new Institution { Title = "NotMinSport" },
             });
 
@@ -351,7 +391,9 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
-       
+        result.WorkshopDraft.WorkshopDetails.InstitutionId.Should().Be(institutionId);
+        result.WorkshopDraft.WorkshopDetails.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
+
     }
     #endregion
 
@@ -370,7 +412,16 @@ public class WorkshopDraftServiceTests
     public async Task Update_WithValidDto_ShouldReturnUpdatedObject()
     {
         //Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        var institutionHierarchyId = Guid.NewGuid();
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "Мінспорт" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage().WithInstitutionHierarchy(institutionHierarchy);
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
         var workshopResponse = workshopDraft.ToResponseDto();
@@ -389,6 +440,7 @@ public class WorkshopDraftServiceTests
             {
                 Id = workshop.InstitutionHierarchyId.Value,
                 Institution = new Institution { Title = "Мінспорт" },
+                InstitutionId = institutionId
             });
         
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
@@ -424,6 +476,8 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeTrue();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Section);
+        result.WorkshopDraft.WorkshopDetails.InstitutionId.Should().Be(institutionId);
+        result.WorkshopDraft.WorkshopDetails.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
     }
 
     [Test]
@@ -461,13 +515,21 @@ public class WorkshopDraftServiceTests
     public async Task Update_WhenInstitutionIsMinSport_ShouldSetChampionPathAndSectionType()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var institutionHierarchyId = Guid.NewGuid();
-        workshop.InstitutionHierarchyId = institutionHierarchyId;
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "Мінспорт" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage().WithInstitutionHierarchy(institutionHierarchy);
 
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.Id = Guid.NewGuid(); // simulate update
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.InstitutionId = institutionId;
 
         var updateDto = new WorkshopDraftUpdateDto
         {
@@ -481,6 +543,7 @@ public class WorkshopDraftServiceTests
             WorkshopDraftContent = new WorkshopDraftContent
             {
                 InstitutionHierarchyId = institutionHierarchyId,
+                InstitutionId = institutionId,
                 IsChampionPath = true,
                 WorkshopType = WorkshopType.Section
             },
@@ -497,7 +560,8 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
-                Institution = new Institution { Title = "Мінспорт" }
+                Institution = new Institution { Title = "Мінспорт" },
+                InstitutionId = institutionId
             });
 
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
@@ -526,19 +590,29 @@ public class WorkshopDraftServiceTests
         result.WorkshopDraft.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeTrue();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Section);
+        result.WorkshopDraft.WorkshopDetails.InstitutionId.Should().Be(institutionId);
+        result.WorkshopDraft.WorkshopDetails.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
     }
 
     [Test]
     public async Task Update_WhenInstitutionIsNotMinSport_ShouldNotSetIsChampionPathAndWorkshopType()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         var institutionHierarchyId = Guid.NewGuid();
-        workshop.InstitutionHierarchyId = institutionHierarchyId;
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "NotMinSport" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage().WithInstitutionHierarchy(institutionHierarchy);
 
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.Id = Guid.NewGuid(); // simulate update
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.InstitutionId = institutionId;
         workshopV2Dto.WorkshopType = WorkshopType.Workshop;
 
         var updateDto = new WorkshopDraftUpdateDto
@@ -553,6 +627,7 @@ public class WorkshopDraftServiceTests
             WorkshopDraftContent = new WorkshopDraftContent
             {
                 InstitutionHierarchyId = institutionHierarchyId,
+                InstitutionId = institutionId,
                 IsChampionPath = false,
                 WorkshopType = WorkshopType.Workshop
             },
@@ -569,7 +644,8 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
-                Institution = new Institution { Title = "NotMinSport" }
+                Institution = new Institution { Title = "NotMinSport" },
+                InstitutionId = institutionId
             });
 
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
@@ -598,6 +674,8 @@ public class WorkshopDraftServiceTests
         result.WorkshopDraft.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
+        result.WorkshopDraft.WorkshopDetails.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
+        result.WorkshopDraft.WorkshopDetails.InstitutionId.Should().Be(institutionId);
     }
 
     #endregion
@@ -903,7 +981,16 @@ public class WorkshopDraftServiceTests
     public async Task UpdateWorkshop_WhenModeratedFieldsWasChanged_ShouldCallCreateDraft()
     {
         // Arrange
-        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        var institutionHierarchyId = Guid.NewGuid();
+        var institutionId = Guid.NewGuid();
+
+        var institutionHierarchy = InstitutionHierarchyGenerator.Generate()
+            .WithId(institutionHierarchyId)
+            .WithInstitutionId(institutionId)
+            .WithInstitution(new Institution { Title = "Мінспорт" })
+            .WithLevel(1);
+
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage().WithInstitutionHierarchy(institutionHierarchy);
         var workshopDto = workshop.ToDto();
         workshopDto.Title = "Changed title";
         var workshopV2Dto = workshop.ToV2Dto();
@@ -916,6 +1003,7 @@ public class WorkshopDraftServiceTests
             {
                 Id = workshop.InstitutionHierarchyId.Value,
                 Institution = new Institution { Title = "Мінспорт" },
+                InstitutionId = institutionId
             });
         languageServiceMoq.Setup(x => x.GetById(workshop.LanguageOfEducationId))
             .ReturnsAsync(new LanguageDto { Id = workshop.LanguageOfEducationId, Name = workshop.LanguageOfEducation.Name });
