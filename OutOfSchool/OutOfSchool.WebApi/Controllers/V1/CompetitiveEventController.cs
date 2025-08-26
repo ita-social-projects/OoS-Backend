@@ -157,15 +157,6 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("/api/v{version:apiVersion}/provider/{id}/competitiveevents")]
-    public async Task<IActionResult> GetCompetitiveEventViewCardByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
-    {
-        if (id == Guid.Empty)
-        {
-            return BadRequest("Provider id is empty.");
-        }
-       
-        SearchResult<CompetitiveEventViewCardDto> result = await service.GetByProviderId(id, filter).ConfigureAwait(false);
-        return this.SearchResultToOkOrNoContent(result);
-
-    }
+    public async Task<IActionResult> GetCompetitiveEventViewCardByProviderId(Guid id, [FromQuery] CompetitiveEventFilterTitle filter) =>
+        await service.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 }
