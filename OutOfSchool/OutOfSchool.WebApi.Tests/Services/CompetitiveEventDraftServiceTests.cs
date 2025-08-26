@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -26,6 +21,11 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -468,6 +468,7 @@ public class CompetitiveEventDraftServiceTests
             new CompetitiveEventDraft
             {
                 Id = Guid.NewGuid(),
+                ProviderId = providerId,
                 DraftStatus = CompetitiveEventDraftStatus.Draft,
                 CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
                 CoverImageId = "coverImageId"
@@ -483,9 +484,15 @@ public class CompetitiveEventDraftServiceTests
             .Returns(Task.CompletedTask);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
             .ReturnsAsync(searchResult.TotalAmount);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
         var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
@@ -507,6 +514,7 @@ public class CompetitiveEventDraftServiceTests
             new CompetitiveEventDraft
             {
                 Id = Guid.NewGuid(),
+                ProviderId = providerId,
                 DraftStatus = CompetitiveEventDraftStatus.Draft,
                 CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
                 CoverImageId = "coverImageId"
@@ -521,9 +529,15 @@ public class CompetitiveEventDraftServiceTests
             .Returns(Task.CompletedTask);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
             .ReturnsAsync(searchResult.TotalAmount);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary < Expression<Func<CompetitiveEventDraft, object>>, SortDirection > sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
         var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
@@ -531,7 +545,7 @@ public class CompetitiveEventDraftServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
-        Assert.AreEqual(1, result.TotalAmount);
+        Assert.AreEqual(1, result.Entities.Count);
         Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);
     }
 
@@ -547,6 +561,7 @@ public class CompetitiveEventDraftServiceTests
             new CompetitiveEventDraft
             {
                 Id = excludedId,
+                ProviderId = providerId,
                 DraftStatus = CompetitiveEventDraftStatus.Draft,
                 CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
                 CoverImageId = "coverImageId"
@@ -554,6 +569,7 @@ public class CompetitiveEventDraftServiceTests
             new CompetitiveEventDraft
             {
                 Id = Guid.NewGuid(),
+                ProviderId = providerId,
                 DraftStatus = CompetitiveEventDraftStatus.Draft,
                 CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Another Test Event" },
                 CoverImageId = "coverImageId2"
@@ -568,9 +584,15 @@ public class CompetitiveEventDraftServiceTests
             .Returns(Task.CompletedTask);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
             .ReturnsAsync(searchResult.TotalAmount);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary <Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
         var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
@@ -578,8 +600,9 @@ public class CompetitiveEventDraftServiceTests
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
-        Assert.AreEqual(1, result.TotalAmount);
-        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);
+        Assert.AreEqual(1, result.Entities.Count);
+        Assert.AreEqual(result.Entities.First().Title, drafts.First(x => x.Id != excludedId).CompetitiveEventDraftContent.Title);
+        Assert.IsFalse(result.Entities.Any(e => e.CompetitiveEventDraftId == excludedId));
     }
 
     #endregion GetByProviderId
