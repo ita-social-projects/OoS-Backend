@@ -1,15 +1,14 @@
-﻿using Elastic.Clients.Elasticsearch.Core.Search;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-//using Minio.DataModel.Args;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
@@ -28,6 +27,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -103,7 +103,6 @@ public class WorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var regionAdminService = new Mock<IRegionAdminService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
-        //var codeficatorService = new Mock<ICodeficatorService>();
         var searchStringService = new Mock<ISearchStringService>();
 
         codeficatorServiceMock = new Mock<ICodeficatorService>();
@@ -655,7 +654,7 @@ public class WorkshopDraftServiceTests
     #endregion
 
     #region Approve
-   // [Ignore("Ignoring for now, may be not need this")]
+    // [Ignore("Ignoring for now, may be not need this")]
     [Test]
     public async Task Approve_WhenWorkshopIdIsNull_ShouldTryToCreateNewWorkshopAndDeleteDraft()
     {
@@ -739,8 +738,8 @@ public class WorkshopDraftServiceTests
         // Act & Assert
         workshopServiceCombinerV2Moq
             .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
-            .Returns(Task.FromResult(new WorkshopResultDto())); 
-        
+            .Returns(Task.FromResult(new WorkshopResultDto()));
+
         Assert.DoesNotThrowAsync(async () =>
             await service.Approve(workshopDraft.Id).ConfigureAwait(false));
 
@@ -755,7 +754,8 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshopDraft = CreatePendingModerationDraft();
 
-        MakeDraftFromSportMinistry(workshopDraft);
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
 
         SetupDraftRepo(workshopDraft);
 
@@ -767,7 +767,7 @@ public class WorkshopDraftServiceTests
 
         // setup error response from registry
         SetupSportRegistryResponse(errorResponse);
-        
+
         // Act & Assert
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await service.Approve(workshopDraft.Id)
@@ -792,7 +792,9 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshopDraft = CreatePendingModerationDraft();
 
-        MakeDraftFromSportMinistry(workshopDraft);
+        AddSportMinistryProvider(workshopDraft);
+        
+        AddDefaultContact(workshopDraft);
 
         SetupDraftRepo(workshopDraft);
 
@@ -820,10 +822,17 @@ public class WorkshopDraftServiceTests
         // Arrange
         var workshopDraft = CreatePendingModerationDraft();
 
-        MakeDraftFromSportMinistry(workshopDraft);
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
 
         var institutionHierarchyId = Guid.NewGuid();
         workshopDraft.WorkshopDraftContent.InstitutionHierarchyId = institutionHierarchyId;
+
+        workshopDraft.CATOTTGId = 123;
+        codeficatorServiceMock
+            .Setup(x => x.GetCodeById(workshopDraft.CATOTTGId))
+            .ReturnsAsync("UA07000000000024379");
+
 
         SetupDraftRepo(workshopDraft);
         // institutionHierarchyService returns DTO without SportRegistryIdCode
@@ -840,12 +849,17 @@ public class WorkshopDraftServiceTests
     {
         var workshopDraft = CreatePendingModerationDraft();
 
-        MakeDraftFromSportMinistry(workshopDraft);
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
 
         SetupDraftRepo(workshopDraft);
 
         // institutionHierarchyService returns DTO with SportRegistryIdCode
         SetupInstitutionHierarchyMock(123);
+
+        codeficatorServiceMock
+            .Setup(x => x.GetCodeById(It.IsAny<long>()))
+            .ReturnsAsync("UA12345678");
 
         // mock successful registry response
         var registryResponse = new SectionCreateResponse
@@ -1307,12 +1321,25 @@ public class WorkshopDraftServiceTests
                 Institution = new InstitutionDto { Title = "Мінспорт" }
             });
     }
-    private void MakeDraftFromSportMinistry(WorkshopDraft draft)
+    private void AddSportMinistryProvider(WorkshopDraft draft)
     {
         draft.Provider = new Provider
         {
             Institution = new Institution { Id = ministryOfSportId },
-            InstitutionId = ministryOfSportId
+            InstitutionId = ministryOfSportId,
+            Edrpou = "12345678"
+        };
+    }
+    private void AddDefaultContact(WorkshopDraft draft)
+    {
+        draft.WorkshopDraftContent.Contacts = new List<Contacts>()
+        {
+            new Contacts
+            {
+                IsDefault = true,
+                Emails = new List<Email> { new Email { Address = "test@example.com" } },
+                Phones = new List<PhoneNumber> { new PhoneNumber { Number = "0980445577" } },
+            }
         };
     }
     private void SetupDraftRepo(WorkshopDraft draft)
@@ -1325,7 +1352,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(draft)
             .Verifiable(Times.Once);
     }
-    private void SetupInstitutionHierarchyMock(int ? sportRegistryIdCode = null)
+    private void SetupInstitutionHierarchyMock(int? sportRegistryIdCode = null)
     {
         institutionHierarchyServiceMock
            .Setup(x => x.GetById(It.IsAny<Guid>()))
@@ -1346,7 +1373,7 @@ public class WorkshopDraftServiceTests
 
     private WorkshopDraft CreatePendingModerationDraft()
     {
-        var workshop = WorkshopGenerator.Generate();
+        var workshop = WorkshopGenerator.Generate();//.WithProvider();
         var workshopDraft = workshop.ToV2Dto().ToDraft();
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null; // simulate new workshop

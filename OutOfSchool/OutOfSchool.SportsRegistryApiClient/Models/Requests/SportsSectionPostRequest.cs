@@ -2,7 +2,6 @@ using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Validators;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using OutOfSchool.SportsRegistryApiClient.Enums;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
@@ -16,7 +15,7 @@ public class SportsSectionPostRequest : IValidatableObject
     public string SectionName { get; set; } = null!;
 
     [Required(ErrorMessage = "sectionSportKindDictIdCode is required.")]
-    [Range(1, int.MaxValue, ErrorMessage = "sectionSportKindDictIdCode must be a non-negative Integer.")]
+    [Range(typeof(long), "1", "9223372036854775807", ErrorMessage = "sectionSportKindDictIdCode must be a non-negative integer.")]
     public long SectionSportKindDictIdCode { get; set; }
 
     [Required(ErrorMessage = "sectionAgeFrom is required.")]
@@ -45,6 +44,7 @@ public class SportsSectionPostRequest : IValidatableObject
     public string SectionRegistrationFlow { get; set; } = null!;
 
     [Required(ErrorMessage = "sectionPhone is required.")]
+    [MinLength(1, ErrorMessage = "At least one section phone must be provided.")]
     [PhoneListValidation]
     public List<string> SectionPhones { get; set; } = new();
 
@@ -62,11 +62,11 @@ public class SportsSectionPostRequest : IValidatableObject
     public string? SectionUrl { get; set; }
 
     [RegularExpression(@"^(https?://)?(www\.)?facebook\.com/.*$", ErrorMessage = "sectionFacebookUrl must be a valid Facebook URL.")]
-    //[RegularExpression(@"^https?://(?:[\\w-]+\\.)*facebook\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
+    //[RegularExpression(@"^https?://(?:[\w-]+\\.)*facebook\.com(/[^\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionFacebookUrl must be a valid Facebook URL.")]
     public string? SectionFacebookUrl { get; set; }
 
-    [RegularExpression(@"^https?://(?:[\\w-]+\\.)*instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
-    //[RegularExpression(@"^https?://(?:www\\.)?instagram\\.com(/[^\\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
+    [RegularExpression(@"^https?://(?:[\w-]+\.)*instagram\.com(/[^\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
+    //[RegularExpression(@"^https?://(?:www\.)?instagram\.com(/[^\s]*)?$", ErrorMessage = "Invalid Instagram URL format. SectionInstagramUrl must be a valid Instagram URL.")]
     public string? SectionInstagramUrl { get; set; }
 
     [Required(ErrorMessage = "sectionPracticeFormat is required.")]

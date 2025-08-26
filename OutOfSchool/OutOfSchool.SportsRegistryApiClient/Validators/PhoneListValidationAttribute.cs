@@ -6,9 +6,9 @@ public class PhoneListValidationAttribute : ValidationAttribute
 {
     override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        if (value is not List<string> phoneNumbers) // || phoneNumbers.Count == 0)
+        if (value is not List<string> phoneNumbers)
         {
-            return new ValidationResult("sectionPhone must be a list of phone  numbers"); // is required and must contain at least one valid number."); 
+            return new ValidationResult("sectionPhone must be a list of phone numbers");
         }
 
         var invalidPhones = phoneNumbers

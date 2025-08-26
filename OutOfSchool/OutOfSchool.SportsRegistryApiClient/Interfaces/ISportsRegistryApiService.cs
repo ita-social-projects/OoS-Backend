@@ -1,9 +1,8 @@
 using OutOfSchool.Common.Models;
-
-namespace OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
+namespace OutOfSchool.SportsRegistryApiClient.Interfaces;
 public interface ISportsRegistryApiService
 {
     /// <summary>

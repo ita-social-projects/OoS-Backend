@@ -133,7 +133,7 @@ public class WorkshopDraftService(
         {
             createdDraftWithAssociatedTeachers.Images ??= [];
             createdDraftWithAssociatedTeachers.Images.AddRange(
-                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> {ExternalStorageId = id}));
+                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> { ExternalStorageId = id }));
         }
 
         await workshopDraftRepository.SaveChangesAsync()
@@ -238,7 +238,7 @@ public class WorkshopDraftService(
             }
             await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             await ValidateAndAdjustInstitutionHierarchyAsync(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
-            
+
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
             var coverImageResult = await workshopDraftImagesService.ChangeCoverImageAsync(
@@ -334,9 +334,9 @@ public class WorkshopDraftService(
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
-        
+
         EnsureDraftIsApprovable(workshopDraft);
-        
+
         //TODO: Add image loading later
 
         if (workshopDraft.WorkshopId == null)
@@ -612,11 +612,11 @@ public class WorkshopDraftService(
 
         await workshopDraftRepository.Update(workshopDraft).ConfigureAwait(false);
 
-        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);     
+        logger.LogInformation("WorkshopDraft successfully updated. Id = {Id}.", draftId);
 
         return Result<WorkshopDraftResponseDto>.Success(workshopDraft.ToResponseDto());
     }
-    
+
     /// <inheritdoc/>
     public async Task<Result<WorkshopDraftResponseDto>> DeleteCoverImageAsModeratorAsync(Guid draftId)
     {
@@ -832,7 +832,7 @@ public class WorkshopDraftService(
 
         return workshopDraft;
     }
-    
+
     private async Task<WorkshopDraft> GetWorkshopDraftByIdWithImages(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -875,7 +875,7 @@ public class WorkshopDraftService(
 
         return workshopDraft;
     }
-    
+
     private async Task<WorkshopDraft> GetByIdWithProviderAndWorkshop(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft with provider and workshop details by Id {Id}.", id);
@@ -884,7 +884,7 @@ public class WorkshopDraftService(
             id,
             includeExpression: q => q
                 .Include(d => d.Provider)
-                .ThenInclude(p => p.Institution)); 
+                .ThenInclude(p => p.Institution));
 
         if (draft is null)
             throw new ArgumentException($"No draft with id {id}.", nameof(id));
@@ -895,7 +895,7 @@ public class WorkshopDraftService(
         return draft;
     }
 
-    
+
     private async Task<WorkshopDraft> CreateWorkshopDraft(WorkshopV2Dto workshopV2Dto)
     {
         var workshopDraft = workshopV2Dto.ToDraft();
@@ -1124,7 +1124,7 @@ public class WorkshopDraftService(
         {
             return null;
         }
-        
+
         var institutionHierarchyDto = await institutionHierarchyRepository.GetByIdWithDetails(
             id: (Guid)workshopDraft.WorkshopDraftContent.InstitutionHierarchyId,
             includeExpression: includeDirectionsFunc);
@@ -1153,7 +1153,7 @@ public class WorkshopDraftService(
         workshopDraftResponseDto.WorkshopDetails.DirectionIds = await GetDirectionIdsForWorkshopDraft(draft);
 
         workshopDraftResponseDto.WorkshopDetails.SubDirectionIds = await GetSubDirectionIdsForWorkshopDraft(draft);
-        
+
         workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(workshopDraftResponseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
         var catottgIds = workshopDraftResponseDto.WorkshopDetails.Contacts
@@ -1220,7 +1220,7 @@ public class WorkshopDraftService(
             responseDto.WorkshopDetails.SubDirectionIds = institutionHierarchy?.SubDirections
                 .Select(sd => sd.Id)
                 .ToList();
-            
+
             responseDto.WorkshopDetails.WorkshopDescriptionItems = SortWorkshopDescriptionItems(responseDto.WorkshopDetails.WorkshopDescriptionItems.ToList());
 
             responseDto.WorkshopDetails.Contacts
@@ -1286,7 +1286,7 @@ public class WorkshopDraftService(
         }
         dto.LanguageOfEducationName = language.Name;
     }
-    
+
     /// <summary>
     /// Validates and updates the InstitutionHierarchy-related properties in the provided DTO:
     /// - Sets WorkshopType to Section and IsChampionPath to true if institution is "Мінспорт".
@@ -1306,12 +1306,12 @@ public class WorkshopDraftService(
         {
             throw new InvalidOperationException($"InstitutionHierarchy with ID = {dto.InstitutionHierarchyId} was not found.");
         }
-        
+
         if (institutionHierarchy.Institution == null)
         {
-          throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
+            throw new InvalidOperationException($"Institution not found for InstitutionHierarchy with ID = {dto.InstitutionHierarchyId}.");
         }
-        
+
         dto.IsChampionPath = institutionHierarchy.Institution.Id.ToString().Equals(
             institutionSettings.Value.MinistryOfSportId,
             StringComparison.OrdinalIgnoreCase);
@@ -1397,7 +1397,7 @@ public class WorkshopDraftService(
 
         return (long)institutionHierarchyDto.SportRegistryIdCode;
     }
-    
+
     /// <summary>
     /// Synchronizes the workshop draft section with the external Sports Registry.
     /// Builds a request from the draft, validates identifiers, 
@@ -1419,6 +1419,12 @@ public class WorkshopDraftService(
         }
 
         request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(request.SectionAddressLocalityDictIdCode))
+        {
+            logger.LogError("Codeficator code not found for CATOTTG Id {CatottgId}.", catottgId);
+            throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
+        }
+
         request.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
 
         // 2) try to check api 
@@ -1437,14 +1443,14 @@ public class WorkshopDraftService(
             },
             success =>
             {
-                var createdRegistryId  = success.ResultVariables.SectionId;
+                var createdRegistryId = success.ResultVariables.SectionId;
                 draft.WorkshopDraftContent.MinsportSectionId = createdRegistryId;
                 logger.LogInformation($"Workshop draft was successfully synced to Sports Registry. ID of created workshop in sport registry: {createdRegistryId}");
-                return true; 
+                return true;
             }
         );
     }
-    
+
     /// <summary>
     /// Ensures that the workshop draft can be approved.
     /// Throws an exception if the draft has an invalid status for approval.

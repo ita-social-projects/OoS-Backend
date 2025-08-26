@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
-public class SectionScheduleRequest
+public class SectionScheduleRequest : IValidatableObject
 {
     [Required(ErrorMessage = "sectionScheduleWeekday is required.")]
     public Weekday SectionScheduleWeekday { get; set; }

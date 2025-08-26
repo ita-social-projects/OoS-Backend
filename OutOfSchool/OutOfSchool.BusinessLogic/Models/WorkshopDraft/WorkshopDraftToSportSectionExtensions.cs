@@ -4,7 +4,6 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Diagnostics.CodeAnalysis;
-using OutOfSchool.SportsRegistryApiClient.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public static class WorkshopDraftToSportSectionExtensions
@@ -16,7 +15,7 @@ public static class WorkshopDraftToSportSectionExtensions
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
         return new SportsSectionPostRequest
         {
-            OrganizationCode = draft.Provider.Edrpou,
+            OrganizationCode = draft.Provider?.Edrpou ?? throw new ArgumentException("Provider is required.", nameof(draft)),
             SectionName = content.Title,
 
             SectionAgeFrom = content.MinAge,
@@ -24,10 +23,10 @@ public static class WorkshopDraftToSportSectionExtensions
 
             SectionIsInShlyahProject = content.IsChampionPath,
             SectionPozashkillyaModerationStatus = ModerationStatus.ACTIVE,
-           
+
             SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),
-            SectionAddressStreet = defaultContact?.Address?.Street,
-            SectionAddressHouse = defaultContact?.Address?.BuildingNumber,
+            SectionAddressStreet = defaultContact?.Address?.Street ?? String.Empty,
+            SectionAddressHouse = defaultContact?.Address?.BuildingNumber ?? String.Empty,
 
             SectionDescription = string.Join("\n", content.WorkshopDescriptionItems.Select(x => x.Description)),
 
@@ -37,11 +36,11 @@ public static class WorkshopDraftToSportSectionExtensions
                 .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
                 .Distinct().ToList() ?? new(),
 
-            SectionEmail = content.Contacts?
-                .FirstOrDefault(c => c.IsDefault)? // defaultContact
+            SectionEmail = defaultContact?
                 .Emails?
                 .FirstOrDefault()?
-                .Address,
+                .Address
+                ?? throw new ArgumentException("Default contact email is required.", nameof(draft)),
 
             SectionRegistrationFormUrl = "https://forms.example.com/football-registration", // replace with actual URL if available
             SectionUrl = defaultContact?.SocialNetworks
@@ -60,7 +59,7 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionPracticeCost = content.Price,
 
             SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue
-            ? 1000 : (int)content.AvailableSeats,
+            ? 1000 : Math.Min((int)content.AvailableSeats, 1000),
 
             SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId)
             ? null
@@ -70,17 +69,17 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
             SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
-            SectionPracticePeriodDateTo   = content.StudyPeriodEndDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
+            SectionPracticePeriodDateTo = content.StudyPeriodEndDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
 
-            SectionSchedule = content.DateTimeRanges?.SelectMany(r =>
-                 r.Workdays
-                .SelectMany(flags => DecomposeFlags(flags)
-                .Select(day => new SectionScheduleRequest
-                {
-                    SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
-                    SectionScheduleTimeFrom = r.StartTime.ToString("HH':'mm':'ss", CultureInfo.InvariantCulture),
-                    SectionScheduleTimeTo = r.EndTime.ToString("HH':'mm':'ss", CultureInfo.InvariantCulture),
-                }))).ToList() ?? new(),
+            SectionSchedule = content.DateTimeRanges?
+            .SelectMany(r => (r.Workdays ?? Enumerable.Empty<DaysBitMask>())
+            .SelectMany(flags => DecomposeFlags(flags)
+            .Select(day => new SectionScheduleRequest
+            {
+                SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
+                SectionScheduleTimeFrom = r.StartTime.ToString(@"HH\:mm\:ss", CultureInfo.InvariantCulture),
+                SectionScheduleTimeTo = r.EndTime.ToString(@"HH\:mm\:ss", CultureInfo.InvariantCulture),
+            }))).ToList() ?? new(),
         };
     }
     public static SectionPracticeFormat ToSectionPracticeFormat(this FormOfLearning formOfLearning)
@@ -101,10 +100,10 @@ public static class WorkshopDraftToSportSectionExtensions
     private static string CombineImageUrl(string baseUrl, string imageId)
     {
         var safeBase = (baseUrl ?? string.Empty).Trim().TrimEnd('/');
-        var safeId   = (imageId ?? string.Empty).Trim().TrimStart('/');
+        var safeId = (imageId ?? string.Empty).Trim().TrimStart('/');
 
         if (safeBase.Length == 0) return safeId;   // "/id" no return 
-        if (safeId.Length   == 0) return safeBase; // "base/" no return 
+        if (safeId.Length == 0) return safeBase; // "base/" no return 
         return $"{safeBase}/{safeId}";
     }
     private static List<string> MapSectionPhotos<T>(IEnumerable<Image<T>> images, string baseUrl)

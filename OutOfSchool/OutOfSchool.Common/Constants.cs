@@ -207,6 +207,7 @@ public static class Constants
     /// </summary>
     public const int MaxNumberOfEmployeesToUpload = 100;
 
+    /// <summary>
     /// Length constraint for workshop draft description.
     /// </summary>
     public const int WorkshopDraftDescriptionMaxLength = 500;
