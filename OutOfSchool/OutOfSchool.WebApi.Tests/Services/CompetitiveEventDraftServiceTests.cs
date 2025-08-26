@@ -496,11 +496,49 @@ public class CompetitiveEventDraftServiceTests
         Assert.AreEqual(1, result.TotalAmount);
     }
 
-    #endregion GetByProviderId
-
-    #region GetCompetitiveEventDraftByIdMapped
-
     [Test]
+    public async Task GetByProviderId_ReturnsSearchResult_WhenFilterContainsSearchText()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        var filter = new CompetitiveEventDraftFilterTitle { SearchText = "test" };
+        var drafts = new List<CompetitiveEventDraft>
+        {
+            new CompetitiveEventDraft
+            {
+                Id = Guid.NewGuid(),
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
+                CoverImageId = "coverImageId"
+            }
+        };
+        var searchResult = new SearchResult<CompetitiveEventDraftViewCardDto>
+        {
+            Entities = new[] { drafts.FirstOrDefault().ToCardDto() },
+            TotalAmount = 1
+        };
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
+            .ReturnsAsync(searchResult.TotalAmount);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns(drafts.AsTestAsyncEnumerableQuery);
+
+        // Act
+        var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
+        Assert.AreEqual(1, result.TotalAmount);
+        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);  
+    }
+        #endregion GetByProviderId
+
+        #region GetCompetitiveEventDraftByIdMapped
+
+        [Test]
     public async Task GetCompetitiveEventDraftByIdMapped_ReturnsNull_IfDraftDoesNotExist()
     {
         // Arrange
