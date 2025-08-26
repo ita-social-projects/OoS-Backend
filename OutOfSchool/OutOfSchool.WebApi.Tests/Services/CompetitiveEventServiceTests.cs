@@ -335,7 +335,7 @@ public class CompetitiveEventServiceTests
     {
         // Arrange
         var invalidProviderId = Guid.Empty;
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
 
         // Act & Assert
         var exception = Assert.ThrowsAsync<ArgumentException>(async () =>

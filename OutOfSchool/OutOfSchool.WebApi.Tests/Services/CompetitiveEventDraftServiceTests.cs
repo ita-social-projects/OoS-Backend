@@ -462,7 +462,7 @@ public class CompetitiveEventDraftServiceTests
     {
         // Arrange
         Guid providerId = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventDraftFilterTitle();
         var drafts = new List<CompetitiveEventDraft>
         {
             new CompetitiveEventDraft

@@ -242,7 +242,7 @@ public class WorkshopDraftControllerTests
             },            
         };
 
-        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopDraftFilterTitle>()))
             .ReturnsAsync(searchResult).Verifiable(Times.Once);
 
         // Act
@@ -257,14 +257,14 @@ public class WorkshopDraftControllerTests
     public async Task GetByProviderId_WhenThereIsNoWorkshopDrafts_ShouldReturnNoContentResult()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new WorkshopDraftFilterTitle() { From = 0, Size = int.MaxValue };
         var emptySearchResult = new SearchResult<WorkshopDraftViewCardDto>() 
         { 
             TotalAmount = 0, 
             Entities = new List<WorkshopDraftViewCardDto>() 
         };
 
-        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        workshopDraftServiceMoq.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<WorkshopDraftFilterTitle>()))
             .ReturnsAsync(emptySearchResult);
 
         // Act
