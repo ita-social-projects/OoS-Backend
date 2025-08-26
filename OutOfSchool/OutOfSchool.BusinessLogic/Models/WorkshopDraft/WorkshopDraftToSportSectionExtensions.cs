@@ -1,6 +1,6 @@
 ﻿using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.Images; // ??
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Diagnostics.CodeAnalysis;
@@ -9,9 +9,10 @@ using OutOfSchool.SportsRegistryApiClient.Enums;
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 public static class WorkshopDraftToSportSectionExtensions
 {
-    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, [NotNull] string baseImageUrl) // check not null
+    public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, [NotNull] string baseImageUrl)
     {
-        var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft.WorkshopDraftContent));; 
+        if (string.IsNullOrWhiteSpace(baseImageUrl)) throw new ArgumentException("Base image URL is required.", nameof(baseImageUrl));
+        var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft.WorkshopDraftContent));
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
         return new SportsSectionPostRequest
         {
@@ -99,8 +100,12 @@ public static class WorkshopDraftToSportSectionExtensions
     }
     private static string CombineImageUrl(string baseUrl, string imageId)
     {
-        return $"{baseUrl?.TrimEnd().TrimEnd('/')}/{imageId?.TrimStart().TrimStart('/')}"; // need this stronger check?
-        //return $"{baseUrl.TrimEnd('/')}/{imageId.TrimStart('/')}";
+        var safeBase = (baseUrl ?? string.Empty).Trim().TrimEnd('/');
+        var safeId   = (imageId ?? string.Empty).Trim().TrimStart('/');
+
+        if (safeBase.Length == 0) return safeId;   // "/id" no return 
+        if (safeId.Length   == 0) return safeBase; // "base/" no return 
+        return $"{safeBase}/{safeId}";
     }
     private static List<string> MapSectionPhotos<T>(IEnumerable<Image<T>> images, string baseUrl)
     {

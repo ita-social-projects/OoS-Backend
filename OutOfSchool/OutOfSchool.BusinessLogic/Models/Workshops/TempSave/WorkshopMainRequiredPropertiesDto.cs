@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
@@ -66,6 +67,8 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
     
+    [BindNever]  
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Guid? MinsportSectionId { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

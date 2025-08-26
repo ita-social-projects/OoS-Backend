@@ -101,8 +101,6 @@ public class WorkshopDraftServiceTests
         options.Setup(o => o.Value).Returns(settings);
 
         var logger = new Mock<ILogger<WorkshopDraftService>>();
-        var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
-        var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         var regionAdminService = new Mock<IRegionAdminService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
         //var codeficatorService = new Mock<ICodeficatorService>();
@@ -127,10 +125,10 @@ public class WorkshopDraftServiceTests
                    sportRegistryProviderServiceMock.Object,
                    languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
-                   workshopDraftImagesService.Object,
+                   workshopDraftImagesServiceMock.Object,
                    providerServiceMoq.Object,
                    currentUserServiceMoq.Object,
-                   teacherDraftImagesService.Object,
+                   teacherDraftImagesServiceMock.Object,
                    options.Object,
                    workshopServiceCombinerV2Moq.Object,
                    regionAdminService.Object,
@@ -739,6 +737,10 @@ public class WorkshopDraftServiceTests
         SetupDraftRepo(workshopDraft);
 
         // Act & Assert
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(Task.FromResult(new WorkshopResultDto())); 
+        
         Assert.DoesNotThrowAsync(async () =>
             await service.Approve(workshopDraft.Id).ConfigureAwait(false));
 
