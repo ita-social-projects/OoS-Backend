@@ -1,5 +1,8 @@
 ﻿using System.Text;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
+using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.BusinessLogic.Util;
@@ -62,6 +65,36 @@ public static class ModelValidationHelper
     }
 
     public static void ValidateWorkshopTitleFilter(WorkshopFilterTitle filter)
+    {
+        if (filter == null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
+        ValidateExcludedIdFilter(filter);
+    }
+
+    public static void ValidateWorkshopDraftTitleFilter(WorkshopDraftFilterTitle filter)
+    {
+        if (filter == null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
+        ValidateExcludedIdFilter(filter);
+    }
+
+    public static void ValidateCompetitiveEventTitleFilter(CompetitiveEventFilterTitle filter)
+    {
+        if (filter == null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
+        ValidateExcludedIdFilter(filter);
+    }
+
+    public static void ValidateCompetitiveEventDraftTitleFilter(CompetitiveEventDraftFilterTitle filter)
     {
         if (filter == null)
         {
