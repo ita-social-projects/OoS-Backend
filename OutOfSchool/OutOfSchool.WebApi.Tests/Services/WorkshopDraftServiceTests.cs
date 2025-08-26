@@ -829,9 +829,49 @@ public class WorkshopDraftServiceTests
         result.Entities.First().Should().BeEquivalentTo(workshopDraftResponse);
     }
 
-    #endregion
+    [Test]
+    public async Task GetByProviderId_WhenFilterHasExcludedId_ShouldReturnValidResult()
+    {
+        // Arrange
+        var numberOfWorkshops = 5;
+        var excludedId = Guid.NewGuid();
+        var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
+        workshops.First().Id = excludedId;
+        var workshopV2Dtos = workshops.ToV2Dto();
+        var workshopDrafts = workshopV2Dtos.ToDraft();
+        var workshopDraftResponses = workshopDrafts.Where(x => x.Id != excludedId).ToCardDto();
+        institutionHierarchyRepositoryMoq.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
+        workshopDraftRepoMoq.Setup(x => x.Count(It.IsAny<Expression<Func<WorkshopDraft, bool>>>()))
+            .ReturnsAsync(numberOfWorkshops).Verifiable(Times.Once);
+        workshopDraftRepoMoq.Setup(x =>
+            x.Get(It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsTestAsyncEnumerableQuery).Verifiable(Times.Once);
+        var filter = new WorkshopDraftFilterTitle
+        {
+            ExcludedId = excludedId
+        };
+
+        // Act
+        var result = await service.GetByProviderId(Guid.NewGuid(), filter).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        result.Entities.Should().BeEquivalentTo(workshopDraftResponses);
+    }
+        #endregion
 
     #region UpdateWorkshop
+
     [Test]
     public async Task UpdateWorkshop_WhenModeratedFieldsWasNotChanged_ShouldCallWorkshopUpdate()
     {

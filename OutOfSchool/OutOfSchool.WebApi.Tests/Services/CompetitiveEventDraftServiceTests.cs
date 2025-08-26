@@ -532,13 +532,61 @@ public class CompetitiveEventDraftServiceTests
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
         Assert.AreEqual(1, result.TotalAmount);
-        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);  
+        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);
     }
-        #endregion GetByProviderId
 
-        #region GetCompetitiveEventDraftByIdMapped
+    [Test]
+    public async Task GetByProviderId_ReturnsValidResult_WhenFilterHasExcludedId()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        Guid excludedId = Guid.NewGuid();
+        var filter = new CompetitiveEventDraftFilterTitle { ExcludedId = excludedId };
+        var drafts = new List<CompetitiveEventDraft>
+        {
+            new CompetitiveEventDraft
+            {
+                Id = excludedId,
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
+                CoverImageId = "coverImageId"
+            },
+            new CompetitiveEventDraft
+            {
+                Id = Guid.NewGuid(),
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Another Test Event" },
+                CoverImageId = "coverImageId2"
+            }
+        };
+        var searchResult = new SearchResult<CompetitiveEventDraftViewCardDto>
+        {
+            Entities = new[] { drafts.FirstOrDefault(x => x.Id != excludedId).ToCardDto() },
+            TotalAmount = 1
+        };
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
+            .ReturnsAsync(searchResult.TotalAmount);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns(drafts.AsTestAsyncEnumerableQuery);
 
-        [Test]
+        // Act
+        var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
+        Assert.AreEqual(1, result.TotalAmount);
+        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);
+    }
+
+    #endregion GetByProviderId
+
+    #region GetCompetitiveEventDraftByIdMapped
+
+    [Test]
     public async Task GetCompetitiveEventDraftByIdMapped_ReturnsNull_IfDraftDoesNotExist()
     {
         // Arrange

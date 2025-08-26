@@ -384,6 +384,26 @@ public class CompetitiveEventServiceTests
         Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
     }
 
+    [Test]
+    public async Task GetByProviderId_WhenFilterContainsExcludedId_ReturnsValidResult()
+    {
+        // Arrange
+        var filter = new CompetitiveEventFilterTitle
+        {
+            ExcludedId = firstId
+        };
+        var expected = CompetitiveEvents()
+            .Where(x => x.OrganizerOfTheEventId == firstProviderId && x.Id != firstId);
+
+        // Act
+        var result = await service.GetByProviderId(firstProviderId, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result.Entities);
+        Assert.AreEqual(expected.Count(), result.TotalAmount);
+        Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
     #endregion
 
     private void SeedDatabase()
