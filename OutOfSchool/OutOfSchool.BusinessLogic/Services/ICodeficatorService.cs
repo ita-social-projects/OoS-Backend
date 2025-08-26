@@ -54,6 +54,15 @@ public interface ICodeficatorService
     /// <returns>The task result contains a <see cref="List{TResult}"/> that contains subsettlements ids.</returns>
     public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
 
-    public Task<string> GetCodeById(long id); // add comments later
+    /// <summary>
+    /// Retrieves the  Codeficator Code  associated with the specified Codeficator's id.
+    /// </summary>
+    /// <remarks>
+    /// The returned code follows the standard format, e.g., "UA46000000000026241".
+    /// </remarks>
+    /// <param name="id">The Codeficator's id</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the code as a string if found;
+    /// otherwise, <see langword="null"/>.</returns>
+    public Task<string?> GetCodeById(long id);
 
 }

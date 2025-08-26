@@ -99,7 +99,8 @@ public class CodeficatorService(ICodeficatorRepository codeficatorRepository) : 
         return result;
     }
 
-    public async Task<string> GetCodeById(long id)
+    /// <inheritdoc/>
+    public async Task<string?> GetCodeById(long id)
     {
         var entity = await codeficatorRepository.GetById(id).ConfigureAwait(false);
         return entity?.Code;
