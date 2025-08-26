@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
@@ -272,7 +271,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/competitions-drafts")]
-    public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] CompetitiveEventFilterTitle filter) =>
+    public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] CompetitiveEventDraftFilterTitle filter) =>
         await competitiveEventDraftService.GetByProviderId(providerId, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
