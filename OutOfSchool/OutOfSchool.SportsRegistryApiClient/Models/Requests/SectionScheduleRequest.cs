@@ -1,5 +1,6 @@
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
@@ -19,21 +20,22 @@ public class SectionScheduleRequest : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // time vaidation
-        if (TimeSpan.TryParse(SectionScheduleTimeFrom, out var timeFrom) &&
-            TimeSpan.TryParse(SectionScheduleTimeTo, out var timeTo))
-        {
-            if (timeFrom >= timeTo)
-            {
-                yield return new ValidationResult(
-                    $"SectionScheduleTimeFrom '{SectionScheduleTimeFrom}' must be before SectionScheduleTimeTo '{SectionScheduleTimeTo}' in schedule entry.",
-                    new[] { nameof(SectionScheduleTimeFrom), nameof(SectionScheduleTimeTo) });
-            }
-        }
-        else 
+        var culture = CultureInfo.InvariantCulture;
+
+        bool parsedFrom = TimeSpan.TryParse(SectionScheduleTimeFrom, culture, out var timeFrom);
+        bool parsedTo = TimeSpan.TryParse(SectionScheduleTimeTo, culture, out var timeTo);
+
+        if (!parsedFrom || !parsedTo)
         {
             yield return new ValidationResult(
                      $"Invalid time format for SectionScheduleTimeFrom '{SectionScheduleTimeFrom}' or SectionScheduleTimeTo '{SectionScheduleTimeTo}'. Expected format is HH:mm:ss.",
                      new[] { nameof(SectionScheduleTimeFrom), nameof(SectionScheduleTimeTo) });
+        }
+        if (timeFrom >= timeTo)
+        {
+            yield return new ValidationResult(
+                $"SectionScheduleTimeFrom '{SectionScheduleTimeFrom}' must be before SectionScheduleTimeTo '{SectionScheduleTimeTo}' in schedule entry.",
+                new[] { nameof(SectionScheduleTimeFrom), nameof(SectionScheduleTimeTo) });
         }
     }
 }

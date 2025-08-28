@@ -65,7 +65,6 @@ public class WorkshopDraftServiceTests
     private Mock<ISportsRegistryProviderService> sportRegistryProviderServiceMock;
     private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
-    private string userId;
     private Guid ministryOfSportId;
     private Guid institutionHierarchyId;
 
@@ -118,7 +117,6 @@ public class WorkshopDraftServiceTests
                 BaseImageUrl = "https://replace_me.com/images/"
             });
 
-        userId = "someUserId";
         service = new WorkshopDraftService(
                    logger.Object,
                    sportRegistryProviderServiceMock.Object,
@@ -486,8 +484,6 @@ public class WorkshopDraftServiceTests
             WorkshopDraftContent = new WorkshopDraftContent
             {
                 InstitutionHierarchyId = institutionHierarchyId,
-                //IsChampionPath = true, should be set in service logic
-                //WorkshopType = WorkshopType.Section
             },
             Teachers = new List<TeacherDraft>()
         };
@@ -557,8 +553,7 @@ public class WorkshopDraftServiceTests
             Id = updateDto.Id,
             WorkshopDraftContent = new WorkshopDraftContent
             {
-                InstitutionHierarchyId = institutionHierarchyId,
-                // service sets IsChampionPath to false and WorkshopType to Workshop
+                InstitutionHierarchyId = institutionHierarchyId, // service sets IsChampionPath to false and WorkshopType to Workshop
             },
             Teachers = new List<TeacherDraft>()
         };
@@ -654,7 +649,6 @@ public class WorkshopDraftServiceTests
     #endregion
 
     #region Approve
-    // [Ignore("Ignoring for now, may be not need this")]
     [Test]
     public async Task Approve_WhenWorkshopIdIsNull_ShouldTryToCreateNewWorkshopAndDeleteDraft()
     {
@@ -723,8 +717,8 @@ public class WorkshopDraftServiceTests
     [Test]
     public async Task Approve_WhenInstitutionIsNotMinistry_ShouldNotCallRegisterSection()
     {
+        // Arrange: create draft with a provider that is NOT the Ministry
         var workshopDraft = CreatePendingModerationDraft();
-
         workshopDraft.Provider = new Provider
         {
             Institution = new Institution
@@ -732,19 +726,14 @@ public class WorkshopDraftServiceTests
                 Id = Guid.NewGuid() // new Guid, not equal to ministryOfSportId
             }
         };
-
         SetupDraftRepo(workshopDraft);
 
-        // Act & Assert
-        workshopServiceCombinerV2Moq
-            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
-            .Returns(Task.FromResult(new WorkshopResultDto()));
+        // Act
+        await service.Approve(workshopDraft.Id);
 
-        Assert.DoesNotThrowAsync(async () =>
-            await service.Approve(workshopDraft.Id).ConfigureAwait(false));
-
+        // Assert
         sportRegistryProviderServiceMock.Verify(x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()), Times.Never);
-
+       
         workshopDraftRepoMoq.VerifyAll();
     }
 
@@ -928,7 +917,7 @@ public class WorkshopDraftServiceTests
         workshopServiceCombinerV2Moq.VerifyAll();
         workshopDraftRepoMoq.VerifyAll();
 
-        // Перевіряємо, що registry взагалі НЕ викликався
+        // Verify that registry was NOT called at all
         sportRegistryProviderServiceMock.Verify(
             x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()),
             Times.Never

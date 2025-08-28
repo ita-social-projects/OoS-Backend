@@ -1,6 +1,7 @@
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Validators;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
@@ -136,8 +137,23 @@ public class SportsSectionPostRequest : IValidatableObject
         }
 
         // validate section practice period dates
-        if (DateTime.TryParseExact(SectionPracticePeriodDateFrom, "dd:MM", null, System.Globalization.DateTimeStyles.None, out var dateFrom) &&
-            DateTime.TryParseExact(SectionPracticePeriodDateTo, "dd:MM", null, System.Globalization.DateTimeStyles.None, out var dateTo))
+        var culture = CultureInfo.InvariantCulture;
+
+        bool isValidStart = DateTime.TryParseExact(
+            SectionPracticePeriodDateFrom,
+            "dd:MM",
+            culture,
+            DateTimeStyles.None,
+            out var dateFrom);
+
+        bool isValidEnd = DateTime.TryParseExact(
+            SectionPracticePeriodDateTo,
+            "dd:MM",
+            culture,
+            DateTimeStyles.None,
+            out var dateTo);
+
+        if (isValidStart && isValidEnd)
         {
             if (dateFrom > dateTo)
             {
@@ -146,6 +162,5 @@ public class SportsSectionPostRequest : IValidatableObject
                     new[] { nameof(SectionPracticePeriodDateFrom), nameof(SectionPracticePeriodDateTo) });
             }
         }
-
     }
 }

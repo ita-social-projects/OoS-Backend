@@ -1445,7 +1445,10 @@ public class WorkshopDraftService(
             {
                 var createdRegistryId = success.ResultVariables.SectionId;
                 draft.WorkshopDraftContent.MinsportSectionId = createdRegistryId;
-                logger.LogInformation($"Workshop draft was successfully synced to Sports Registry. ID of created workshop in sport registry: {createdRegistryId}");
+                logger.LogInformation(
+                    "Workshop draft was successfully synced to Sports Registry. DraftId={DraftId}, CreatedSectionId={SectionId}",
+                    draft.Id,
+                    createdRegistryId);
                 return true;
             }
         );

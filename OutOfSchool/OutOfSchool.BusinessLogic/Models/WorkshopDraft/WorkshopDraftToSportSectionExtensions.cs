@@ -6,13 +6,42 @@ using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Diagnostics.CodeAnalysis;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
+
+// Extension methods to convert WorkshopDraft to DTO for Sports Registry
 public static class WorkshopDraftToSportSectionExtensions
 {
+    // Maximum number of students allowed per section according to Ministry of Sport API
+    private const int MinSportMaxStudentsLimit = 1000;
+
+    // Converts WorkshopDraft into SportsSectionPostRequest DTO for sending to the Sports Registry.
     public static SportsSectionPostRequest ToSportSectionPostRequest(this OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft draft, [NotNull] string baseImageUrl)
     {
         if (string.IsNullOrWhiteSpace(baseImageUrl)) throw new ArgumentException("Base image URL is required.", nameof(baseImageUrl));
-        var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft.WorkshopDraftContent));
+        var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft), "WorkshopDraftContent cannot be null");
+
+        // Pick the default contact from draft content
         var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
+
+        // Extract phones, filter invalid, remove duplicates
+        var phones = defaultContact?.Phones?
+            .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Distinct()
+            .ToList() ?? new();
+
+        if (phones.Count == 0)
+            throw new ArgumentException("At least one phone number is required for the default contact.", nameof(draft));
+
+        var registrationFlow = content.EnrollmentProcedureDescription;
+        if (string.IsNullOrWhiteSpace(registrationFlow))
+            throw new ArgumentException("EnrollmentProcedureDescription (SectionRegistrationFlow) is required.", nameof(draft));
+
+        var email = defaultContact?
+                .Emails?
+                .FirstOrDefault()?
+                .Address
+                ?? throw new ArgumentException("Default contact email is required.", nameof(draft));
+        
         return new SportsSectionPostRequest
         {
             OrganizationCode = draft.Provider?.Edrpou ?? throw new ArgumentException("Provider is required.", nameof(draft)),
@@ -30,17 +59,11 @@ public static class WorkshopDraftToSportSectionExtensions
 
             SectionDescription = string.Join("\n", content.WorkshopDescriptionItems.Select(x => x.Description)),
 
-            SectionRegistrationFlow = content.EnrollmentProcedureDescription,
+            SectionRegistrationFlow = registrationFlow,
 
-            SectionPhones = defaultContact?.Phones?
-                .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
-                .Distinct().ToList() ?? new(),
+            SectionPhones = phones,
 
-            SectionEmail = defaultContact?
-                .Emails?
-                .FirstOrDefault()?
-                .Address
-                ?? throw new ArgumentException("Default contact email is required.", nameof(draft)),
+            SectionEmail =email,
 
             SectionRegistrationFormUrl = "https://forms.example.com/football-registration", // replace with actual URL if available
             SectionUrl = defaultContact?.SocialNetworks
@@ -59,7 +82,7 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionPracticeCost = content.Price,
 
             SectionMaxStudentsAmount = content.AvailableSeats == uint.MaxValue
-            ? 1000 : Math.Min((int)content.AvailableSeats, 1000),
+            ? MinSportMaxStudentsLimit : Math.Min((int)content.AvailableSeats, MinSportMaxStudentsLimit),
 
             SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId)
             ? null
@@ -68,8 +91,8 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl),
             SectionTrainers = [], // TODO: make mapping when teachers will be added to the draft
 
-            SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
-            SectionPracticePeriodDateTo = content.StudyPeriodEndDate.ToString("dd':'MM", CultureInfo.InvariantCulture),
+            SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString(@"dd\:MM", CultureInfo.InvariantCulture),
+            SectionPracticePeriodDateTo = content.StudyPeriodEndDate.ToString(@"dd\:MM", CultureInfo.InvariantCulture),
 
             SectionSchedule = content.DateTimeRanges?
             .SelectMany(r => (r.Workdays ?? Enumerable.Empty<DaysBitMask>())
@@ -82,7 +105,10 @@ public static class WorkshopDraftToSportSectionExtensions
             }))).ToList() ?? new(),
         };
     }
-    public static SectionPracticeFormat ToSectionPracticeFormat(this FormOfLearning formOfLearning)
+
+   
+    // Maps FormOfLearning enum to external SectionPracticeFormat enum.
+    private static SectionPracticeFormat ToSectionPracticeFormat(this FormOfLearning formOfLearning)
     {
         return formOfLearning switch
         {
@@ -92,11 +118,16 @@ public static class WorkshopDraftToSportSectionExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(formOfLearning), formOfLearning, "Unsupported learning format. Must be Online, Offline or Mixed."),
         };
     }
-    public static IEnumerable<DaysBitMask> DecomposeFlags(DaysBitMask flags)
+
+
+    // Decomposes a DaysBitMask flag into individual days.
+    private static IEnumerable<DaysBitMask> DecomposeFlags(DaysBitMask flags)
     {
         return Enum.GetValues<DaysBitMask>()
             .Where(d => d != DaysBitMask.None && flags.HasFlag(d));
     }
+
+    // Combines a base URL and an image ID into a single valid URL, handling slashes.
     private static string CombineImageUrl(string baseUrl, string imageId)
     {
         var safeBase = (baseUrl ?? string.Empty).Trim().TrimEnd('/');
@@ -106,6 +137,8 @@ public static class WorkshopDraftToSportSectionExtensions
         if (safeId.Length == 0) return safeBase; // "base/" no return 
         return $"{safeBase}/{safeId}";
     }
+
+    // Maps a collection of images to their public URLs using the base URL.
     private static List<string> MapSectionPhotos<T>(IEnumerable<Image<T>> images, string baseUrl)
     {
         if (images == null) return new();

@@ -32,7 +32,9 @@ public class SportsRegistryProviderService : ISportsRegistryProviderService
         }
 
         logger.LogInformation(
-            $"Registering section in Sports Registry. With organization code: ={request.OrganizationCode}");
+            "Registering section in Sports Registry. With organization code: {OrganizationCode}",
+            request.OrganizationCode);
+        
         var result = await apiService.CreateSectionAsync(request).ConfigureAwait(false);
 
         return result.Match<Either<ErrorResponse, SectionCreateResponse>>(

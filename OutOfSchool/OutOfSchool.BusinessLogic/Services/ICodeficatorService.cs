@@ -55,7 +55,7 @@ public interface ICodeficatorService
     public Task<IEnumerable<long>> GetAllChildrenIdsByParentIdAsync(long catottgId);
 
     /// <summary>
-    /// Retrieves the  Codeficator Code  associated with the specified Codeficator's id.
+    /// Retrieves the  Codeficator code  associated with the specified Codeficator id.
     /// </summary>
     /// <remarks>
     /// The returned code follows the standard format, e.g., "UA46000000000026241".

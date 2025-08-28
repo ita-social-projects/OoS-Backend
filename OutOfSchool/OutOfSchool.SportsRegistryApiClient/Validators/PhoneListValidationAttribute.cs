@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 namespace OutOfSchool.SportsRegistryApiClient.Validators;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class PhoneListValidationAttribute : ValidationAttribute
 {
     override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -12,7 +13,7 @@ public class PhoneListValidationAttribute : ValidationAttribute
         }
 
         var invalidPhones = phoneNumbers
-           .Where(p => !Regex.IsMatch(p, @"^\d{10,12}$"))
+           .Where(p => p.Length < 10 || p.Length > 12 || p.Any(c => !char.IsDigit(c)))
            .ToList();
 
         if (invalidPhones.Any())
