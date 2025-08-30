@@ -124,7 +124,7 @@ public class WorkshopDraftService(
             workshopV2Dto)
            .ConfigureAwait(false);
 
-        if (fromWorkshop)
+        if (fromWorkshop && workshopV2Dto.ImageIds?.Any() == true)
         {
             createdDraftWithAssociatedTeachers.Images ??= [];
             createdDraftWithAssociatedTeachers.Images.AddRange(
