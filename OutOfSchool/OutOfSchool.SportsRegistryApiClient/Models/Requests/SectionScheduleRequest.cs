@@ -6,7 +6,7 @@ namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
 public class SectionScheduleRequest : IValidatableObject
 {
-    [Required(ErrorMessage = "sectionScheduleWeekday is required.")]
+    [EnumDataType(typeof(Weekday), ErrorMessage = "sectionScheduleWeekday must be a valid enum value.")]
     public Weekday SectionScheduleWeekday { get; set; }
 
     [Required(ErrorMessage = "sectionScheduleTimeFrom is required.")]
@@ -19,6 +19,14 @@ public class SectionScheduleRequest : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        // weekday validation
+        if (!Enum.IsDefined(typeof(Weekday), SectionScheduleWeekday))
+        {
+            yield return new ValidationResult(
+            "sectionScheduleWeekday must be specified.",
+            new[] { nameof(SectionScheduleWeekday) });
+        }
+
         // time vaidation
         var culture = CultureInfo.InvariantCulture;
 
@@ -30,6 +38,7 @@ public class SectionScheduleRequest : IValidatableObject
             yield return new ValidationResult(
                      $"Invalid time format for SectionScheduleTimeFrom '{SectionScheduleTimeFrom}' or SectionScheduleTimeTo '{SectionScheduleTimeTo}'. Expected format is HH:mm:ss.",
                      new[] { nameof(SectionScheduleTimeFrom), nameof(SectionScheduleTimeTo) });
+            yield break; // No need to continue if parsing failed
         }
         if (timeFrom >= timeTo)
         {

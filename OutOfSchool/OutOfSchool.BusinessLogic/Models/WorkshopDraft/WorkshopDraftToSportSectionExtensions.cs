@@ -20,10 +20,11 @@ public static class WorkshopDraftToSportSectionExtensions
         var content = draft.WorkshopDraftContent ?? throw new ArgumentNullException(nameof(draft), "WorkshopDraftContent cannot be null");
 
         // Pick the default contact from draft content
-        var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault);
+        var defaultContact = content.Contacts?.FirstOrDefault(c => c.IsDefault)
+              ?? throw new ArgumentException("Default contact is required.", nameof(draft)); ;
 
         // Extract phones, filter invalid, remove duplicates
-        var phones = defaultContact?.Phones?
+        var phones = defaultContact.Phones?
             .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Distinct()
@@ -36,7 +37,7 @@ public static class WorkshopDraftToSportSectionExtensions
         if (string.IsNullOrWhiteSpace(registrationFlow))
             throw new ArgumentException("EnrollmentProcedureDescription (SectionRegistrationFlow) is required.", nameof(draft));
 
-        var email = defaultContact?
+        var email = defaultContact
                 .Emails?
                 .FirstOrDefault()?
                 .Address
@@ -54,8 +55,8 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionPozashkillyaModerationStatus = ModerationStatus.ACTIVE,
 
             SectionAddressLocalityDictIdCode = draft.CATOTTGId.ToString(),
-            SectionAddressStreet = defaultContact?.Address?.Street ?? String.Empty,
-            SectionAddressHouse = defaultContact?.Address?.BuildingNumber ?? String.Empty,
+            SectionAddressStreet = defaultContact.Address?.Street ?? String.Empty,
+            SectionAddressHouse = defaultContact.Address?.BuildingNumber ?? String.Empty,
 
             SectionDescription = string.Join("\n", content.WorkshopDescriptionItems.Select(x => x.Description)),
 
@@ -66,13 +67,13 @@ public static class WorkshopDraftToSportSectionExtensions
             SectionEmail =email,
 
             SectionRegistrationFormUrl = "https://forms.example.com/football-registration", // replace with actual URL if available
-            SectionUrl = defaultContact?.SocialNetworks
+            SectionUrl = defaultContact.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
 
-            SectionFacebookUrl = defaultContact?.SocialNetworks
+            SectionFacebookUrl = defaultContact.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
 
-            SectionInstagramUrl = defaultContact?.SocialNetworks
+            SectionInstagramUrl = defaultContact.SocialNetworks
             .FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
 
             SectionPracticeFormat = content.FormOfLearning.ToSectionPracticeFormat(), // ONLINE / OFFLINE / HYBRID

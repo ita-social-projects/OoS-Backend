@@ -1,3 +1,4 @@
+using OutOfSchool.Common;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Validators;
 using System.ComponentModel.DataAnnotations;
@@ -50,7 +51,7 @@ public class SportsSectionPostRequest : IValidatableObject
     public List<string> SectionPhones { get; set; } = new();
 
     [Required(ErrorMessage = "sectionEmail is required.")]
-    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [RegularExpression(Constants.EmailRegexViewModel, ErrorMessage = "Invalid email format")]
     public string SectionEmail { get; set; } = null!;
 
     [Required(ErrorMessage = "sectionRegistrationFormUrl is required.")]
@@ -125,8 +126,8 @@ public class SportsSectionPostRequest : IValidatableObject
         if (SectionPhotos != null && SectionPhotos.Any())
         {
             var invalidUrls = SectionPhotos
-                .Where(url => !Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                .ToList();
+                .Where(url => !(Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)));
 
             if (invalidUrls.Any())
             {

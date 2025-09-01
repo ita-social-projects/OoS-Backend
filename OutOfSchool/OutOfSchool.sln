@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
@@ -57,6 +56,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OutOfSchool.ExternalFileStore", "OutOfSchool.ExternalFileStore", "{9DEBC250-8BF6-4D64-97E0-B3757AEDD9A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.SportsRegistryApiClient", "OutOfSchool.SportsRegistryApiClient\OutOfSchool.SportsRegistryApiClient.csproj", "{60DB8977-C8A0-400A-BB71-ECAC406CCC63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.SportRegistryApiClient.Tests", "OutOfSchool.SportRegistryApiClient.Tests\OutOfSchool.SportRegistryApiClient.Tests.csproj", "{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +153,10 @@ Global
 		{60DB8977-C8A0-400A-BB71-ECAC406CCC63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60DB8977-C8A0-400A-BB71-ECAC406CCC63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60DB8977-C8A0-400A-BB71-ECAC406CCC63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -161,8 +166,9 @@ Global
 		{858FFC94-4A9B-4A91-917E-F672455F1B32} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 		{EC5A5CE0-1AE6-48DA-810B-A7DC6DBCDCE4} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 		{13875C12-6837-4742-88F9-C3401C5A2D85} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
-		{27369F06-7D23-4833-992C-A10F99B5D431} = {9DEBC250-8BF6-4D64-97E0-B3757AEDD9A4}
 		{8F72405A-E4A0-434E-868B-DAEA8F1394BA} = {9DEBC250-8BF6-4D64-97E0-B3757AEDD9A4}
+		{27369F06-7D23-4833-992C-A10F99B5D431} = {9DEBC250-8BF6-4D64-97E0-B3757AEDD9A4}
+		{026F33D2-B9F0-4B3C-A5DA-59E94FC6CD6D} = {BF649E8B-4D72-4762-9A59-C8D3B4AF3A30}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {759AF463-9F34-412E-9FC1-7B3894D79E59}

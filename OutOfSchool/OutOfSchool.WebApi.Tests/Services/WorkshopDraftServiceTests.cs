@@ -864,8 +864,6 @@ public class WorkshopDraftServiceTests
             .Returns(Task.FromResult(new WorkshopResultDto()))
             .Verifiable();
 
-        SetupDraftRepo(workshopDraft);
-
         // Act
         await service.Approve(workshopDraft.Id);
 
