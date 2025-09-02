@@ -686,9 +686,11 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
-            .Verifiable(Times.Once);
-
+        workshopServiceCombinerV2Moq
+           .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
+           .ReturnsAsync(Result<WorkshopResultDto>.Success(new WorkshopResultDto()))
+           .Verifiable(Times.Once);
+        
         // Act
         await service.Approve(workshop.Id).ConfigureAwait(false);
 
@@ -727,12 +729,16 @@ public class WorkshopDraftServiceTests
         };
         SetupDraftRepo(workshopDraft);
 
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(Task.FromResult(new WorkshopResultDto()));
+
         // Act
         await service.Approve(workshopDraft.Id);
 
         // Assert
         sportRegistryProviderServiceMock.Verify(x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()), Times.Never);
-       
+
         workshopDraftRepoMoq.VerifyAll();
     }
 
@@ -781,7 +787,7 @@ public class WorkshopDraftServiceTests
         var workshopDraft = CreatePendingModerationDraft();
 
         AddSportMinistryProvider(workshopDraft);
-        
+
         AddDefaultContact(workshopDraft);
 
         SetupDraftRepo(workshopDraft);
@@ -830,6 +836,9 @@ public class WorkshopDraftServiceTests
             await service.Approve(workshopDraft.Id));
 
         Assert.That(ex.Message, Does.Contain("SportRegistryIdCode is missing"));
+        sportRegistryProviderServiceMock.Verify(
+            x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()),
+            Times.Never);
     }
 
     [Test]
@@ -875,6 +884,11 @@ public class WorkshopDraftServiceTests
 
         // check that draft was deleted
         workshopDraftRepoMoq.VerifyAll();
+
+        // draft content enriched with created section id
+        Assert.AreEqual(
+            registryResponse.ResultVariables.SectionId,
+            workshopDraft.WorkshopDraftContent.MinsportSectionId);
     }
 
     [Test]
@@ -887,6 +901,7 @@ public class WorkshopDraftServiceTests
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
         workshopDraft.Id = Guid.NewGuid();
+        workshopDraft.Provider = new Provider { InstitutionId = Guid.NewGuid() }; // not Ministry
 
         workshopDraftRepoMoq
             .Setup(x => x.GetByIdWithDetails(
