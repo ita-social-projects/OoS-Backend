@@ -45,7 +45,7 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
             .OnDelete(DeleteBehavior.Restrict);
         
         builder.Property(x => x.MinsportSectionId)
-            .HasColumnType("UUID(16)")
+            .HasColumnType("UUID")
             .IsRequired(false);
     }
 }
