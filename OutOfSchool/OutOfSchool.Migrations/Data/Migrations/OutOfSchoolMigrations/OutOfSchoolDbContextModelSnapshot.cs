@@ -3970,6 +3970,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("MinAge")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("MinsportSectionId")
+                        .HasColumnType("UUID(16)");
+
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(36)
                         .HasColumnType("char");

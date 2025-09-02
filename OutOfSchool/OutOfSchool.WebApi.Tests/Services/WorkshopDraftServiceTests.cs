@@ -8,7 +8,6 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models;
-using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Models.WorkshopDraft;
