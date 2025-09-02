@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Models.CompetitiveEvents;
+﻿using OutOfSchool.Services.Models.CompetitiveEvents;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -20,6 +20,17 @@ public class CompetitiveEventDescriptionItemDto
 
 public static class CompetitiveEventDescriptionItemDtoExtensions
 {
+    public static CompetitiveEventDescriptionItem ToDraft(this CompetitiveEventDescriptionItemDto dto) => new()
+    {
+        Id = dto.Id,
+        SectionName = dto.SectionName,
+        Description = dto.Description,
+        CompetitiveEventId = dto.CompetitiveEventId,
+    };
+    
+    public static List<CompetitiveEventDescriptionItem> ToDraft(this IEnumerable<CompetitiveEventDescriptionItemDto> list)
+        => list.MapToList(ToDraft);
+
     public static CompetitiveEventDescriptionItem SetToModel(this CompetitiveEventDescriptionItemDto dto, CompetitiveEventDescriptionItem model)
     {
         model.SectionName = dto.SectionName;
@@ -50,5 +61,5 @@ public static class CompetitiveEventDescriptionItemDtoExtensions
         };
 
     public static List<CompetitiveEventDescriptionItemDto> ToDto(this IEnumerable<CompetitiveEventDescriptionItem> list)
-        => list.MapToList(ToDto);
+        => list.MapToList(ToDto);    
 }

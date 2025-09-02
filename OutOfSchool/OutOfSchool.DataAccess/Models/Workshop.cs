@@ -75,13 +75,6 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     [MaxLength(500)]
     public string CompetitiveSelectionDescription { get; set; }
 
-    [Required(ErrorMessage = "Provider title is required")]
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
-    public string ProviderTitle { get; set; } = string.Empty;
-
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
-    public string ProviderTitleEn { get; set; } = string.Empty;
-
     public OwnershipType ProviderOwnership { get; set; }
 
     [MaxLength(Constants.MaxKeywordsLength)]

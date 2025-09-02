@@ -22,8 +22,8 @@ public static class WorkshopProviderViewCardExtensions
         return new()
         {
             Id = model.Id,
-            ProviderTitle = model.ProviderTitle,
-            ProviderTitleEn = model.ProviderTitleEn,
+            ProviderTitle = model.Provider?.FullTitle,
+            ProviderTitleEn = model.Provider?.FullTitleEn,
             ProviderOwnership = model.ProviderOwnership,
             Title = model.Title,
             ShortTitle = model.ShortTitle,

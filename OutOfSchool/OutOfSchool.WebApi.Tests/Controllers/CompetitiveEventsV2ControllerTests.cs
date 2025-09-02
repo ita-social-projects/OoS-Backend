@@ -65,7 +65,7 @@ public class CompetitiveEventsV2ControllerTests
     public async Task GetByProviderId_ReturnsOk_WhenResultsExist()
     {
         var id = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
         var resultDto = new SearchResult<CompetitiveEventViewCardDto> { TotalAmount = 1, Entities = new List<CompetitiveEventViewCardDto> { new() } };
 
         competitiveEventServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(resultDto);
@@ -79,7 +79,7 @@ public class CompetitiveEventsV2ControllerTests
     public async Task GetByProviderId_ReturnsNoContent_WhenNoResultsFound()
     {
         var id = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
         var emptyResult = new SearchResult<CompetitiveEventViewCardDto> { TotalAmount = 0, Entities = new List<CompetitiveEventViewCardDto>() };
 
         competitiveEventServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(emptyResult);

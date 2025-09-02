@@ -70,12 +70,8 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<CompetitiveEventViewCardDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
-    {
-        var competitiveEventsCards = await competitiveEventService.GetByProviderId(id, filter).ConfigureAwait(false);
-
-        return this.SearchResultToOkOrNoContent(competitiveEventsCards);
-    }
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] CompetitiveEventFilterTitle filter) =>
+        await competitiveEventService.GetByProviderId(id, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// Get CompetitiveEvents cards by list of Ids.

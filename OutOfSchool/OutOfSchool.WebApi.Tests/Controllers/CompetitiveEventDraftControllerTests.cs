@@ -690,7 +690,7 @@ public class CompetitiveEventDraftControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventDraftFilterTitle();
         var resultDto = new SearchResult<CompetitiveEventDraftViewCardDto> { TotalAmount = 1, Entities = new List<CompetitiveEventDraftViewCardDto> { new() } };
         competitiveEventDraftServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(resultDto);
 
@@ -706,7 +706,7 @@ public class CompetitiveEventDraftControllerTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventDraftFilterTitle();
         var emptyResult = new SearchResult<CompetitiveEventDraftViewCardDto> { TotalAmount = 0, Entities = new List<CompetitiveEventDraftViewCardDto>() };
 
         competitiveEventDraftServiceMock.Setup(s => s.GetByProviderId(id, filter)).ReturnsAsync(emptyResult);

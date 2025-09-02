@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -23,8 +18,14 @@ using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -39,9 +40,10 @@ public class CompetitiveEventDraftServiceTests
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>> mockImageService;
     private Mock<ICodeficatorRepository> mockCodeficatorRepository;
     private Mock<IChangesLogService> mockChangesLogService;
+    private Mock<IEntityRepositorySoftDeleted<long, SubDirection>> mockSubDirectionRepository;
 
 
-[SetUp]
+    [SetUp]
     public void SetUp()
     {
         mockLogger = new Mock<ILogger<CompetitiveEventDraftService>>();
@@ -51,6 +53,7 @@ public class CompetitiveEventDraftServiceTests
         mockImageService = new Mock<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
         mockCodeficatorRepository = new Mock<ICodeficatorRepository>();
         mockChangesLogService = new Mock<IChangesLogService>();
+        mockSubDirectionRepository = new Mock<IEntityRepositorySoftDeleted<long, SubDirection>>();
 
         competitiveEventDraftService = new CompetitiveEventDraftService(
             mockLogger.Object,
@@ -63,7 +66,8 @@ public class CompetitiveEventDraftServiceTests
             new Mock<IRegionAdminService>().Object,
             new Mock<IMinistryAdminService>().Object,
             new Mock<ICodeficatorService>().Object,
-            new Mock<ISearchStringService>().Object);
+            new Mock<ISearchStringService>().Object,
+            mockSubDirectionRepository.Object);
     }
 
     #region Create
@@ -75,7 +79,7 @@ public class CompetitiveEventDraftServiceTests
         CompetitiveEventV2Dto dto = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>( async () => await competitiveEventDraftService.Create(dto));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await competitiveEventDraftService.Create(dto));
     }
 
     [Test]
@@ -99,6 +103,18 @@ public class CompetitiveEventDraftServiceTests
         {
             new() { Id = 1, Name = "Test Codeficator" }
         };
+
+        var directionSubDirectionIds = new List<DirectionSubDirectionIdsDto>
+        {
+            new() { DirectionId = 14, SubDirectionId = 54  }
+        };
+
+        var subDirections = new List<SubDirection>
+        {
+            new() { Id = 54, DirectionId = 14, Description = "description1", IsDeleted = false, Title = "title1"  },
+            new() { Id = 9, DirectionId = 10, Description = "description2", IsDeleted = true, Title = "title2"  }
+        };
+
         mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
             .ReturnsAsync((CompetitiveEventDto)null);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
@@ -115,12 +131,21 @@ public class CompetitiveEventDraftServiceTests
             It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(catottgs.AsTestAsyncEnumerableQuery);
 
+        mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
+            It.IsAny<Expression<Func<SubDirection, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted));
+
         // Act
         var result = await competitiveEventDraftService.Create(dto);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<CompetitiveEventDraftResultDto>(result);
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds, Has.Count.EqualTo(1));
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds
+              .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
     }
 
     #endregion
@@ -253,9 +278,11 @@ public class CompetitiveEventDraftServiceTests
         };
         var coverImageResult = new ImageChangingResult();
         var imagesResult = new MultipleImageChangingResult();
-        var expectedResult = Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>.Failed(new OperationError() { 
+        var expectedResult = Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>.Failed(new OperationError()
+        {
             Code = "500",
-            Description = "Some error occurred" });
+            Description = "Some error occurred"
+        });
 
         mockCompetitiveEventDraftRepository
             .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
@@ -435,12 +462,13 @@ public class CompetitiveEventDraftServiceTests
     {
         // Arrange
         Guid providerId = Guid.NewGuid();
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventDraftFilterTitle();
         var drafts = new List<CompetitiveEventDraft>
         {
             new CompetitiveEventDraft
             {
                 Id = Guid.NewGuid(),
+                ProviderId = providerId,
                 DraftStatus = CompetitiveEventDraftStatus.Draft,
                 CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
                 CoverImageId = "coverImageId"
@@ -456,9 +484,15 @@ public class CompetitiveEventDraftServiceTests
             .Returns(Task.CompletedTask);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
             .ReturnsAsync(searchResult.TotalAmount);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(filter.From, filter.Size, It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
         var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
@@ -467,6 +501,108 @@ public class CompetitiveEventDraftServiceTests
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
         Assert.AreEqual(1, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetByProviderId_ReturnsSearchResult_WhenFilterContainsSearchText()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        var filter = new CompetitiveEventDraftFilterTitle { SearchText = "test" };
+        var drafts = new List<CompetitiveEventDraft>
+        {
+            new CompetitiveEventDraft
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = providerId,
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
+                CoverImageId = "coverImageId"
+            }
+        };
+        var searchResult = new SearchResult<CompetitiveEventDraftViewCardDto>
+        {
+            Entities = new[] { drafts.FirstOrDefault().ToCardDto() },
+            TotalAmount = 1
+        };
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
+            .ReturnsAsync(searchResult.TotalAmount);
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary < Expression<Func<CompetitiveEventDraft, object>>, SortDirection > sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
+        Assert.AreEqual(1, result.Entities.Count);
+        Assert.AreEqual(result.Entities.First().Title, drafts.First().CompetitiveEventDraftContent.Title);
+    }
+
+    [Test]
+    public async Task GetByProviderId_ReturnsValidResult_WhenFilterHasExcludedId()
+    {
+        // Arrange
+        Guid providerId = Guid.NewGuid();
+        Guid excludedId = Guid.NewGuid();
+        var filter = new CompetitiveEventDraftFilterTitle { ExcludedId = excludedId };
+        var drafts = new List<CompetitiveEventDraft>
+        {
+            new CompetitiveEventDraft
+            {
+                Id = excludedId,
+                ProviderId = providerId,
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Test Event" },
+                CoverImageId = "coverImageId"
+            },
+            new CompetitiveEventDraft
+            {
+                Id = Guid.NewGuid(),
+                ProviderId = providerId,
+                DraftStatus = CompetitiveEventDraftStatus.Draft,
+                CompetitiveEventDraftContent = new CompetitiveEventDraftContent { Title = "Another Test Event" },
+                CoverImageId = "coverImageId2"
+            }
+        };
+        var searchResult = new SearchResult<CompetitiveEventDraftViewCardDto>
+        {
+            Entities = new[] { drafts.FirstOrDefault(x => x.Id != excludedId).ToCardDto() },
+            TotalAmount = 1
+        };
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Count(It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>()))
+            .ReturnsAsync(searchResult.TotalAmount);
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.Get(
+            filter.From,
+            filter.Size,
+            It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
+            Dictionary <Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
+                => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
+
+        // Act
+        var result = await competitiveEventDraftService.GetByProviderId(providerId, filter);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResult<CompetitiveEventDraftViewCardDto>>(result);
+        Assert.AreEqual(1, result.Entities.Count);
+        Assert.AreEqual(result.Entities.First().Title, drafts.First(x => x.Id != excludedId).CompetitiveEventDraftContent.Title);
+        Assert.IsFalse(result.Entities.Any(e => e.CompetitiveEventDraftId == excludedId));
     }
 
     #endregion GetByProviderId
@@ -510,7 +646,7 @@ public class CompetitiveEventDraftServiceTests
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
             .Returns(Task.CompletedTask);
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<CATOTTG,object>>, SortDirection>>()))
+            It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(catottgs.AsTestAsyncEnumerableQuery);
 
         // Act

@@ -104,7 +104,7 @@ public class ChatRoomWorkshopService(
         {
             var chatRooms = await chatRoomRepository.GetByFilter(
                     whereExpression: x => x.Id == id,
-                    includeExpression: crw => crw.Include(crw => crw.Parent).Include(crw => crw.Workshop))
+                    includeExpression: crw => crw.Include(crw => crw.Parent).Include(crw => crw.Workshop).ThenInclude(ws => ws.Provider))
                 .ConfigureAwait(false);
 
             var chatRoom = chatRooms.SingleOrDefault();
@@ -413,7 +413,11 @@ public class ChatRoomWorkshopService(
 
         try
         {
-            var chatRooms = await chatRoomRepository.GetByFilter(r => r.WorkshopId == workshopId && r.ParentId == parentId, $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}").ConfigureAwait(false);
+            var chatRooms = await chatRoomRepository
+            .GetByFilter(
+                r => r.WorkshopId == workshopId && r.ParentId == parentId, 
+                $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)},{nameof(ChatRoomWorkshop.Workshop)}.{nameof(Workshop.Provider)}")
+            .ConfigureAwait(false);
             var chatRoom = chatRooms.SingleOrDefault();
 
             logger.LogDebug(chatRoom is null

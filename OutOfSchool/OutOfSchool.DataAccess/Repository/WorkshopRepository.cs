@@ -55,20 +55,6 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         return await dbSet.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
     }
 
-    public async Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn)
-    {
-        var workshops = db.Workshops.Where(ws => ws.ProviderId == providerId);
-
-        await workshops.ExecuteUpdateAsync(settter => settter
-                .SetProperty(ws => ws.ProviderTitle, providerTitle)
-                .SetProperty(ws => ws.ProviderTitleEn, providerTitleEn))
-            .ConfigureAwait(false);
-
-        await db.SaveChangesAsync();
-
-        return await workshops.ToListAsync();
-    }
-
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
     {
         var workshops = db.Workshops.Where(ws => ws.ProviderId == provider.Id);

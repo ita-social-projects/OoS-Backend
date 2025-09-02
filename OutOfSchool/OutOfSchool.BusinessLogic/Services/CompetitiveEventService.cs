@@ -8,6 +8,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -122,7 +123,7 @@ public class CompetitiveEventService(
     }
 
     /// <inheritdoc/>
-    public async Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<CompetitiveEventViewCardDto>> GetByProviderId(Guid id, CompetitiveEventFilterTitle filter)
     {
         if (id == Guid.Empty)
         {
@@ -134,16 +135,10 @@ public class CompetitiveEventService(
 
         logger.LogDebug("Getting Competitive events by organization started. Looking ProviderId = {Id}.", id);
 
-        filter ??= new ExcludeIdFilter();
-        ValidateExcludedIdFilter(filter);
+        filter ??= new CompetitiveEventFilterTitle();
+        ValidateCompetitiveEventTitleFilter(filter);
 
-        var predicate = PredicateBuilder.True<CompetitiveEvent>();
-        predicate = predicate.And(x => x.OrganizerOfTheEventId == id);
-
-        if (filter.ExcludedId is not null && filter.ExcludedId != Guid.Empty)
-        {
-            predicate = predicate.And(x => x.Id != filter.ExcludedId);
-        }
+        var predicate = BuildPredicate(filter, id);
 
         var competitiveEventCardsCount = await competitiveEventRepository.Count(
             whereExpression: predicate).ConfigureAwait(false);
@@ -173,8 +168,26 @@ public class CompetitiveEventService(
         return await competitiveEventRepository.GetByIds(ids).ConfigureAwait(false);
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
-        => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static Expression<Func<CompetitiveEvent, bool>> BuildPredicate(CompetitiveEventFilterTitle filter, Guid providerId)
+    {
+        var predicate = PredicateBuilder.True<CompetitiveEvent>();
+        predicate = predicate.And(x => x.OrganizerOfTheEventId == providerId);
+
+        if (filter.ExcludedId.HasValue)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            predicate = predicate.And(x => x.Title.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        return predicate;
+    }
+
+    private static void ValidateCompetitiveEventTitleFilter(CompetitiveEventFilterTitle filter)
+        => ModelValidationHelper.ValidateCompetitiveEventTitleFilter(filter);
 
     private async Task ChangeCompetitiveEventDescriptionItems(CompetitiveEvent currentCompetitiveEvent, List<CompetitiveEventDescriptionItemDto> descriptionItemsDtoList)
     {

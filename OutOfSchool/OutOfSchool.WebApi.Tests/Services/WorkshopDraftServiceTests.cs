@@ -42,7 +42,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 
-
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
@@ -332,13 +331,6 @@ public class WorkshopDraftServiceTests
 
         workshopDraftRepoMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft);
-
-        /*tagRepositoryMoq
-            .Setup(x => x.GetByFilter(
-                It.IsAny<Expression<Func<Tag, bool>>>(),
-                It.IsAny<string>(),
-                It.IsAny<Func<IQueryable<Tag>, IQueryable<Tag>>>()))
-            .ReturnsAsync(Enumerable.Empty<Tag>());*/
 
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
             It.IsAny<int>(),
@@ -1050,6 +1042,116 @@ public class WorkshopDraftServiceTests
         // Assert
         workshopDraftRepoMoq.VerifyAll();
         currentUserServiceMoq.VerifyAll();
+        result.Entities.Should().BeEquivalentTo(workshopDraftResponses);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenFilterContainsSearchText_ShouldReturnFilteredEntities()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var numberOfWorkshops = 5;
+        var searchText = "searchText";
+        var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
+        workshops.First().Title = $"Some {searchText} title";
+        foreach (var workshop in workshops)
+        {
+            workshop.ProviderId = providerId;
+        }
+        var workshopV2Dtos = workshops.ToV2Dto();
+        var workshopDrafts = workshopV2Dtos.ToDraft();
+        var workshopDraftResponse = workshopDrafts.First().ToCardDto();
+        institutionHierarchyRepositoryMoq.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
+        Expression<Func<WorkshopDraft, bool>> whereExpr = null;
+        workshopDraftRepoMoq
+                    .Setup(x => x.Count(It.IsAny<Expression<Func<WorkshopDraft, bool>>>()))
+                    .Callback<Expression<Func<WorkshopDraft, bool>>>(p => whereExpr = p)
+                    .ReturnsAsync(() => workshopDrafts.Count(wd => whereExpr.Compile().Invoke(wd)))
+                    .Verifiable(Times.Once);
+        workshopDraftRepoMoq
+                    .Setup(x => x.Get(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+                    .Returns((int skip, int take, Expression<Func<WorkshopDraft, bool>> predicate,
+                    Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection> orderBy)
+                        => workshopDrafts.Where(predicate.Compile()).Skip(skip).Take(take).AsTestAsyncEnumerableQuery())
+                    .Verifiable(Times.Once);
+        var filter = new WorkshopDraftFilterTitle
+        {
+            SearchText = searchText
+        };
+
+        // Act
+        var result = await service.GetByProviderId(providerId, filter).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        result.TotalAmount.Should().Be(1);
+        result.Entities.Should().HaveCount(1);
+        result.Entities.First().Should().BeEquivalentTo(workshopDraftResponse);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenFilterHasExcludedId_ShouldReturnValidResult()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var numberOfWorkshops = 5;
+        var excludedId = Guid.NewGuid();
+        var workshops = WorkshopGenerator.Generate(numberOfWorkshops).WithProvider().WithTeachers();
+        workshops.First().Id = excludedId;
+        foreach (var workshop in workshops)
+        {
+            workshop.ProviderId = providerId;
+        }
+        var workshopV2Dtos = workshops.ToV2Dto();
+        var workshopDrafts = workshopV2Dtos.ToDraft();
+        var workshopDraftResponses = workshopDrafts.Where(x => x.Id != excludedId).ToCardDto();
+        institutionHierarchyRepositoryMoq.Setup(
+            x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<InstitutionHierarchy, object>>, SortDirection>>()))
+            .Returns(new List<InstitutionHierarchy>().AsTestAsyncEnumerableQuery());
+        Expression<Func<WorkshopDraft, bool>> whereExpr = null;
+        workshopDraftRepoMoq
+                    .Setup(x => x.Count(It.IsAny<Expression<Func<WorkshopDraft, bool>>>()))
+                    .Callback<Expression<Func<WorkshopDraft, bool>>>(p => whereExpr = p)
+                    .ReturnsAsync(() => workshopDrafts.Count(wd => whereExpr.Compile().Invoke(wd)))
+                    .Verifiable(Times.Once);
+        workshopDraftRepoMoq
+                    .Setup(x => x.Get(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+                    .Returns((int skip, int take, Expression<Func<WorkshopDraft, bool>> predicate,
+                    Dictionary < Expression<Func<WorkshopDraft, object>>, SortDirection > orderBy)
+                        => workshopDrafts.Where(predicate.Compile()).Skip(skip).Take(take).AsTestAsyncEnumerableQuery())
+                    .Verifiable(Times.Once);
+        var filter = new WorkshopDraftFilterTitle
+        {
+            ExcludedId = excludedId
+        };
+
+        // Act
+        var result = await service.GetByProviderId(providerId, filter).ConfigureAwait(false);
+
+        // Assert
+        workshopDraftRepoMoq.VerifyAll();
+        currentUserServiceMoq.VerifyAll();
+        result.TotalAmount.Should().Be(workshopDraftResponses.Count);
+        result.Entities.Should().HaveCount(workshopDraftResponses.Count);
         result.Entities.Should().BeEquivalentTo(workshopDraftResponses);
     }
     #endregion

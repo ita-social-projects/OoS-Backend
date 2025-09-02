@@ -201,7 +201,8 @@ public class ChangesLogService(
 
         var applications = applicationRepository
             .Get(whereExpression: predicate)
-            .IncludeNavigationPropertyContactsWithCodeficatorHierarchy(a => a.Workshop);
+            .IncludeNavigationPropertyContactsWithCodeficatorHierarchy(a => a.Workshop)
+            .Include(a => a.Workshop.Provider);
 
         var query = changesLog
                 .Join(

@@ -20,11 +20,11 @@ public static class ProviderUpdateDtoExtensions
         model.InstitutionStatusId = dto.InstitutionStatusId;
         model.InstitutionId = dto.InstitutionId;
         model.InstitutionType = dto.InstitutionType;
-        model.ProviderSectionItems = dto.ProviderSectionItems?.ToModel();
         model.UsesOutsourcingServices = dto.UsesOutsourcingServices;
         model.InstitutionCode = dto.InstitutionCode;
         model.IsStructuralUnit = dto.IsStructuralUnit;
         model.IsLocatedInMountainousArea = dto.IsLocatedInMountainousArea;
+        model.ProviderSectionItems = dto.ProviderSectionItems?.SetToModel(model.ProviderSectionItems) ?? model.ProviderSectionItems;
 
         return model;
     }

@@ -1,6 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
@@ -20,6 +19,8 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -35,7 +36,6 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="workshopDraftImagesService">Service for handling images associated with <see cref="WorkshopDraft"/> entities.</param>
 /// <param name="providerService">Service for handling CRUD operations with the <see cref="Provider"/> entity .</param>
 /// <param name="teacherDraftImagesService">Service for managing cover images for <see cref="TeacherDraft"/> entities.</param>
-/// <param name="tagRepository">Repository for the <see cref="Tag"/> entity, used for CRUD operations.</param>
 /// <param name="options">Provides configuration settings for upload concurrency.</param>    
 /// <param name="workshopServicesCombinerV2">Service for managing workshops.</param>
 /// <param name="languageService"> Service for  language managing</param>
@@ -293,7 +293,7 @@ public class WorkshopDraftService(
     {
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
-        var workshopDraft = await GetWorkshopDraftById(id);
+        var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
@@ -378,26 +378,28 @@ public class WorkshopDraftService(
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, WorkshopDraftFilterTitle filter)
     {
         logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
 
         await currentUserService.UserHasRights(new ProviderRights(id), new EmployeeRights(id)).ConfigureAwait(false);
 
-        filter ??= new ExcludeIdFilter();
-        ValidateExcludedIdFilter(filter);
+        filter ??= new WorkshopDraftFilterTitle();
+        ValidateWorkshopDraftTitleFilter(filter);
 
-        var workshopBaseCardsCount = await workshopDraftRepository.Count(whereExpression: x =>
-            filter.ExcludedId == null
-                ? (x.ProviderId == id)
-                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+        var predicate = BuildPredicate(filter, id);
+
+        var workshopBaseCardsCount = await workshopDraftRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                whereExpression: x => filter.ExcludedId == null
-                    ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+                whereExpression: predicate,
+                orderBy: new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>()
+                {
+                    {wd => wd.CreatedAt, SortDirection.Descending},
+                    {wd => wd.ModifiedAt, SortDirection.Descending},
+                }).ToListAsync().ConfigureAwait(false);
 
         var institutionHierarchies = await institutionHierarchyRepository.Get(
                 whereExpression: i => workshopDrafts.Select(wd => wd.WorkshopDraftContent.InstitutionHierarchyId).Contains(i.Id))
@@ -457,16 +459,24 @@ public class WorkshopDraftService(
                 .ConfigureAwait(false);
         }
 
+        var searchTerms = !string.IsNullOrWhiteSpace(filter.SearchString) ? searchStringService.SplitSearchString(filter.SearchString)
+               .Where(s => !string.IsNullOrWhiteSpace(s))
+               .Distinct()
+               .ToArray() : Array.Empty<string>();
+
         var predicate = PredicateBuildForAdminds(
             filter,
             adminInstitutionId,
             allowedSettlementIdsForAdmin,
-            subSettlementsIdsByFilter);
+            subSettlementsIdsByFilter,
+            searchTerms);
+        var orderBy = BuildSortOrder(searchTerms);
 
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                whereExpression: predicate)
+                whereExpression: predicate,
+                orderBy: orderBy)
             .Include(d => d.Provider)
                 .ThenInclude(p => p.Positions)
                     .ThenInclude(pos => pos.Officials)
@@ -538,7 +548,7 @@ public class WorkshopDraftService(
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
-            return (await Create(workshopV2Dto)).WorkshopDraft.WorkshopDetails;
+            return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
@@ -815,6 +825,25 @@ public class WorkshopDraftService(
         }
     }
 
+    private static Expression<Func<WorkshopDraft, bool>> BuildPredicate(WorkshopDraftFilterTitle filter, Guid providerId)
+    {
+        var predicate = PredicateBuilder.True<WorkshopDraft>();
+
+        predicate = predicate.And(x => x.ProviderId == providerId);
+
+        if (filter.ExcludedId.HasValue)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            predicate = predicate.And(x => x.WorkshopDraftContent.Title.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        return predicate;
+    }
+
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -1019,8 +1048,8 @@ public class WorkshopDraftService(
         return task.Result;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
-        => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateWorkshopDraftTitleFilter(WorkshopDraftFilterTitle filter)
+        => ModelValidationHelper.ValidateWorkshopDraftTitleFilter(filter);
 
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
@@ -1057,7 +1086,8 @@ public class WorkshopDraftService(
         WorkshopDraftFilterAdministration filter,
         Guid adminInstitutionId,
         IEnumerable<long> allowedSettlementIdsForAdmin,
-        IEnumerable<long> subSettlementFilterIds)
+        IEnumerable<long> subSettlementFilterIds,
+        string[] searchTerms)
     {
         var predicate = PredicateBuilder.True<WorkshopDraft>();
 
@@ -1083,25 +1113,22 @@ public class WorkshopDraftService(
             predicate = predicate.And(x => subSettlementFilterIds.Contains(x.CATOTTGId));
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        if (searchTerms.Any())
         {
-            var searchTerms = searchStringService.SplitSearchString(filter.SearchString);
-
-            if (searchTerms.Any())
+            var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
+            foreach (var word in searchTerms)
             {
-                var tempPredicate = PredicateBuilder.False<WorkshopDraft>();
-                foreach (var word in searchTerms)
-                {
-                    tempPredicate = tempPredicate.Or(
-                        x => x.WorkshopDraftContent.Title.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ShortTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitle.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.WorkshopDraftContent.ProviderTitleEn.Contains(word, StringComparison.InvariantCultureIgnoreCase) ||
-                        x.Provider.Edrpou.Contains(word, StringComparison.InvariantCultureIgnoreCase));
-                }
-
-                predicate = predicate.And(tempPredicate);
+                var contains = "%" + word + "%";
+                tempPredicate = tempPredicate.Or(
+                    x =>
+                        EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.Title), contains) ||
+                        EF.Functions.Like(EF.Functions.JsonUnquote(x.WorkshopDraftContent.ShortTitle), contains) ||
+                        EF.Functions.Like(x.Provider.FullTitle, contains) ||
+                        EF.Functions.Like(x.Provider.FullTitleEn, contains) ||
+                        EF.Functions.Like(x.Provider.Edrpou, contains));
             }
+
+            predicate = predicate.And(tempPredicate);
         }
 
         return predicate;
@@ -1366,6 +1393,109 @@ public class WorkshopDraftService(
         {
             dto.PreferentialTermsOfParticipation = null;
         }
+    }
+
+    private static Expression<Func<WorkshopDraft, int>> BuildRelevanceScore(string[] searchTerms)
+    {
+        if (searchTerms == null || searchTerms.Length == 0)
+        {
+            return wd => 0;
+        }
+
+        var wd = Expression.Parameter(typeof(WorkshopDraft), "wd");
+
+        var content = Expression.Property(wd, nameof(WorkshopDraft.WorkshopDraftContent));
+        var title = Expression.Property(content, nameof(WorkshopDraftContent.Title));
+        var shortTitle = Expression.Property(content, nameof(WorkshopDraftContent.ShortTitle));
+
+        var provider = Expression.Property(wd, nameof(WorkshopDraft.Provider));
+        var providerFullTitle = Expression.Property(provider, nameof(Provider.FullTitle));
+        var providerFullTitleEn = Expression.Property(provider, nameof(Provider.FullTitleEn));
+        var providerEdrpou = Expression.Property(provider, nameof(Provider.Edrpou));
+
+        var efFunctions = Expression.Property(null, typeof(EF), nameof(EF.Functions));
+        var likeMethod = typeof(DbFunctionsExtensions).GetMethods()
+            .Single(m => m.Name == nameof(DbFunctionsExtensions.Like)
+                && m.GetParameters().Length == 3);
+        
+        var jsonUnquoteMethod = typeof(MySqlJsonDbFunctionsExtensions).GetMethods()
+            .Single(m => m.Name == nameof(MySqlJsonDbFunctionsExtensions.JsonUnquote)
+                && m.GetParameters().Length == 2);
+
+        Expression JsonUnquote(Expression e)
+            => Expression.Call(null, jsonUnquoteMethod, efFunctions, e);    
+
+        Expression AddWeighted(Expression cond, int w)
+            => Expression.Condition(cond, Expression.Constant(w), Expression.Constant(0));
+        Expression Like(Expression e, string pattern)
+            => Expression.Call(null, likeMethod, efFunctions, e, Expression.Constant(pattern));
+        Expression ProvNotNull(Expression cond)
+            => Expression.AndAlso(Expression.NotEqual(provider, Expression.Constant(null, provider.Type)), cond);
+
+        Expression score = Expression.Constant(0);
+
+        foreach (var t in searchTerms)
+        {
+            var eq = Expression.Constant(t);
+            var starts = t + "%";
+            var contains = "%" + t + "%";
+
+            var jt = JsonUnquote(title);
+            score = Expression.Add(score, AddWeighted(Expression.Equal(jt, eq), 100));
+            score = Expression.Add(score, AddWeighted(Like(jt, starts), 80));
+            score = Expression.Add(score, AddWeighted(Like(jt, contains), 50));
+
+            var jst = JsonUnquote(shortTitle);
+            score = Expression.Add(score, AddWeighted(Expression.Equal(jst, eq), 60));
+            score = Expression.Add(score, AddWeighted(Like(jst, starts), 48));
+            score = Expression.Add(score, AddWeighted(Like(jst, contains), 30));
+
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerFullTitle, eq)), 40));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitle, starts)), 32));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitle, contains)), 20));
+
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerFullTitleEn, eq)), 40));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitleEn, starts)), 32));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerFullTitleEn, contains)), 20));
+
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Expression.Equal(providerEdrpou, eq)), 30));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerEdrpou, starts)), 24));
+            score = Expression.Add(score, AddWeighted(ProvNotNull(Like(providerEdrpou, contains)), 15));
+        }
+
+        return Expression.Lambda<Func<WorkshopDraft, int>>(score, wd);
+    }
+
+    private static Expression<Func<T, object>> Box<T>(Expression<Func<T, int>> ex)
+    {
+        var p = ex.Parameters[0];
+        var bodyAsObject = Expression.Convert(ex.Body, typeof(object));
+        return Expression.Lambda<Func<T, object>>(bodyAsObject, p);
+    }
+
+    private static Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection> BuildSortOrder(string[] searchTerms)
+    {
+        var orderBy = new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>();
+        if (searchTerms.Any())
+        {
+            var scoreExpression = BuildRelevanceScore(searchTerms);
+            var scoreObj = Box(scoreExpression);
+            orderBy.Add(scoreObj, SortDirection.Descending);
+        }
+
+        orderBy.AddRange(new[]
+        {
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.CreatedAt, SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(
+                wd => wd.DraftStatus == WorkshopDraftStatus.PendingModeration ? 0
+                    : wd.DraftStatus == WorkshopDraftStatus.EditedByModerator ? 1
+                    : 2,
+                SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.ModifiedAt, SortDirection.Ascending),
+            new KeyValuePair<Expression<Func<WorkshopDraft, object>>, SortDirection>(wd => wd.Id, SortDirection.Ascending)
+        });
+
+        return orderBy;
     }
     /// <summary>
     /// Asynchronously retrieves the sport kind dictionary ID code associated with the specified workshop draft.

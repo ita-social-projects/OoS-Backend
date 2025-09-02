@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -29,6 +30,7 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
+
     public bool NoAgeRestrictions { get; set; } = false;
 
     [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]
@@ -54,12 +56,6 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Available seats are required")]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
-    [Required(ErrorMessage = "Property CompetitiveSelection is required")]
-    public bool CompetitiveSelection { get; set; }
-
-    [MaxLength(500)]
-    public string CompetitiveSelectionDescription { get; set; }
-
     [Required]
     public Guid ProviderId { get; set; }
 
@@ -70,6 +66,10 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [BindNever]  
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Guid? MinsportSectionId { get; set; }
+
+    // This property uses only for storing dto in Redis
+    [ConditionalRequired("Images", ErrorMessage = "The cover image is required")]
+    public string Base64CoverImage { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

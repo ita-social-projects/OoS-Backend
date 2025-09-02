@@ -43,10 +43,6 @@ public class WorkshopDraftContent :
 
     public string Title { get; set; }
 
-    public string ProviderTitle { get; set; }
-
-    public string ProviderTitleEn { get; set; }
-
     public bool IsPaid { get; set; }
 
     public bool IsInclusive { get; set; }

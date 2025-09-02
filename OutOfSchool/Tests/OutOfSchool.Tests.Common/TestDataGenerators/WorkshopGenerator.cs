@@ -19,7 +19,6 @@ public static class WorkshopGenerator
         .RuleFor(x => x.DateTimeRanges, f => DateTimeRangeGenerator.Generate(1))
         .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemGenerator.Generate(4))
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
-        .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())
         .RuleFor(x => x.Keywords, f => f.Lorem.Sentence())
         .RuleFor(x => x.PayRate, f => f.PickRandom<PayRateType>())
         .RuleFor(x => x.UpdatedAt, _ => DateTime.Now)

@@ -21,15 +21,6 @@ public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Worksh
     Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
 
     /// <summary>
-    /// Update ProviderTitle property in all workshops with specified provider.
-    /// </summary>
-    /// <param name="providerId">Id of Provider to be searched by.</param>
-    /// <param name="providerTitle">Full Title of Provider to be changed.</param>
-    /// <param name="providerTitleEn">Full English Title of Provider to be changed.</param>
-    /// <returns>List of Workshops for the specified provider.</returns>
-    Task<IEnumerable<Workshop>> UpdateProviderTitle(Guid providerId, string providerTitle, string providerTitleEn);
-
-    /// <summary>
     /// Update IsBlocked property in all workshops with specified provider.
     /// </summary>
     /// <param name="provider">Provider to be searched by.</param>
