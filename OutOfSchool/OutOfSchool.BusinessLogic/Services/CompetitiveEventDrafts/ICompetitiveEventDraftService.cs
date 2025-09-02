@@ -70,7 +70,7 @@ public interface ICompetitiveEventDraftService
     /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by CompetitiveEvent id.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="SearchResult{CompetitiveEventDraftViewCardDto}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<CompetitiveEventDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
+    Task<SearchResult<CompetitiveEventDraftViewCardDto>> GetByProviderId(Guid id, CompetitiveEventDraftFilterTitle filter);
 
     /// <summary>
     /// Get all competitive event drafts by provider Id.

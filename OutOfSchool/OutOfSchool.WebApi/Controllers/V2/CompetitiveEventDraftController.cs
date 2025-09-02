@@ -271,7 +271,7 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/competitions-drafts")]
-    public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] ExcludeIdFilter filter) =>
+    public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] CompetitiveEventDraftFilterTitle filter) =>
         await competitiveEventDraftService.GetByProviderId(providerId, filter).ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>

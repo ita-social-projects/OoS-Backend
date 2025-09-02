@@ -235,27 +235,24 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<CompetitiveEventDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<CompetitiveEventDraftViewCardDto>> GetByProviderId(Guid id, CompetitiveEventDraftFilterTitle filter)
     {
         logger.LogDebug("Retrieving competitive event drafts for provider with ID: {ProviderId}", id);
 
         await currentUserService.UserHasRights(new ProviderRights(id), new EmployeeRights(id)).ConfigureAwait(false);
 
-        filter ??= new ExcludeIdFilter();
-        ModelValidationHelper.ValidateExcludedIdFilter(filter);
+        filter ??= new CompetitiveEventDraftFilterTitle();
+        ValidateCompetitiveEventDraftTitleFilter(filter);
+
+        var predicate = BuildPredicate(filter, id);
 
         var competitiveEventCardsCount = await competitiveEventDraftRepository
-            .Count(whereExpression: x =>
-            filter.ExcludedId == null
-            ? (x.ProviderId == id)
-            : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+            .Count(whereExpression: predicate).ConfigureAwait(false);
 
         var competitiveEventDrafts = await competitiveEventDraftRepository.Get(
             skip: filter.From,
             take: filter.Size,
-            whereExpression: x => filter.ExcludedId == null
-                ? (x.ProviderId == id)
-                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ToListAsync().ConfigureAwait(false);
+            whereExpression: predicate).ToListAsync().ConfigureAwait(false);
 
         var competitiveEventDraftResponseDtos = new List<CompetitiveEventDraftViewCardDto>();
 
@@ -648,6 +645,27 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
                 Description = "An error occurred while updating CompetitiveEventDraft."
             });
         }
+    }
+
+    private static void ValidateCompetitiveEventDraftTitleFilter(CompetitiveEventDraftFilterTitle filter)
+        => ModelValidationHelper.ValidateCompetitiveEventDraftTitleFilter(filter);
+
+    private static Expression<Func<CompetitiveEventDraft, bool>> BuildPredicate(CompetitiveEventDraftFilterTitle filter, Guid providerId)
+    {
+        var predicate = PredicateBuilder.True<CompetitiveEventDraft>();
+        predicate = predicate.And(x => x.ProviderId == providerId);
+
+        if (filter.ExcludedId.HasValue)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            predicate = predicate.And(x => x.CompetitiveEventDraftContent.Title.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        return predicate;
     }
 
     private async Task<CompetitiveEventDraftResponseDto> MapCompetitiveEventDraftWithDetails(CompetitiveEventDraft draft)

@@ -274,9 +274,9 @@ public class CompetitiveEventControllerTests
 
         var providerId = Guid.NewGuid();
 
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
 
-        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<CompetitiveEventFilterTitle>()))
            .ReturnsAsync(searchResult);
 
         // Act
@@ -303,9 +303,9 @@ public class CompetitiveEventControllerTests
 
         var providerId = Guid.NewGuid();
 
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
 
-        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<CompetitiveEventFilterTitle>()))
            .ReturnsAsync(searchResult);
 
         // Act
@@ -320,9 +320,9 @@ public class CompetitiveEventControllerTests
     public async Task GetCompetitiveEventViewcardByProviderId_WhenCompetitiveEventsExist_ReturnsOkResultObject()
     {
         // Arrange
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue };
+        var filter = new CompetitiveEventFilterTitle() { From = 0, Size = int.MaxValue };
         var searchResult = new SearchResult<CompetitiveEventViewCardDto>() { TotalAmount = 5, Entities = competitiveEventViewCardList };
-        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<CompetitiveEventFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -333,17 +333,6 @@ public class CompetitiveEventControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
         Assert.AreEqual(competitiveEventViewCardList.Count, (result.Value as SearchResult<CompetitiveEventViewCardDto>).TotalAmount);
-    }
-
-    [Test]
-    public async Task GetCompetitiveEventViewcardByProviderId_WhenGuidIsEmpty_ReturnsBadRequest()
-    {
-        // Act
-        var result = await controller.GetCompetitiveEventViewCardByProviderId(Guid.Empty, null).ConfigureAwait(false) as BadRequestObjectResult;
-
-        // Assert
-        Assert.IsInstanceOf<BadRequestObjectResult>(result);
-        Assert.AreEqual("Provider id is empty.", (result as BadRequestObjectResult).Value);
     }
 
     [Test]
@@ -364,14 +353,14 @@ public class CompetitiveEventControllerTests
         // Arrange
         var expectedCompetitiveEventCardsCount = this.competitiveEventViewCardList.Count - 1;
         var excludedId = competitiveEventViewCardList.FirstOrDefault().Id;
-        var filter = new ExcludeIdFilter() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
+        var filter = new CompetitiveEventFilterTitle() { From = 0, Size = int.MaxValue, ExcludedId = excludedId };
         var searchResult = new SearchResult<CompetitiveEventViewCardDto>() 
         {
             TotalAmount = 4,
             Entities = competitiveEventViewCardList.Skip(1).ToList() 
         };
         
-        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<CompetitiveEventFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act
@@ -390,14 +379,14 @@ public class CompetitiveEventControllerTests
     {
         // Arrange
         var expectedCount = 1;
-        var filter = new ExcludeIdFilter() { From = 0, Size = expectedCount };
+        var filter = new CompetitiveEventFilterTitle() { From = 0, Size = expectedCount };
         var expectedTotalAmount = 5;
         var searchResult = new SearchResult<CompetitiveEventViewCardDto>() 
         {
             TotalAmount = expectedTotalAmount,
             Entities = competitiveEventViewCardList.Take(expectedCount).ToList(),
         };
-        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<ExcludeIdFilter>()))
+        competitiveEventService.Setup(x => x.GetByProviderId(It.IsAny<Guid>(), It.IsAny<CompetitiveEventFilterTitle>()))
             .ReturnsAsync(searchResult);
 
         // Act

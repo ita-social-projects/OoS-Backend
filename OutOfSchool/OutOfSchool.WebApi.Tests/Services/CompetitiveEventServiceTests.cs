@@ -78,6 +78,8 @@ public class CompetitiveEventServiceTests
         SeedDatabase();
     }
 
+    #region GetById
+
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsEntity()
     {
@@ -110,6 +112,10 @@ public class CompetitiveEventServiceTests
         Assert.IsNull(result, "Expected null for invalid ID.");
     }
 
+    #endregion
+
+    #region Create
+
     [Test]
     [Ignore("Test is ignored because the method being tested uses a transaction, which is not supported by in-memory database.")]
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
@@ -137,6 +143,10 @@ public class CompetitiveEventServiceTests
         Assert.AreEqual(input.Title, result.Title);
         Assert.That(countBeforeCreating, Is.EqualTo(countAfterCreating - 1));
     }
+
+    #endregion Create
+
+    #region Update
 
     [Test]
     public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
@@ -272,6 +282,10 @@ public class CompetitiveEventServiceTests
             .Any(d => d.Id == firstDescItemId));
     }
 
+    #endregion Update
+
+    #region Delete
+
     [Test]
     public async Task Delete_WhenIdIsValid_DeletesEntity()
     {
@@ -296,6 +310,10 @@ public class CompetitiveEventServiceTests
         Assert.ThrowsAsync<ArgumentOutOfRangeException>(
             async () => await service.Delete(id).ConfigureAwait(false));
     }
+
+    #endregion
+
+    #region GetByProviderId
 
     [Test]
     public async Task GetByProviderId_NotValidProviderId_ReturnsEmpty()
@@ -335,7 +353,7 @@ public class CompetitiveEventServiceTests
     {
         // Arrange
         var invalidProviderId = Guid.Empty;
-        var filter = new ExcludeIdFilter();
+        var filter = new CompetitiveEventFilterTitle();
 
         // Act & Assert
         var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -343,6 +361,50 @@ public class CompetitiveEventServiceTests
 
         Assert.AreEqual("ProviderId cannot be empty. (Parameter 'id')", exception.Message, "Unexpected exception message.");
     }
+
+    [Test]
+    public async Task GetByProviderId_WhenFilterContainsSearchText_ReturnsValidResult()
+    {
+        // Arrange
+        var filter = new CompetitiveEventFilterTitle
+        {
+            SearchText = "test1"
+        };
+        var expected = CompetitiveEvents().Where(x => x.OrganizerOfTheEventId == firstProviderId);
+
+        // Act
+        var result = await service.GetByProviderId(firstProviderId, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result.Entities);
+        Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
+        Assert.AreEqual(expected.First().Title, result.Entities.First().Title);
+        Assert.AreEqual(expected.First().ShortTitle, result.Entities.First().ShortTitle);
+        Assert.AreEqual(expected.Count(), result.TotalAmount);
+        Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
+    [Test]
+    public async Task GetByProviderId_WhenFilterContainsExcludedId_ReturnsValidResult()
+    {
+        // Arrange
+        var filter = new CompetitiveEventFilterTitle
+        {
+            ExcludedId = firstId
+        };
+        var expected = CompetitiveEvents()
+            .Where(x => x.OrganizerOfTheEventId == firstProviderId && x.Id != firstId);
+
+        // Act
+        var result = await service.GetByProviderId(firstProviderId, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result.Entities);
+        Assert.AreEqual(expected.Count(), result.TotalAmount);
+        Assert.IsInstanceOf<IReadOnlyCollection<CompetitiveEventViewCardDto>>(result.Entities);
+    }
+
+    #endregion
 
     private void SeedDatabase()
     {

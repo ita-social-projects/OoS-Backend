@@ -80,7 +80,7 @@ public interface IWorkshopDraftService
     /// <param name="filter">Filter to get a certain portion of all entities Or/And exclude by Workshop id.</param>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
     /// The task result contains a <see cref="SearchResult{WorkshopDraftViewCardDto}"/> that contains elements from the input sequence.</returns>
-    Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter);
+    Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, WorkshopDraftFilterTitle filter);
 
     /// <summary>
     /// Get all workshop drafts by provider Id.

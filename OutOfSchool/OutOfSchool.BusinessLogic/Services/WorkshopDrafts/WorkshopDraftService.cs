@@ -373,26 +373,23 @@ public class WorkshopDraftService(
     }
 
     // <inheritdoc/>
-    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, ExcludeIdFilter filter)
+    public async Task<SearchResult<WorkshopDraftViewCardDto>> GetByProviderId(Guid id, WorkshopDraftFilterTitle filter)
     {
         logger.LogDebug("Getting Workshop Draft by organization started. Looking ProviderId = {Id}.", id);
 
         await currentUserService.UserHasRights(new ProviderRights(id), new EmployeeRights(id)).ConfigureAwait(false);
 
-        filter ??= new ExcludeIdFilter();
-        ValidateExcludedIdFilter(filter);
+        filter ??= new WorkshopDraftFilterTitle();
+        ValidateWorkshopDraftTitleFilter(filter);
 
-        var workshopBaseCardsCount = await workshopDraftRepository.Count(whereExpression: x =>
-            filter.ExcludedId == null
-                ? (x.ProviderId == id)
-                : (x.ProviderId == id && x.Id != filter.ExcludedId)).ConfigureAwait(false);
+        var predicate = BuildPredicate(filter, id);
+
+        var workshopBaseCardsCount = await workshopDraftRepository.Count(whereExpression: predicate).ConfigureAwait(false);
 
         var workshopDrafts = await workshopDraftRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
-                whereExpression: x => filter.ExcludedId == null
-                    ? (x.ProviderId == id)
-                    : (x.ProviderId == id && x.Id != filter.ExcludedId),
+                whereExpression: predicate,
                 orderBy: new Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>()
                 {
                     {wd => wd.CreatedAt, SortDirection.Descending},
@@ -815,6 +812,25 @@ public class WorkshopDraftService(
         }
     }
 
+    private static Expression<Func<WorkshopDraft, bool>> BuildPredicate(WorkshopDraftFilterTitle filter, Guid providerId)
+    {
+        var predicate = PredicateBuilder.True<WorkshopDraft>();
+
+        predicate = predicate.And(x => x.ProviderId == providerId);
+
+        if (filter.ExcludedId.HasValue)
+        {
+            predicate = predicate.And(x => x.Id != filter.ExcludedId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            predicate = predicate.And(x => x.WorkshopDraftContent.Title.Contains(filter.SearchText, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        return predicate;
+    }
+
     private async Task<WorkshopDraft> GetWorkshopDraftById(Guid id)
     {
         logger.LogDebug("Getting WorkshopDraft by Id started. Looking Id = {Id}.", id);
@@ -999,8 +1015,8 @@ public class WorkshopDraftService(
         return task.Result;
     }
 
-    private static void ValidateExcludedIdFilter(ExcludeIdFilter filter)
-        => ModelValidationHelper.ValidateExcludedIdFilter(filter);
+    private static void ValidateWorkshopDraftTitleFilter(WorkshopDraftFilterTitle filter)
+        => ModelValidationHelper.ValidateWorkshopDraftTitleFilter(filter);
 
     private async Task<(Guid InstitutionId, long CatottgId)> GetAdminInstitutionAndCatottgIds()
     {
