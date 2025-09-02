@@ -43,7 +43,20 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
         builder.HasOne(p => p.ParentProvider)
             .WithMany(p => p.Branches)
             .HasForeignKey(p => p.ParentProviderId)
-            .OnDelete(DeleteBehavior.Restrict);        
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property<string>("EdrpouUniqKey")
+            .HasComputedColumnSql(@"
+                CASE 
+                    WHEN `IsStructuralUnit` = 1 
+                    THEN CONCAT(`Edrpou`, '-', REPLACE(LOWER(`Id`), '-', ''))
+                    ELSE `Edrpou`
+                END",
+                stored: true); // This makes it PERSISTENT/STORED
+
+        builder.HasIndex("EdrpouUniqKey")
+           .IsUnique()
+           .HasDatabaseName("IX_Providers_EdrpouUniqKey");
 
         builder.Property(x => x.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate();
