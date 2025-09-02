@@ -97,7 +97,7 @@ public interface IElasticsearchProvider<TEntity, TSearch>
     /// <typeparam name="TKey">Type of the entity's key.</typeparam>
     /// <param name="entityId">The id of the entity that will be updated.</param>
     /// <param name="partial">Object representing the fields to update.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     Task<Result> PartialUpdateEntityAsync<TKey>(TKey entityId, IPartial<TEntity> partial);
 
     /// <summary>

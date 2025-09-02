@@ -20,6 +20,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
@@ -30,6 +31,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -40,7 +42,7 @@ public class SensitiveWorkshopDraftServiceTests
 {
     private ISensitiveWorkshopDraftService service;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMock;
-
+    private Mock<ISportsRegistryProviderService> sportRegistryProviderServiceMock;
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
@@ -49,6 +51,7 @@ public class SensitiveWorkshopDraftServiceTests
     private Mock<ISearchStringService> searchStringServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMock;
     private Mock<ICodeficatorRepository> codeficatorRepository;
     private Mock<IChangesLogService> changesLogServiceMock;
@@ -64,7 +67,8 @@ public class SensitiveWorkshopDraftServiceTests
     public void SetUp()
     {
         workshopDraftRepoMock = new Mock<IWorkshopDraftRepository>();
-
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
+        sportRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
         workshopServiceCombinerV2Mock = new Mock<IWorkshopServicesCombinerV2>();
@@ -85,33 +89,37 @@ public class SensitiveWorkshopDraftServiceTests
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         var institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+        var imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
 
         userId = "someUserId";
 
         service = new WorkshopDraftService(
-                   logger.Object,
-                   languageServiceMock.Object,
-                   workshopDraftRepoMock.Object,
-                   workshopDraftImagesServiceMock.Object,
-                   providerServiceMock.Object,
-                   currentUserServiceMock.Object,
-                   teacherDraftImagesService.Object,
-                   options.Object,
-                   workshopServiceCombinerV2Mock.Object,
-                   regionAdminServiceMock.Object,
-                   ministryAdminServiceMock.Object,
-                   codeficatorServiceMock.Object,
-                   searchStringServiceMock.Object,
-                   institutionHierarchyRepositoryMock.Object,
-                   codeficatorRepository.Object,
-                   changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+            logger.Object,
+            sportRegistryProviderServiceMock.Object,
+            languageServiceMock.Object,
+            workshopDraftRepoMock.Object,
+            workshopDraftImagesServiceMock.Object,
+            providerServiceMock.Object,
+            currentUserServiceMock.Object,
+            teacherDraftImagesService.Object,
+            options.Object,
+            workshopServiceCombinerV2Mock.Object,
+            regionAdminServiceMock.Object,
+            ministryAdminServiceMock.Object,
+            codeficatorServiceMock.Object,
+            searchStringServiceMock.Object,
+            institutionHierarchyRepositoryMock.Object,
+            codeficatorRepository.Object,
+            changesLogServiceMock.Object,
+            institutionHierarchyServiceMock.Object,
+            institutionOptionsMock.Object,
+            imageStorageOptionsMock.Object);
 
         SetupModeratorTestData();
         languageServiceMock.Setup(x => x.GetById(It.Is<long>(id => id == 1)))
                 .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
     }
 
     #region FetchByFilterForAdmins    

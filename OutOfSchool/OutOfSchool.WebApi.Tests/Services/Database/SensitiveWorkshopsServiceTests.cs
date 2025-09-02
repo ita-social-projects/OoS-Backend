@@ -99,7 +99,7 @@ public class SensitiveWorkshopsServiceTests
         languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
             .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
     }
 
     #region FetchByFilterForAdmins
@@ -240,7 +240,7 @@ public class SensitiveWorkshopsServiceTests
         workshopRepository.VerifyAll();
     }
     #endregion
-
+    
     #region With
 
     private SearchResult<WorkshopDto> SetupFetchByFilterForAdmins(

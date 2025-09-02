@@ -13,7 +13,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
-using OutOfSchool.AikomApiClient.Extensions;
+using OutOfSchool.AikomApiClient.Extensions;    
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -48,6 +48,7 @@ using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Services.Repository.CompetitiveEventDraftRepository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
+using OutOfSchool.SportsRegistryApiClient.Extensions;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
@@ -176,6 +177,7 @@ public static class Startup
         services.Configure<GeocodingConfig>(configuration.GetSection(GeocodingConfig.Name));
         services.Configure<ParentConfig>(configuration.GetSection(ParentConfig.Name));
         services.Configure<InstitutionOptions>(configuration.GetSection(InstitutionOptions.Name));
+        services.Configure<ImageStorageOptions>(configuration.GetSection(ImageStorageOptions.Name));
 
         services.AddMemoryCache();
 
@@ -197,7 +199,7 @@ public static class Startup
             });
 
         var aikomConfiguration = services.RegisterAikomApiClient(configuration, builder.Environment);
-
+        var sportRegistryConfiguration = services.AddSportsRegistryClient(configuration);
         services.AddOpenIddict()
             .AddClient(options =>
             {
@@ -206,6 +208,7 @@ public static class Startup
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
                 options.AddAikomOpenIddictClientRegistration(aikomConfiguration);
+                options.AddSportsRegistryOpenIddictClientRegistration(sportRegistryConfiguration);
             });
 
         services.AddCors(confg =>
@@ -265,7 +268,7 @@ public static class Startup
         services.AddScoped<IAreaAdminService, AreaAdminService>();
 
         services.AddScoped<ICommunicationService, CommunicationService>();
-
+        
         // Images limits options
         services.Configure<ImagesLimits<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
         services.Configure<ImagesLimits<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));

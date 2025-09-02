@@ -94,4 +94,6 @@ public class WorkshopDraftContent :
     public List<Contacts> Contacts { get; set; }
     
     public bool IsChampionPath { get;set; }
+    
+    public Guid? MinsportSectionId { get; set; }
 }

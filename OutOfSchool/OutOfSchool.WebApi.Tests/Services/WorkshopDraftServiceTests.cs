@@ -22,18 +22,24 @@ using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -41,7 +47,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class WorkshopDraftServiceTests
 {
-    private IWorkshopDraftService service;  
+    private IWorkshopDraftService service;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMoq;
     private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
@@ -54,8 +60,11 @@ public class WorkshopDraftServiceTests
     private Mock<ICodeficatorRepository> codeficatorRepositoryMoq;
     private Mock<IChangesLogService> changesLogServiceMock;
     private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
-
-    private string userId;
+    private Mock<ISportsRegistryProviderService> sportRegistryProviderServiceMock;
+    private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Guid ministryOfSportId;
+    private Guid institutionHierarchyId;
 
     [SetUp]
     public void SetUp()
@@ -64,14 +73,16 @@ public class WorkshopDraftServiceTests
         workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         teacherDraftImagesServiceMock = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         currentUserServiceMoq = new Mock<ICurrentUserService>();
-        institutionHierarchyServiceMock = new  Mock<IInstitutionHierarchyService>();
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         providerServiceMoq = new Mock<IProviderService>();
         workshopServiceCombinerV2Moq = new Mock<IWorkshopServicesCombinerV2>();
         institutionHierarchyRepositoryMoq = new Mock<IInstitutionHierarchyRepository>();
         codeficatorRepositoryMoq = new Mock<ICodeficatorRepository>();
         languageServiceMoq = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
-
+        sportRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
+        ministryOfSportId = Guid.NewGuid();
+        institutionHierarchyId = Guid.NewGuid();
         institutionHierarchyRepositoryMoq.Setup(x => x.GetByIdWithDetails(
             It.IsAny<Guid>(),
             It.IsAny<string>(),
@@ -79,7 +90,7 @@ public class WorkshopDraftServiceTests
         )).ReturnsAsync(new InstitutionHierarchy
         {
             SubDirections = new List<SubDirection>(),
-            Institution = new Institution { Title = "Мінспорт" }
+            Institution = new Institution { Title = "Мінспорт", Id = ministryOfSportId }
         });
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
@@ -87,36 +98,44 @@ public class WorkshopDraftServiceTests
         options.Setup(o => o.Value).Returns(settings);
 
         var logger = new Mock<ILogger<WorkshopDraftService>>();
-        var workshopDraftImagesService = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();   
-        var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();       
         var regionAdminService = new Mock<IRegionAdminService>();
         var ministryAdminService = new Mock<IMinistryAdminService>();
-        var codeficatorService = new Mock<ICodeficatorService>();
-        var searchStringService = new Mock<ISearchStringService>();              
-        
+        var searchStringService = new Mock<ISearchStringService>();
+
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
+
         institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         institutionOptionsMock.Setup(x => x.Value)
-            .Returns(new InstitutionOptions { MinistryOfSportTitle = "Мінспорт" });
-      
-        userId = "someUserId";
+            .Returns(new InstitutionOptions { MinistryOfSportId = ministryOfSportId.ToString() });
+
+        imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
+        imageStorageOptionsMock.Setup(x => x.Value)
+            .Returns(new ImageStorageOptions
+            {
+                BaseImageUrl = "https://replace_me.com/images/"
+            });
+
         service = new WorkshopDraftService(
                    logger.Object,
+                   sportRegistryProviderServiceMock.Object,
                    languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
-                   workshopDraftImagesService.Object,
+                   workshopDraftImagesServiceMock.Object,
                    providerServiceMoq.Object,
                    currentUserServiceMoq.Object,
-                   teacherDraftImagesService.Object,
+                   teacherDraftImagesServiceMock.Object,
                    options.Object,
                    workshopServiceCombinerV2Moq.Object,
                    regionAdminService.Object,
                    ministryAdminService.Object,
-                   codeficatorService.Object,
+                   codeficatorServiceMock.Object,
                    searchStringService.Object,
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionHierarchyServiceMock.Object,
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
         SetupInstitutionHierarchy();
     }
 
@@ -138,10 +157,10 @@ public class WorkshopDraftServiceTests
         var institutionHierarchyId = Guid.NewGuid();
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
         workshop.InstitutionHierarchyId = institutionHierarchyId;
-        
+
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
-        
+
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
         {
@@ -192,7 +211,7 @@ public class WorkshopDraftServiceTests
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Create(workshopV2Dto));
         ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
     }
-    
+
     [Test]
     public async Task Create_WhenInstitutionIsMinSport_ShouldSetChampionPathAndSectionType()
     {
@@ -253,7 +272,7 @@ public class WorkshopDraftServiceTests
                 WorkshopType = WorkshopType.Section
             },
             Teachers = new List<TeacherDraft>(),
-            
+
         };
 
         workshopDraftRepoMoq
@@ -266,14 +285,14 @@ public class WorkshopDraftServiceTests
         // Assert
         result.Should().NotBeNull();
         result.WorkshopDraft.Should().NotBeNull();
-        
+
         var details = result.WorkshopDraft.WorkshopDetails;
 
         details.IsChampionPath.Should().BeTrue("Institution is Мінспорт");
         details.WorkshopType.Should().Be(WorkshopType.Section, "Institution is Мінспорт");
         details.InstitutionHierarchyId.Should().Be(institutionHierarchyId);
     }
-    
+
     [Test]
     public async Task Create_WhenInstitutionIsNotMinSport_ShouldNotSetIsChampionPathAndWorkshopType()
     {
@@ -291,7 +310,7 @@ public class WorkshopDraftServiceTests
         {
             InstitutionHierarchyId = institutionHierarchyId,
         };
-        
+
         var expectedResponse = workshopDraft.ToResponseDto();
         expectedResponse.WorkshopDetails.IsChampionPath = false;
         expectedResponse.WorkshopDetails.WorkshopType = WorkshopType.Workshop;
@@ -326,7 +345,7 @@ public class WorkshopDraftServiceTests
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeFalse();
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
-       
+
     }
     #endregion
 
@@ -349,23 +368,23 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
         var workshopResponse = workshopDraft.ToResponseDto();
-        
+
         workshopResponse.WorkshopDetails.IsChampionPath = true;
         workshopResponse.WorkshopDetails.WorkshopType = WorkshopType.Section;
-        
+
         var workshopUpdateDto = new WorkshopDraftUpdateDto()
         {
             Id = Guid.NewGuid(),
             WorkshopV2Dto = workshopV2Dto
         };
-        
+
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(workshop.InstitutionHierarchyId.Value))
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = workshop.InstitutionHierarchyId.Value,
-                Institution = new Institution { Title = "Мінспорт" },
+                Institution = new Institution { Id = ministryOfSportId, Title = "Мінспорт" },
             });
-        
+
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
             .ReturnsAsync(new LanguageDto { Id = workshopV2Dto.LanguageOfEducationId, Name = workshopV2Dto.LanguageOfEducationName });
         workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
@@ -394,7 +413,7 @@ public class WorkshopDraftServiceTests
 
         //Assert
         workshopDraftRepoMoq.VerifyAll();
-        currentUserServiceMoq.VerifyAll();          
+        currentUserServiceMoq.VerifyAll();
 
         result.Should().NotBeNull();
         result.WorkshopDraft.WorkshopDetails.IsChampionPath.Should().BeTrue();
@@ -431,7 +450,7 @@ public class WorkshopDraftServiceTests
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Update(updateDto));
         ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
     }
-    
+
     [Test]
     public async Task Update_WhenInstitutionIsMinSport_ShouldSetChampionPathAndSectionType()
     {
@@ -456,23 +475,21 @@ public class WorkshopDraftServiceTests
             WorkshopDraftContent = new WorkshopDraftContent
             {
                 InstitutionHierarchyId = institutionHierarchyId,
-                IsChampionPath = true,
-                WorkshopType = WorkshopType.Section
             },
             Teachers = new List<TeacherDraft>()
         };
-        
+
         codeficatorRepositoryMoq.Setup(x => x.Get(It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<Expression<Func<CATOTTG, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
-        
+
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(institutionHierarchyId))
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
-                Institution = new Institution { Title = "Мінспорт" }
+                Institution = new Institution { Id = ministryOfSportId, Title = "Мінспорт" }
             });
 
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
@@ -527,9 +544,7 @@ public class WorkshopDraftServiceTests
             Id = updateDto.Id,
             WorkshopDraftContent = new WorkshopDraftContent
             {
-                InstitutionHierarchyId = institutionHierarchyId,
-                IsChampionPath = false,
-                WorkshopType = WorkshopType.Workshop
+                InstitutionHierarchyId = institutionHierarchyId, // service sets IsChampionPath to false and WorkshopType to Workshop
             },
             Teachers = new List<TeacherDraft>()
         };
@@ -540,11 +555,12 @@ public class WorkshopDraftServiceTests
                 It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(new List<CATOTTG>().AsQueryable().BuildMock());
 
+        var otherInstitutionId = Guid.NewGuid();
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(institutionHierarchyId))
             .ReturnsAsync(new InstitutionHierarchy
             {
                 Id = institutionHierarchyId,
-                Institution = new Institution { Title = "NotMinSport" }
+                Institution = new Institution { Id = otherInstitutionId, Title = "NotMinSport" }
             });
 
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
@@ -586,10 +602,20 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
 
-        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>,IQueryable<WorkshopDraft>>>()))
-            .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
-        workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
-            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+        workshopDraft.Id = Guid.NewGuid();
+        
+        workshopDraftRepoMoq
+            .Setup(x => x.GetByIdWithDetails(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
+            .ReturnsAsync(workshopDraft)
+            .Verifiable(Times.Once);
+
+        workshopDraftRepoMoq
+            .Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once);
 
         // Act
         await service.Delete(workshop.Id).ConfigureAwait(false);
@@ -634,7 +660,7 @@ public class WorkshopDraftServiceTests
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
         workshopDraft.WorkshopId = null;
 
-        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>,IQueryable<WorkshopDraft>>>()))
+        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
@@ -656,15 +682,17 @@ public class WorkshopDraftServiceTests
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
-        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;   
+        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
 
-        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>,IQueryable<WorkshopDraft>>>()))
+        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
-            .Verifiable(Times.Once);
-
+        workshopServiceCombinerV2Moq
+           .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
+           .ReturnsAsync(Result<WorkshopResultDto>.Success(new WorkshopResultDto()))
+           .Verifiable(Times.Once);
+        
         // Act
         await service.Approve(workshop.Id).ConfigureAwait(false);
 
@@ -672,6 +700,244 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.VerifyAll();
         workshopServiceCombinerV2Moq.VerifyAll();
     }
+
+    [Test]
+    public void Approve_WhenDraftStatusIsNotApprovable_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        var workshopDraft = workshop.ToV2Dto().ToDraft();
+        workshopDraft.DraftStatus = WorkshopDraftStatus.Draft; // wrong status
+
+        SetupDraftRepo(workshopDraft);
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(
+            async () => await service.Approve(workshop.Id).ConfigureAwait(false));
+
+        workshopDraftRepoMoq.VerifyAll();
+    }
+
+    [Test]
+    public async Task Approve_WhenInstitutionIsNotMinistry_ShouldNotCallRegisterSection()
+    {
+        // Arrange: create draft with a provider that is NOT the Ministry
+        var workshopDraft = CreatePendingModerationDraft();
+        workshopDraft.Provider = new Provider
+        {
+            Institution = new Institution
+            {
+                Id = Guid.NewGuid() // new Guid, not equal to ministryOfSportId
+            }
+        };
+        SetupDraftRepo(workshopDraft);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(Task.FromResult(new WorkshopResultDto()));
+
+        // Act
+        await service.Approve(workshopDraft.Id);
+
+        // Assert
+        sportRegistryProviderServiceMock.Verify(x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()), Times.Never);
+
+        workshopDraftRepoMoq.VerifyAll();
+    }
+
+    [Test]
+    public async Task Approve_WhenRegistryReturnsError_ShouldNotApproveWorkshopDraft()
+    {
+        // Arrange
+        var workshopDraft = CreatePendingModerationDraft();
+
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
+
+        SetupDraftRepo(workshopDraft);
+
+        var errorResponse = new ErrorResponse
+        {
+            HttpStatusCode = HttpStatusCode.BadRequest,
+            Message = "Registry error"
+        };
+
+        // setup error response from registry
+        SetupSportRegistryResponse(errorResponse);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.Approve(workshopDraft.Id)
+        );
+
+        // draft still has PendingModeration status
+        Assert.AreEqual(WorkshopDraftStatus.PendingModeration, workshopDraft.DraftStatus);
+
+        // workshop not created
+        workshopServiceCombinerV2Moq.Verify(
+            x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()),
+            Times.Never
+        );
+
+        // draft not deleted
+        workshopDraftRepoMoq.Verify(x => x.Delete(It.IsAny<WorkshopDraft>()), Times.Never);
+    }
+
+    [Test]
+    public void Approve_WhenCodeficatorServiceReturnsNull_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshopDraft = CreatePendingModerationDraft();
+
+        AddSportMinistryProvider(workshopDraft);
+
+        AddDefaultContact(workshopDraft);
+
+        SetupDraftRepo(workshopDraft);
+
+        codeficatorServiceMock
+            .Setup(x => x.GetCodeById(It.IsAny<long>()))
+            .ReturnsAsync((string)null);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.Approve(workshopDraft.Id));
+
+        // draft still has PendingModeration status
+        Assert.AreEqual(WorkshopDraftStatus.PendingModeration, workshopDraft.DraftStatus);
+
+        // workshop not created
+        workshopServiceCombinerV2Moq.Verify(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()), Times.Never);
+
+        // draft not deleted
+        workshopDraftRepoMoq.Verify(x => x.Delete(It.IsAny<WorkshopDraft>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Approve_WhenInstitutionHierarchyHasNoSportRegistryIdCode_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshopDraft = CreatePendingModerationDraft();
+
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
+
+        var institutionHierarchyId = Guid.NewGuid();
+        workshopDraft.WorkshopDraftContent.InstitutionHierarchyId = institutionHierarchyId;
+
+        workshopDraft.CATOTTGId = 123;
+        codeficatorServiceMock
+            .Setup(x => x.GetCodeById(workshopDraft.CATOTTGId))
+            .ReturnsAsync("UA07000000000024379");
+
+
+        SetupDraftRepo(workshopDraft);
+        // institutionHierarchyService returns DTO without SportRegistryIdCode
+        SetupInstitutionHierarchyMock();
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.Approve(workshopDraft.Id));
+
+        Assert.That(ex.Message, Does.Contain("SportRegistryIdCode is missing"));
+        sportRegistryProviderServiceMock.Verify(
+            x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()),
+            Times.Never);
+    }
+
+    [Test]
+    public async Task Approve_WhenFromMinistryAndRegistrySucceeds_ShouldCreateWorkshopAndDeleteDraft()
+    {
+        var workshopDraft = CreatePendingModerationDraft();
+
+        AddSportMinistryProvider(workshopDraft);
+        AddDefaultContact(workshopDraft);
+
+        SetupDraftRepo(workshopDraft);
+
+        // institutionHierarchyService returns DTO with SportRegistryIdCode
+        SetupInstitutionHierarchyMock(123);
+
+        codeficatorServiceMock
+            .Setup(x => x.GetCodeById(It.IsAny<long>()))
+            .ReturnsAsync("UA12345678");
+
+        // mock successful registry response
+        var registryResponse = new SectionCreateResponse
+        {
+            ResultVariables = new ResultVariables { SectionId = Guid.NewGuid(), Code = "200" }
+        };
+
+        // setup successful response from registry
+        SetupSportRegistryResponse(registryResponse);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(Task.FromResult(new WorkshopResultDto()))
+            .Verifiable();
+
+        // Act
+        await service.Approve(workshopDraft.Id);
+
+        // Assert
+        // check that registry was called
+        sportRegistryProviderServiceMock.VerifyAll();
+
+        // check that workshop was created
+        workshopServiceCombinerV2Moq.VerifyAll();
+
+        // check that draft was deleted
+        workshopDraftRepoMoq.VerifyAll();
+
+        // draft content enriched with created section id
+        Assert.AreEqual(
+            registryResponse.ResultVariables.SectionId,
+            workshopDraft.WorkshopDraftContent.MinsportSectionId);
+    }
+
+    [Test]
+    public async Task Approve_WhenWorkshopIdIsNullAndNotFromMinistry_ShouldCreateWorkshopAndDeleteDraft()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
+        var workshopV2Dto = workshop.ToV2Dto();
+        var workshopDraft = workshopV2Dto.ToDraft();
+        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+        workshopDraft.WorkshopId = null;
+        workshopDraft.Id = Guid.NewGuid();
+        workshopDraft.Provider = new Provider { InstitutionId = Guid.NewGuid() }; // not Ministry
+
+        workshopDraftRepoMoq
+            .Setup(x => x.GetByIdWithDetails(
+                workshopDraft.Id,
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()
+            ))
+            .ReturnsAsync(workshopDraft)
+            .Verifiable(Times.Once);
+
+        workshopDraftRepoMoq
+            .Setup(x => x.Delete(workshopDraft))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .Returns(Task.FromResult(new WorkshopResultDto()))
+            .Verifiable(Times.Once);
+
+        // Act
+        await service.Approve(workshopDraft.Id);
+
+        // Assert
+        workshopServiceCombinerV2Moq.VerifyAll();
+        workshopDraftRepoMoq.VerifyAll();
+
+        // Verify that registry was NOT called at all
+        sportRegistryProviderServiceMock.Verify(
+            x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()),
+            Times.Never
+        );
+    }
+
     #endregion
 
     #region Reject
@@ -901,7 +1167,6 @@ public class WorkshopDraftServiceTests
     #endregion
 
     #region UpdateWorkshop
-
     [Test]
     public async Task UpdateWorkshop_WhenModeratedFieldsWasNotChanged_ShouldCallWorkshopUpdate()
     {
@@ -966,7 +1231,7 @@ public class WorkshopDraftServiceTests
 
         currentUserServiceMoq.VerifyAll();
         workshopServiceCombinerV2Moq.VerifyAll();
-        workshopDraftRepoMoq.VerifyAll();        
+        workshopDraftRepoMoq.VerifyAll();
     }
 
     [Test]
@@ -996,7 +1261,7 @@ public class WorkshopDraftServiceTests
 
         var workshopDrafts = new List<WorkshopDraft>();
         var workshopDraft = workshopV2Dto.ToDraft();
-        
+
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(workshop.InstitutionHierarchyId.Value))
             .ReturnsAsync(new InstitutionHierarchy
             {
@@ -1079,6 +1344,7 @@ public class WorkshopDraftServiceTests
 
         var service = new WorkshopDraftService(
                    logger.Object,
+                   sportRegistryProviderServiceMock.Object,
                    new Mock<ILanguageService>().Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
@@ -1094,7 +1360,9 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    new Mock<IChangesLogService>().Object,
-                   institutionOptionsMock.Object);
+                   institutionHierarchyServiceMock.Object,
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftForReactivation(workshop.Id));
@@ -1163,7 +1431,66 @@ public class WorkshopDraftServiceTests
         institutionHierarchyServiceMock.Setup(s => s.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(new InstitutionHierarchyDto
             {
-                Institution = new InstitutionDto { Title = "Мінспорт"}
+                Institution = new InstitutionDto { Title = "Мінспорт" }
             });
     }
+    private void AddSportMinistryProvider(WorkshopDraft draft)
+    {
+        draft.Provider = new Provider
+        {
+            Institution = new Institution { Id = ministryOfSportId },
+            InstitutionId = ministryOfSportId,
+            Edrpou = "12345678"
+        };
+    }
+    private void AddDefaultContact(WorkshopDraft draft)
+    {
+        draft.WorkshopDraftContent.Contacts = new List<Contacts>()
+        {
+            new Contacts
+            {
+                IsDefault = true,
+                Emails = new List<Email> { new Email { Address = "test@example.com" } },
+                Phones = new List<PhoneNumber> { new PhoneNumber { Number = "0980445577" } },
+            }
+        };
+    }
+    private void SetupDraftRepo(WorkshopDraft draft)
+    {
+        workshopDraftRepoMoq.Setup(x => x.GetByIdWithDetails(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<WorkshopDraft>, IQueryable<WorkshopDraft>>>()
+            ))
+            .ReturnsAsync(draft)
+            .Verifiable(Times.Once);
+    }
+    private void SetupInstitutionHierarchyMock(int? sportRegistryIdCode = null)
+    {
+        institutionHierarchyServiceMock
+           .Setup(x => x.GetById(It.IsAny<Guid>()))
+           .ReturnsAsync(new InstitutionHierarchyDto
+           {
+               Id = ministryOfSportId,
+               SportRegistryIdCode = sportRegistryIdCode
+           });
+    }
+
+    private void SetupSportRegistryResponse(Either<ErrorResponse, SectionCreateResponse> response)
+    {
+        sportRegistryProviderServiceMock
+            .Setup(x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()))
+            .ReturnsAsync(response)
+            .Verifiable(Times.Once);
+    }
+
+    private WorkshopDraft CreatePendingModerationDraft()
+    {
+        var workshop = WorkshopGenerator.Generate();//.WithProvider();
+        var workshopDraft = workshop.ToV2Dto().ToDraft();
+        workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+        workshopDraft.WorkshopId = null; // simulate new workshop
+        return workshopDraft;
+    }
+
 }

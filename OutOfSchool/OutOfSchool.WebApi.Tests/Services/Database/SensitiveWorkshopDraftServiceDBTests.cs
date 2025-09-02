@@ -31,6 +31,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
+using OutOfSchool.SportsRegistryApiClient.Interfaces;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
 
@@ -45,6 +47,7 @@ public class SensitiveWorkshopDraftServiceDBTests
     private ISensitiveWorkshopDraftService workshopDraftService;
     private IWorkshopDraftRepository workshopDraftRepository;
 
+    private Mock<ISportsRegistryProviderService> sportsRegistryProviderServiceMock;
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
@@ -56,6 +59,9 @@ public class SensitiveWorkshopDraftServiceDBTests
     private Mock<IInstitutionHierarchyRepository> institutionHierarchyRepositoryMock;
     private Mock<ICodeficatorRepository> codeficatorRepositoryMock;
     private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
+    private Mock<IOptions<ImageStorageOptions>> imageStorageOptionsMock;
+    private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
 
     [SetUp]
@@ -67,8 +73,9 @@ public class SensitiveWorkshopDraftServiceDBTests
             .Options;
 
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
-
         workshopDraftRepository = new WorkshopDraftRepository(dbContext);
+        institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
+        sportsRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
         workshopServiceCombinerV2Mock = new Mock<IWorkshopServicesCombinerV2>();
@@ -88,9 +95,11 @@ public class SensitiveWorkshopDraftServiceDBTests
 
         var logger = new Mock<ILogger<WorkshopDraftService>>();
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
-        var institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+        imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
         workshopDraftService = new WorkshopDraftService(
                    logger.Object,
+                   sportsRegistryProviderServiceMock.Object,
                    languageServiceMock.Object,
                    workshopDraftRepository,
                    workshopDraftImagesServiceMock.Object,
@@ -106,7 +115,9 @@ public class SensitiveWorkshopDraftServiceDBTests
                    institutionHierarchyRepositoryMock.Object,
                    codeficatorRepositoryMock.Object,
                    changesLogServiceMock.Object,
-                   institutionOptionsMock.Object);
+                   institutionHierarchyServiceMock.Object,
+                   institutionOptionsMock.Object,
+                   imageStorageOptionsMock.Object);
 
         await Seed();
     }
