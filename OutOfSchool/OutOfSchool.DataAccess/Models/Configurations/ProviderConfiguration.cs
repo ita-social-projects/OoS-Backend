@@ -39,8 +39,11 @@ internal class ProviderConfiguration : BusinessEntityWithContactsConfiguration<P
         builder.Property(x => x.LicenseStatus)
             .IsRequired()
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
-
-        builder.HasIndex(x => x.Edrpou).IsUnique();
+        
+        builder.HasOne(p => p.ParentProvider)
+            .WithMany(p => p.Branches)
+            .HasForeignKey(p => p.ParentProviderId)
+            .OnDelete(DeleteBehavior.Restrict);        
 
         builder.Property(x => x.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate();
