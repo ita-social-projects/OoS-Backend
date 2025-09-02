@@ -33,9 +33,9 @@ public class PositionDto // for get method
 
     public Guid ContactId { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     public DateOnly ActiveFrom { get; set; }
 
@@ -66,8 +66,10 @@ public static class PositionDtoExtensions
             ClassifierType = model.ClassifierType,
             ProviderId = model.ProviderId,
             ContactId = model.ContactId,
-            CreatedAt = model.CreatedAt,
-            UpdatedAt = model.UpdatedAt,
+            CreatedAt = new DateTimeOffset(DateTime.SpecifyKind(model.CreatedAt, DateTimeKind.Utc)),
+            UpdatedAt = model.UpdatedAt.HasValue
+                ? new DateTimeOffset(DateTime.SpecifyKind(model.UpdatedAt.Value, DateTimeKind.Utc))
+                : null,
             ActiveFrom = model.ActiveFrom,
             ActiveTo = model.ActiveTo,
             PositionType = model.PositionType,

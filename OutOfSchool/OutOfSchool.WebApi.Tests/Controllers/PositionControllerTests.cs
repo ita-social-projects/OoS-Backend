@@ -294,7 +294,7 @@ public class PositionControllerTests
             IsForRuralAreas = positionCreateDto.IsForRuralAreas,
             ProviderId = providerId,
             ContactId = Guid.NewGuid(),
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = null,
             IsDeleted = false
         };
