@@ -4,6 +4,7 @@ using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
+namespace OutOfSchool.SportsRegistryApiClient.Services;
 sealed class DisabledSportsRegistryProviderService : ISportsRegistryProviderService
 {
     static ErrorResponse Disabled(string op) => new()
