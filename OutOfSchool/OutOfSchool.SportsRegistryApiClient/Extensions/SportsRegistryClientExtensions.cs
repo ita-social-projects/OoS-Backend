@@ -26,14 +26,17 @@ public static class SportsRegistryClientExtensions
         }
         services.Configure<SportsRegistryApiClientConfig>(configuration.GetSection(SportsRegistryApiClientConfig.Name));
 
-        if (!sportConfiguration.Enable)
+        if (sportConfiguration.Enable)
         {
-            // Registry integration is turned off; skip service registrations.
-            return sportConfiguration;
+            services.TryAddTransient<ICommunicationService, CommunicationService>();
+            services.TryAddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
+            services.TryAddTransient<ISportsRegistryProviderService, SportsRegistryProviderService>();
         }
-        services.TryAddTransient<ICommunicationService, CommunicationService>();
-        services.TryAddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
-        services.TryAddTransient<ISportsRegistryProviderService, SportsRegistryProviderService>();
+        else
+        {
+            services.TryAddSingleton<ISportsRegistryProviderService, DisabledSportsRegistryProviderService>();
+        }
+        
         return sportConfiguration;
     }
 }
