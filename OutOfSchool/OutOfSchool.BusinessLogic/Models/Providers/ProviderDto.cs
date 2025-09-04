@@ -61,6 +61,8 @@ public static class ProviderDtoExtensions
             IsBlocked = model.IsBlocked,
             BlockReason = model.BlockReason,
             BlockPhoneNumber = model.BlockPhoneNumber,
+            ParentProviderId = model.ParentProviderId,
+            ParentProviderName = model.ParentProvider != null ? model.ParentProvider.FullTitle : null
         };
 
     public static List<ProviderDto> ToDto(this IEnumerable<Provider> list)

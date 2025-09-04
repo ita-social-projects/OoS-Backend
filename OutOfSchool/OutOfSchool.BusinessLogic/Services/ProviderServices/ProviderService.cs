@@ -233,6 +233,33 @@ public class ProviderService(
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<ProviderDto>> GetBranchesAsync(Guid providerId)
+    {
+        var branches = await providerRepository.GetByFilter(
+            p => p.ParentProviderId == providerId,
+            includeExpression: q => q.Include(p => p.ParentProvider)
+        );
+
+        return branches.ToDto();
+    }
+    
+    /// <inheritdoc/>
+    public async Task<ProviderDto> GetParentProviderAsync(Guid providerId)
+    {
+        var providerList = await providerRepository.GetByFilter(
+            p => p.Id == providerId,
+            includeExpression: q => q.Include(p => p.ParentProvider)
+        );
+
+        var provider = providerList.FirstOrDefault();
+
+        if (provider?.ParentProvider == null)
+            return null;
+
+        return provider.ParentProvider.ToDto();
+    }
+
+    /// <inheritdoc/>
     public async Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId)
         => await UpdateProviderWithActionBeforeSavingChanges(providerUpdateDto, userId).ConfigureAwait(false);
 
@@ -543,18 +570,13 @@ public class ProviderService(
         var providerDomainModel = providerDto.ToModel();
 
         contactsService.PrepareNewContacts(providerDomainModel, providerDto);
-
-        // BUG: concurrency issue:
-        //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
-        if (providerRepository.SameExists(providerDomainModel))
-        {
-            throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
-        }
-
+     
         providerDomainModel.Status = ProviderStatus.Pending;
         providerDomainModel.LicenseStatus = providerDomainModel.License == null
             ? ProviderLicenseStatus.NotProvided
             : ProviderLicenseStatus.Pending;
+
+        await ApplyHierarchyRulesAsync(providerDomainModel);
 
         var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
 
@@ -587,14 +609,26 @@ public class ProviderService(
         logger.LogDebug("Updating Provider with Id = {Id} was started", providerUpdateDto.Id);
 
         try
-        {
-            await currentUserService.UserHasRights(new ProviderRights(providerUpdateDto.Id), new DeputyDirectorRights(providerUpdateDto.Id)).ConfigureAwait(false);
-
+        {   if (providerUpdateDto.ParentProviderId != null)
+            {
+                await currentUserService.UserHasRights(
+                    new ProviderRights(providerUpdateDto.ParentProviderId.Value)).ConfigureAwait(false);
+            }
+            else
+            {
+                await currentUserService.UserHasRights(
+                    new ProviderRights(providerUpdateDto.Id), new DeputyDirectorRights(providerUpdateDto.Id)).ConfigureAwait(false);
+            }            
+            
             var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);
-
+           
+            await providerRepository.IsValidParentProvider(providerUpdateDto.Id);
+            
             ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
+
+            await ApplyHierarchyRulesAsync(checkProvider, checkProvider.Id);
 
             if (IsNeedInRelatedWorkshopsUpdating(providerUpdateDto, checkProvider))
             {
@@ -649,6 +683,42 @@ public class ProviderService(
         finally
         {
             logger.LogTrace("Updating Provider with Id = {Id} was finished", providerUpdateDto.Id);
+        }
+    }
+
+
+    private async Task ApplyHierarchyRulesAsync(Provider provider, Guid? existingProviderId = null)
+    {
+        if (provider.IsStructuralUnit) // branch organization
+        {
+            if (!provider.ParentProviderId.HasValue)
+            {
+                throw new InvalidOperationException("Branch must have a parent provider.");
+            }
+
+            bool isValid = await providerRepository.IsValidParentProvider(provider.ParentProviderId.Value);
+            var parentProvider = await providerRepository.GetById(provider.ParentProviderId.Value);
+
+            if (!isValid || parentProvider == null)
+            {
+                throw new InvalidOperationException("Invalid parent provider.");
+            }
+
+            provider.Edrpou = parentProvider.Edrpou; // Automatically inherit parent's EDRPOU            
+        }
+        else // main organization
+        {
+            // BUG: concurrency issue:
+            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
+            if (providerRepository.SameExists(provider))
+            {
+                throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
+            }
+
+            if (provider.ParentProviderId != null)
+            {
+                throw new Exception("Parent provider should be empty.");
+            }
         }
     }
 
