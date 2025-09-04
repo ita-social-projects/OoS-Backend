@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -11,9 +12,11 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904115243_MakeRnokppOptionalDuringTransition")]
+    partial class MakeRnokppOptionalDuringTransition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1586,7 +1589,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("Document")
                         .HasColumnType("longtext");
 
-                    b.Property<Guid?>("ExternalRegistryId")
+                    b.Property<Guid>("ExternalRegistryId")
                         .HasColumnType("binary(16)");
 
                     b.Property<string>("File")

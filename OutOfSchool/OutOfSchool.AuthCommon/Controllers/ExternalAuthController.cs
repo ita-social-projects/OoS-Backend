@@ -377,8 +377,9 @@ public class ExternalAuthController : Controller
     /// <returns><see cref="Individual"/> entity.</returns>
     private async Task<Individual?> GetIndividualAsync(UserInfoResponse userInfo, User user)
     {
+        // TODO: modify when back to required Rnokpp
         var individual = await dbContext.Individuals
-            .FirstOrDefaultAsync(i => !i.IsDeleted && i.Rnokpp == userInfo.DrfoCode);
+            .FirstOrDefaultAsync(i => !i.IsDeleted && i.Rnokpp != null && i.Rnokpp == userInfo.DrfoCode);
 
         if (individual == null)
         {
@@ -445,11 +446,18 @@ public class ExternalAuthController : Controller
             new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
             new(OpenIddictConstants.Claims.Email, userInfo.Email),
-            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
+            // TODO: return when back to required Rnokpp
+            // new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.Edrpou, userInfo.EdrpouCode),
             new(Constants.ClaimTypes.ProviderId, providerId.ToString()),
             new(Constants.ClaimTypes.IsDeputy, isDeputy.ToString(), ClaimValueTypes.Boolean),
         };
+
+        // TODO: return when back to required Rnokpp
+        if (individual.Rnokpp != null)
+        {
+            claims.Add(new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp));
+        }
 
         if (externalProviderId.HasValue)
         {
@@ -478,6 +486,7 @@ public class ExternalAuthController : Controller
             new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
             new(OpenIddictConstants.Claims.Email, userInfo.Email),
+            // TODO: technical staff should not have null rnokpp
             new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp),
             new(Constants.ClaimTypes.IndividualId, individual.Id.ToString()),
         };
@@ -499,6 +508,7 @@ public class ExternalAuthController : Controller
             IsPersistent = false,
         };
 
+        // TODO: unable to sign in without rnokpp
         var user = await userManager.FindByNameAsync(claims
             .First(c => c.Type == Constants.ClaimTypes.Rnokpp).Value);
         await signInManager.SignInWithClaimsAsync(user, properties, claims.Where(c => c.Type != OpenIddictConstants.Claims.Role));

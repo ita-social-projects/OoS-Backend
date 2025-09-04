@@ -20,12 +20,14 @@ public class Individual : BusinessEntity
     [MaxLength(60)]
     public string LastName { get; set; }
 
-    [Required(ErrorMessage = "Rnokpp is required")]
-    public string Rnokpp { get; set; }
+    // TODO: Making rnokpp nullable was requested by MODT. This will affect authorization flow, so this needs to be fixed asap when they know what to do
+    // [Required(ErrorMessage = "Rnokpp is required")]
+    public string? Rnokpp { get; set; }
 
     // TODO: will be retrieved from aikom
-    [Required(ErrorMessage = "ExternalRegistryId is required")]
-    public Guid ExternalRegistryId { get; set; } = default;
+    // TODO: make required when AIKOM is working
+    // [Required(ErrorMessage = "ExternalRegistryId is required")]
+    public Guid? ExternalRegistryId { get; set; } = null;
 
     public Gender Gender { get; set; }
 

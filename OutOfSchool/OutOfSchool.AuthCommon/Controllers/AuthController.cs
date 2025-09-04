@@ -653,14 +653,23 @@ public class AuthController : Controller
         Individual individual,
         User user)
     {
-        return
-        [
+        var claims = new List<Claim>
+        {
             new(OpenIddictConstants.Claims.Role, user.Role),
             new(OpenIddictConstants.Claims.GivenName, individual.FirstName),
             new(OpenIddictConstants.Claims.FamilyName, individual.LastName),
-            new(OpenIddictConstants.Claims.Email, user.Email),
-            new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp)
-        ];
+        };
+        if (user.Email != null)
+        {
+            claims.Add(new(OpenIddictConstants.Claims.Email, user.Email));
+        }
+
+        // TODO: revise when back to required Rnokpp
+        if (individual.Rnokpp != null)
+        {
+            claims.Add(new(Constants.ClaimTypes.Rnokpp, individual.Rnokpp));
+        }
+        return claims;
     }
 
     private record PositionProjection(string ProviderTitle, Guid ProviderId, string ProviderEdrpou, PositionType PositionType);
