@@ -21,7 +21,7 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
+    public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou && !x.IsStructuralUnit);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -40,6 +40,24 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
                     return Task.FromResult(provider.Entity);
                 })
             .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Checks if we can create a branch from given parent provider
+    /// </summary>
+    /// <param name="parentId">Parent id</param>
+    /// <returns>Bool</returns>
+    public async Task<bool> IsValidParentProvider(Guid parentId)
+    {
+        var parent = await dbSet.FirstOrDefaultAsync(x => x.Id == parentId);
+        
+        if (parent == null) 
+            return false; // parent don`t exist
+
+        if (parent.IsStructuralUnit)
+            return false; // parent can`t be a branch
+
+        return true;
     }
 
     /// <summary>

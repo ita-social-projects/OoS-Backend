@@ -140,7 +140,7 @@ public class ProviderController : ControllerBase
 
         try
         {
-            var userId = currentUserService.UserId;
+            var userId = currentUserService.UserId;            
             var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
             if (provider == null)
@@ -246,5 +246,43 @@ public class ProviderController : ControllerBase
             logger.LogError(ex, errorMessage);
             return BadRequest(errorMessage);
         }
+    }
+
+    /// <summary>
+    /// Gets branches for given provider
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>Branches of given provider.</returns>
+    [HasPermission(Permissions.ProviderRead)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerId}/branches")]
+    public async Task<ActionResult<IEnumerable<ProviderDto>>> GetBranches(Guid providerId)
+    {
+        var branches = await providerService.GetBranchesAsync(providerId);
+        if (branches == null || branches.Count() == 0)
+        {
+            return Ok("There in no branches for given provider");
+        }
+        return Ok(branches);
+    }
+
+    /// <summary>
+    /// Gets parents for given provider
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>Parents of given provider.</returns>
+    [HasPermission(Permissions.ProviderRead)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerId}/parent")]
+    public async Task<ActionResult<IEnumerable<ProviderDto>>> GetParentProvider(Guid providerId)
+    { 
+        var parents = await providerService.GetParentProviderAsync(providerId);
+        if (parents == null)
+        {
+            return Ok("There in no parents for given provider");
+        }
+        return Ok(parents);
     }
 }
