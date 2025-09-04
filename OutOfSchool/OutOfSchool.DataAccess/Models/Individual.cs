@@ -25,8 +25,9 @@ public class Individual : BusinessEntity
     public string? Rnokpp { get; set; }
 
     // TODO: will be retrieved from aikom
-    [Required(ErrorMessage = "ExternalRegistryId is required")]
-    public Guid ExternalRegistryId { get; set; } = default;
+    // TODO: make required when AIKOM is working
+    // [Required(ErrorMessage = "ExternalRegistryId is required")]
+    public Guid? ExternalRegistryId { get; set; } = null;
 
     public Gender Gender { get; set; }
 
