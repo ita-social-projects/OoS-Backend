@@ -101,7 +101,11 @@ public class ProfileService : IProfileService
                 var isDeputy = positions.Any(p => p.PositionType == PositionType.DeputyDirector);
                 var edrpou = positions.First().Edrpou;
 
-                claims[Constants.ClaimTypes.Rnokpp] = individual.Rnokpp;
+                // TODO: revise when back to required Rnokpp
+                if (individual.Rnokpp != null)
+                {
+                    claims[Constants.ClaimTypes.Rnokpp] = individual.Rnokpp;
+                }
                 claims[Constants.ClaimTypes.Edrpou] = edrpou;
                 claims[Constants.ClaimTypes.ProviderId] = providerId.ToString();
                 claims[Constants.ClaimTypes.IsDeputy] = isDeputy.ToString();
