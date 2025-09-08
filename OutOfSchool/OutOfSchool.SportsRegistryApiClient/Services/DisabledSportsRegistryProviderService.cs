@@ -13,9 +13,9 @@ sealed class DisabledSportsRegistryProviderService : ISportsRegistryProviderServ
         Message = $"Sports Registry integration is disabled. Operation: {op}"
     };
 
-    public Task<Either<ErrorResponse, SectionCreateResponse>> RegisterSectionAsync(SportsSectionPostRequest r)
-        => Task.FromResult<Either<ErrorResponse, SectionCreateResponse>>(Disabled("CreateSection"));
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest r)
+        => Task.FromResult<Either<ErrorResponse, SectionCreateUpdateResponse>>(Disabled("CreateSection"));
 
-    public Task<Either<ErrorResponse, SectionCreateResponse>> UpdateSectionAsync(SportsSectionPostRequest r)
-        => Task.FromResult<Either<ErrorResponse, SectionCreateResponse>>(Disabled("UpdateSection"));
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest r)
+        => Task.FromResult<Either<ErrorResponse, SectionCreateUpdateResponse>>(Disabled("UpdateSection"));
 }
