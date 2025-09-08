@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -11,6 +13,7 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IList<string> ImageIds { get; set; }
     public CompetitiveEventCoverageDto Coverage { get; set; }
     public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
