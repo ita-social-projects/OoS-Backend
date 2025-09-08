@@ -861,7 +861,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync("UA12345678");
 
         // mock successful registry response
-        var registryResponse = new SectionCreateResponse
+        var registryResponse = new SectionCreateUpdateResponse()
         {
             ResultVariables = new ResultVariables { SectionId = Guid.NewGuid(), Code = "200" }
         };
@@ -1476,7 +1476,7 @@ public class WorkshopDraftServiceTests
            });
     }
 
-    private void SetupSportRegistryResponse(Either<ErrorResponse, SectionCreateResponse> response)
+    private void SetupSportRegistryResponse(Either<ErrorResponse, SectionCreateUpdateResponse> response)
     {
         sportRegistryProviderServiceMock
             .Setup(x => x.RegisterSectionAsync(It.IsAny<SportsSectionPostRequest>()))

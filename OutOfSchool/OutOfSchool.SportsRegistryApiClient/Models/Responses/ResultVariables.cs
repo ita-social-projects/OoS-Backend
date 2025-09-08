@@ -1,11 +1,4 @@
-using OutOfSchool.Common.Models;
-
 namespace OutOfSchool.SportsRegistryApiClient.Models.Responses;
-
-public class SectionCreateResponse : IResponse
-{
-    public ResultVariables ResultVariables { get; set; } = null!;
-}
 
 public class ResultVariables
 {

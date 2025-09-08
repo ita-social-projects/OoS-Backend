@@ -10,5 +10,12 @@ public interface ISportsRegistryApiService
     /// </summary>
     /// <param name="request">The data required to create a sports section.</param>
     /// <returns>A response containing section registration status and process ID, if available.</returns>
-    Task<Either<ErrorResponse, SectionCreateResponse>> CreateSectionAsync(SportsSectionPostRequest request);
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> CreateSectionAsync(SportsSectionPostRequest request);
+    
+    /// <summary>
+    /// Update a sport section in the external Ministry of Sports registry
+    /// </summary>
+    /// <param name="request">The data required to create a sports section.</param>
+    /// <returns>A response containing section update status and process ID, if available.</returns>
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request);
 }

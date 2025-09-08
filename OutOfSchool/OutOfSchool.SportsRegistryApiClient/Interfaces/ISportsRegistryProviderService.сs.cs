@@ -6,5 +6,6 @@ namespace OutOfSchool.SportsRegistryApiClient.Interfaces;
 
 public interface ISportsRegistryProviderService
 {
-    Task<Either<ErrorResponse, SectionCreateResponse>> RegisterSectionAsync(SportsSectionPostRequest request);
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest request);
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request);
 }
