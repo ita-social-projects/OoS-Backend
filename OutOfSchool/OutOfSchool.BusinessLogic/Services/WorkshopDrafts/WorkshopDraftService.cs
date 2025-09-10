@@ -327,10 +327,11 @@ public class WorkshopDraftService(
     }
 
     // <inheritdoc/>
-    public async Task Approve(Guid id)
+    public async Task<Guid> Approve(Guid id)
     {
         //TODO: Check if we can add RunInTransaction later
 
+        Guid createdWorkshopId;
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
@@ -345,16 +346,20 @@ public class WorkshopDraftService(
             {
                 await SyncSectionWithRegistryAsync(workshopDraft);
             }
-            await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
+            var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
+            createdWorkshopId = result.Workshop.Id;
         }
         else
         {
             await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
+            createdWorkshopId = workshopDraft.WorkshopId.Value;
         }
 
         await workshopDraftRepository.Delete(workshopDraft);
 
         logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
+        
+        return createdWorkshopId;
     }
 
     // <inheritdoc/>
