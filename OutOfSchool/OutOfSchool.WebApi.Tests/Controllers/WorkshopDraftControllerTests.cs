@@ -213,18 +213,24 @@ public class WorkshopDraftControllerTests
 
     #region Approve
     [Test]
-    public async Task Approve_WhenModelIsValid_ShouldReturnOk()
+    public async Task Approve_WhenModelIsValid_ShouldReturnValidGuid()
     {
-        // Arrange  
-        workshopDraftServiceMoq.Setup(x => x.Approve(workshopV2Dto.Id))
-            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+        // Arrange
+        Guid expectedId = Guid.NewGuid();
+        workshopDraftServiceMoq
+            .Setup(x => x.Approve(workshopV2Dto.Id))
+            .ReturnsAsync(expectedId)
+            .Verifiable();
 
         // Act
-        var result = await controller.Approve(workshopV2Dto.Id).ConfigureAwait(false) as OkResult;
+        var result = await controller.Approve(workshopV2Dto.Id).ConfigureAwait(false) as ObjectResult;
 
-        // Assert        
+        // Assert
         workshopDraftServiceMoq.VerifyAll();
-        Assert.AreEqual(Ok, result.StatusCode);
+        Assert.NotNull(result);
+        Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
+
+        Assert.NotNull(result.Value);
     }
     #endregion 
 

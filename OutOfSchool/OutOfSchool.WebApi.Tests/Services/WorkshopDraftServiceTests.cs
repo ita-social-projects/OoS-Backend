@@ -664,7 +664,12 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
+            .ReturnsAsync(new WorkshopResultDto
+            {
+                Workshop = new WorkshopV2Dto { Id = Guid.NewGuid() }
+            })
             .Verifiable(Times.Once);
 
         // Act
@@ -733,8 +738,10 @@ public class WorkshopDraftServiceTests
 
         workshopServiceCombinerV2Moq
             .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
-            .Returns(Task.FromResult(new WorkshopResultDto()));
-
+            .ReturnsAsync(new WorkshopResultDto
+            {
+                Workshop = new WorkshopV2Dto { Id = Guid.NewGuid() }
+            });
         // Act
         await service.Approve(workshopDraft.Id);
 
@@ -871,7 +878,10 @@ public class WorkshopDraftServiceTests
 
         workshopServiceCombinerV2Moq
             .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
-            .Returns(Task.FromResult(new WorkshopResultDto()))
+            .ReturnsAsync(new WorkshopResultDto
+            {
+                Workshop = new WorkshopV2Dto { Id = Guid.NewGuid() }
+            })
             .Verifiable();
 
         // Act
@@ -921,8 +931,11 @@ public class WorkshopDraftServiceTests
 
         workshopServiceCombinerV2Moq
             .Setup(x => x.Create(It.IsAny<WorkshopV2CreateRequestDto>()))
-            .Returns(Task.FromResult(new WorkshopResultDto()))
-            .Verifiable(Times.Once);
+            .ReturnsAsync(new WorkshopResultDto
+            {
+                Workshop = new WorkshopV2Dto { Id = Guid.NewGuid() }
+            })
+            .Verifiable();
 
         // Act
         await service.Approve(workshopDraft.Id);
