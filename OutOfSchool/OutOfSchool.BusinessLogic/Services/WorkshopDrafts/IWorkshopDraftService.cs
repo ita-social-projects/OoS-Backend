@@ -62,8 +62,8 @@ public interface IWorkshopDraftService
     /// Approve draft after moderating.
     /// </summary>
     /// <param name="id">Key in the table.</param>
-    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-    Task Approve(Guid id);
+    /// A <see cref="Task{Guid}"/> representing the result of the asynchronous operation with the id of the created or updated Workshop.
+    Task<Guid> Approve(Guid id);
 
     /// <summary>
     /// Reject draft after moderating.

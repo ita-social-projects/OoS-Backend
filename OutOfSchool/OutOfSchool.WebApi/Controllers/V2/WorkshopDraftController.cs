@@ -205,8 +205,8 @@ public class WorkshopDraftController : ControllerBase
     {
         try
         {
-            await workshopDraftService.Approve(id);
-            return Ok();
+            var createdWorkshopId = await workshopDraftService.Approve(id);
+            return StatusCode(StatusCodes.Status200OK,new { WorkshopId = createdWorkshopId});
         }
         catch (EntityDeletedConflictException ex)
         {
