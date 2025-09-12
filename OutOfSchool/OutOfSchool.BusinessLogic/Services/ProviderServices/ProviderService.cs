@@ -611,6 +611,11 @@ public class ProviderService(
         try
         {   if (providerUpdateDto.ParentProviderId != null)
             {
+                if (!await providerRepository.IsValidParentProvider(providerUpdateDto.ParentProviderId.Value))
+                {
+                    throw new InvalidOperationException("Invalid parent provider.");
+                }
+
                 await currentUserService.UserHasRights(
                     new ProviderRights(providerUpdateDto.ParentProviderId.Value)).ConfigureAwait(false);
             }
@@ -620,10 +625,9 @@ public class ProviderService(
                     new ProviderRights(providerUpdateDto.Id), new DeputyDirectorRights(providerUpdateDto.Id)).ConfigureAwait(false);
             }            
             
-            var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);
-           
-            await providerRepository.IsValidParentProvider(providerUpdateDto.Id);
-            
+            var checkProvider = await providerRepository.GetWithNavigations(providerUpdateDto.Id).ConfigureAwait(false);                       
+                        
+
             ChangeProviderStatusIfNeeded(providerUpdateDto, checkProvider, out var statusChanged, out var licenseChanged);
 
             contactsService.PrepareUpdatedContacts(checkProvider, providerUpdateDto);
@@ -708,9 +712,19 @@ public class ProviderService(
         }
         else // main organization
         {
-            // BUG: concurrency issue:
-            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
-            if (providerRepository.SameExists(provider))
+            // Creation: block duplicates
+            if (existingProviderId == null)
+            {
+                // BUG: concurrency issue:
+                //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
+                if (providerRepository.SameExists(provider))
+                {
+                    throw new InvalidOperationException(localizer["There is already a provider with such data"]);
+                }
+            }            
+            
+            // Update: block duplicates except itself
+            if (providerRepository.AnotherWithSameEdrpouExists(provider))
             {
                 throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
             }

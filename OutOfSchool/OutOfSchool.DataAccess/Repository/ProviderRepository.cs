@@ -17,11 +17,22 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     }
 
     /// <summary>
-    /// Checks entity elements for uniqueness.
+    /// Checks entity elements for uniqueness
+    /// Should be used for creation flow.
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
-    public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou && !x.IsStructuralUnit);
+    public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
+
+    /// <summary>
+    /// Checks if another different provider exists with the same EDRPOU.
+    /// Should be used to update flows to avoid self-collision.
+    /// </summary>
+    public bool AnotherWithSameEdrpouExists(Provider entity) =>
+        dbSet.Any(x =>
+            !x.IsDeleted &&
+            x.Edrpou == entity.Edrpou &&
+            x.Id != entity.Id);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -49,15 +60,10 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     /// <returns>Bool</returns>
     public async Task<bool> IsValidParentProvider(Guid parentId)
     {
-        var parent = await dbSet.FirstOrDefaultAsync(x => x.Id == parentId);
-        
-        if (parent == null) 
-            return false; // parent don`t exist
-
-        if (parent.IsStructuralUnit)
-            return false; // parent can`t be a branch
-
-        return true;
+        return await dbSet.AnyAsync(x =>
+        x.Id == parentId
+        && !x.IsDeleted
+        && !x.IsStructuralUnit);
     }
 
     /// <summary>

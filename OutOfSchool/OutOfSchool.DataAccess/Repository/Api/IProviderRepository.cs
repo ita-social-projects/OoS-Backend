@@ -13,5 +13,6 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
     Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous);
 
     Task<bool> IsValidParentProvider(Guid parentId);
-    
+
+    bool AnotherWithSameEdrpouExists(Provider entity);
 }

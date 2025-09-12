@@ -146,8 +146,8 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     #region Self-referencing navigation properties
     
     public Guid? ParentProviderId { get; set; }
-    public virtual Provider ParentProvider { get; set; }  
-    public virtual ICollection<Provider> Branches { get; set; }
+    public virtual Provider ParentProvider { get; set; }
+    public virtual ICollection<Provider> Branches { get; set; } = [];
 
     #endregion
 }
