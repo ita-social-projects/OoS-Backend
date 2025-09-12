@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
+using Microsoft.Extensions.Options;
 using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -19,8 +21,6 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
-using System.Collections.Concurrent;
-using System.Linq.Expressions;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -917,6 +917,7 @@ public class WorkshopDraftService(
         var draft = await workshopDraftRepository.GetByIdWithDetails(
             id,
             includeExpression: q => q
+                .Include(d => d.Images)
                 .Include(d => d.Provider)
                 .ThenInclude(p => p.Institution));
 
