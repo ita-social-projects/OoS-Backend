@@ -169,7 +169,7 @@ public class CompetitiveEventsV2ControllerTests
             CompetitiveEventV2 = new CompetitiveEventV2Dto { Id = expectedId }
         };
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto)).ReturnsAsync(resultDto);
+        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false)).ReturnsAsync(resultDto);
 
         var result = await controller.Update(dto);
 
@@ -186,7 +186,7 @@ public class CompetitiveEventsV2ControllerTests
     {
         var dto = new CompetitiveEventV2CreateRequestDto();
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto))
+        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false))
             .ReturnsAsync(new CompetitiveEventResultDto { CompetitiveEventV2 = null });
 
         var result = await controller.Update(dto);
@@ -201,7 +201,7 @@ public class CompetitiveEventsV2ControllerTests
     {
         var dto = new CompetitiveEventV2CreateRequestDto();
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto))
+        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false))
             .ThrowsAsync(new InvalidOperationException("Service error"));
 
         var result = await controller.Update(dto);

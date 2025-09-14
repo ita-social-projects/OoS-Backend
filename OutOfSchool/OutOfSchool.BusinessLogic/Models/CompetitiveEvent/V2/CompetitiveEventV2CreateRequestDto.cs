@@ -49,7 +49,8 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             MaximumAge = dto.MaximumAge ?? 0,
             Price = dto.Price ?? 0,
             CompetitiveSelection = dto.CompetitiveSelection ?? false,
-            Contacts = dto.Contacts?.ToModel(),            
+            Contacts = dto.Contacts?.ToModel(),   
+            CoverImageId = dto.CoverImageId,
         };
 
     public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent SetToModel(this CompetitiveEventV2CreateRequestDto dto, OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
@@ -108,13 +109,14 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
            Price = draft.CompetitiveEventDraftContent?.Price,
            CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
-           Contacts = draft.CompetitiveEventDraftContent?.Contacts?.Any() == true
+           Contacts = draft.CompetitiveEventDraftContent?.Contacts.Any() == true
             ? draft.CompetitiveEventDraftContent.Contacts.ToDto()
-            : draft.CompetitiveEvent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
+            : draft.CompetitiveEvent?.Contacts.ToDto() ?? new List<ContactsDto>(),
            CoverImageId = draft.CoverImageId,
            CoverageId = draft.CoverageId,
            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
            ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
-           SubDirectionIds = draft.CompetitiveEvent?.SubDirections?.Select(sd => sd.Id).ToList() ?? []
+           SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ?? [],
+           CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems.ToDto()
        };
 }

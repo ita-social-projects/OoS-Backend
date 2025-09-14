@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Localization;
+﻿using System.Linq.Expressions;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
@@ -6,9 +7,9 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
-using System.Linq.Expressions;
 
 namespace OutOfSchool.BusinessLogic.Services;
 
@@ -413,6 +414,14 @@ public class CompetitiveEventService(
                 imagesUploadingResult = await competitiveImagesService.AddManyImagesAsync(competitiveEvent, dto.ImageFiles)
                     .ConfigureAwait(false);
             }
+            else if (dto.ImageIds?.Count > 0)
+            {
+                competitiveEvent.Images ??= [];
+                competitiveEvent.Images.AddRange(dto.ImageIds
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct()
+                    .Select(id => new Image<CompetitiveEvent> { ExternalStorageId = id }));
+            }
 
             Result<string> uploadingCoverImageResult = null;
 
@@ -448,7 +457,7 @@ public class CompetitiveEventService(
     /// <returns>A result DTO containing the updated competitive event and results of the image updates</returns>
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
-    public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto)
+    public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto, bool fromDraft = false)
     {
         var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
@@ -466,6 +475,18 @@ public class CompetitiveEventService(
             var multipleImageChangingResult = await competitiveImagesService
                 .ChangeImagesAsync(competitiveEvent, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
+
+            if (fromDraft)
+            {
+                competitiveEvent.Images ??= [];
+                var existingIds = competitiveEvent.Images.Select(i => i.ExternalStorageId).ToHashSet();
+                var toAdd = dto.ImageIds
+                    .Where(id => !string.IsNullOrWhiteSpace(id) && !existingIds.Contains(id))
+                    .Distinct()
+                    .ToList();
+                competitiveEvent.Images.AddRange(
+                    toAdd.Select(id => new Image<CompetitiveEvent> {ExternalStorageId = id}));
+            }
 
             var changingCoverImageResult = await competitiveImagesService
                 .ChangeCoverImageAsync(competitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
