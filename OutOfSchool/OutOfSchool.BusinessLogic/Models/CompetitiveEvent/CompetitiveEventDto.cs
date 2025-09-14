@@ -61,6 +61,8 @@ public static class CompetitiveEventDtoExtensions
                     SubDirectionId = s.Id
                 })
             .ToList() ?? [],
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList(),
         };
 
     public static List<CompetitiveEventDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)

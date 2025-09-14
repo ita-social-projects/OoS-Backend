@@ -307,11 +307,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         if (competitiveEventDraft.CompetitiveEventId == null)
         {
-            await competitiveEventService.Create(competitiveEventDraft.ToV2CreateRequestDto());
+            await competitiveEventService.CreateV2(competitiveEventDraft.ToV2CreateRequestDto());
         }
         else
         {
-            await competitiveEventService.Update(competitiveEventDraft.ToV2CreateRequestDto());
+            await competitiveEventService.UpdateV2(competitiveEventDraft.ToV2CreateRequestDto(), true);
         }
 
         await competitiveEventDraftRepository.Delete(competitiveEventDraft);
