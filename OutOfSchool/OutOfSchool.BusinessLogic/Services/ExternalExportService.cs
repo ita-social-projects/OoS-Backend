@@ -29,42 +29,45 @@ public class ExternalExportService(
     /// Create a delegate to include other entities in Provider entity
     /// </summary>
     private readonly Func<IQueryable<Provider>, IQueryable<Provider>> providerIncludeFunc =
-            p => p.Include(p => p.ProviderSectionItems)
-                  .Include(p => p.Images)
-                  .Include(p => p.Institution)
-                  .Include(p => p.Type)
-                  .IncludeContactsWithCodeficatorHierarchy();
+        p => p.Include(p => p.ProviderSectionItems
+                .OrderBy(pdi => pdi.Name))
+            .Include(p => p.Images)
+            .Include(p => p.Institution)
+            .Include(p => p.Type)
+            .IncludeContactsWithCodeficatorHierarchy();
 
     /// <summary>
     /// Create a delegate to include other entities in Workshop entity
     /// </summary>
     private readonly Func<IQueryable<Workshop>, IQueryable<Workshop>> workshopIncludeFunc =
-            W => W.Include(w => w.WorkshopDescriptionItems)
-                  .Include(w => w.Tags)                
-                  .Include(w => w.Images)
-                  .Include(w => w.DateTimeRanges)
-                  .Include(w => w.Teachers)
-                  .Include(w => w.InstitutionHierarchy)
-                  .ThenInclude(ih => ih.Institution)
-                  .Include(w => w.InstitutionHierarchy)
-                  .ThenInclude(i => i.SubDirections)
-                  .ThenInclude(sb => sb.Direction)
-                  .Include(w => w.DefaultTeacher)
-                  .Include(w => w.LanguageOfEducation)
-                  .IncludeContactsWithCodeficatorHierarchy();
+        W => W.Include(w => w.WorkshopDescriptionItems
+                .OrderBy(wdi => wdi.SectionName))
+            .Include(w => w.Tags)
+            .Include(w => w.Images)
+            .Include(w => w.DateTimeRanges)
+            .Include(w => w.Teachers)
+            .Include(w => w.InstitutionHierarchy)
+            .ThenInclude(ih => ih.Institution)
+            .Include(w => w.InstitutionHierarchy)
+            .ThenInclude(i => i.SubDirections)
+            .ThenInclude(sb => sb.Direction)
+            .Include(w => w.DefaultTeacher)
+            .Include(w => w.LanguageOfEducation)
+            .IncludeContactsWithCodeficatorHierarchy();
 
     /// <summary>
     /// Create a delegate to include other entities in CompetitiveEvent entity
     /// </summary>
     private readonly Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>> competitiveEventIncludeFunc =
-            ce => ce.Include(ce => ce.CompetitiveEventDescriptionItems)
-                    .Include(ce => ce.Parent)
-                    .Include(ce => ce.CompetitiveEventAccountingType)
-                    .Include(ce => ce.Coverage)
-                    .Include(ce => ce.Images)
-                    .Include(ce => ce.SubDirections)
-                    .ThenInclude(s => s.Direction)
-                    .IncludeContactsWithCodeficatorHierarchy();
+        ce => ce.Include(ce => ce.CompetitiveEventDescriptionItems
+                .OrderBy(cdi => cdi.SectionName))
+            .Include(ce => ce.Parent)
+            .Include(ce => ce.CompetitiveEventAccountingType)
+            .Include(ce => ce.Coverage)
+            .Include(ce => ce.Images)
+            .Include(ce => ce.SubDirections)
+            .ThenInclude(s => s.Direction)
+            .IncludeContactsWithCodeficatorHierarchy();
 
     public async Task<SearchResult<ProviderInfoBaseDto>> GetProviders(DateTime updatedAfter,
         OffsetFilter offsetFilter)
