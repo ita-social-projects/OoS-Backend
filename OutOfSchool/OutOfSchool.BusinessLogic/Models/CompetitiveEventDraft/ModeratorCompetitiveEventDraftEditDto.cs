@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -38,15 +38,22 @@ public class ModeratorCompetitiveEventDraftEditDto
 
 public static class ModeratorCompetitiveEventDraftEditDtoExtensions
 {
+    /// <summary>
+    /// Applies values from a moderator edit DTO to an existing competitive event draft model.
+    /// </summary>
+    /// <remarks>
+    /// Copies selected fields from <paramref name="dto"/> into <paramref name="model"/>. It maps description items and synchronizes contact details with existing contacts (updates matching contacts only; it does not add or remove contacts). Note: <see cref="ModeratorCompetitiveEventDraftEditDto.AdditionalDescription"/> and <see cref="ModeratorCompetitiveEventDraftEditDto.PreferentialTermsOfParticipation"/> are not propagated to the model by this method.
+    /// </remarks>
+    /// <param name="dto">The moderator edit DTO containing updated values.</param>
+    /// <param name="model">The draft model to be updated (mutated and returned).</param>
+    /// <returns>The same <paramref name="model"/> instance after applying the DTO values.</returns>
     public static CompetitiveEventDraftModel ToDraft(this ModeratorCompetitiveEventDraftEditDto dto, CompetitiveEventDraftModel model)
     { 
         model.CompetitiveEventDraftContent.Title = dto.Title;
         model.CompetitiveEventDraftContent.ShortTitle = dto.ShortTitle;
         model.CompetitiveEventDraftContent.DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure;
-        model.CompetitiveEventDraftContent.AdditionalDescription = dto.AdditionalDescription;
         model.CompetitiveEventDraftContent.VenueName = dto.VenueName;
         model.CompetitiveEventDraftContent.TermsOfParticipation = dto.TermsOfParticipation;
-        model.CompetitiveEventDraftContent.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.CompetitiveEventDraftContent.Benefits = dto.Benefits;       
         model.CompetitiveEventDraftContent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToDraft();
 

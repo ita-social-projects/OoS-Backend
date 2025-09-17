@@ -442,7 +442,6 @@ public class CompetitiveEventControllerTests
         {
             Title = "Title",
             ShortTitle = "Short Title",
-            AdditionalDescription = "Additional Description",
         };
     }
     private static CompetitiveEventCreateUpdateDto FakeCompetitiveEventCreateDto()

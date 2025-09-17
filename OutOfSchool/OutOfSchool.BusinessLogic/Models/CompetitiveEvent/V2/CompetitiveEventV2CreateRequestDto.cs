@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
@@ -22,7 +22,14 @@ public class CompetitiveEventV2CreateRequestDto : CompetitiveEventCreateUpdateDt
 
 public static class CompetitiveEventV2CreateRequestDtoExtensions
 {
-    public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent ToModel(this CompetitiveEventV2CreateRequestDto dto)
+    /// <summary>
+        /// Creates a new CompetitiveEvent domain model populated from the DTO.
+        /// </summary>
+        /// <remarks>
+        /// Nullable DTO fields are converted with sensible defaults: null registration times and <see cref="PlannedFormatOfClasses"/> are set to their default values; <see cref="AreThereBenefits"/>, <see cref="CompetitiveSelection"/> default to false; <see cref="MaximumAge"/> and <see cref="Price"/> default to 0. Contacts are mapped via <c>dto.Contacts?.ToModel()</c>. The DTO's <see cref="CoverImageId"/> is copied to the model.
+        /// </remarks>
+        /// <returns>A new <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> instance with properties copied from the DTO.</returns>
+        public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent ToModel(this CompetitiveEventV2CreateRequestDto dto)
         => new()
         {
             Title = dto.Title,
@@ -32,7 +39,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             RegistrationEndTime = dto.RegistrationEndTime ?? default,
             ParentId = dto.ParentId,
             CoverageId = dto.CoverageId,
-            AdditionalDescription = dto.AdditionalDescription,
             ScheduledStartTime = dto.ScheduledStartTime,
             ScheduledEndTime = dto.ScheduledEndTime,
             NumberOfSeats = dto.NumberOfSeats,
@@ -42,7 +48,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
             VenueName = dto.VenueName,
             TermsOfParticipation = dto.TermsOfParticipation,
-            PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits ?? false,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,
@@ -53,6 +58,12 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             CoverImageId = dto.CoverImageId,
         };
 
+    /// <summary>
+    /// Copies values from a CompetitiveEventV2CreateRequestDto into an existing CompetitiveEvent domain model, updating the model in-place.
+    /// </summary>
+    /// <param name="dto">Source DTO containing new values; nullable properties on the DTO will not overwrite existing model values.</param>
+    /// <param name="model">The existing domain model to update.</param>
+    /// <returns>The same CompetitiveEvent instance after applying updates.</returns>
     public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent SetToModel(this CompetitiveEventV2CreateRequestDto dto, OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
     {
         model.Title = dto.Title;
@@ -62,7 +73,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         model.RegistrationEndTime = dto.RegistrationEndTime ?? model.RegistrationEndTime;
         model.ParentId = dto.ParentId;
         model.CoverageId = dto.CoverageId;
-        model.AdditionalDescription = dto.AdditionalDescription;
         model.ScheduledStartTime = dto.ScheduledStartTime;
         model.ScheduledEndTime = dto.ScheduledEndTime;
         model.NumberOfSeats = dto.NumberOfSeats;
@@ -72,7 +82,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
         model.TermsOfParticipation = dto.TermsOfParticipation;
-        model.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
@@ -84,7 +93,12 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         return model;
     }
 
-    public static CompetitiveEventV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
+    /// <summary>
+       /// Converts a <see cref="OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft"/> into a <see cref="CompetitiveEventV2CreateRequestDto"/>.
+       /// </summary>
+       /// <param name="draft">The draft to convert; draft content and related collections are read to populate the DTO. Nullable draft content and collections are handled with sensible defaults (empty lists, zeros, or preserved defaults) where appropriate.</param>
+       /// <returns>A new <see cref="CompetitiveEventV2CreateRequestDto"/> populated from the draft. Lists such as ImageIds and Contacts are returned as empty lists when the draft provides no values.</returns>
+       public static CompetitiveEventV2CreateRequestDto ToV2CreateRequestDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
        => new()
        {
            Id = draft.CompetitiveEventId ?? default,
@@ -93,7 +107,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            RegistrationStartTime = draft.CompetitiveEventDraftContent?.RegistrationStartTime,
            RegistrationEndTime = draft.CompetitiveEventDraftContent?.RegistrationEndTime,
            ParentId = draft.CompetitiveEventDraftContent?.ParentId,
-           AdditionalDescription = draft.CompetitiveEventDraftContent?.AdditionalDescription,
            ScheduledStartTime = draft.CompetitiveEventDraftContent?.ScheduledStartTime ?? default,
            ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
            NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
@@ -102,7 +115,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
            VenueName = draft.CompetitiveEventDraftContent?.VenueName,
            TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
-           PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
            AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
            Benefits = draft.CompetitiveEventDraftContent?.Benefits,
            MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,

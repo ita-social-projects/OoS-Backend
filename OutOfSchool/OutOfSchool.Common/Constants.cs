@@ -183,6 +183,11 @@ public static class Constants
     public const int EnrollmentProcedureDescription = 500;
 
     /// <summary>
+    /// Maximum length of terms of participation.
+    /// </summary>
+    public const int MaxTermsOfParticipationLength = 2000;
+
+    /// <summary>
     /// Maximum length of preferential terms of participation.
     /// </summary>
     public const int MaxPreferentialTermsOfParticipationLength = 500;

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.ContactInfo;
@@ -15,51 +15,75 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
 
 public static class CompetitiveEventV2DtoExtensions
 {
+    /// <summary>
+    /// Maps a domain <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> to a <see cref="CompetitiveEventV2Dto"/>.
+    /// </summary>
+    /// <remarks>
+    /// Preserves core fields (identifiers, titles, times, pricing, limits, contacts, coverage, etc.), converts description items and contacts via their respective <c>ToDto()</c> mappers,
+    /// and projects image metadata: <see cref="CompetitiveEventV2Dto.CoverImageId"/> is copied from the model and <see cref="CompetitiveEventV2Dto.ImageIds"/> is populated from each image's <c>ExternalStorageId</c>.
+    /// SubDirections marked as deleted are excluded; when no subdirections or description/contacts are present, the corresponding DTO collections are empty or null according to the mapper behavior.
+    /// </remarks>
+    /// <returns>A new <see cref="CompetitiveEventV2Dto"/> populated from the source model.</returns>
     public static CompetitiveEventV2Dto ToV2Dto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
-        => new()
-        {
-            Id = model.Id,
-            IsDeleted = model.IsDeleted,
-            Title = model.Title,
-            ShortTitle = model.ShortTitle,
-            State = model.State,
-            RegistrationStartTime = model.RegistrationStartTime,
-            RegistrationEndTime = model.RegistrationEndTime,
-            ParentId = model.ParentId,
-            CoverageId = model.CoverageId,
-            CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
-            AdditionalDescription = model.AdditionalDescription,
-            ScheduledStartTime = model.ScheduledStartTime,
-            ScheduledEndTime = model.ScheduledEndTime,
-            NumberOfSeats = model.NumberOfSeats,
-            CompetitiveEventAccountingTypeId = model.CompetitiveEventAccountingTypeId,
-            DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
-            OrganizerOfTheEventId = model.OrganizerOfTheEventId,
-            PlannedFormatOfClasses = model.PlannedFormatOfClasses,
-            VenueName = model.VenueName,
-            TermsOfParticipation = model.TermsOfParticipation,
-            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
-            AreThereBenefits = model.AreThereBenefits,
-            Benefits = model.Benefits,
-            MinimumAge = model.MinimumAge,
-            MaximumAge = model.MaximumAge,
-            Price = model.Price,
-            CompetitiveSelection = model.CompetitiveSelection,
-            Contacts = model.Contacts?.ToDto(),
-            SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
-            Coverage = model.Coverage?.ToDto(),
-            DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(
-                s => new DirectionSubDirectionIdsDto
-                {
-                    DirectionId = s.DirectionId,
-                    SubDirectionId = s.Id
-                })
-            .ToList() ?? []
-        };
+    => new()
+    {
+        Id = model.Id,
+        IsDeleted = model.IsDeleted,
+        Title = model.Title,
+        ShortTitle = model.ShortTitle,
+        State = model.State,
+        RegistrationStartTime = model.RegistrationStartTime,
+        RegistrationEndTime = model.RegistrationEndTime,
+        ParentId = model.ParentId,
+        CoverageId = model.CoverageId,
+        CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
+        ScheduledStartTime = model.ScheduledStartTime,
+        ScheduledEndTime = model.ScheduledEndTime,
+        NumberOfSeats = model.NumberOfSeats,
+        CompetitiveEventAccountingTypeId = model.CompetitiveEventAccountingTypeId,
+        DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
+        OrganizerOfTheEventId = model.OrganizerOfTheEventId,
+        PlannedFormatOfClasses = model.PlannedFormatOfClasses,
+        VenueName = model.VenueName,
+        TermsOfParticipation = model.TermsOfParticipation,
+        AreThereBenefits = model.AreThereBenefits,
+        Benefits = model.Benefits,
+        MinimumAge = model.MinimumAge,
+        MaximumAge = model.MaximumAge,
+        Price = model.Price,
+        CompetitiveSelection = model.CompetitiveSelection,
+        Contacts = model.Contacts?.ToDto(),
+        SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
+        Coverage = model.Coverage?.ToDto(),
+        DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(
+            s => new DirectionSubDirectionIdsDto
+            {
+                DirectionId = s.DirectionId,
+                SubDirectionId = s.Id
+            })
+        .ToList() ?? [],
+        CoverImageId = model.CoverImageId,
+        ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
+    };
 
+    /// <summary>
+    /// Converts a sequence of domain CompetitiveEvent models into a list of CompetitiveEventV2Dto.
+    /// </summary>
+    /// <returns>A List of CompetitiveEventV2Dto produced by mapping each input model with <see cref="ToV2Dto(OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent)"/>.</returns>
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
-        => list.MapToList(ToV2Dto);
+    => list.MapToList(ToV2Dto);
 
+    /// <summary>
+    /// Converts a CompetitiveEventDraft into a CompetitiveEventV2Dto by mapping draft content and related metadata.
+    /// </summary>
+    /// <remarks>
+    /// Maps values from <c>draft.CompetitiveEventDraftContent</c> when present and preserves draft-level metadata such as <c>CoverImageId</c>, <c>Images</c>, <c>CoverageId</c>, and <c>CompetitiveEventAccountingTypeId</c>. Behaviors for missing values:
+    /// - If <c>CompetitiveEventId</c> is null the DTO <c>Id</c> will be <c>Guid.Empty</c>.
+    /// - Numeric and DateTime fields fall back to their default values when null (e.g., <c>MinimumAge</c> defaults to 0).
+    /// - <c>Contacts</c>, <c>ImageIds</c>, and other collections default to empty lists when absent.
+    /// - <c>SubDirectionIds</c> are taken from draft content if available; otherwise they are taken from <c>draft.CompetitiveEvent.SubDirections</c> when present.
+    /// </remarks>
+    /// <returns>A CompetitiveEventV2Dto populated from the provided draft.</returns>
     public static CompetitiveEventV2Dto ToDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
     {
         return new CompetitiveEventV2Dto()
@@ -70,7 +94,6 @@ public static class CompetitiveEventV2DtoExtensions
             RegistrationStartTime = draft.CompetitiveEventDraftContent?.RegistrationStartTime,
             RegistrationEndTime = draft.CompetitiveEventDraftContent?.RegistrationEndTime,
             ParentId = draft.CompetitiveEventDraftContent?.ParentId,
-            AdditionalDescription = draft.CompetitiveEventDraftContent?.AdditionalDescription,
             ScheduledStartTime = draft.CompetitiveEventDraftContent?.ScheduledStartTime ?? default,
             ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
             NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
@@ -79,20 +102,19 @@ public static class CompetitiveEventV2DtoExtensions
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
             TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
-            PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
             AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
             Benefits = draft.CompetitiveEventDraftContent?.Benefits,
             MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
             MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
             Price = draft.CompetitiveEventDraftContent?.Price,
             CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
-            Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? new List<ContactsDto>(),
+            Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? [],
             CoverImageId = draft.CoverImageId,
-            ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? new List<string>(),
+            ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             CoverageId = draft.CoverageId,
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
             SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
-                             draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
+                              draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
             CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()
         };
     }
@@ -122,32 +144,39 @@ public static class CompetitiveEventV2DtoExtensions
     public static List<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft> ToDraft(this IEnumerable<CompetitiveEventV2Dto> list)
         => list.MapToList(ToDraft);
 
+    /// <summary>
+    /// Converts a CompetitiveEventV2Dto into a CompetitiveEventDraftContent instance.
+    /// </summary>
+    /// <param name="competitiveEventV2Dto">Source DTO to convert; its nullable fields are mapped with sensible defaults.</param>
+    /// <returns>
+    /// A new CompetitiveEventDraftContent populated from the DTO. Nullable booleans and numeric fields are replaced with their default values when null;
+    /// <see cref="Contacts"/> is an empty list if DTO contacts are null; <see cref="SubDirectionIds"/> is an empty list if null; 
+    /// <see cref="CompetitiveEventDescriptionItems"/> is mapped using the DTO's ToModel() when present.
+    /// </returns>
     public static CompetitiveEventDraftContent ToDraftContent(this CompetitiveEventV2Dto competitiveEventV2Dto)
-        => new()
-        {
-            AdditionalDescription = competitiveEventV2Dto.AdditionalDescription,
-            AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
-            Benefits = competitiveEventV2Dto.Benefits,
-            CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
-            Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<Contacts>(),
-            DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
-            MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
-            MinimumAge = competitiveEventV2Dto.MinimumAge,
-            NumberOfSeats = competitiveEventV2Dto.NumberOfSeats,
-            OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
-            ParentId = competitiveEventV2Dto.ParentId,
-            PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
-            PreferentialTermsOfParticipation = competitiveEventV2Dto.PreferentialTermsOfParticipation,
-            Price = competitiveEventV2Dto.Price ?? default,
-            RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
-            RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
-            ScheduledEndTime = competitiveEventV2Dto.ScheduledEndTime,
-            ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
-            ShortTitle = competitiveEventV2Dto.ShortTitle,
-            Title = competitiveEventV2Dto.Title,
-            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
-            VenueName = competitiveEventV2Dto.VenueName,
-            SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? new List<long>(),
-            CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
-        };
+    => new()
+    {
+        AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
+        Benefits = competitiveEventV2Dto.Benefits,
+        CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
+        Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<Contacts>(),
+        DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
+        MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
+        MinimumAge = competitiveEventV2Dto.MinimumAge,
+        NumberOfSeats = competitiveEventV2Dto.NumberOfSeats,
+        OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
+        ParentId = competitiveEventV2Dto.ParentId,
+        PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
+        Price = competitiveEventV2Dto.Price ?? default,
+        RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
+        RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
+        ScheduledEndTime = competitiveEventV2Dto.ScheduledEndTime,
+        ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
+        ShortTitle = competitiveEventV2Dto.ShortTitle,
+        Title = competitiveEventV2Dto.Title,
+        TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
+        VenueName = competitiveEventV2Dto.VenueName,
+        SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? [],
+        CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
+    };
 }

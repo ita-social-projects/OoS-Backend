@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.Common.Enums;
@@ -58,11 +58,8 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; } = string.Empty;
 
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    [MaxLength(Constants.MaxTermsOfParticipationLength)]
     public string TermsOfParticipation { get; set; } = string.Empty;
-
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
-    public string PreferentialTermsOfParticipation { get; set; } = string.Empty;
 
     public bool AreThereBenefits { get; set; }
 
@@ -99,7 +96,18 @@ public static class CompetitiveEventInfoDtoExtensions
             IsDeleted = model.State == CompetitiveEventStates.Archived,
         };
 
-    public static CompetitiveEventInfoDto ToInfoDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+    /// <summary>
+        /// Maps a domain CompetitiveEvent to an export-oriented CompetitiveEventInfoDto.
+        /// </summary>
+        /// <param name="model">The domain CompetitiveEvent to convert.</param>
+        /// <returns>
+        /// A CompetitiveEventInfoDto populated from <paramref name="model"/>. Related collections are null-safe:
+        /// DirectionIds contains distinct non-deleted parent direction IDs derived from non-deleted sub-directions;
+        /// SubDirectionIds contains non-deleted sub-direction IDs;
+        /// ImageIds contains each image's ExternalStorageId. When related data is missing, collections default to empty lists.
+        /// Note: NumberOfOccupiedSeats is set to 0 in the DTO and some domain-only fields are intentionally omitted.
+        /// </returns>
+        public static CompetitiveEventInfoDto ToInfoDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
         => new()
         {
             Id = model.Id,
@@ -123,14 +131,12 @@ public static class CompetitiveEventInfoDtoExtensions
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,
             VenueName = model.VenueName,
             TermsOfParticipation = model.TermsOfParticipation,
-            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,
             CompetitiveSelection = model.CompetitiveSelection,
-            CompetitiveSelectionDescription = model.AdditionalDescription,
             Contacts = model.Contacts?.ToInfoDto(),
             CoverImageId = model.CoverImageId,
             ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? []
