@@ -28,7 +28,6 @@ public static class CompetitiveEventV2DtoExtensions
             ParentId = model.ParentId,
             CoverageId = model.CoverageId,
             CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
-            AdditionalDescription = model.AdditionalDescription,
             ScheduledStartTime = model.ScheduledStartTime,
             ScheduledEndTime = model.ScheduledEndTime,
             NumberOfSeats = model.NumberOfSeats,
@@ -38,7 +37,6 @@ public static class CompetitiveEventV2DtoExtensions
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,
             VenueName = model.VenueName,
             TermsOfParticipation = model.TermsOfParticipation,
-            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,
@@ -54,7 +52,9 @@ public static class CompetitiveEventV2DtoExtensions
                     DirectionId = s.DirectionId,
                     SubDirectionId = s.Id
                 })
-            .ToList() ?? []
+            .ToList() ?? [],
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList(),
         };
 
     public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
@@ -70,7 +70,6 @@ public static class CompetitiveEventV2DtoExtensions
             RegistrationStartTime = draft.CompetitiveEventDraftContent?.RegistrationStartTime,
             RegistrationEndTime = draft.CompetitiveEventDraftContent?.RegistrationEndTime,
             ParentId = draft.CompetitiveEventDraftContent?.ParentId,
-            AdditionalDescription = draft.CompetitiveEventDraftContent?.AdditionalDescription,
             ScheduledStartTime = draft.CompetitiveEventDraftContent?.ScheduledStartTime ?? default,
             ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
             NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
@@ -79,7 +78,6 @@ public static class CompetitiveEventV2DtoExtensions
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
             TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
-            PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
             AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
             Benefits = draft.CompetitiveEventDraftContent?.Benefits,
             MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
@@ -125,7 +123,6 @@ public static class CompetitiveEventV2DtoExtensions
     public static CompetitiveEventDraftContent ToDraftContent(this CompetitiveEventV2Dto competitiveEventV2Dto)
         => new()
         {
-            AdditionalDescription = competitiveEventV2Dto.AdditionalDescription,
             AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
             Benefits = competitiveEventV2Dto.Benefits,
             CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
@@ -137,7 +134,6 @@ public static class CompetitiveEventV2DtoExtensions
             OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
             ParentId = competitiveEventV2Dto.ParentId,
             PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
-            PreferentialTermsOfParticipation = competitiveEventV2Dto.PreferentialTermsOfParticipation,
             Price = competitiveEventV2Dto.Price ?? default,
             RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
             RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,

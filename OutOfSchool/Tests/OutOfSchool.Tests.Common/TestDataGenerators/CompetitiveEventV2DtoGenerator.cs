@@ -12,7 +12,7 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.Id, f => f.Random.Guid())
         .RuleFor(x => x.Title, f => f.Lorem.Sentence(5))
         .RuleFor(x => x.ShortTitle, f => f.Lorem.Sentence(3))
-        .RuleFor(x => x.State, f => CompetitiveEventStates.Draft)
+        .RuleFor(x => x.State, f => CompetitiveEventStates.Published)
         .RuleFor(x => x.RegistrationStartTime, f => f.Date.PastOffset(1))
         .RuleFor(x => x.RegistrationEndTime, f => f.Date.FutureOffset(1))
         .RuleFor(x => x.ParentId, f => f.Random.Guid())
@@ -26,7 +26,6 @@ public static class CompetitiveEventV2DtoGenerator
                 SectionName = f.Lorem.Word(),
             }
         })
-        .RuleFor(x => x.AdditionalDescription, f => f.Lorem.Paragraph(1))
         .RuleFor(x => x.ScheduledStartTime, f => f.Date.FutureOffset(1))
         .RuleFor(x => x.ScheduledEndTime, f => f.Date.FutureOffset(2))
         .RuleFor(x => x.NumberOfSeats, f => f.Random.UInt(1, 100))

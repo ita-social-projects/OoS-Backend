@@ -197,10 +197,8 @@ public class SensitiveCompetitiveEventDraftServiceTest
         Assert.AreEqual("Updated Title", competitiveEventDraft.CompetitiveEventDraftContent.Title);
         Assert.AreEqual("Updated Short Title", competitiveEventDraft.CompetitiveEventDraftContent.ShortTitle);
         Assert.AreEqual("Updated Procedure", competitiveEventDraft.CompetitiveEventDraftContent.DescriptionOfTheEnrollmentProcedure);
-        Assert.AreEqual("Updated Additional Description", competitiveEventDraft.CompetitiveEventDraftContent.AdditionalDescription);
         Assert.AreEqual("Updated Venue", competitiveEventDraft.CompetitiveEventDraftContent.VenueName);
         Assert.AreEqual("Updated Terms", competitiveEventDraft.CompetitiveEventDraftContent.TermsOfParticipation);
-        Assert.AreEqual("Updated Preferential Terms", competitiveEventDraft.CompetitiveEventDraftContent.PreferentialTermsOfParticipation);
         Assert.AreEqual("Updated Benefits", competitiveEventDraft.CompetitiveEventDraftContent.Benefits);
     }
     

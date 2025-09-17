@@ -25,7 +25,7 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
 
     [Required]
     [EnumDataType(typeof(CompetitiveEventStates), ErrorMessage = Constants.EnumErrorMessage)]
-    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Draft;
+    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Published;
 
     public DateTimeOffset? RegistrationStartTime { get; set; }
 
@@ -39,9 +39,6 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [FromForm]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
-
-    [MaxLength(2000)]
-    public string AdditionalDescription { get; set; }
 
     [Required]
     public DateTimeOffset ScheduledStartTime { get; set; }
@@ -66,11 +63,8 @@ public class CompetitiveEventBaseDto: IHasContactsDto<OutOfSchool.Services.Model
     [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; }
 
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    [MaxLength(Constants.MaxTermsOfParticipationLength)]
     public string TermsOfParticipation { get; set; }
-
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
-    public string PreferentialTermsOfParticipation { get; set; }
 
     public bool? AreThereBenefits { get; set; }
 

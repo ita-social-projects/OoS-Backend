@@ -390,7 +390,6 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         {
             w => w.ShortTitle,
             w => w.Title,
-            w => w.AdditionalDescription,
             w => w.DescriptionOfTheEnrollmentProcedure,
             w => string.Join(" | ", w.Contacts.Select(c => c.ToString()))
         };

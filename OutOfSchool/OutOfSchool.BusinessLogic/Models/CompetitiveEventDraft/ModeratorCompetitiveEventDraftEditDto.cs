@@ -43,10 +43,8 @@ public static class ModeratorCompetitiveEventDraftEditDtoExtensions
         model.CompetitiveEventDraftContent.Title = dto.Title;
         model.CompetitiveEventDraftContent.ShortTitle = dto.ShortTitle;
         model.CompetitiveEventDraftContent.DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure;
-        model.CompetitiveEventDraftContent.AdditionalDescription = dto.AdditionalDescription;
         model.CompetitiveEventDraftContent.VenueName = dto.VenueName;
         model.CompetitiveEventDraftContent.TermsOfParticipation = dto.TermsOfParticipation;
-        model.CompetitiveEventDraftContent.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.CompetitiveEventDraftContent.Benefits = dto.Benefits;       
         model.CompetitiveEventDraftContent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToDraft();
 

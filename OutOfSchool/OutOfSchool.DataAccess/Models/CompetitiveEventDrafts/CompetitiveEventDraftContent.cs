@@ -22,8 +22,6 @@ public class CompetitiveEventDraftContent : IHasContacts
 
     public Guid? ParentId { get; set; }
 
-    public string AdditionalDescription { get; set; }
-
     public DateTimeOffset ScheduledStartTime { get; set; }
 
     public DateTimeOffset ScheduledEndTime { get; set; }
@@ -39,8 +37,6 @@ public class CompetitiveEventDraftContent : IHasContacts
     public string VenueName { get; set; }
 
     public string TermsOfParticipation { get; set; }
-
-    public string PreferentialTermsOfParticipation { get; set; }
 
     public bool AreThereBenefits { get; set; }
 

@@ -58,11 +58,8 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; } = string.Empty;
 
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    [MaxLength(Constants.MaxTermsOfParticipationLength)]
     public string TermsOfParticipation { get; set; } = string.Empty;
-
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
-    public string PreferentialTermsOfParticipation { get; set; } = string.Empty;
 
     public bool AreThereBenefits { get; set; }
 
@@ -123,14 +120,12 @@ public static class CompetitiveEventInfoDtoExtensions
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,
             VenueName = model.VenueName,
             TermsOfParticipation = model.TermsOfParticipation,
-            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
             Price = model.Price,
             CompetitiveSelection = model.CompetitiveSelection,
-            CompetitiveSelectionDescription = model.AdditionalDescription,
             Contacts = model.Contacts?.ToInfoDto(),
             CoverImageId = model.CoverImageId,
             ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? []

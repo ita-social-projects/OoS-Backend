@@ -31,7 +31,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
             RegistrationEndTime = dto.RegistrationEndTime ?? default,
             ParentId = dto.ParentId,
             CoverageId = dto.CoverageId,
-            AdditionalDescription = dto.AdditionalDescription,
             ScheduledStartTime = dto.ScheduledStartTime,
             ScheduledEndTime = dto.ScheduledEndTime,
             NumberOfSeats = dto.NumberOfSeats,
@@ -41,7 +40,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
             VenueName = dto.VenueName,
             TermsOfParticipation = dto.TermsOfParticipation,
-            PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits ?? false,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,
@@ -62,7 +60,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
         model.RegistrationEndTime = dto.RegistrationEndTime ?? model.RegistrationEndTime;
         model.ParentId = dto.ParentId;
         model.CoverageId = dto.CoverageId;
-        model.AdditionalDescription = dto.AdditionalDescription;
         model.ScheduledStartTime = dto.ScheduledStartTime;
         model.ScheduledEndTime = dto.ScheduledEndTime;
         model.NumberOfSeats = dto.NumberOfSeats;
@@ -72,7 +69,6 @@ public static class CompetitiveEventCreateUpdateDtoExtensions
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
         model.TermsOfParticipation = dto.TermsOfParticipation;
-        model.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;

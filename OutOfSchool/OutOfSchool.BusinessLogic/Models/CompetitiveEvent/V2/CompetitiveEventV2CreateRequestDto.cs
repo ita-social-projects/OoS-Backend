@@ -32,7 +32,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             RegistrationEndTime = dto.RegistrationEndTime ?? default,
             ParentId = dto.ParentId,
             CoverageId = dto.CoverageId,
-            AdditionalDescription = dto.AdditionalDescription,
             ScheduledStartTime = dto.ScheduledStartTime,
             ScheduledEndTime = dto.ScheduledEndTime,
             NumberOfSeats = dto.NumberOfSeats,
@@ -42,7 +41,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
             VenueName = dto.VenueName,
             TermsOfParticipation = dto.TermsOfParticipation,
-            PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits ?? false,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,
@@ -62,7 +60,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         model.RegistrationEndTime = dto.RegistrationEndTime ?? model.RegistrationEndTime;
         model.ParentId = dto.ParentId;
         model.CoverageId = dto.CoverageId;
-        model.AdditionalDescription = dto.AdditionalDescription;
         model.ScheduledStartTime = dto.ScheduledStartTime;
         model.ScheduledEndTime = dto.ScheduledEndTime;
         model.NumberOfSeats = dto.NumberOfSeats;
@@ -72,7 +69,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
         model.TermsOfParticipation = dto.TermsOfParticipation;
-        model.PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
@@ -93,7 +89,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            RegistrationStartTime = draft.CompetitiveEventDraftContent?.RegistrationStartTime,
            RegistrationEndTime = draft.CompetitiveEventDraftContent?.RegistrationEndTime,
            ParentId = draft.CompetitiveEventDraftContent?.ParentId,
-           AdditionalDescription = draft.CompetitiveEventDraftContent?.AdditionalDescription,
            ScheduledStartTime = draft.CompetitiveEventDraftContent?.ScheduledStartTime ?? default,
            ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
            NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
@@ -102,7 +97,6 @@ public static class CompetitiveEventV2CreateRequestDtoExtensions
            PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
            VenueName = draft.CompetitiveEventDraftContent?.VenueName,
            TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
-           PreferentialTermsOfParticipation = draft.CompetitiveEventDraftContent?.PreferentialTermsOfParticipation,
            AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
            Benefits = draft.CompetitiveEventDraftContent?.Benefits,
            MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,

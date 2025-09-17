@@ -24,7 +24,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public string ShortTitle { get; set; }
 
     [Required]
-    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Draft;
+    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Published;
 
     public DateTimeOffset RegistrationStartTime { get; set; }
 
@@ -34,9 +34,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     [ForeignKey(nameof(ParentId))]
     public virtual CompetitiveEvent Parent { get; set; }
-
-    [MaxLength(2000)]
-    public string AdditionalDescription { get; set; }
 
     [Required]
     public DateTimeOffset ScheduledStartTime { get; set; }
@@ -69,10 +66,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     [MaxLength(2000)]
     public string TermsOfParticipation { get; set; }
-
-    [MaxLength(2000)]
-    public string PreferentialTermsOfParticipation { get; set; }
-    
+  
     public bool AreThereBenefits { get; set; }
 
     [MaxLength(2000)]

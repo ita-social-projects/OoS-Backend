@@ -39,7 +39,6 @@ public static class CompetitiveEventESExtensions
             CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems
                 .Aggregate(string.Empty, (accumulator, di) =>
                     $"{accumulator}{di.SectionName}{Constants.MappingSeparator}{di.Description}{Constants.MappingSeparator}"),
-            AdditionalDescription = dto.AdditionalDescription,
             ScheduledStartTime = dto.ScheduledStartTime,
             ScheduledEndTime = dto.ScheduledEndTime,
             NumberOfSeats = dto.NumberOfSeats,
@@ -50,7 +49,6 @@ public static class CompetitiveEventESExtensions
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses,
             VenueName = dto.VenueName,
             TermsOfParticipation = dto.TermsOfParticipation,
-            PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
             AreThereBenefits = dto.AreThereBenefits,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,
