@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
@@ -21,7 +21,15 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
 
 public static class CompetitiveEventDtoExtensions
 {
-    public static CompetitiveEventDto ToDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+    /// <summary>
+        /// Converts an <c>OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent</c> domain model into a <c>CompetitiveEventDto</c>.
+        /// </summary>
+        /// <param name="model">The domain competitive event to convert.</param>
+        /// <returns>
+        /// A new <c>CompetitiveEventDto</c> populated from <paramref name="model"/>. The method maps nested objects via their own <c>ToDto</c> helpers when present.
+        /// Sub-direction collections exclude entries where the source sub-direction is marked deleted. <c>ImageIds</c> will be null if the source has no images.
+        /// </returns>
+        public static CompetitiveEventDto ToDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
         => new()
         {
             Id = model.Id,

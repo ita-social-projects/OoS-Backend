@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
@@ -373,6 +373,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return result.CompetitiveEventV2;
     }
 
+    /// <summary>
+    /// Determines whether any moderated fields differ between an incoming V2 DTO and an existing competitive event.
+    /// </summary>
+    /// <param name="competitiveEventV2Dto">The incoming competitive event data to compare.</param>
+    /// <param name="existingCompetitiveEvent">The existing competitive event to compare against.</param>
+    /// <returns>
+    /// True if any moderated field has changed and therefore requires moderation; otherwise false.
+    /// </returns>
+    /// <remarks>
+    /// The comparison considers:
+    /// - Presence of new images (CoverImage or ImageFiles) on the V2 DTO.
+    /// - Competitive event description items compared by concatenating SectionName and Description in sequence (order-sensitive).
+    /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
+    /// If any of the above differ, the method returns true.
+    /// </remarks>
     private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
     {
         if (competitiveEventV2Dto.CoverImage != null || competitiveEventV2Dto.ImageFiles != null)
