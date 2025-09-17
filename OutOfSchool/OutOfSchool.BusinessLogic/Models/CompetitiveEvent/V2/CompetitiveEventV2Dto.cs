@@ -53,17 +53,17 @@ public static class CompetitiveEventV2DtoExtensions
         Price = model.Price,
         CompetitiveSelection = model.CompetitiveSelection,
         Contacts = model.Contacts?.ToDto(),
-        SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted)?.Select(s => s.Id)?.ToList() ?? [],
+        SubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(s => s.Id).ToList() ?? [],
         Coverage = model.Coverage?.ToDto(),
-        DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted)?.Select(
+        DirectionSubDirectionIds = model.SubDirections?.Where(s => !s.IsDeleted).Select(
             s => new DirectionSubDirectionIdsDto
             {
                 DirectionId = s.DirectionId,
                 SubDirectionId = s.Id
             })
-        ?.ToList() ?? [],
+        .ToList() ?? [],
         CoverImageId = model.CoverImageId,
-        ImageIds = model.Images?.Select(i => i.ExternalStorageId)?.ToList() ?? [],
+        ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
     };
 
     /// <summary>
@@ -98,7 +98,7 @@ public static class CompetitiveEventV2DtoExtensions
             ScheduledEndTime = draft.CompetitiveEventDraftContent?.ScheduledEndTime ?? default,
             NumberOfSeats = draft.CompetitiveEventDraftContent?.NumberOfSeats ?? default,
             DescriptionOfTheEnrollmentProcedure = draft.CompetitiveEventDraftContent?.DescriptionOfTheEnrollmentProcedure,
-            OrganizerOfTheEventId = draft.CompetitiveEventDraftContent?.OrganizerOfTheEventId ?? default,
+            OrganizerOfTheEventId = draft.CompetitiveEventDraftContent.OrganizerOfTheEventId,
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
             TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
@@ -110,11 +110,11 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
             Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? [],
             CoverImageId = draft.CoverImageId,
-            ImageIds = draft.Images?.Select(x => x.ExternalStorageId)?.ToList() ?? [],
+            ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             CoverageId = draft.CoverageId,
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
             SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
-                              draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id)?.ToList() ?? [],
+                              draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
             CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()
         };
     }
@@ -125,7 +125,7 @@ public static class CompetitiveEventV2DtoExtensions
         draft.CompetitiveEventId = dto.Id == Guid.Empty ? (Guid?)null : dto.Id;
         draft.CompetitiveEventDraftContent = dto.ToDraftContent();
         // This is needed for search
-        draft.CATOTTGId = dto?.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0;
+        draft.CATOTTGId = dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0;
     }
 
     public static OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft ToDraft(this CompetitiveEventV2Dto competitiveEventV2Dto)
@@ -138,7 +138,7 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
             CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
             // This is needed for search
-            CATOTTGId = competitiveEventV2Dto?.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
+            CATOTTGId = competitiveEventV2Dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
         };
 
     public static List<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft> ToDraft(this IEnumerable<CompetitiveEventV2Dto> list)
