@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.ContactInfo;
@@ -15,7 +15,16 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
 
 public static class CompetitiveEventV2DtoExtensions
 {
-    public static CompetitiveEventV2Dto ToV2Dto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+    /// <summary>
+        /// Maps a domain <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> to a <see cref="CompetitiveEventV2Dto"/>.
+        /// </summary>
+        /// <remarks>
+        /// Preserves core fields (identifiers, titles, times, pricing, limits, contacts, coverage, etc.), converts description items and contacts via their respective <c>ToDto()</c> mappers,
+        /// and projects image metadata: <see cref="CompetitiveEventV2Dto.CoverImageId"/> is copied from the model and <see cref="CompetitiveEventV2Dto.ImageIds"/> is populated from each image's <c>ExternalStorageId</c>.
+        /// SubDirections marked as deleted are excluded; when no subdirections or description/contacts are present, the corresponding DTO collections are empty or null according to the mapper behavior.
+        /// </remarks>
+        /// <returns>A new <see cref="CompetitiveEventV2Dto"/> populated from the source model.</returns>
+        public static CompetitiveEventV2Dto ToV2Dto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
         => new()
         {
             Id = model.Id,
@@ -57,9 +66,24 @@ public static class CompetitiveEventV2DtoExtensions
             ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList(),
         };
 
-    public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
+    /// <summary>
+        /// Converts a sequence of domain CompetitiveEvent models into a list of CompetitiveEventV2Dto.
+        /// </summary>
+        /// <returns>A List of CompetitiveEventV2Dto produced by mapping each input model with <see cref="ToV2Dto(OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent)"/>.</returns>
+        public static List<CompetitiveEventV2Dto> ToV2Dto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
         => list.MapToList(ToV2Dto);
 
+    /// <summary>
+    /// Converts a CompetitiveEventDraft into a CompetitiveEventV2Dto by mapping draft content and related metadata.
+    /// </summary>
+    /// <remarks>
+    /// Maps values from <c>draft.CompetitiveEventDraftContent</c> when present and preserves draft-level metadata such as <c>CoverImageId</c>, <c>Images</c>, <c>CoverageId</c>, and <c>CompetitiveEventAccountingTypeId</c>. Behaviors for missing values:
+    /// - If <c>CompetitiveEventId</c> is null the DTO <c>Id</c> will be <c>Guid.Empty</c>.
+    /// - Numeric and DateTime fields fall back to their default values when null (e.g., <c>MinimumAge</c> defaults to 0).
+    /// - <c>Contacts</c>, <c>ImageIds</c>, and other collections default to empty lists when absent.
+    /// - <c>SubDirectionIds</c> are taken from draft content if available; otherwise they are taken from <c>draft.CompetitiveEvent.SubDirections</c> when present.
+    /// </remarks>
+    /// <returns>A CompetitiveEventV2Dto populated from the provided draft.</returns>
     public static CompetitiveEventV2Dto ToDto(this OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft draft)
     {
         return new CompetitiveEventV2Dto()
@@ -120,7 +144,16 @@ public static class CompetitiveEventV2DtoExtensions
     public static List<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft> ToDraft(this IEnumerable<CompetitiveEventV2Dto> list)
         => list.MapToList(ToDraft);
 
-    public static CompetitiveEventDraftContent ToDraftContent(this CompetitiveEventV2Dto competitiveEventV2Dto)
+    /// <summary>
+        /// Converts a CompetitiveEventV2Dto into a CompetitiveEventDraftContent instance.
+        /// </summary>
+        /// <param name="competitiveEventV2Dto">Source DTO to convert; its nullable fields are mapped with sensible defaults.</param>
+        /// <returns>
+        /// A new CompetitiveEventDraftContent populated from the DTO. Nullable booleans and numeric fields are replaced with their default values when null;
+        /// <see cref="Contacts"/> is an empty list if DTO contacts are null; <see cref="SubDirectionIds"/> is an empty list if null; 
+        /// <see cref="CompetitiveEventDescriptionItems"/> is mapped using the DTO's ToModel() when present.
+        /// </returns>
+        public static CompetitiveEventDraftContent ToDraftContent(this CompetitiveEventV2Dto competitiveEventV2Dto)
         => new()
         {
             AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
