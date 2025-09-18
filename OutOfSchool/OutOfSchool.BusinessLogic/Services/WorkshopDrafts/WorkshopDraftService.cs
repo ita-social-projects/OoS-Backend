@@ -21,6 +21,8 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -351,6 +353,10 @@ public class WorkshopDraftService(
         }
         else
         {
+            if (IsMinistryOfSport(workshopDraft))
+            {
+                await SyncSectionWithRegistryAsync(workshopDraft);
+            }
             await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
             createdWorkshopId = workshopDraft.WorkshopId.Value;
         }
@@ -552,12 +558,15 @@ public class WorkshopDraftService(
         if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-
+            workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-
+        if (IsMinistryOfSport(draft))
+        {
+                await SyncSectionWithRegistryAsync(draft);
+        }
         return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
     }
 
@@ -1544,49 +1553,74 @@ public class WorkshopDraftService(
     /// </exception>
     private async Task SyncSectionWithRegistryAsync(WorkshopDraft draft)
     {
-        // Build a request
-        var request = draft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
-
-        if (!long.TryParse(request.SectionAddressLocalityDictIdCode, out var catottgId))
+        var baseUrl = imageStorageOptions.Value.BaseImageUrl;
+        
+        // If not found created MinsportSectionId value - its create operation
+        if (draft.WorkshopDraftContent?.MinsportSectionId is null)
         {
-            throw new InvalidOperationException(
-                $"Invalid CATOTTG Id: {request.SectionAddressLocalityDictIdCode}");
+            var postRequest = draft.ToSportSectionPostRequest(baseUrl);
+            await NormalizeSectionDataAsync(draft,postRequest);
+            
+            var apiCreateResponse = await sportsRegistryApiService.RegisterSectionAsync(postRequest);
+            HandleRegistryResponse(apiCreateResponse, draft, isCreate: false);
         }
-
-        request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(request.SectionAddressLocalityDictIdCode))
+        else
         {
-            logger.LogError("Codeficator code not found for CATOTTG Id {CatottgId}.", catottgId);
-            throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
+            // Update logic
+            var updateRequest = draft.ToSportSectionUpdateRequest(baseUrl);
+            await NormalizeSectionDataAsync(draft, updateRequest);
+            
+            var apiUpdateResponse = await sportsRegistryApiService.UpdateSectionAsync(updateRequest);
+            HandleRegistryResponse(apiUpdateResponse, draft, isCreate: false);
         }
+    }
 
-        request.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
-
-        // 2) try to check api 
-        var apiCreationResponse = await sportsRegistryApiService.RegisterSectionAsync(request);
-
-        // 3) Processing of a result 
-        apiCreationResponse.Match(
+    private void HandleRegistryResponse(
+        Either<ErrorResponse, SectionCreateUpdateResponse> response,
+        WorkshopDraft draft,
+        bool isCreate)
+    {
+        response.Match(
             error =>
             {
                 var details = error.Content ?? error.Message ?? "Unknown";
-                logger.LogError("Failed to sync section to Sports Registry. Code={Code}, Message={Message}",
+                logger.LogError(
+                    "Failed to sync section to Sports Registry. Code={Code}, Message={Message}",
                     (int)error.HttpStatusCode, details);
 
-                // NOTE: Maybe create a specific type of exception in future (TODO) 
                 throw new InvalidOperationException($"Registry sync failed: {details}");
             },
             success =>
             {
-                var createdRegistryId = success.ResultVariables.SectionId;
-                draft.WorkshopDraftContent.MinsportSectionId = createdRegistryId;
+                var sectionId = success.ResultVariables.SectionId;
+                draft.WorkshopDraftContent!.MinsportSectionId = sectionId;
+
+                var action = isCreate ? "created" : "updated";
                 logger.LogInformation(
-                    "Workshop draft was successfully synced to Sports Registry. DraftId={DraftId}, CreatedSectionId={SectionId}",
-                    draft.Id,
-                    createdRegistryId);
+                    "Workshop draft was successfully {Action} in Sports Registry. DraftId={DraftId}, SectionId={SectionId}",
+                    action, draft.Id, sectionId);
+
                 return true;
             }
         );
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="draft"></param>
+    /// <param name="sectionData"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    private async Task NormalizeSectionDataAsync(WorkshopDraft draft, SportsSectionBaseDto sectionData)
+    {
+        sectionData.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
+
+        if (!long.TryParse(sectionData.SectionAddressLocalityDictIdCode, out var catottgId))
+            throw new InvalidOperationException($"Invalid CATOTTG Id: {sectionData.SectionAddressLocalityDictIdCode}");
+
+        sectionData.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+        if (string.IsNullOrWhiteSpace(sectionData.SectionAddressLocalityDictIdCode))
+            throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
     }
 
     /// <summary>

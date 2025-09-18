@@ -137,6 +137,7 @@ public static class WorkshopV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             Status = draft.WorkshopDraftContent?.WorkshopStatus ?? default,
             ProviderOwnership = draft.WorkshopDraftContent?.OwnershipType ?? default,
+            MinsportSectionId = draft.WorkshopDraftContent?.MinsportSectionId ?? default,
         };
 
     public static List<WorkshopV2Dto> ToDto(this IEnumerable<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> list)
@@ -184,6 +185,7 @@ public static class WorkshopV2DtoExtensions
         model.ParentWorkshopId = dto.ParentWorkshopId;
         model.CoverImageId = dto.CoverImageId;
         model.IsChampionPath = dto.IsChampionPath;
+        model.MinsportSectionId = dto.MinsportSectionId;
         return model;
     }
 
@@ -248,6 +250,7 @@ public static class WorkshopV2DtoExtensions
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
             ProviderStatus = model.Provider?.Status ?? default,
+            MinsportSectionId = model.MinsportSectionId,
         };
     }
 
