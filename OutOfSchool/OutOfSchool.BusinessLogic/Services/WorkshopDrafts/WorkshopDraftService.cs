@@ -531,7 +531,7 @@ public class WorkshopDraftService(
         logger.LogDebug("Workshop Update started. Workshop Id = {Id}.", workshopV2Dto.Id);
 
         var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
-
+        
         if (existingWorkshop == null)
         {
             throw new InvalidOperationException($"There is no Workshop with such Id. Workshop can`t be updated.");
@@ -554,11 +554,11 @@ public class WorkshopDraftService(
 
             throw new InvalidOperationException("WorkshopDraft for this Workshop exists. Workshop can`t be updated.");
         }
-
+        
+        workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
         if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-            workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
