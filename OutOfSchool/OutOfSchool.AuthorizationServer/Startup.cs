@@ -292,8 +292,10 @@ public static class Startup
         services.AddTransient<IProfileService, ProfileService>();
         services.AddScoped<IUserService, UserService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
+        services.AddScoped<ISystemUserInitializer, SystemUserInitializer<User>>();
 
         services.AddHostedService<IdentityRolesInitializerHostedService>();
+        services.AddHostedService<SystemUserInitializerHostedService<User>>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

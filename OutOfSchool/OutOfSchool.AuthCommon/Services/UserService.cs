@@ -10,7 +10,7 @@ public class UserService : IUserService
     public UserService(UserManager<User> userManager, ILogger<UserService> logger, IOpenIddictTokenManager tokenManager)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        this.logger = logger;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
     }
 
