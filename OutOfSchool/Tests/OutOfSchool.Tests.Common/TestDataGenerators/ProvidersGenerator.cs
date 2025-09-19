@@ -25,7 +25,9 @@ public static class ProvidersGenerator
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
         .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
         .RuleFor(x => x.IsBlocked, _ => false)
-        .RuleFor(x => x.UpdatedAt, _ => DateTime.Now);
+        .RuleFor(x => x.UpdatedAt, _ => DateTime.Now)
+        .RuleFor(x => x.IsStructuralUnit, f => false)
+        .RuleFor(x => x.ParentProviderId, f => null);    
 
     /// <summary>
     /// Creates new instance of the <see cref="Provider"/> class with random data.

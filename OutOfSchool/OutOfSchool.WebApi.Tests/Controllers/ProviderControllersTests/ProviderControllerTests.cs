@@ -461,6 +461,145 @@ public class ProviderControllerTests
         providerService.Verify(x => x.Update(providerToUpdate, userId), Times.Once);
     }
 
+    [Test]
+    public async Task GetBranches_ProviderHasBranches_ReturnsOkWithBranches()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var branches = ProvidersGenerator.Generate(3);
+        var branchesDto = branches.Select(b => b.ToDto()).ToList();
+
+        providerService.Setup(s => s.GetBranchesAsync(providerId))
+            .ReturnsAsync(branchesDto);
+
+        // Act
+        var result = await providerController.GetBranches(providerId);
+
+        // Assert
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+        Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var returnedBranches = okResult.Value as IEnumerable<ProviderDto>;
+        Assert.That(returnedBranches, Is.Not.Null);
+        Assert.That(returnedBranches.Count(), Is.EqualTo(branchesDto.Count));
+    }
+
+    [Test]
+    public async Task GetBranches_ProviderHasNoBranches_ReturnsOkWithMessage()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var emptyBranches = new List<ProviderDto>();
+
+        providerService.Setup(s => s.GetBranchesAsync(providerId))
+            .ReturnsAsync(emptyBranches);
+
+        // Act
+        var result = await providerController.GetBranches(providerId);
+
+        // Assert
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+        Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(okResult.Value, Is.EqualTo("There in no branches for given provider"));
+    }
+
+    [Test]
+    public async Task GetBranches_ServiceReturnsNull_ReturnsOkWithMessage()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+
+        providerService.Setup(s => s.GetBranchesAsync(providerId))
+            .ReturnsAsync((IEnumerable<ProviderDto>)null);
+
+        // Act
+        var result = await providerController.GetBranches(providerId);
+
+        // Assert
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+        Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(okResult.Value, Is.EqualTo("There in no branches for given provider"));
+    }
+
+    [Test]
+    public async Task GetBranches_CallsServiceWithCorrectParameters()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var branches = new List<ProviderDto>();
+
+        providerService.Setup(s => s.GetBranchesAsync(providerId))
+            .ReturnsAsync(branches);
+
+        // Act
+        await providerController.GetBranches(providerId);
+
+        // Assert
+        providerService.Verify(s => s.GetBranchesAsync(providerId), Times.Once);
+    }
+
+    [Test]
+    public async Task GetParentProvider_ProviderHasParent_ReturnsOkWithParent()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var parentProvider = ProvidersGenerator.Generate();
+        var parentProviderDto = parentProvider.ToDto();
+
+        providerService.Setup(s => s.GetParentProviderAsync(providerId))
+            .ReturnsAsync(parentProviderDto);
+
+        // Act
+        var result = await providerController.GetParentProvider(providerId);
+
+        // Assert
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+        Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var returnedParent = okResult.Value as ProviderDto;
+        Assert.That(returnedParent, Is.Not.Null);
+        TestHelper.AssertDtosAreEqual(parentProviderDto, returnedParent);
+    }
+
+    [Test]
+    public async Task GetParentProvider_ProviderHasNoParent_ReturnsOkWithMessage()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+
+        providerService.Setup(s => s.GetParentProviderAsync(providerId))
+            .ReturnsAsync((ProviderDto)null);
+
+        // Act
+        var result = await providerController.GetParentProvider(providerId);
+
+        // Assert
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+        Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(okResult.Value, Is.EqualTo("There in no parents for given provider"));
+    }
+
+    [Test]
+    public async Task GetParentProvider_CallsServiceWithCorrectParameters()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+
+        providerService.Setup(s => s.GetParentProviderAsync(providerId))
+            .ReturnsAsync((ProviderDto)null);
+
+        // Act
+        await providerController.GetParentProvider(providerId);
+
+        // Assert
+        providerService.Verify(s => s.GetParentProviderAsync(providerId), Times.Once);
+    }
+    
     private ProviderCreateDto GenerateProviderCreateDto()
         => new Faker<ProviderCreateDto>()
             .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())

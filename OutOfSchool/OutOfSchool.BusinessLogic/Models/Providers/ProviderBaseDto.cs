@@ -1,14 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
+using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Providers;
 
+[ValidProviderHierarchy(ErrorMessage = "Invalid provider hierarchy configuration")]
 public class ProviderBaseDto : IHasCoverImage, IHasImages, IHasContactsDto<Provider>
 {
     public Guid Id { get; set; }
@@ -90,4 +92,9 @@ public class ProviderBaseDto : IHasCoverImage, IHasImages, IHasContactsDto<Provi
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
+
+    public Guid? ParentProviderId { get; set; }
+
+    [JsonIgnore]
+    public string ParentProviderName { get; set; } // For display only
 }

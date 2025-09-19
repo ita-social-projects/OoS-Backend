@@ -25,7 +25,8 @@ public static class ProviderUpdateDtoExtensions
         model.IsStructuralUnit = dto.IsStructuralUnit;
         model.IsLocatedInMountainousArea = dto.IsLocatedInMountainousArea;
         model.ProviderSectionItems = dto.ProviderSectionItems?.SetToModel(model.ProviderSectionItems) ?? model.ProviderSectionItems;
-
+        model.ParentProviderId = dto.ParentProviderId;
+        
         return model;
     }
 }

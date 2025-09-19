@@ -20,7 +20,10 @@ public static class ProviderUpdateDtoGenerator
         .RuleFor(x => x.Type, _ => new ProviderTypeDto { Id = 1, Name = "pro" })
         .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
         .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
-        .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>());
+        .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>())
+        .RuleFor(x => x.IsStructuralUnit, f => false)
+        .RuleFor(x => x.ParentProviderId,  x => null)
+        .RuleFor(x => x.ParentProviderName, f => null);
 
     public static ProviderUpdateDto FromModel(Provider provider)
         => new()
@@ -42,6 +45,8 @@ public static class ProviderUpdateDtoGenerator
             InstitutionCode = provider.InstitutionCode,
             IsStructuralUnit = provider.IsStructuralUnit,
             IsLocatedInMountainousArea = provider.IsLocatedInMountainousArea,
+            ParentProviderId = provider.ParentProviderId,
+            ParentProviderName = provider.ParentProvider?.FullTitle
         };
 
     /// <summary>

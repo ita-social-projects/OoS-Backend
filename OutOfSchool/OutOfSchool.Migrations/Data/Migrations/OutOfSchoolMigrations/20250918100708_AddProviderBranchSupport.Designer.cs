@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 #nullable disable
 
-namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Migrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250918100708_AddProviderBranchSupport")]
+    partial class AddProviderBranchSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -921,6 +924,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("date")
                         .HasDefaultValue(new DateOnly(9999, 12, 31));
 
+                    b.Property<string>("AdditionalDescription")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
                     b.Property<bool>("AreThereBenefits")
                         .HasColumnType("tinyint(1)");
 
@@ -997,6 +1004,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<int>("PlannedFormatOfClasses")
                         .HasColumnType("int");
+
+                    b.Property<string>("PreferentialTermsOfParticipation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<int>("Price")
                         .HasColumnType("int");
@@ -1578,7 +1589,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("Document")
                         .HasColumnType("longtext");
 
-                    b.Property<Guid?>("ExternalRegistryId")
+                    b.Property<Guid>("ExternalRegistryId")
                         .HasColumnType("binary(16)");
 
                     b.Property<string>("File")
@@ -1620,6 +1631,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("char");
 
                     b.Property<string>("Rnokpp")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -3972,9 +3984,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("MinAge")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("MinsportSectionId")
-                        .HasColumnType("UUID");
-
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(36)
                         .HasColumnType("char");
@@ -4017,8 +4026,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
