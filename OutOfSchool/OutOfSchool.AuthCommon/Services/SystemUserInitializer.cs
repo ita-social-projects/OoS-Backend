@@ -52,7 +52,8 @@ public class SystemUserInitializer : ISystemUserInitializer
             CreatingTime = DateTimeOffset.UtcNow,
             Role = systemRoleName,
             IsRegistered = false,
-            IsBlocked = false
+            IsBlocked = false,
+            IsSystemProtected = true
         };
 
         IdentityResult createResult;

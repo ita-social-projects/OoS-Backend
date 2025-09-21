@@ -56,9 +56,23 @@ public class UserService(
         {
             Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
 
-            var users = repository.GetByFilterNoTracking(filter);
+            var user = await repository.GetByFilterNoTracking(filter)
+                .FirstOrDefaultAsync().ConfigureAwait(false);
 
-            var updatedUser = await repository.Update(dto.SetToModel(users.FirstOrDefault() ?? new())).ConfigureAwait(false);
+            if (user is null)
+            {
+                var message = $"There is no User in the Db with such an id = {dto?.Id}";
+                logger.LogError(message);
+                throw new ArgumentException(message, nameof(dto.Id));
+            }
+            
+            if (user.IsSystemProtected)
+            {
+                logger.LogError($"Attempt to update a system protected user with id = {dto?.Id}");
+                throw new InvalidOperationException("System user is protected and cannot be modified.");
+            }
+
+            var updatedUser = await repository.Update(dto.SetToModel(user ?? new())).ConfigureAwait(false);
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
@@ -104,6 +118,12 @@ public class UserService(
             var message = $"There is no User in the Db with such an id = {id}";
             logger.LogError(message);
             throw new ArgumentException(message, nameof(id));
+        }
+
+        if (user.IsSystemProtected)
+        {
+            logger.LogError($"Attempt to delete a system protected user with id = {id}");
+            throw new InvalidOperationException("System user is protected and cannot be deleted.");
         }
 
         try
