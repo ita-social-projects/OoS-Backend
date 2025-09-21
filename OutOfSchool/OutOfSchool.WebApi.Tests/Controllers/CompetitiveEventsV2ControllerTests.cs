@@ -9,6 +9,7 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.WebApi.Controllers.V2;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -18,6 +19,7 @@ public class CompetitiveEventsV2ControllerTests
     private Mock<IUserService> userServiceMock;
     private Mock<ILogger<CompetitiveEventController>> loggerMock;
     private CompetitiveEventController controller;
+    private Mock<ICompetitiveEventDraftService> competitiveEventDraftServiceMock;
 
     [SetUp]
     public void Setup()
@@ -25,11 +27,13 @@ public class CompetitiveEventsV2ControllerTests
         competitiveEventServiceMock = new Mock<ICompetitiveEventServiceV2>();
         userServiceMock = new Mock<IUserService>();
         loggerMock = new Mock<ILogger<CompetitiveEventController>>();
+        competitiveEventDraftServiceMock = new Mock<ICompetitiveEventDraftService>();
 
         controller = new CompetitiveEventController(
             competitiveEventServiceMock.Object,
             userServiceMock.Object,
-            loggerMock.Object);
+            loggerMock.Object,
+            competitiveEventDraftServiceMock.Object);
     }
 
     #region GetById
@@ -162,35 +166,36 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Update_ReturnsOk_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
         var expectedId = Guid.NewGuid();
-        var resultDto = new CompetitiveEventResultDto
-        {
-            CompetitiveEventV2 = new CompetitiveEventV2Dto { Id = expectedId }
-        };
+        var resultDto = new CompetitiveEventV2Dto { Id = expectedId };
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto)).ReturnsAsync(resultDto);
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false)).ReturnsAsync(resultDto);
-
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<OkObjectResult>(result);
         var okResult = result as OkObjectResult;
         Assert.That(okResult.StatusCode, Is.EqualTo(200));
-        var responseDto = okResult.Value as CompetitiveEventResponseDto;
+        var responseDto = okResult.Value as CompetitiveEventV2Dto;
         Assert.That(responseDto, Is.Not.Null);
-        Assert.That(responseDto.CompetitiveEventV2.Id, Is.EqualTo(expectedId));
+        Assert.That(responseDto.Id, Is.EqualTo(expectedId));
     }
 
     [Test]
     public async Task Update_ReturnsBadRequest_WhenResultIsNull()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        var resultDto = (CompetitiveEventV2Dto)null;
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto)).ReturnsAsync(resultDto);
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false))
-            .ReturnsAsync(new CompetitiveEventResultDto { CompetitiveEventV2 = null });
-
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<BadRequestResult>(result);
         var badRequest = result as BadRequestResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));
@@ -199,13 +204,15 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Update_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
-
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto, false))
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto))
             .ThrowsAsync(new InvalidOperationException("Service error"));
 
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));

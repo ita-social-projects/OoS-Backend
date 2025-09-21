@@ -457,9 +457,9 @@ public class CompetitiveEventService(
     /// <returns>A result DTO containing the updated competitive event and results of the image updates</returns>
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
-    public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto, bool fromDraft = false)
+    public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2Dto dto, bool fromDraft = false)
     {
-        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
+        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto.ToV2CreateRequestDto());
 
         async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,
            ImageChangingResult changingCoverImageResult)> UpdateCompetitiveEventWithDependencies()
@@ -490,6 +490,12 @@ public class CompetitiveEventService(
 
             var changingCoverImageResult = await competitiveImagesService
                 .ChangeCoverImageAsync(competitiveEvent, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+
+            // Fill CoverImageId for the updated competitiveEvent
+            if (!string.IsNullOrEmpty(dto.CoverImageId))
+            {
+                competitiveEvent.CoverImageId = dto.CoverImageId;
+            }
 
             await UpdateCompetitiveEvent().ConfigureAwait(false);
 

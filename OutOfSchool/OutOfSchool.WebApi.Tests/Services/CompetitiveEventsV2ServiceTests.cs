@@ -149,7 +149,7 @@ public class CompetitiveEventsV2ServiceTests
     [Test]
     public void UpdateV2_ThrowsConcurrencyException_WhenEntityDoesNotExist()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto { Id = Guid.NewGuid() };
+        var dto = new CompetitiveEventV2Dto { Id = Guid.NewGuid() };
 
         repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync((CompetitiveEvent)null);

@@ -46,18 +46,19 @@ public static class CompetitiveEventDescriptionItemDtoExtensions
             Id = dto.Id,
             SectionName = dto.SectionName,
             Description = dto.Description,
+            CompetitiveEventId = dto.CompetitiveEventId
         };
 
     public static List<CompetitiveEventDescriptionItem> ToModel(this IEnumerable<CompetitiveEventDescriptionItemDto> list)
         => list.MapToList(ToModel);
 
-    public static CompetitiveEventDescriptionItemDto ToDto(this CompetitiveEventDescriptionItem dto)
+    public static CompetitiveEventDescriptionItemDto ToDto(this CompetitiveEventDescriptionItem model)
         => new()
         {
-            Id = dto.Id,
-            SectionName = dto.SectionName,
-            Description = dto.Description,
-            CompetitiveEventId = dto.CompetitiveEventId ?? default
+            Id = model.Id,
+            SectionName = model.SectionName,
+            Description = model.Description,
+            CompetitiveEventId = model.CompetitiveEventId ?? default
         };
 
     public static List<CompetitiveEventDescriptionItemDto> ToDto(this IEnumerable<CompetitiveEventDescriptionItem> list)
