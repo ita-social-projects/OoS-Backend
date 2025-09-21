@@ -4,13 +4,12 @@ namespace OutOfSchool.AuthCommon.Services;
 /// <summary>
 /// Hosted service that initializes system user.
 /// </summary>
-public class SystemUserInitializerHostedService<TUser> : IHostedService
-    where TUser : User, new()
+public class SystemUserInitializerHostedService : IHostedService
 {
     private readonly IServiceProvider serviceProvider;
-    private readonly ILogger<SystemUserInitializerHostedService<TUser>> logger;
+    private readonly ILogger<SystemUserInitializerHostedService> logger;
 
-    public SystemUserInitializerHostedService(IServiceProvider serviceProvider, ILogger<SystemUserInitializerHostedService<TUser>> logger)
+    public SystemUserInitializerHostedService(IServiceProvider serviceProvider, ILogger<SystemUserInitializerHostedService> logger)
     {
         this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));

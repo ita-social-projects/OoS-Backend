@@ -1,16 +1,15 @@
 ﻿namespace OutOfSchool.AuthCommon.Services;
-public class SystemUserInitializer<TUser> : ISystemUserInitializer
-    where TUser : User, new()
+public class SystemUserInitializer : ISystemUserInitializer
 {
     private readonly UserManager<User> userManager;
     private readonly RoleManager<IdentityRole> roleManager;
-    private readonly ILogger<SystemUserInitializer<User>> logger;
+    private readonly ILogger<SystemUserInitializer> logger;
 
-    public SystemUserInitializer(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ILogger<SystemUserInitializer<User>> logger)
+    public SystemUserInitializer(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, ILogger<SystemUserInitializer> logger)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-        this.logger = logger;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task EnsureExistsAsync(CancellationToken cancellationToken = default)
@@ -21,19 +20,19 @@ public class SystemUserInitializer<TUser> : ISystemUserInitializer
 
         if (!await roleManager.RoleExistsAsync(roleName))
         {
-            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName)).ConfigureAwait(false);
             if (!roleResult.Succeeded)
             {
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
                 logger.LogError("Failed to create system role '{RoleName}': {Errors}", roleName, errors);
                 throw new InvalidOperationException($"Failed to create system role '{roleName}': {errors}");
             }
-            logger.LogInformation("System role '{RoleName}' created successfully.", roleName);
+            logger.LogDebug("System role '{RoleName}' created successfully.", roleName);
         }
 
         var existingUser = await userManager.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == systemUserId).ConfigureAwait(false);
+            .FirstOrDefaultAsync(u => u.Id == systemUserId, cancellationToken).ConfigureAwait(false);
 
         if (existingUser is not null)
         {
@@ -43,6 +42,24 @@ public class SystemUserInitializer<TUser> : ISystemUserInitializer
                 logger.LogWarning("System user appeared in query but not found by FindById. Skipping.");
                 return;
             }
+
+            if (!await userManager.IsInRoleAsync(existingUser, roleName))
+            {
+                var addRole = await userManager.AddToRoleAsync(user, roleName).ConfigureAwait(false);
+                if (!addRole.Succeeded)
+                {
+                    var errors = string.Join(", ", addRole.Errors.Select(e => e.Description));
+                    logger.LogError("Failed to assign existing system user '{UserName}' to role '{RoleName}': {Errors}", systemUserName, roleName, errors);
+                    throw new InvalidOperationException($"Failed to assign existing system user '{systemUserName}' to role '{roleName}': {errors}");
+                }
+                logger.LogDebug("Existing system user '{UserName}' assigned to role '{RoleName}' successfully.", systemUserName, roleName);
+            }
+            else
+            {
+                logger.LogDebug("System user '{UserName}' already exists and is in role '{RoleName}'. No action needed.", systemUserName, roleName);
+            }
+
+            return;
         }
 
         var systemUser = new User
@@ -64,12 +81,12 @@ public class SystemUserInitializer<TUser> : ISystemUserInitializer
 
         try
         {
-            createResult = await userManager.CreateAsync(systemUser);
+            createResult = await userManager.CreateAsync(systemUser).ConfigureAwait(false);
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
-            logger.LogWarning(ex, "Race detected creating system user — another instance likely created it first.");
-            createResult = IdentityResult.Success;
+            logger.LogError(ex, "Exception occurred while creating system user '{UserName}'.", systemUserName);
+            throw;
         }
 
         if (!createResult.Succeeded)
