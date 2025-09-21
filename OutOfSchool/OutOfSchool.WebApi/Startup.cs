@@ -519,6 +519,7 @@ public static class Startup
         services.AddTransient(typeof(IContactsService<,>), typeof(ContactsService<,>));
         services.AddScoped<IDirectorManagementService, DirectorManagementService>();
         services.AddScoped<ITransactionManagerService, TransactionManagerService>();
+        services.AddScoped<IContextAwareUserService, ContextAwareUserService>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
