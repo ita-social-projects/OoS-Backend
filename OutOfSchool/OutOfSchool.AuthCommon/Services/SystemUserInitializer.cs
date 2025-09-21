@@ -15,49 +15,27 @@ public class SystemUserInitializer : ISystemUserInitializer
     public async Task EnsureExistsAsync(CancellationToken cancellationToken = default)
     {
         var systemUserId = Constants.SystemUserConstants.SystemUserId;
-        var roleName = Constants.SystemUserConstants.SystemUserRole;
+        var systemRoleName = Constants.SystemUserConstants.SystemUserRole;
         var systemUserName = Constants.SystemUserConstants.SystemUserName;
+        var systemEmail = Constants.SystemUserConstants.SystemUserEmail;
 
-        if (!await roleManager.RoleExistsAsync(roleName))
+        if (!await roleManager.RoleExistsAsync(systemRoleName).ConfigureAwait(false))
         {
-            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName)).ConfigureAwait(false);
+            var roleResult = await roleManager.CreateAsync(new IdentityRole(systemRoleName)).ConfigureAwait(false);
             if (!roleResult.Succeeded)
             {
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                logger.LogError("Failed to create system role '{RoleName}': {Errors}", roleName, errors);
-                throw new InvalidOperationException($"Failed to create system role '{roleName}': {errors}");
+                logger.LogError("Failed to create system role '{RoleName}': {Errors}", systemRoleName, errors);
+                throw new InvalidOperationException($"Failed to create system role '{systemRoleName}': {errors}");
             }
-            logger.LogDebug("System role '{RoleName}' created successfully.", roleName);
+            logger.LogDebug("System role '{RoleName}' created successfully.", systemRoleName);
         }
 
-        var existingUser = await userManager.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == systemUserId, cancellationToken).ConfigureAwait(false);
+        var existingUser = await userManager.FindByIdAsync(systemUserId).ConfigureAwait(false);
 
         if (existingUser is not null)
         {
-            var user = await userManager.FindByIdAsync(systemUserId).ConfigureAwait(false);
-            if (user == null)
-            {
-                logger.LogWarning("System user appeared in query but not found by FindById. Skipping.");
-                return;
-            }
-
-            if (!await userManager.IsInRoleAsync(existingUser, roleName))
-            {
-                var addRole = await userManager.AddToRoleAsync(user, roleName).ConfigureAwait(false);
-                if (!addRole.Succeeded)
-                {
-                    var errors = string.Join(", ", addRole.Errors.Select(e => e.Description));
-                    logger.LogError("Failed to assign existing system user '{UserName}' to role '{RoleName}': {Errors}", systemUserName, roleName, errors);
-                    throw new InvalidOperationException($"Failed to assign existing system user '{systemUserName}' to role '{roleName}': {errors}");
-                }
-                logger.LogDebug("Existing system user '{UserName}' assigned to role '{RoleName}' successfully.", systemUserName, roleName);
-            }
-            else
-            {
-                logger.LogDebug("System user '{UserName}' already exists and is in role '{RoleName}'. No action needed.", systemUserName, roleName);
-            }
+            await EnsureInRoleAsync(existingUser, systemRoleName).ConfigureAwait(false);
 
             return;
         }
@@ -69,10 +47,10 @@ public class SystemUserInitializer : ISystemUserInitializer
             FirstName = systemUserName,
             MiddleName = systemUserName,
             LastName = systemUserName,
-            Email = Constants.SystemUserConstants.SystemUserEmail,
+            Email = systemEmail,
             EmailConfirmed = true,
             CreatingTime = DateTimeOffset.UtcNow,
-            Role = roleName,
+            Role = systemRoleName,
             IsRegistered = false,
             IsBlocked = false
         };
@@ -103,14 +81,23 @@ public class SystemUserInitializer : ISystemUserInitializer
             throw new InvalidOperationException($"System user '{systemUserName}' was created but cannot be found.");
         }
 
-        var addToRoleResult = await userManager.AddToRoleAsync(createdUser, roleName).ConfigureAwait(false);
-        if (!addToRoleResult.Succeeded)
-        {
-            var errors = string.Join(", ", addToRoleResult.Errors.Select(e => e.Description));
-            logger.LogError("Failed to assign system user '{UserName}' to role '{RoleName}': {Errors}", systemUserName, roleName, errors);
-            throw new InvalidOperationException($"Failed to assign system user '{systemUserName}' to role '{roleName}': {errors}");
-        }
+        await EnsureInRoleAsync(createdUser, systemRoleName).ConfigureAwait(false);
 
-        logger.LogInformation("System user '{UserName}' created and assigned to role '{RoleName}' successfully.", systemUserName, roleName);
+        logger.LogInformation("System user '{UserName}' created and assigned to role '{RoleName}' successfully.", systemUserName, systemRoleName);
+    }
+
+    private async Task EnsureInRoleAsync(User user, string roleName)
+    {
+        if (!await userManager.IsInRoleAsync(user, roleName).ConfigureAwait(false))
+        {
+            var addRoleResult = await userManager.AddToRoleAsync(user, roleName).ConfigureAwait(false);
+            if (!addRoleResult.Succeeded)
+            {
+                var errors = string.Join(", ", addRoleResult.Errors.Select(e => e.Description));
+                logger.LogError("Failed to assign user '{UserName}' to role '{RoleName}': {Errors}", user.UserName, roleName, errors);
+                throw new InvalidOperationException($"Failed to assign user '{user.UserName}' to role '{roleName}': {errors}");
+            }
+            logger.LogDebug("User '{UserName}' assigned to role '{RoleName}' successfully.", user.UserName, roleName);
+        }
     }
 }
