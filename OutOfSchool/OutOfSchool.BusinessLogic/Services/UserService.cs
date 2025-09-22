@@ -121,7 +121,7 @@ public class UserService(
 
         if (user.IsSystemProtected)
         {
-            logger.LogError("Attempt to delete a system protected user with id = {id}", id);
+            logger.LogError("Attempt to delete a system protected user with id = {Id}", id);
             throw new InvalidOperationException("System user is protected and cannot be deleted.");
         }
 

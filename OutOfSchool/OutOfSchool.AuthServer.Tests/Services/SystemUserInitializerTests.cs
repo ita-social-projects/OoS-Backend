@@ -18,6 +18,11 @@ public class SystemUserInitializerTests
 
     private SystemUserInitializer systemUserInitializer;
 
+    private readonly string systemUserName = Constants.SystemUserConstants.SystemUserName;
+    private readonly string systemUserRole = Constants.SystemUserConstants.SystemUserRole;
+    private readonly string systemUserEmail = Constants.SystemUserConstants.SystemUserEmail;
+    private readonly string systemUserId = Constants.SystemUserConstants.SystemUserId;
+
     [SetUp]
     public void SetUp()
     {
@@ -42,15 +47,15 @@ public class SystemUserInitializerTests
         // Arrange
         var systemUser = new User
         {
-            Id = Constants.SystemUserConstants.SystemUserId,
-            UserName = Constants.SystemUserConstants.SystemUserName,
-            FirstName = Constants.SystemUserConstants.SystemUserName,
-            MiddleName = Constants.SystemUserConstants.SystemUserName,
-            LastName = Constants.SystemUserConstants.SystemUserName,
-            Email = Constants.SystemUserConstants.SystemUserEmail,
+            Id = systemUserId,
+            UserName = systemUserName,
+            FirstName = systemUserName,
+            MiddleName = systemUserName,
+            LastName = systemUserName,
+            Email = systemUserEmail,
             EmailConfirmed = true,
             CreatingTime = DateTimeOffset.UtcNow,
-            Role = Constants.SystemUserConstants.SystemUserRole,
+            Role = systemUserRole,
             IsRegistered = false,
             IsBlocked = false,
             IsSystemProtected = true
@@ -74,9 +79,9 @@ public class SystemUserInitializerTests
         await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false);
 
         // Assert
-        mockedRoleManager.Verify(rm => rm.CreateAsync(It.Is<IdentityRole>(r => r.Name == "system")), Times.Once);
-        mockedUserManager.Verify(um => um.CreateAsync(It.Is<User>(u => u.UserName == "system")), Times.Once);
-        mockedUserManager.Verify(um => um.AddToRoleAsync(It.Is<User>(u => u.UserName == "system"), "system"), Times.Once);
+        mockedRoleManager.Verify(rm => rm.CreateAsync(It.Is<IdentityRole>(r => r.Name == systemUserName)), Times.Once);
+        mockedUserManager.Verify(um => um.CreateAsync(It.Is<User>(u => u.UserName == systemUserName)), Times.Once);
+        mockedUserManager.Verify(um => um.AddToRoleAsync(It.Is<User>(u => u.UserName == systemUserName), systemUserRole), Times.Once);
     }
 
     [Test]
@@ -85,15 +90,15 @@ public class SystemUserInitializerTests
         // Arrange
         var systemUser = new User
         {
-            Id = Constants.SystemUserConstants.SystemUserId,
-            UserName = Constants.SystemUserConstants.SystemUserName,
-            FirstName = Constants.SystemUserConstants.SystemUserName,
-            MiddleName = Constants.SystemUserConstants.SystemUserName,
-            LastName = Constants.SystemUserConstants.SystemUserName,
-            Email = Constants.SystemUserConstants.SystemUserEmail,
+            Id = systemUserId,
+            UserName = systemUserName,
+            FirstName = systemUserName,
+            MiddleName = systemUserName,
+            LastName = systemUserName,
+            Email = systemUserEmail,
             EmailConfirmed = true,
             CreatingTime = DateTimeOffset.UtcNow,
-            Role = Constants.SystemUserConstants.SystemUserRole,
+            Role = systemUserRole,
             IsRegistered = false,
             IsBlocked = false,
             IsSystemProtected = true
@@ -114,7 +119,7 @@ public class SystemUserInitializerTests
         // Assert
         mockedRoleManager.Verify(rm => rm.CreateAsync(It.IsAny<IdentityRole>()), Times.Never);
         mockedUserManager.Verify(um => um.CreateAsync(It.IsAny<User>()), Times.Never);
-        mockedUserManager.Verify(um => um.AddToRoleAsync(It.Is<User>(u => u.UserName == "system"), "system"), Times.Once);
+        mockedUserManager.Verify(um => um.AddToRoleAsync(It.Is<User>(u => u.UserName == systemUserName), systemUserRole), Times.Once);
     }
 
     [Test]
@@ -123,15 +128,15 @@ public class SystemUserInitializerTests
         // Arrange
         var systemUser = new User
         {
-            Id = Constants.SystemUserConstants.SystemUserId,
-            UserName = Constants.SystemUserConstants.SystemUserName,
-            FirstName = Constants.SystemUserConstants.SystemUserName,
-            MiddleName = Constants.SystemUserConstants.SystemUserName,
-            LastName = Constants.SystemUserConstants.SystemUserName,
-            Email = Constants.SystemUserConstants.SystemUserEmail,
+            Id = systemUserId,
+            UserName = systemUserName,
+            FirstName = systemUserName,
+            MiddleName = systemUserName,
+            LastName = systemUserName,
+            Email = systemUserEmail,
             EmailConfirmed = true,
             CreatingTime = DateTimeOffset.UtcNow,
-            Role = Constants.SystemUserConstants.SystemUserRole,
+            Role = systemUserRole,
             IsRegistered = false,
             IsBlocked = false,
             IsSystemProtected = true
@@ -194,12 +199,12 @@ public class SystemUserInitializerTests
         // Arrange
         var systemUser = new User
         {
-            Id = Constants.SystemUserConstants.SystemUserId,
-            UserName = Constants.SystemUserConstants.SystemUserName,
-            FirstName = Constants.SystemUserConstants.SystemUserName,
-            MiddleName = Constants.SystemUserConstants.SystemUserName,
-            LastName = Constants.SystemUserConstants.SystemUserName,
-            Email = Constants.SystemUserConstants.SystemUserEmail,
+            Id = systemUserId,
+            UserName = systemUserName,
+            FirstName = systemUserName,
+            MiddleName = systemUserName,
+            LastName = systemUserName,
+            Email = systemUserEmail,
             EmailConfirmed = true,
             CreatingTime = DateTimeOffset.UtcNow,
             IsRegistered = false,
@@ -223,7 +228,7 @@ public class SystemUserInitializerTests
 
         // Act & Assert
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false));
-        Assert.That(ex.Message, Does.Contain($"Failed to assign user '{systemUser.UserName}' to role 'system'"));
+        Assert.That(ex.Message, Does.Contain($"Failed to assign user '{systemUserName}' to role '{systemUserRole}'"));
     }
 
 }

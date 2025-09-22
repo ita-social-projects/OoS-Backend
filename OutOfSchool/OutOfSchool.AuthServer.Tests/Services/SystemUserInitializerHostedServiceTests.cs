@@ -41,6 +41,8 @@ public class SystemUserInitializerHostedServiceTests
             .Returns(mockedServiceScope.Object);
         mockedServiceScope.Setup(s => s.ServiceProvider.GetService(typeof(ISystemUserInitializer)))
             .Returns(mockedInitializer.Object);
+        mockedInitializer.Setup(i => i.EnsureExistsAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         await initializerHostedService.StartAsync(CancellationToken.None).ConfigureAwait(false);
