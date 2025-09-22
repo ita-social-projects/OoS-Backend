@@ -73,7 +73,7 @@ public class WorkshopDraftService(
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
-
+    private readonly string baseImageUrl = imageStorageOptions.Value.BaseImageUrl;
     /// <summary>
     /// Create a delegate to include other entities in InstitutionHierarchy entity
     /// </summary>
@@ -337,14 +337,14 @@ public class WorkshopDraftService(
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
-
+        var institutionId = workshopDraft?.Provider?.Institution?.Id.ToString();
         EnsureDraftIsApprovable(workshopDraft);
 
         //TODO: Add image loading later
 
         if (workshopDraft.WorkshopId == null)
         {
-            if (IsMinistryOfSport(workshopDraft))
+            if (IsMinistryOfSport(institutionId))
             {
                 await SyncSectionWithRegistryAsync(workshopDraft);
             }
@@ -353,7 +353,7 @@ public class WorkshopDraftService(
         }
         else
         {
-            if (IsMinistryOfSport(workshopDraft))
+            if (IsMinistryOfSport(institutionId))
             {
                 await SyncSectionWithRegistryAsync(workshopDraft);
             }
@@ -563,9 +563,10 @@ public class WorkshopDraftService(
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-        if (IsMinistryOfSport(draft))
+        var institutionId = existingWorkshop.InstitutionId.ToString();
+        if(IsMinistryOfSport(institutionId))
         {
-                await SyncSectionWithRegistryAsync(draft);
+            await SyncWorkshopSectionDirectlyAsync(workshopV2Dto);
         }
         return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
     }
@@ -1512,18 +1513,20 @@ public class WorkshopDraftService(
         return orderBy;
     }
     /// <summary>
-    /// Asynchronously retrieves the sport kind dictionary ID code associated with the specified workshop draft.
+    /// Asynchronously retrieves the sport kind dictionary ID code associated with the specified InstitutionHierarchy.
     /// </summary>
-    /// <param name="workshopDraft">The workshop draft containing the necessary data to determine the sport kind dictionary ID code.</param>
-    /// <returns>The sport kind dictionary ID code as an integer.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the <paramref name="workshopDraft"/> is missing a valid InstitutionHierarchyId, if the corresponding
-    /// institution hierarchy cannot be found, or if the SportRegistryIdCode is not set.</exception>
-    private async Task<long> GetSectionSportKindDictIdCodeAsync(WorkshopDraft workshopDraft)
+    /// <param name="institutionHierarchyId">The unique identifier of the InstitutionHierarchy.</param>
+    /// <returns>The sport kind dictionary ID code as a <see cref="long"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the <paramref name="institutionHierarchyId"/> is empty,
+    /// if the corresponding InstitutionHierarchy cannot be found,
+    /// or if the SportRegistryIdCode is not set.
+    /// </exception>
+    private async Task<long> GetSectionSportKindDictIdCodeAsync(Guid institutionHierarchyId)
     {
-        if (workshopDraft.WorkshopDraftContent?.InstitutionHierarchyId is not Guid institutionHierarchyId ||
-            institutionHierarchyId == Guid.Empty)
+        if (institutionHierarchyId == Guid.Empty)
         {
-            throw new InvalidOperationException("InstitutionHierarchyId is missing in WorkshopDraftContent.");
+            throw new InvalidOperationException("InstitutionHierarchyId is missing.");
         }
 
         var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId);
@@ -1553,12 +1556,10 @@ public class WorkshopDraftService(
     /// </exception>
     private async Task SyncSectionWithRegistryAsync(WorkshopDraft draft)
     {
-        var baseUrl = imageStorageOptions.Value.BaseImageUrl;
-        
         // If not found created MinsportSectionId value - its create operation
         if (draft.WorkshopDraftContent?.MinsportSectionId is null)
         {
-            var postRequest = draft.ToSportSectionPostRequest(baseUrl);
+            var postRequest = draft.ToSportSectionPostRequest(baseImageUrl);
             await NormalizeSectionDataAsync(draft,postRequest);
             
             var apiCreateResponse = await sportsRegistryApiService.RegisterSectionAsync(postRequest);
@@ -1567,7 +1568,7 @@ public class WorkshopDraftService(
         else
         {
             // Update logic
-            var updateRequest = draft.ToSportSectionUpdateRequest(baseUrl);
+            var updateRequest = draft.ToSportSectionUpdateRequest(baseImageUrl);
             await NormalizeSectionDataAsync(draft, updateRequest);
             
             var apiUpdateResponse = await sportsRegistryApiService.UpdateSectionAsync(updateRequest);
@@ -1575,6 +1576,53 @@ public class WorkshopDraftService(
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="draft"></param>
+    /// <param name="isCreate"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+
+    private async Task SyncWorkshopSectionDirectlyAsync(WorkshopV2Dto dto)
+    {
+        var updateRequest = dto.ToSportSectionUpdateRequest(baseImageUrl);
+        var institutionHierarchyId = dto.InstitutionHierarchyId 
+                                     ?? throw new InvalidOperationException("InstitutionHierarchyId cannot be null.");
+        
+        updateRequest.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(institutionHierarchyId);
+
+        if (!long.TryParse(updateRequest.SectionAddressLocalityDictIdCode, out var catottgId))
+            throw new InvalidOperationException($"Invalid CATOTTG Id: {updateRequest.SectionAddressLocalityDictIdCode}");
+
+        updateRequest.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+        if (string.IsNullOrWhiteSpace(updateRequest.SectionAddressLocalityDictIdCode))
+            throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
+            
+        var apiUpdateResponse = await sportsRegistryApiService.UpdateSectionAsync(updateRequest);
+        apiUpdateResponse.Match(
+            error =>
+            {
+                var details = error.Content ?? error.Message ?? "Unknown";
+                logger.LogError(
+                    "Failed to sync section to Sports Registry directly. Code={Code}, Message={Message}",
+                    (int)error.HttpStatusCode, details);
+
+                throw new InvalidOperationException($"Registry sync failed: {details}");
+            },
+            success =>
+            {
+                var sectionId = success.ResultVariables.SectionId;
+                dto.MinsportSectionId = sectionId;
+
+                logger.LogInformation(
+                    "Workshop was successfully updated directly in Sports Registry. WorkshopId={WorkshopId}, SectionId={SectionId}",
+                    dto.Id, sectionId);
+
+                return true;
+            }
+        );
+    }
     private void HandleRegistryResponse(
         Either<ErrorResponse, SectionCreateUpdateResponse> response,
         WorkshopDraft draft,
@@ -1613,7 +1661,10 @@ public class WorkshopDraftService(
     /// <exception cref="InvalidOperationException"></exception>
     private async Task NormalizeSectionDataAsync(WorkshopDraft draft, SportsSectionBaseDto sectionData)
     {
-        sectionData.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
+        var institutionHierarchyId = draft.WorkshopDraftContent.InstitutionHierarchyId 
+                                     ?? throw new InvalidOperationException("InstitutionHierarchyId cannot be null.");
+        
+        sectionData.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(institutionHierarchyId);
 
         if (!long.TryParse(sectionData.SectionAddressLocalityDictIdCode, out var catottgId))
             throw new InvalidOperationException($"Invalid CATOTTG Id: {sectionData.SectionAddressLocalityDictIdCode}");
@@ -1642,11 +1693,11 @@ public class WorkshopDraftService(
     /// <summary>
     /// Determines whether the draft belongs to the Ministry of Sport.
     /// </summary>
-    /// <param name="draft">The workshop draft.</param>
+    /// <param name="institutionId">institutionId.</param>
     /// <returns><c>true</c> if the provider is associated with the Ministry of Sport; otherwise, <c>false</c>.</returns>
-    private bool IsMinistryOfSport(WorkshopDraft draft)
+    private bool IsMinistryOfSport(string institutionId)
     {
-        var institutionId = draft?.Provider?.Institution?.Id.ToString();
+
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
     }
