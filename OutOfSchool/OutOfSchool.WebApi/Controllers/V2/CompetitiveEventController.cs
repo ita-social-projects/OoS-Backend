@@ -95,7 +95,7 @@ public class CompetitiveEventController : ControllerBase
 
         if (!competitiveEvents.Any())
         {
-            return NotFound();
+            return NoContent();
         }
         return this.Ok(competitiveEvents);
     }
