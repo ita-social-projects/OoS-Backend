@@ -79,7 +79,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         {
             createdCompetitiveEventDraft.Images ??= [];
             createdCompetitiveEventDraft.Images.AddRange(
-                competitiveEventV2Dto.ImageIds.Select(id => new Image<CompetitiveEventDraft> { ExternalStorageId = id }));
+                (competitiveEventV2Dto.ImageIds ?? []).Select(id => new Image<CompetitiveEventDraft> { ExternalStorageId = id }));
         }
 
         await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);

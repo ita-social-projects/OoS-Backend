@@ -12,6 +12,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
@@ -146,6 +147,100 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds, Has.Count.EqualTo(1));
         Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds
               .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
+    }
+
+    [Test]
+    public async Task Create_ReturnsDraftResultDto_WhenDtoIsValidAndCompetitiveEventExisted()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            Contacts =
+            [
+                new ContactsDto
+                {
+                    IsDefault = true,
+                    Address = ContactsAddressDtoGenerator.Generate()
+                }
+            ]
+        };
+        var draft = dto.ToDraft();
+        var catottgs = new List<CATOTTG>
+        {
+            new() { Id = 1, Name = "Test Codeficator" }
+        };
+
+        var directionSubDirectionIds = new List<DirectionSubDirectionIdsDto>
+        {
+            new() { DirectionId = 14, SubDirectionId = 54  }
+        };
+
+        var subDirections = new List<SubDirection>
+        {
+            new() { Id = 54, DirectionId = 14, Description = "description1", IsDeleted = false, Title = "title1"  },
+            new() { Id = 9, DirectionId = 10, Description = "description2", IsDeleted = true, Title = "title2"  }
+        };
+
+        var existedCompetitiveEventDto = new CompetitiveEventDto() { State = CompetitiveEventStates.Published };
+
+        mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
+            .ReturnsAsync(existedCompetitiveEventDto);
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<CompetitiveEventDraft>>>()))
+            .ReturnsAsync(draft);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Create(draft))
+            .ReturnsAsync(draft);
+        mockImageService.Setup(service => service.AddManyImagesAsync(draft, dto.ImageFiles))
+            .ReturnsAsync(new MultipleImageUploadingResult());
+        mockImageService.Setup(service => service.AddCoverImageAsync(draft, dto.CoverImage))
+            .ReturnsAsync(Result<string>.Success("some text"));
+        mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(catottgs.AsTestAsyncEnumerableQuery);
+
+        mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
+            It.IsAny<Expression<Func<SubDirection, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted));
+
+        // Act
+        var result = await competitiveEventDraftService.Create(dto, true);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<CompetitiveEventDraftResultDto>(result);
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds, Has.Count.EqualTo(1));
+        Assert.That(result.CompetitiveEventDraft.CompetitiveEventDetails.DirectionSubDirectionIds
+              .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
+    }
+
+    [Test]
+    public void Create_ThrowsInvalidOperationException_WhenCompetitiveEventStateIsArchived()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            Contacts =
+            [
+                new ContactsDto
+                {
+                    IsDefault = true,
+                    Address = ContactsAddressDtoGenerator.Generate()
+                }
+            ]
+        };
+        var existedCompetitiveEventDto = new CompetitiveEventDto() { State = CompetitiveEventStates.Archived };
+        mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
+            .ReturnsAsync(existedCompetitiveEventDto);
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask);
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await competitiveEventDraftService.Create(dto));
     }
 
     #endregion

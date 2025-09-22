@@ -133,7 +133,7 @@ public class WorkshopDraftService(
         {
             createdDraftWithAssociatedTeachers.Images ??= [];
             createdDraftWithAssociatedTeachers.Images.AddRange(
-                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> { ExternalStorageId = id }));
+                (workshopV2Dto.ImageIds ?? []).Select(id => new Image<WorkshopDraft> { ExternalStorageId = id }));
         }
 
         await workshopDraftRepository.SaveChangesAsync()
@@ -358,7 +358,7 @@ public class WorkshopDraftService(
         await workshopDraftRepository.Delete(workshopDraft);
 
         logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
-        
+
         return createdWorkshopId;
     }
 
@@ -1423,13 +1423,13 @@ public class WorkshopDraftService(
         var likeMethod = typeof(DbFunctionsExtensions).GetMethods()
             .Single(m => m.Name == nameof(DbFunctionsExtensions.Like)
                 && m.GetParameters().Length == 3);
-        
+
         var jsonUnquoteMethod = typeof(MySqlJsonDbFunctionsExtensions).GetMethods()
             .Single(m => m.Name == nameof(MySqlJsonDbFunctionsExtensions.JsonUnquote)
                 && m.GetParameters().Length == 2);
 
         Expression JsonUnquote(Expression e)
-            => Expression.Call(null, jsonUnquoteMethod, efFunctions, e);    
+            => Expression.Call(null, jsonUnquoteMethod, efFunctions, e);
 
         Expression AddWeighted(Expression cond, int w)
             => Expression.Condition(cond, Expression.Constant(w), Expression.Constant(0));
