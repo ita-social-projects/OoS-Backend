@@ -1297,7 +1297,8 @@ public class WorkshopDraftService(
             w => w.EnrollmentProcedureDescription,
             w => w.PreferentialTermsOfParticipation,
             w => w.ShortTitle,
-            w => w.Title
+            w => w.Title,
+            w => string.Join(" | ", (w.Contacts ?? []).Select(c => c?.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>
@@ -1305,7 +1306,7 @@ public class WorkshopDraftService(
             var newValue = field(workshopV2Dto);
             var oldValue = field(existingWorkshop);
 
-            return newValue != oldValue;
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal);
         });
     }
     private async Task SetLanguageNameOrThrow(WorkshopV2Dto dto)

@@ -459,6 +459,7 @@ public class CompetitiveEventService(
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the competitive event with the given Id does not exist</exception>
     public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2Dto dto, bool fromDraft = false)
     {
+        ArgumentNullException.ThrowIfNull(dto);
         var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto.ToV2CreateRequestDto());
 
         async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,

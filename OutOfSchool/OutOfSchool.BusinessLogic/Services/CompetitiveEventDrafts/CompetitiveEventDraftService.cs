@@ -362,6 +362,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException($"There is no CompetitiveEvent with such Id. CompetitiveEvent can`t be updated.");
         }
 
+        if (existingCompetitiveEvent.State == CompetitiveEventStates.Archived)
+        {
+            throw new InvalidOperationException("This CompetitiveEvent is archived. It can not be updated.");
+        }
+
         var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.CompetitiveEventId == competitiveEventV2Dto.Id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
@@ -422,14 +427,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             ce => ce.TermsOfParticipation,
             ce => ce.Benefits,
             ce => ce.VenueName,
-            ce => string.Join(" | ", ce.Contacts.Select(c => c.ToString()))
+            ce => string.Join(" | ", (ce.Contacts ?? []).Select(c => c?.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>
         {
             var newValue = field(competitiveEventV2Dto);
             var oldValue = field(existingCompetitiveEvent);
-            return newValue != oldValue;
+
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal);
         });
     }
 
@@ -915,6 +921,16 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
         var competitiveEventDraft = await GetDraftById(draftId);
+
+        if (competitiveEventDraft == null)
+        {
+            logger.LogWarning("CompetitiveEventDraft with Id = {Id} not found.", draftId);
+            return Result<CompetitiveEventDraft>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "Competitive event draft not found."
+            });
+        }
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration &&
             competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)

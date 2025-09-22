@@ -93,7 +93,7 @@ public class CompetitiveEventController : ControllerBase
     {
         var competitiveEvents = await competitiveEventService.GetByIds(ids).ConfigureAwait(false);
 
-        if (competitiveEvents.Any())
+        if (!competitiveEvents.Any())
         {
             return NotFound();
         }
@@ -182,7 +182,7 @@ public class CompetitiveEventController : ControllerBase
     {
         try
         {
-            //TODO:???
+            // Prefer one source for the cover image update
             dto.CoverImageId = dto.CoverImage is null ? dto.CoverImageId : null;
 
             var result = await competitiveEventDraftService.UpdateCompetitiveEvent(dto).ConfigureAwait(false);
@@ -196,6 +196,7 @@ public class CompetitiveEventController : ControllerBase
         }
         catch (InvalidOperationException e)
         {
+            logger.LogError("Unable to update competitive event: {Message}", e.Message);
             return BadRequest(e.Message);
         }
     }
