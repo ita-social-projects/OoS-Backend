@@ -556,11 +556,11 @@ public class WorkshopDraftService(
         }
         
         workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
-        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        /*if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
-        }
+        }*/
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
         var institutionId = existingWorkshop.InstitutionId.ToString();

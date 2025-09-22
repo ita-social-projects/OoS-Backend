@@ -324,18 +324,21 @@ public static class WorkshopV2DtoExtensions
                 .ToList() ?? new(),
 
             SectionTrainers = new List<Guid>(),
-            SectionPracticePeriodDateFrom = dto.StudyPeriodDates.StartDate.ToString(@"dd\:MM", CultureInfo.InvariantCulture),
-            SectionPracticePeriodDateTo = dto.StudyPeriodDates.EndDate.ToString(@"dd\:MM", CultureInfo.InvariantCulture),
+           
+            SectionPracticePeriodDateFrom = $"{dto.StudyPeriodDates.StartDate.Day:D2}:{dto.StudyPeriodDates.StartDate.Month:D2}",
+            SectionPracticePeriodDateTo   = $"{dto.StudyPeriodDates.EndDate.Day:D2}:{dto.StudyPeriodDates.EndDate.Month:D2}",
+
             SectionSchedule = dto.DateTimeRanges?
                 .SelectMany(r => (r.Workdays ?? Enumerable.Empty<DaysBitMask>())
                     .SelectMany(flags => DecomposeFlags(flags)
                         .Select(day => new SectionScheduleRequest
                         {
                             SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
-                            SectionScheduleTimeFrom = r.StartTime.ToString(@"HH\:mm\:ss", CultureInfo.InvariantCulture),
-                            SectionScheduleTimeTo = r.EndTime.ToString(@"HH\:mm\:ss", CultureInfo.InvariantCulture),
+                            SectionScheduleTimeFrom = r.StartTime.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture),
+                            SectionScheduleTimeTo   = r.EndTime.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture),
                         })))
                 .ToList() ?? new()
+
         };
     }
 
