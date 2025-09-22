@@ -147,4 +147,83 @@ public class SystemUserInitializerTests
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false));
     }
+
+    [Test]
+    public async Task EnsureExistsAsync_WhenRoleCreationFails_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var identityError = new IdentityError
+        {
+            Code = "TestCode",
+            Description = "TestDescription",
+        };
+        mockedRoleManager.Setup(rm => rm.RoleExistsAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        mockedRoleManager.Setup(rm => rm.CreateAsync(It.IsAny<IdentityRole>()))
+            .ReturnsAsync(IdentityResult.Failed(identityError));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false));
+        Assert.That(ex.Message, Does.Contain("Failed to create system role"));
+    }
+
+    [Test]
+    public async Task EnsureExistsAsync_WhenUserCreationFails_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var identityError = new IdentityError
+        {
+            Code = "TestCode",
+            Description = "TestDescription",
+        };
+        mockedRoleManager.Setup(rm => rm.RoleExistsAsync(It.IsAny<string>()))
+            .ReturnsAsync(true);
+        mockedUserManager.Setup(um => um.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((User)null);
+        mockedUserManager.Setup(um => um.CreateAsync(It.IsAny<User>()))
+            .ReturnsAsync(IdentityResult.Failed(identityError));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false));
+        Assert.That(ex.Message, Does.Contain("Failed to create system user"));
+    }
+
+    [Test]
+    public async Task EnsureExistsAsync_WhenAddingUserToRoleFails_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var systemUser = new User
+        {
+            Id = Constants.SystemUserConstants.SystemUserId,
+            UserName = Constants.SystemUserConstants.SystemUserName,
+            FirstName = Constants.SystemUserConstants.SystemUserName,
+            MiddleName = Constants.SystemUserConstants.SystemUserName,
+            LastName = Constants.SystemUserConstants.SystemUserName,
+            Email = Constants.SystemUserConstants.SystemUserEmail,
+            EmailConfirmed = true,
+            CreatingTime = DateTimeOffset.UtcNow,
+            IsRegistered = false,
+            IsBlocked = false,
+            IsSystemProtected = true
+        };
+        var identityError = new IdentityError
+        {
+            Code = "TestCode",
+            Description = "TestDescription",
+        };
+
+        mockedRoleManager.Setup(rm => rm.RoleExistsAsync(It.IsAny<string>()))
+            .ReturnsAsync(true);
+        mockedUserManager.Setup(um => um.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync(systemUser);
+        mockedUserManager.Setup(um => um.IsInRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(false);
+        mockedUserManager.Setup(um => um.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(identityError));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await systemUserInitializer.EnsureExistsAsync().ConfigureAwait(false));
+        Assert.That(ex.Message, Does.Contain($"Failed to assign user '{systemUser.UserName}' to role 'system'"));
+    }
+
 }

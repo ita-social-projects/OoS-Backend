@@ -41,15 +41,51 @@ public class SystemUserInitializerHostedServiceTests
             .Returns(mockedServiceScope.Object);
         mockedServiceScope.Setup(s => s.ServiceProvider.GetService(typeof(ISystemUserInitializer)))
             .Returns(mockedInitializer.Object);
-        initializerHostedService = new SystemUserInitializerHostedService(
-            mockedServiceProvider.Object,
-            mockedLogger.Object);
 
         // Act
         await initializerHostedService.StartAsync(CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         mockedInitializer.Verify(i => i.EnsureExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task StartAsync_WhenCaughtOperationCanceledException_ShouldReturnCompletedTask()
+    {
+        // Arrange
+        var mockedServiceScope = new Mock<IServiceScope>();
+        var mockedServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        mockedServiceProvider.Setup(sp => sp.GetService(typeof(IServiceScopeFactory)))
+            .Returns(mockedServiceScopeFactory.Object);
+        mockedServiceScopeFactory.Setup(f => f.CreateScope())
+            .Returns(mockedServiceScope.Object);
+        mockedServiceScope.Setup(s => s.ServiceProvider.GetService(typeof(ISystemUserInitializer)))
+            .Returns(mockedInitializer.Object);
+        mockedInitializer.Setup(i => i.EnsureExistsAsync(It.IsAny<CancellationToken>()))
+            .Throws(new OperationCanceledException());
+
+        // Act & Assert
+        Assert.DoesNotThrowAsync(async () => await initializerHostedService.StartAsync(CancellationToken.None).ConfigureAwait(false));
+    }
+
+    [Test]
+    public async Task StartAsync_WhenCaughtOtherException_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var mockedServiceScope = new Mock<IServiceScope>();
+        var mockedServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        mockedServiceProvider.Setup(sp => sp.GetService(typeof(IServiceScopeFactory)))
+            .Returns(mockedServiceScopeFactory.Object);
+        mockedServiceScopeFactory.Setup(f => f.CreateScope())
+            .Returns(mockedServiceScope.Object);
+        mockedServiceScope.Setup(s => s.ServiceProvider.GetService(typeof(ISystemUserInitializer)))
+            .Returns(mockedInitializer.Object);
+        mockedInitializer.Setup(i => i.EnsureExistsAsync(It.IsAny<CancellationToken>()))
+            .Throws(new Exception("Some error"));
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await initializerHostedService.StartAsync(CancellationToken.None).ConfigureAwait(false));
+        Assert.That(ex?.Message, Is.EqualTo("System user initialization failed."));
     }
 
     [Test]
