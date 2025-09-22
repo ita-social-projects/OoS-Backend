@@ -58,15 +58,7 @@ public class SystemUserInitializer : ISystemUserInitializer
 
         IdentityResult createResult;
 
-        try
-        {
-            createResult = await userManager.CreateAsync(systemUser).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Exception occurred while creating system user '{UserName}'.", systemUserName);
-            throw;
-        }
+        createResult = await userManager.CreateAsync(systemUser).ConfigureAwait(false);
 
         if (!createResult.Succeeded)
         {

@@ -62,17 +62,16 @@ public class UserService(
             if (user is null)
             {
                 var message = $"There is no User in the Db with such an id = {dto?.Id}";
-                logger.LogError(message);
-                throw new ArgumentException(message, nameof(dto.Id));
+                throw new ArgumentException(message, dto?.Id);
             }
             
             if (user.IsSystemProtected)
             {
-                logger.LogError($"Attempt to update a system protected user with id = {dto?.Id}");
+                logger.LogError("Attempt to update a system protected user with id = {Id}", dto?.Id);
                 throw new InvalidOperationException("System user is protected and cannot be modified.");
             }
 
-            var updatedUser = await repository.Update(dto.SetToModel(user ?? new())).ConfigureAwait(false);
+            var updatedUser = await repository.Update(dto.SetToModel(user)).ConfigureAwait(false);
 
             logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
@@ -122,7 +121,7 @@ public class UserService(
 
         if (user.IsSystemProtected)
         {
-            logger.LogError($"Attempt to delete a system protected user with id = {id}");
+            logger.LogError("Attempt to delete a system protected user with id = {id}", id);
             throw new InvalidOperationException("System user is protected and cannot be deleted.");
         }
 

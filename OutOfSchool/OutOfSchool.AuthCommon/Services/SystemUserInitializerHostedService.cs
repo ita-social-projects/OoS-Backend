@@ -24,17 +24,16 @@ public class SystemUserInitializerHostedService : IHostedService
         {
             await initializer.EnsureExistsAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            logger.LogInformation("System user initialization was cancelled.");
+            logger.LogDebug(ex, "System user initialization was cancelled.");
             await Task.CompletedTask;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while initializing the system user.");
-            throw;
+            throw new InvalidOperationException($"System user initialization failed.", ex);
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken) => await Task.CompletedTask;
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
