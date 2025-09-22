@@ -35,13 +35,7 @@ public static class Startup
 
         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mariaDbServerVersion = config["MariaDbServerVersion"];
-        var serverVersion = new MariaDbServerVersion(new Version(mariaDbServerVersion));
-        if (serverVersion.Version.Major < Constants.MariaDbServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
-        }
+        var serverVersion = config.GetAndValidateMariaDbVersion();
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
