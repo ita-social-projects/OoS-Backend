@@ -11,16 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Ardalis.SmartEnum" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" /> 
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="NetEscapades.AspNetCore.SecurityHeaders" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Pomelo.EntityFrameworkCore.MySql">
-      <HintPath>..\..\..\..\.nuget\packages\pomelo.entityframeworkcore.mysql\8.0.0\lib\net8.0\Pomelo.EntityFrameworkCore.MySql.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
