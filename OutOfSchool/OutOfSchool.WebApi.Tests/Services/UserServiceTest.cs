@@ -111,7 +111,7 @@ public class UserServiceTest
     }
 
     [Test]
-    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+    public void Update_WhenEntityIsInvalid_ThrowsArgumentException()
     {
         // Arrange
         var changedEntity = new BaseUpdateUserDto()
@@ -121,7 +121,7 @@ public class UserServiceTest
 
         };
         // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+        Assert.ThrowsAsync<ArgumentException>(
             async () => await service.Update(changedEntity).ConfigureAwait(false));
     }
 
