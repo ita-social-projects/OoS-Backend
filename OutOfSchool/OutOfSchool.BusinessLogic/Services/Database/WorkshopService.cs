@@ -548,7 +548,7 @@ public class WorkshopService(
             var changingCoverImageResult = await workshopImagesService
                 .ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
-            // Fill CoverImageId for the updated competitiveEvent
+            // Fill CoverImageId for the updated workshop.
             if (!string.IsNullOrEmpty(dto.CoverImageId))
             {
                 currentWorkshop.CoverImageId = dto.CoverImageId;
