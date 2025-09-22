@@ -182,9 +182,6 @@ public class CompetitiveEventController : ControllerBase
     {
         try
         {
-            // Prefer one source for the cover image update
-            dto.CoverImageId = dto.CoverImage is null ? dto.CoverImageId : null;
-
             var result = await competitiveEventDraftService.UpdateCompetitiveEvent(dto).ConfigureAwait(false);
 
             if (result is null)

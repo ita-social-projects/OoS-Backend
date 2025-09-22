@@ -182,8 +182,8 @@ public static class WorkshopV2DtoExtensions
         model.WorkshopType = dto.WorkshopType;
         model.DefaultTeacherId = dto.DefaultTeacherId;
         model.ParentWorkshopId = dto.ParentWorkshopId;
-        model.CoverImageId = dto.CoverImageId;
         model.IsChampionPath = dto.IsChampionPath;
+
         return model;
     }
 
