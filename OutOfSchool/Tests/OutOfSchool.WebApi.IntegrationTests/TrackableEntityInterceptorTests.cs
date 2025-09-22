@@ -85,10 +85,10 @@ public class TrackableEntityInterceptorTests
 
     private static DbContextOptions<OutOfSchoolDbContext> GetDbContextOptions(string userId)
     {
-        var currentUserMock = new Mock<ICurrentUser>();
-        currentUserMock.Setup(cu => cu.UserId).Returns(userId);
+        var contextAwareUserMock = new Mock<IContextAwareUserService>();
+        contextAwareUserMock.Setup(cu => cu.UserId).Returns(userId);
 
-        var interceptor = new TrackableEntityInterceptor(currentUserMock.Object);
+        var interceptor = new TrackableEntityInterceptor(contextAwareUserMock.Object);
 
         var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
