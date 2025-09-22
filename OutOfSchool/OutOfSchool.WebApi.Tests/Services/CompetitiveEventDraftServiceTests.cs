@@ -631,7 +631,7 @@ public class CompetitiveEventDraftServiceTests
             It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
             .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
-            Dictionary < Expression<Func<CompetitiveEventDraft, object>>, SortDirection > sort)
+            Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
                 => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
@@ -686,7 +686,7 @@ public class CompetitiveEventDraftServiceTests
             It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
             .Returns((int from, int size, Expression<Func<CompetitiveEventDraft, bool>> predicate,
-            Dictionary <Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
+            Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection> sort)
                 => drafts.AsQueryable().Where(predicate).AsTestAsyncEnumerableQuery());
 
         // Act
@@ -751,6 +751,64 @@ public class CompetitiveEventDraftServiceTests
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<CompetitiveEventDraftResponseDto>(result);
         Assert.AreEqual(draft.Id, result.CompetitiveEventDraftId);
+    }
+
+    #endregion
+
+    #region Approve
+
+    [Test]
+    public void Approve_ReturnsArgumentException_IfDraftStatusIsNotPendingModerationOrEditedByModerator()
+    {
+        // Arrange
+        Guid draftId = Guid.NewGuid();
+        CompetitiveEventDraft draft = new() { DraftStatus = CompetitiveEventDraftStatus.Draft };
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(draft);
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await competitiveEventDraftService.Approve(draftId));
+    }
+
+    [Test]
+    public async Task Approve_CallCreateV2_IfCompetitiveEventIdIsNull()
+    {
+        // Arrange
+        Guid draftId = Guid.NewGuid();
+        CompetitiveEventDraft draft = new() 
+        { 
+            DraftStatus = CompetitiveEventDraftStatus.PendingModeration, 
+            CompetitiveEventId = null
+        };
+
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(draft);
+        mockCompetitiveEventService.Setup(s => s.CreateV2(draft.ToV2CreateRequestDto()))
+            .ReturnsAsync(It.IsAny<CompetitiveEventResultDto>()).Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Delete(draft))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act & Assert
+        await competitiveEventDraftService.Approve(draftId);
+    }
+
+    [Test]
+    public async Task Approve_CallUpdateV2_IfCompetitiveEventIdIsNottNull()
+    {
+        // Arrange
+        Guid draftId = Guid.NewGuid();
+        CompetitiveEventDraft draft = CompetitiveEventDraftGenerator.Generate();
+        draft.DraftStatus = CompetitiveEventDraftStatus.PendingModeration;
+
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(draft);
+        mockCompetitiveEventService.Setup(s => s.UpdateV2(It.IsAny<CompetitiveEventV2Dto>(), true))
+            .ReturnsAsync(It.IsAny<CompetitiveEventResultDto>()).Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Delete(draft))
+            .Returns(Task.CompletedTask).Verifiable(Times.Once);
+
+        // Act & Assert
+        await competitiveEventDraftService.Approve(draftId);
     }
 
     #endregion
