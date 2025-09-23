@@ -18,7 +18,8 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var config = context.Configuration;
-        var serverVersion = config.GetAndValidateMariaDbVersion();
+        var mariaDbVersion = config.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         var connectionString = config.GetMySqlConnectionString<InitializerConnectionOptions>(
             "DefaultConnection",

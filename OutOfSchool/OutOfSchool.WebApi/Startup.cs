@@ -290,7 +290,8 @@ public static class Startup
         services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Specs"));
         
-        var serverVersion = configuration.GetAndValidateMariaDbVersion();
+        var mariaDbVersion = configuration.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         // registartion of thumbnail generation 
         builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));

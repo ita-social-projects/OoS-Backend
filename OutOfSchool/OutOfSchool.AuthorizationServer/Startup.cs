@@ -35,7 +35,8 @@ public static class Startup
 
         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-        var serverVersion = config.GetAndValidateMariaDbVersion();
+        var mariaDbVersion = config.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
