@@ -304,7 +304,7 @@ public static class WorkshopV2DtoExtensions
             
             SectionPhones = phones,
             SectionEmail = email,
-            SectionRegistrationFormUrl = "https://forms.example.com/football-registration",
+            SectionRegistrationFormUrl = "https://forms.example.com",
             SectionUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
             SectionFacebookUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
             SectionInstagramUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
