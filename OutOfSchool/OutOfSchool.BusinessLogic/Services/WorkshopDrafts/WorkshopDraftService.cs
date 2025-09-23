@@ -1313,9 +1313,10 @@ public class WorkshopDraftService(
         var language = await languageService.GetById(dto.LanguageOfEducationId).ConfigureAwait(false);
         if (language is null)
         {
-            var errorMessage = $"Language with ID = {dto.LanguageOfEducationId} was not found.";
+            var errorMessage  = $"Validation error. Language with ID = {dto.LanguageOfEducationId} was not found.";
             logger.LogWarning(errorMessage);
-            throw new InvalidOperationException(errorMessage);
+            throw new ArgumentException(errorMessage);
+
         }
         dto.LanguageOfEducationName = language.Name;
     }
