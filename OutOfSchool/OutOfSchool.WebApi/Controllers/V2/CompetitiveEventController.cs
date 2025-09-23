@@ -191,10 +191,11 @@ public class CompetitiveEventController : ControllerBase
 
             return Ok(result);
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException ex)
         {
-            logger.LogError("Unable to update competitive event: {Message}", e.Message);
-            return BadRequest(e.Message);
+            logger.LogError(ex, "Unable to update competitive event: {Message}", ex.Message);
+
+            return BadRequest(ex.Message);
         }
     }
 

@@ -58,7 +58,7 @@ public static class CompetitiveEventDescriptionItemDtoExtensions
             Id = model.Id,
             SectionName = model.SectionName,
             Description = model.Description,
-            CompetitiveEventId = model.CompetitiveEventId ?? default
+            CompetitiveEventId = model.CompetitiveEventId ?? Guid.Empty
         };
 
     public static List<CompetitiveEventDescriptionItemDto> ToDto(this IEnumerable<CompetitiveEventDescriptionItem> list)

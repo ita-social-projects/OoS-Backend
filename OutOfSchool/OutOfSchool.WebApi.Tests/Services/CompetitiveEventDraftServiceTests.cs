@@ -931,7 +931,6 @@ public class CompetitiveEventDraftServiceTests
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(catottgs.AsTestAsyncEnumerableQuery);
-
         mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
             It.IsAny<Expression<Func<SubDirection, bool>>>(),
             It.IsAny<string>(),
@@ -948,9 +947,6 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.DirectionSubDirectionIds
               .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
     }
-
-
-
 
     [Test]
     public async Task UpdateCompetitiveEvent_CallUpdateV2_IfModeratedFieldsDoesNotChanged()
