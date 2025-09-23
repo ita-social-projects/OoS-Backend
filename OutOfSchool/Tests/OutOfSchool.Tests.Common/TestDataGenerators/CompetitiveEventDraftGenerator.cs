@@ -8,6 +8,7 @@ public static class CompetitiveEventDraftGenerator
 {
     private static readonly Faker<CompetitiveEventDraft> Faker = new Faker<CompetitiveEventDraft>()
         .RuleFor(x => x.Id, f => f.Random.Guid())
+        .RuleFor(x => x.CompetitiveEventId, f => f.Random.Guid())
         .RuleFor(x => x.DraftStatus, CompetitiveEventDraftStatus.Draft)
         .RuleFor(x => x.CATOTTGId, f => f.Random.Long(1, 100000))
         .RuleFor(x => x.CoverageId, f => f.Random.Int(1, 5))
