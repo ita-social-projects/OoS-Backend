@@ -197,7 +197,7 @@ public class WorkshopDraftServiceTests
         result.WorkshopDraft.WorkshopDetails.WorkshopType.Should().Be(WorkshopType.Workshop);
     }
     [Test]
-    public void Create_WithInvalidLanguageId_ShouldThrowInvalidOperationException()
+    public void Create_WithInvalidLanguageId_ShouldThrowArgumentException()
     {
         // Arrange
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
@@ -208,7 +208,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync((LanguageDto)null);
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Create(workshopV2Dto));
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () => await service.Create(workshopV2Dto));
         ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
     }
 
@@ -447,7 +447,7 @@ public class WorkshopDraftServiceTests
             .ReturnsAsync(workshopV2Dto);
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.Update(updateDto));
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () => await service.Update(updateDto));
         ex.Message.Should().Contain($"Language with ID = {workshopV2Dto.LanguageOfEducationId}");
     }
 
