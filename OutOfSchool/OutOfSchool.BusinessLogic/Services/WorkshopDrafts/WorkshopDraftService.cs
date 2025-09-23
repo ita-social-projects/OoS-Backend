@@ -346,7 +346,7 @@ public class WorkshopDraftService(
         {
             if (IsMinistryOfSport(institutionId))
             {
-                await SyncSectionWithRegistryAsync(workshopDraft);
+                await SyncSectionWithRegistryAsync(workshopDraft).ConfigureAwait(false);
             }
             var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
             createdWorkshopId = result.Workshop.Id;
@@ -355,7 +355,7 @@ public class WorkshopDraftService(
         {
             if (IsMinistryOfSport(institutionId))
             {
-                await SyncSectionWithRegistryAsync(workshopDraft);
+                await SyncSectionWithRegistryAsync(workshopDraft).ConfigureAwait(false);
             }
             await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
             createdWorkshopId = workshopDraft.WorkshopId.Value;
@@ -541,8 +541,8 @@ public class WorkshopDraftService(
         {
             throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
         }
-        await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
-        await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
+        //await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+        //await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
         var draft = await workshopDraftRepository.Get(whereExpression: wd => wd.WorkshopId == workshopV2Dto.Id)
             .AsNoTracking()
@@ -1324,7 +1324,7 @@ public class WorkshopDraftService(
         {
             var errorMessage = $"Language with ID = {dto.LanguageOfEducationId} was not found.";
             logger.LogWarning(errorMessage);
-            throw new InvalidOperationException(errorMessage);
+            throw new ArgumentException($"Language with ID = {dto.LanguageOfEducationId} does not exist.");
         }
         dto.LanguageOfEducationName = language.Name;
     }
@@ -1590,16 +1590,16 @@ public class WorkshopDraftService(
         var institutionHierarchyId = dto.InstitutionHierarchyId 
                                      ?? throw new InvalidOperationException("InstitutionHierarchyId cannot be null.");
         
-        updateRequest.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(institutionHierarchyId);
+        updateRequest.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(institutionHierarchyId).ConfigureAwait(false);
 
         if (!long.TryParse(updateRequest.SectionAddressLocalityDictIdCode, out var catottgId))
             throw new InvalidOperationException($"Invalid CATOTTG Id: {updateRequest.SectionAddressLocalityDictIdCode}");
 
-        updateRequest.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId);
+        updateRequest.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(updateRequest.SectionAddressLocalityDictIdCode))
             throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
             
-        var apiUpdateResponse = await sportsRegistryApiService.UpdateSectionAsync(updateRequest);
+        var apiUpdateResponse = await sportsRegistryApiService.UpdateSectionAsync(updateRequest).ConfigureAwait(false);
         apiUpdateResponse.Match(
             error =>
             {
@@ -1612,12 +1612,9 @@ public class WorkshopDraftService(
             },
             success =>
             {
-                var sectionId = success.ResultVariables.SectionId;
-                dto.MinsportSectionId = sectionId;
-
                 logger.LogInformation(
                     "Workshop was successfully updated directly in Sports Registry. WorkshopId={WorkshopId}, SectionId={SectionId}",
-                    dto.Id, sectionId);
+                    dto.Id,   dto.MinsportSectionId);
 
                 return true;
             }
