@@ -53,6 +53,7 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
     IRegistrySyncService registrySyncService,
+    ITransactionManagerService transactionManagerService,
     ILanguageService languageService,
     IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
@@ -68,7 +69,6 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IInstitutionHierarchyService institutionHierarchyService,
     IOptions<InstitutionOptions> institutionSettings,
     IOptions<ImageStorageOptions> imageStorageOptions
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
@@ -333,40 +333,41 @@ public class WorkshopDraftService(
     public async Task<Guid> Approve(Guid id)
     {
         //TODO: Check if we can add RunInTransaction later
-
-        Guid createdWorkshopId;
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
         var institutionId = workshopDraft?.Provider?.Institution?.Id.ToString();
+        Guid createdWorkshopId;
         EnsureDraftIsApprovable(workshopDraft);
 
         //TODO: Add image loading later
 
-        if (workshopDraft.WorkshopId == null)
+        // 1. Firstly - try to synchronize (without db changes).
+        if (IsMinistryOfSport(institutionId))
         {
-            if (IsMinistryOfSport(institutionId))
-            {
-                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
-            }
-            var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
-            createdWorkshopId = result.Workshop.Id;
-        }
-        else
-        {
-            if (IsMinistryOfSport(institutionId))
-            {
-                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
-            }
-            await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
-            createdWorkshopId = workshopDraft.WorkshopId.Value;
+            await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
         }
 
-        await workshopDraftRepository.Delete(workshopDraft);
+        // 2. If previous API call executes with error, this transaction will not even run
+        return await transactionManagerService.ExecuteInTransactionAsync(async () =>
+        {
+            if (workshopDraft.WorkshopId == null)
+            {
+                var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
+                createdWorkshopId = result.Workshop.Id;
+            }
+            else
+            {
+                await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
+                createdWorkshopId = workshopDraft.WorkshopId.Value;
+            }
 
-        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
-        
-        return createdWorkshopId;
+            await workshopDraftRepository.Delete(workshopDraft);
+
+            logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
+
+            return createdWorkshopId;
+        });
     }
 
     // <inheritdoc/>
@@ -564,12 +565,19 @@ public class WorkshopDraftService(
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-        var institutionId = existingWorkshop.InstitutionId.ToString();
-        if(IsMinistryOfSport(institutionId))
+        return await transactionManagerService.ExecuteInTransactionAsync(async () =>
         {
-            await registrySyncService.SyncWorkshopAsync(workshopV2Dto);
-        }
-        return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
+            // 1. Firstly try to update our database
+            var updateResult = (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
+
+            // 2. If minsport  - sync with external registry
+            var institutionId = existingWorkshop.InstitutionId.ToString();
+            if (IsMinistryOfSport(institutionId))
+            {
+                await registrySyncService.SyncWorkshopAsync(workshopV2Dto);
+            }
+            return updateResult;
+        });
     }
 
     // <inheritdoc/> 
