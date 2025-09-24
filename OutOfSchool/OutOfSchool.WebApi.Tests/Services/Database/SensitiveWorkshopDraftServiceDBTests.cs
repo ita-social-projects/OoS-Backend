@@ -31,6 +31,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OutOfSchool.BusinessLogic.Services.SportsRegistry;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 
@@ -47,7 +48,7 @@ public class SensitiveWorkshopDraftServiceDBTests
     private ISensitiveWorkshopDraftService workshopDraftService;
     private IWorkshopDraftRepository workshopDraftRepository;
 
-    private Mock<ISportsRegistryProviderService> sportsRegistryProviderServiceMock;
+    private Mock<IRegistrySyncService> registrySyncServiceMock;
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
@@ -75,7 +76,7 @@ public class SensitiveWorkshopDraftServiceDBTests
         dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
         workshopDraftRepository = new WorkshopDraftRepository(dbContext);
         institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
-        sportsRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
+        registrySyncServiceMock = new Mock<IRegistrySyncService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
         workshopServiceCombinerV2Mock = new Mock<IWorkshopServicesCombinerV2>();
@@ -97,9 +98,14 @@ public class SensitiveWorkshopDraftServiceDBTests
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
+        imageStorageOptionsMock.Setup(o => o.Value).Returns(new ImageStorageOptions
+        {
+            BaseImageUrl = "http://test"
+        });
+        
         workshopDraftService = new WorkshopDraftService(
                    logger.Object,
-                   sportsRegistryProviderServiceMock.Object,
+                   registrySyncServiceMock.Object,
                    languageServiceMock.Object,
                    workshopDraftRepository,
                    workshopDraftImagesServiceMock.Object,

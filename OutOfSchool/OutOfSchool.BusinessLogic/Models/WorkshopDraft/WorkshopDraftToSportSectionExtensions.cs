@@ -89,6 +89,8 @@ public static class WorkshopDraftToSportSectionExtensions
         target.SectionTitlePhoto = string.IsNullOrEmpty(draft.CoverImageId) ? null
             : CombineImageUrl(baseImageUrl, draft.CoverImageId);
         target.SectionPhotos = MapSectionPhotos(draft.Images, baseImageUrl);
+        
+        //TODO: We need to manage this property later, after the Ministry of Sport finishes their trainers logic.
         target.SectionTrainers = new List<Guid>();
 
         target.SectionPracticePeriodDateFrom = content.StudyPeriodStartDate.ToString(@"dd\:MM", CultureInfo.InvariantCulture);

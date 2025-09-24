@@ -322,7 +322,8 @@ public static class WorkshopV2DtoExtensions
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .Select(id => CombineImageUrl(baseImageUrl, id))
                 .ToList() ?? new(),
-
+            
+            //TODO: We need to manage this property later, after the Ministry of Sport finishes their trainers logic.
             SectionTrainers = new List<Guid>(),
            
             SectionPracticePeriodDateFrom = $"{dto.StudyPeriodDates.StartDate.Day:D2}:{dto.StudyPeriodDates.StartDate.Month:D2}",
