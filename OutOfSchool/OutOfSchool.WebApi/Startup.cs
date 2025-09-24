@@ -24,6 +24,7 @@ using OutOfSchool.BusinessLogic.Services.Elasticsearch;
 using OutOfSchool.BusinessLogic.Services.Logging;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SportsRegistry;
 using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
 using OutOfSchool.BusinessLogic.Services.Strategies.WorkshopStrategies;
 using OutOfSchool.BusinessLogic.Services.TempSave;
@@ -256,8 +257,9 @@ public static class Startup
             .AddHeaderPropagation()
             .AddStandardResilienceHandler().Configure(o =>
             {
-                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:TimeoutInSeconds"));
-                o.Retry.MaxRetryAttempts = configuration.GetValue<int>("Communication:MaxNumberOfRetries");
+                o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:AttemptTimeoutInSeconds"));
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:TimeoutInSeconds")); 
+            //  o.Retry.MaxRetryAttempts = configuration.GetValue<int>("Communication:MaxNumberOfRetries");
             });
 
         services.AddRazorPages();
@@ -394,6 +396,7 @@ public static class Startup
         services.AddTransient<IValueProjector, ValueProjector>();
         services.AddTransient<IExternalExportService, ExternalExportService>();
         services.AddTransient<ISubDirectionService, SubDirectionService>();
+        services.AddTransient<IRegistrySyncService, RegistrySyncService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
