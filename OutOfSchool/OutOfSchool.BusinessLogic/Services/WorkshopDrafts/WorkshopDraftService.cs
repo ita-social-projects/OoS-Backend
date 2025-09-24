@@ -332,44 +332,45 @@ public class WorkshopDraftService(
     // <inheritdoc/>
     public async Task<Guid> Approve(Guid id)
     {
-        //TODO: Check if we can add RunInTransaction later
+        // TODO: Check if we can add RunInTransaction later
+        Guid createdWorkshopId;
+
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
         var institutionId = workshopDraft?.Provider?.Institution?.Id.ToString();
-        Guid createdWorkshopId;
+
         EnsureDraftIsApprovable(workshopDraft);
 
-        //TODO: Add image loading later
+        // TODO: Add image loading later
 
-        // 1. Firstly - try to synchronize (without db changes).
-        if (IsMinistryOfSport(institutionId))
+        if (workshopDraft.WorkshopId == null)
         {
-            await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
+            if (IsMinistryOfSport(institutionId))
+            {
+                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
+            }
+
+            var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
+            createdWorkshopId = result.Workshop.Id;
+        }
+        else
+        {
+            if (IsMinistryOfSport(institutionId))
+            {
+                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
+            }
+
+            await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
+            createdWorkshopId = workshopDraft.WorkshopId.Value;
         }
 
-        // 2. If previous API call executes with error, this transaction will not even run
-        return await transactionManagerService.ExecuteInTransactionAsync(async () =>
-        {
-            if (workshopDraft.WorkshopId == null)
-            {
-                var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
-                createdWorkshopId = result.Workshop.Id;
-            }
-            else
-            {
-                await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
-                createdWorkshopId = workshopDraft.WorkshopId.Value;
-            }
+        await workshopDraftRepository.Delete(workshopDraft);
 
-            await workshopDraftRepository.Delete(workshopDraft);
+        logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
 
-            logger.LogDebug("Draft was successfully approved and deleted. Draft Id = {DraftId}.", id);
-
-            return createdWorkshopId;
-        });
+        return createdWorkshopId;
     }
-
     // <inheritdoc/>
     public async Task Reject(Guid id, string rejectionMessage)
     {
