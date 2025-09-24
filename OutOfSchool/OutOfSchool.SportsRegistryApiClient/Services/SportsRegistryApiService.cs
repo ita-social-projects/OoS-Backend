@@ -43,6 +43,22 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             request,
             RegistryConstants.SectionUpdateProcessKey);
     
+    public async Task<Either<ErrorResponse, SportKindListResponse>> GetSportKindsAsync(int page = 0, int pageSize = 100)
+    {
+        var tokenResult = await GetAccessTokenAsync();
+
+        var httpResult = await tokenResult
+            .Map(accessToken => new Request
+            {
+                Url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/dict-sport-kinds?pageNo={page}&pageSize={pageSize}"),
+                HttpMethodType = HttpMethodType.Get,
+                Token = accessToken
+            })
+            .FlatMapAsync(request => communicationService.SendRequest<SportKindListResponse, ErrorResponse>(request))
+            .ConfigureAwait(false);
+        return httpResult;
+    }
+
     private async Task<Either<ErrorResponse, TResponse>> StartProcessAsync<TRequest, TResponse>(
         TRequest request,
         string processKey)

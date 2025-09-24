@@ -18,4 +18,8 @@ sealed class DisabledSportsRegistryProviderService : ISportsRegistryProviderServ
 
     public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest r)
         => Task.FromResult<Either<ErrorResponse, SectionCreateUpdateResponse>>(Disabled("UpdateSection"));
+    
+    public Task<Either<ErrorResponse, List<SportKindDto>>> GetAllSportKindsAsync(int pageSize = 50)
+        => Task.FromResult<Either<ErrorResponse,List<SportKindDto>>> (Disabled("GetSportKinds"));
+
 }

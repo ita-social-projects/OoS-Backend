@@ -26,7 +26,7 @@ namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 public class RegistrySyncService : IRegistrySyncService
 {
     private readonly ISportsRegistryProviderService sportsRegistryApiService;
-    private readonly ICodeficatorRepository codeficatorRepository;
+    private readonly ICodeficatorService codeficatorService;
     private readonly IInstitutionHierarchyService institutionHierarchyService;
     private readonly ILogger<RegistrySyncService> logger;
     private readonly string baseImageUrl;
@@ -41,13 +41,13 @@ public class RegistrySyncService : IRegistrySyncService
     /// <param name="imageOptions">Options that provide the base image URL.</param>
     public RegistrySyncService(
         ISportsRegistryProviderService sportsRegistryApiService,
-        ICodeficatorRepository codeficatorRepository,
+        ICodeficatorService codeficatorService,
         IInstitutionHierarchyService institutionHierarchyService,
         ILogger<RegistrySyncService> logger,
         IOptions<ImageStorageOptions> imageOptions)
     {
         this.sportsRegistryApiService = sportsRegistryApiService;
-        this.codeficatorRepository = codeficatorRepository;
+        this.codeficatorService = codeficatorService;
         this.institutionHierarchyService = institutionHierarchyService;
         this.logger = logger;
         this.baseImageUrl = imageOptions.Value.BaseImageUrl;
@@ -149,7 +149,7 @@ public class RegistrySyncService : IRegistrySyncService
         if (!long.TryParse(rawValue, out var catottgId))
             throw new InvalidOperationException($"Invalid CATOTTG Id: {rawValue}");
 
-        var code = await codeficatorRepository.GetCodeByIdAsync(catottgId).ConfigureAwait(false);
+        var code = await codeficatorService.GetCodeByIdAsync(catottgId).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(code))
             throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
 

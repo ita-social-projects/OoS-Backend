@@ -8,4 +8,5 @@ public interface ISportsRegistryProviderService
 {
     Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest request);
     Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request);
+    Task<Either<ErrorResponse, List<SportKindDto>>> GetAllSportKindsAsync(int pageSize = 50);
 }

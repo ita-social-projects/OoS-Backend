@@ -397,6 +397,7 @@ public static class Startup
         services.AddTransient<IExternalExportService, ExternalExportService>();
         services.AddTransient<ISubDirectionService, SubDirectionService>();
         services.AddTransient<IRegistrySyncService, RegistrySyncService>();
+        services.AddTransient<ISportKindSyncService, SportKindSyncService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
