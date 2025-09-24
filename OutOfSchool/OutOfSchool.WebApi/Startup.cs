@@ -301,7 +301,7 @@ public static class Startup
         //registartion of thumbnail generation 
         builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
         builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
-
+        builder.Services.Configure<ThumbnailBackgroundJobOptions>(configuration.GetSection("ThumbnailGeneration:ThumbnailBackgroundJob"));
 
         var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
             "DefaultConnection",
@@ -603,6 +603,7 @@ public static class Startup
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(quartzConfig);
+            q.AddThumbnailProcessingJob(quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");

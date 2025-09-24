@@ -11,4 +11,5 @@ public static class JobTriggerConstants
     public const string AverageRatingCalculating = "averageRatingCalculatingJobTrigger";
     public const string LicenseApprovalNotification = "licenseApprovalNotificationJobTrigger";
     public const string EmailSender = "emailSenderJobTrigger";
+    public const string ThumbnailGeneration = "thumbnailGenerationJobTrigger";
 }

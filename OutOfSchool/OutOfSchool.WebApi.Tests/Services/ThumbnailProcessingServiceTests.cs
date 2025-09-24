@@ -20,17 +20,18 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class ThumbnailProcessingServiceTests
 {
     private Mock<IImageService> imageServiceMock;
-    private Mock<IImageStorage> imageStorageMock;
+    private Mock<IObjectImageStorage> imageStorageMock;
     private Mock<IMetadataStorage> metadataStorageMock;
     private Mock<ILogger<ThumbnailProcessingService>> loggerMock;
     private ThumbnailGenerationOptions options;
+    private ThumbnailBackgroundJobOptions jobOptions;
     private ThumbnailProcessingService service;
 
     [SetUp]
     public void Setup()
     {
         imageServiceMock = new Mock<IImageService>();
-        imageStorageMock = new Mock<IImageStorage>();
+        imageStorageMock = new Mock<IObjectImageStorage>();
         metadataStorageMock = imageStorageMock.As<IMetadataStorage>();
         loggerMock = new Mock<ILogger<ThumbnailProcessingService>>();
 
@@ -42,11 +43,18 @@ public class ThumbnailProcessingServiceTests
             Quality = 75
         };
 
+        jobOptions = new ThumbnailBackgroundJobOptions
+        {
+           Enabled = true,
+           BatchSize = 500
+        };
+
         service = new ThumbnailProcessingService(
             imageServiceMock.Object,
             imageStorageMock.Object,
             loggerMock.Object,
-            Options.Create(options));
+            Options.Create(options),
+            Options.Create(jobOptions));
     }
 
     [Test]

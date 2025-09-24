@@ -4,24 +4,29 @@ using OutOfSchool.ExternalFileStore;
 using OutOfSchool.ExternalFileStore.Models;
 using System.Net.Mime;
 using SkiaSharp;
+using Minio.DataModel.Args;
+
 
 namespace OutOfSchool.BusinessLogic.Services.ThumbnailProcessor;
 public class ThumbnailProcessingService : IThumbnailProcessingService
 {
     private readonly IImageService imageService;
-    private readonly IImageStorage imageStorage;
+    private readonly IObjectImageStorage imageStorage;
     private readonly ILogger<ThumbnailProcessingService> logger;
     private readonly ThumbnailGenerationOptions options;
+    private readonly ThumbnailBackgroundJobOptions backgroundJobOptions;
     public ThumbnailProcessingService(
         IImageService service,
-        IImageStorage imageStorage,
+        IObjectImageStorage imageStorage,
         ILogger<ThumbnailProcessingService> logger,
-        IOptions<ThumbnailGenerationOptions> options)
+        IOptions<ThumbnailGenerationOptions> options,
+        IOptions<ThumbnailBackgroundJobOptions> backgroundJobOptions)
     {
         this.imageService = service;
         this.imageStorage = imageStorage;
         this.logger = logger;
         this.options = options.Value;
+        this.backgroundJobOptions = backgroundJobOptions.Value;
     }
     public async Task<bool> HasThumbnail(string imageId)
         => await imageStorage.ExistsAsync(GetThumbnailId(imageId));
@@ -29,7 +34,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
     public async Task<bool> ProcessImage(string imageId)
     {
         var thumbnailId = GetThumbnailId(imageId);
-        
+
         try
         {
             var image = imageService.GetByIdAsync(Uri.UnescapeDataString(imageId));
@@ -67,7 +72,7 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
             using var thumbnailStream = encoded.AsStream();
 
             var metadataThumbnail = new Dictionary<string, string>
-            { 
+            {
                 { Constants.ExternalImages.CustomFileName , thumbnailId }
             };
 
@@ -108,5 +113,95 @@ public class ThumbnailProcessingService : IThumbnailProcessingService
     {
         double min = Math.Min((double)options.MaxWidth / basicWidth, (double)options.MaxHeight / basicHeight);
         return ((int)(basicWidth * min), (int)(basicHeight * min));
+    }
+
+    public async Task ProcessAllUnprocessedThumbnailsAsync(CancellationToken cancellationToken = default)
+    {
+        var allImages = imageStorage.ListObjectsAsync(options: new ListObjectsArgs().WithRecursive(true));
+
+        await ProcessAllImagesOnThumbnailExistenceAsync(allImages);
+
+        logger.LogInformation("Thumbnail generation for unprocessed images started");
+
+        var unprocessedImageNames = new List<string>();
+
+        await foreach (var obj in imageStorage.ListObjectsAsync(options: new ListObjectsArgs().WithRecursive(true)))
+        {
+            if (obj.Name.Contains("thumbnail", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var metadata = await (imageStorage as IMetadataStorage).GetCurrentMetadataAsync(obj.Name, cancellationToken);
+
+            if (metadata.Keys.Contains(Constants.ExternalImages.IsProcessed) && metadata[Constants.ExternalImages.IsProcessed] == "false")
+            {
+                unprocessedImageNames.Add(obj.Name);
+            }
+        }
+
+        foreach (var batch in unprocessedImageNames.Chunk(backgroundJobOptions.BatchSize))
+        {
+            foreach (var imageName in batch)
+            {
+                try
+                {
+                    var isSuccess = await this.ProcessImage(imageName);
+                    logger.LogInformation($"Image {imageName} processed = {isSuccess}");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Failed to process image {imageName}");
+                }
+            }
+        }
+
+        logger.LogInformation("Thumbnail generation process finisheed");
+    }
+
+    public async Task ProcessAllImagesOnThumbnailExistenceAsync(IAsyncEnumerable<StorageObject> objects, CancellationToken cancellationToken = default)
+    {
+        await foreach (var obj in objects.WithCancellation(cancellationToken))
+        {
+            if (obj.Name.Contains("thumbnail", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var metadata = await (imageStorage as IMetadataStorage).GetCurrentMetadataAsync(obj.Name, cancellationToken);
+
+            if (!metadata.ContainsKey(Constants.ExternalImages.IsProcessed))
+            {
+                var updatedMetadata = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase)
+                {
+                    [Constants.ExternalImages.IsProcessed] = "false"
+                };
+
+                if (imageStorage is IMetadataStorage metadataStorage)
+                {
+                    await metadataStorage.UpdateMetadataAsync(obj.Name, updatedMetadata, cancellationToken);
+                    logger.LogInformation("Image {ImageName} had no 'is-processed' flag. Set to false.", obj.Name);
+                }
+                continue;
+            }
+
+            if (metadata.TryGetValue(Constants.ExternalImages.IsProcessed, out var isProcessed) && isProcessed == "true")
+            {
+                var thumbnailName = $"{obj.Name}-thumbnail";
+                var exists = await imageStorage.ExistsAsync(thumbnailName, cancellationToken);
+
+                if (!exists)
+                {
+                    logger.LogWarning("Image {ImageName} is marked as processed, but thumbnail is missing", obj.Name);
+                    var updatedMetadata = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
+                    updatedMetadata[Constants.ExternalImages.IsProcessed] = "false";
+
+                    if (imageStorage is IMetadataStorage metadataStorage)
+                    {
+                        await metadataStorage.UpdateMetadataAsync(obj.Name, updatedMetadata, cancellationToken);
+                    }
+                }
+            }
+        }
     }
 }

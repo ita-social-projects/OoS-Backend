@@ -11,4 +11,5 @@ public static class JobConstants
     public const string AverageRatingCalculating = "averageRatingCalculatingJob";
     public const string LicenseApprovalNotification = "licenseApprovalNotificationJob";
     public const string EmailSender = "emailSenderJob";
+    public const string ThumbnailGeneration = "thumbnailGenerationJob";
 }
