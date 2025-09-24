@@ -63,6 +63,6 @@ public interface ICodeficatorService
     /// <param name="id">The Codeficator's id</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the code as a string if found;
     /// otherwise, <see langword="null"/>.</returns>
-    public Task<string?> GetCodeById(long id);
-
+    public Task<string?> GetCodeByIdAsync(long id);
 }
+    
