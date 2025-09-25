@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common.DbContextTests;

@@ -1,7 +1,10 @@
-﻿using OutOfSchool.Common.Models;
+﻿using Microsoft.AspNetCore.Http;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Services;
+using System;
 using System.Security.Claims;
 
-namespace OutOfSchool.BusinessLogic.Services;
+namespace OutOfSchool.AuthCommon.Services;
 /// <summary>
 /// Returns id of current web user, or system user id if running in system context.
 /// </summary>

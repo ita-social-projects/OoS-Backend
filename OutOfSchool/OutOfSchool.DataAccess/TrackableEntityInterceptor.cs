@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Services;
 using OutOfSchool.Services.Models.BaseEntities;
 
 namespace OutOfSchool.Services;

@@ -2,11 +2,11 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Tests.Common.DbContextTests;
 using System.Threading.Tasks;
+using OutOfSchool.Common.Services;
 
 namespace OutOfSchool.WebApi.IntegrationTests;
 

@@ -16,6 +16,7 @@ using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common.Services;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -293,6 +294,7 @@ public static class Startup
         services.AddScoped<IUserService, UserService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<ISystemUserInitializer, SystemUserInitializer>();
+        services.AddScoped<IContextAwareUserService, ContextAwareUserService>();
 
         services.AddHostedService<IdentityRolesInitializerHostedService>();
         services.AddHostedService<SystemUserInitializerHostedService>();

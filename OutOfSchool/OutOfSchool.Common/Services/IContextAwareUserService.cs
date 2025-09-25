@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace OutOfSchool.Common.Models;
+namespace OutOfSchool.Common.Services;
 public interface IContextAwareUserService
 {
     /// <summary>
@@ -13,5 +13,5 @@ public interface IContextAwareUserService
     /// </summary>
     bool IsSystemContext { get; }
 
-    ClaimsPrincipal? Principal { get; }
+    ClaimsPrincipal Principal { get; }
 }
