@@ -4,6 +4,7 @@ using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
@@ -21,15 +22,18 @@ public class CompetitiveEventController : ControllerBase
     private readonly ILogger<CompetitiveEventController> logger;
     private readonly ICompetitiveEventServiceV2 competitiveEventService;
     private readonly IUserService userService;
+    private readonly ICompetitiveEventDraftService competitiveEventDraftService;
 
     public CompetitiveEventController(
         ICompetitiveEventServiceV2 competitiveEventService,
         IUserService userService,
-        ILogger<CompetitiveEventController> logger)
+        ILogger<CompetitiveEventController> logger,
+        ICompetitiveEventDraftService competitiveEventDraftService)
     {
         this.competitiveEventService = competitiveEventService ?? throw new ArgumentNullException(nameof(competitiveEventService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.competitiveEventDraftService = competitiveEventDraftService ?? throw new ArgumentNullException(nameof(competitiveEventDraftService));
     }
 
     /// <summary>
@@ -89,13 +93,12 @@ public class CompetitiveEventController : ControllerBase
     {
         var competitiveEvents = await competitiveEventService.GetByIds(ids).ConfigureAwait(false);
 
-        if (competitiveEvents.Any())
+        if (!competitiveEvents.Any())
         {
-            return NotFound();
+            return NoContent();
         }
         return this.Ok(competitiveEvents);
     }
-
 
     /// <summary>
     /// Add new competitive image with image to the database.
@@ -175,25 +178,24 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Update([FromForm] CompetitiveEventV2CreateRequestDto dto)
+    public async Task<IActionResult> Update([FromForm] CompetitiveEventV2Dto dto)
     {
         try
         {
-            var updatingResult = await competitiveEventService.UpdateV2(dto).ConfigureAwait(false);
+            var result = await competitiveEventDraftService.UpdateCompetitiveEvent(dto).ConfigureAwait(false);
 
-            if (updatingResult.CompetitiveEventV2 is null)
+            if (result is null)
             {
                 return BadRequest();
             }
 
-            return Ok(CreateUpdateResponse(updatingResult));
+            return Ok(result);
         }
         catch (InvalidOperationException ex)
         {
-            var errorMessage = $"Unable to update a new competitive event: {ex.Message}";
-            logger.LogError(ex, errorMessage);
+            logger.LogError(ex, "Unable to update competitive event: {Message}", ex.Message);
 
-            return BadRequest(errorMessage);
+            return BadRequest(ex.Message);
         }
     }
 
@@ -233,16 +235,6 @@ public class CompetitiveEventController : ControllerBase
 
             return BadRequest(errorMessage);
         }
-    }
-
-    private CompetitiveEventResponseDto CreateUpdateResponse(CompetitiveEventResultDto updatingResult)
-    {
-        return new CompetitiveEventResponseDto
-        {
-            CompetitiveEventV2 = updatingResult.CompetitiveEventV2,
-            UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
-            UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
-        };
     }
 
     private async Task<bool> IsCurrentUserBlocked()

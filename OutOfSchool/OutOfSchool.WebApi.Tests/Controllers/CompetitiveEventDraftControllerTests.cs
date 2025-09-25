@@ -51,7 +51,7 @@ public class CompetitiveEventDraftControllerTests
             Id = Guid.NewGuid(),
             OrganizerOfTheEventId = Guid.NewGuid()
         };
-        competitiveEventDraftServiceMock.Setup(s => s.Create(dto))
+        competitiveEventDraftServiceMock.Setup(s => s.Create(dto, false))
             .ReturnsAsync(new CompetitiveEventDraftResultDto
             {
                 CompetitiveEventDraft = new CompetitiveEventDraftResponseDto
@@ -81,7 +81,7 @@ public class CompetitiveEventDraftControllerTests
         // Arrange
         var dto = new CompetitiveEventV2Dto();
         providerServiceMock.Setup(s => s.IsBlocked(It.IsAny<Guid>())).ReturnsAsync(false);
-        competitiveEventDraftServiceMock.Setup(s => s.Create(dto))
+        competitiveEventDraftServiceMock.Setup(s => s.Create(dto, false))
             .ReturnsAsync((CompetitiveEventDraftResultDto)null);
 
         // Act

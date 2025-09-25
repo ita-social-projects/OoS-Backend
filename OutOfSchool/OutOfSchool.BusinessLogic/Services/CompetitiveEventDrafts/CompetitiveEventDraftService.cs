@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
@@ -30,7 +31,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 {
 
     // <inheritdoc/>
-    public async Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto)
+    public async Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto, bool fromCompetitiveEvent = false)
     {
         if (competitiveEventV2Dto == null)
         {
@@ -58,6 +59,10 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
             else
             {
+                if (existingCompetitiveEvent.State == CompetitiveEventStates.Archived)
+                {
+                    throw new InvalidOperationException("This CompetitiveEvent is archived. It can not be updated.");
+                }
                 await currentUserService.UserHasRights(new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
                     new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId)).ConfigureAwait(false);
             }
@@ -69,6 +74,13 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var uploadImagesResult = await UploadImages(createdCompetitiveEventDraft, competitiveEventV2Dto)
             .ConfigureAwait(false);
+
+        if (fromCompetitiveEvent)
+        {
+            createdCompetitiveEventDraft.Images ??= [];
+            createdCompetitiveEventDraft.Images.AddRange(
+                (competitiveEventV2Dto.ImageIds ?? []).Select(id => new Image<CompetitiveEventDraft> { ExternalStorageId = id }));
+        }
 
         await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);
 
@@ -311,7 +323,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
         else
         {
-            await competitiveEventService.UpdateV2(competitiveEventDraft.ToV2CreateRequestDto(), true);
+            await competitiveEventService.UpdateV2(competitiveEventDraft.ToDto(), true);
         }
 
         await competitiveEventDraftRepository.Delete(competitiveEventDraft);
@@ -350,6 +362,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException($"There is no CompetitiveEvent with such Id. CompetitiveEvent can`t be updated.");
         }
 
+        if (existingCompetitiveEvent.State == CompetitiveEventStates.Archived)
+        {
+            throw new InvalidOperationException("This CompetitiveEvent is archived. It can not be updated.");
+        }
+
         var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.CompetitiveEventId == competitiveEventV2Dto.Id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
@@ -364,12 +381,13 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         if (AreModeratedFieldsChanged(competitiveEventV2Dto, existingCompetitiveEvent))
         {
             logger.LogDebug("Moderated fields was changed. CompetitiveEvent draft creation initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
-            return (await Create(competitiveEventV2Dto)).CompetitiveEventDraft.CompetitiveEventDetails;
+            return (await Create(competitiveEventV2Dto, true)).CompetitiveEventDraft.CompetitiveEventDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. CompetitiveEvent update initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
 
-        var result = await competitiveEventService.UpdateV2(competitiveEventV2Dto.ToDraft().ToV2CreateRequestDto()).ConfigureAwait(false);
+        var result = await competitiveEventService.UpdateV2(competitiveEventV2Dto).ConfigureAwait(false);
+
         return result.CompetitiveEventV2;
     }
 
@@ -403,17 +421,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var stringFieldsToCompare = new List<Func<CompetitiveEventDto, string>>
         {
-            w => w.ShortTitle,
-            w => w.Title,
-            w => w.DescriptionOfTheEnrollmentProcedure,
-            w => string.Join(" | ", w.Contacts.Select(c => c.ToString()))
+            ce => ce.ShortTitle,
+            ce => ce.Title,
+            ce => ce.DescriptionOfTheEnrollmentProcedure,
+            ce => ce.TermsOfParticipation,
+            ce => ce.Benefits,
+            ce => ce.VenueName,
+            ce => string.Join(" | ", (ce.Contacts ?? []).Select(c => c?.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>
         {
             var newValue = field(competitiveEventV2Dto);
             var oldValue = field(existingCompetitiveEvent);
-            return newValue != oldValue;
+
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal);
         });
     }
 
@@ -899,6 +921,16 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
         var competitiveEventDraft = await GetDraftById(draftId);
+
+        if (competitiveEventDraft == null)
+        {
+            logger.LogWarning("CompetitiveEventDraft with Id = {Id} not found.", draftId);
+            return Result<CompetitiveEventDraft>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "Competitive event draft not found."
+            });
+        }
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration &&
             competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
