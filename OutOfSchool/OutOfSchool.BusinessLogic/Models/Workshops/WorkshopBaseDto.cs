@@ -252,6 +252,14 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                     yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
                 }
             }
+
+            var cleanedKeyWordsList = keywordsList.Select(k => k.Trim());
+            HashSet<string> keywordsSet = new(StringComparer.OrdinalIgnoreCase);
+            
+            if (!cleanedKeyWordsList.All(keywordsSet.Add))
+            {
+                yield return new ValidationResult("Keywords list contains duplicates.", new[] { nameof(Keywords) });
+            }
         }
 
         if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
