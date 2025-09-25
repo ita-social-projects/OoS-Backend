@@ -146,8 +146,8 @@ public static class WorkshopV2DtoExtensions
     public static Workshop SetToModel(this WorkshopV2Dto dto, Workshop model)
     {
         model.Id = dto.Id;
-        model.Title = dto.Title.Trim(TrimChars);
-        model.ShortTitle = dto.ShortTitle.Trim(TrimChars);
+        model.Title = dto.Title?.Trim(TrimChars);
+        model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
         model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);

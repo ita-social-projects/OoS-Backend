@@ -19,8 +19,8 @@ public static class WorkshopCreateUpdateDtoExtensions
     public static Workshop SetToModel(this WorkshopCreateUpdateDto dto, Workshop model)
     {
         model.Id = dto.Id;
-        model.Title = dto.Title.Trim(TrimChars);
-        model.ShortTitle = dto.ShortTitle.Trim(TrimChars);
+        model.Title = dto.Title?.Trim(TrimChars);
+        model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
         model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
