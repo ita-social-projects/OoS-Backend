@@ -18,12 +18,9 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using OutOfSchool.BusinessLogic.Services.SportsRegistry;
-using OutOfSchool.SportsRegistryApiClient.Models.Requests;
-using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -74,7 +71,6 @@ public class WorkshopDraftService(
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
-    private readonly string baseImageUrl = imageStorageOptions.Value.BaseImageUrl;
     /// <summary>
     /// Create a delegate to include other entities in InstitutionHierarchy entity
     /// </summary>
@@ -559,11 +555,11 @@ public class WorkshopDraftService(
         }
         
         workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
-        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        /*if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
-        }
+        }*/
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
         return await transactionManagerService.ExecuteInTransactionAsync(async () =>

@@ -2,7 +2,6 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
