@@ -98,6 +98,8 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
+        bool isNewDraft = true;
+
         if (workshopV2Dto.Id != Guid.Empty)
         {
             var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
@@ -114,11 +116,11 @@ public class WorkshopDraftService(
                 }
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
 
-                fromWorkshop = true;
+                isNewDraft = false;
             }
         }
 
-        ValidateCreateImages(workshopV2Dto, fromWorkshop);
+        ValidateCreateImages(workshopV2Dto, isNewDraft);
 
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
@@ -1629,9 +1631,9 @@ public class WorkshopDraftService(
     /// Validates images depending on whether a new draft is created from existing workshop or not.
     /// </summary>
     /// <param name="dto">Dto.</param>
-    /// <param name="fromWorkshop">Flag to signal if the new draft is created from existing workshop.</param>
+    /// <param name="isNewDraft">Flag to signal if the new draft is created from existing workshop.</param>
     /// <exception cref="ValidationException">Throws validation exception that will be handled in middleware.</exception>
-    private static void ValidateCreateImages(WorkshopV2Dto dto, bool fromWorkshop)
+    private static void ValidateCreateImages(WorkshopV2Dto dto, bool isNewDraft)
     {
         var errors = new StringBuilder();
 
@@ -1648,7 +1650,7 @@ public class WorkshopDraftService(
         if (errors.Length > 0)
             throw new ValidationException(errors.ToString());
 
-        if (!fromWorkshop)
+        if (isNewDraft)
         {
             if (hasCoverImageId || hasImageIds)
                 errors.Append("For a new draft you must upload image files, not IDs. ");
