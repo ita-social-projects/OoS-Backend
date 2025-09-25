@@ -1,20 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using OutOfSchool.BusinessLogic.Models.ContactInfo;
+﻿using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Models.WorkshopDrafts;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
 public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 {
-    [Required]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IFormFile CoverImage { get; set; }
 
-    [Required]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
 }

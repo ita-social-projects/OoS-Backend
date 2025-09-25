@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.WebApi.Extensions;
@@ -75,6 +76,10 @@ public class ExceptionMiddlewareExtension
             var messageForUser = "Server error, options validation error. Please contact support.";
 
             await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
+        }
+        catch (ValidationException ex)
+        {
+            await HandleExceptionAsync(context, ex.Message, StatusCodes.Status400BadRequest).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -21,6 +19,10 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+using System.Text;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -111,8 +113,13 @@ public class WorkshopDraftService(
                     throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
                 }
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+
+                fromWorkshop = true;
             }
         }
+
+        ValidateCreateImages(workshopV2Dto, fromWorkshop);
+
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
         NormalizeConditionalFields(workshopV2Dto);
@@ -1616,5 +1623,51 @@ public class WorkshopDraftService(
         var institutionId = draft?.Provider?.Institution?.Id.ToString();
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Validates images depending on whether a new draft is created from existing workshop or not.
+    /// </summary>
+    /// <param name="dto">Dto.</param>
+    /// <param name="fromWorkshop">Flag to signal if the new draft is created from existing workshop.</param>
+    /// <exception cref="ValidationException">Throws validation exception that will be handled in middleware.</exception>
+    private static void ValidateCreateImages(WorkshopV2Dto dto, bool fromWorkshop)
+    {
+        var errors = new StringBuilder();
+
+        bool hasCoverImage = dto.CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(dto.CoverImageId);
+        bool hasImageFiles = dto.ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = dto.ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        bool hasInvalidFiles = dto.ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
+        bool hasInvalidIds = dto.ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasInvalidFiles) errors.Append("ImageFiles must not contain empty files.");
+        if (hasInvalidIds) errors.Append("ImageIds must not contain empty values.");
+        if (errors.Length > 0)
+            throw new ValidationException(errors.ToString());
+
+        if (!fromWorkshop)
+        {
+            if (hasCoverImageId || hasImageIds)
+                errors.Append("For a new draft you must upload image files, not IDs. ");
+            if (!hasCoverImage || !hasImageFiles)
+                errors.Append("Provide both CoverImage and ImageFiles.");
+
+            if (errors.Length > 0)
+                throw new ValidationException(errors.ToString());
+
+            return;
+        }
+
+        if (hasCoverImage == hasCoverImageId)
+            errors.Append("Provide exactly one of: CoverImage (file) or CoverImageId. ");
+
+        if (hasImageFiles == hasImageIds)
+            errors.Append("Provide exactly one of: ImageFiles or ImageIds.");
+
+        if (errors.Length > 0)
+            throw new ValidationException(errors.ToString());
     }
 }
