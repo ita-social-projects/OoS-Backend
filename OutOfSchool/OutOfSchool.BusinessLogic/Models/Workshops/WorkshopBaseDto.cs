@@ -48,7 +48,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Class;
+    public PayRateType? PayRate { get; set; } = PayRateType.None;
 
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
@@ -226,6 +226,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                     yield return new ValidationResult("Price must be less than or equal to 100000.00.", new[] { nameof(Price) });
                 }
             }
+        }
+        else 
+        { 
+            PayRate = PayRateType.None;
         }
 
         if (!Keywords.IsNullOrEmpty())
