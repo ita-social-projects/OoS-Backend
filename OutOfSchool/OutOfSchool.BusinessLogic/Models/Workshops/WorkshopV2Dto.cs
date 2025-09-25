@@ -18,6 +18,7 @@ public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 
 public static class WorkshopV2DtoExtensions
 {
+    private static readonly char[] TrimChars = { ' ', ',', '.',';',':' };
     public static WorkshopDraftContent ToDraftContent(this WorkshopV2Dto dto)
         => new()
         {
@@ -31,7 +32,7 @@ public static class WorkshopV2DtoExtensions
             ActiveFrom = dto.ActiveFrom,
             ActiveTo = dto.ActiveTo,
             TagIds = (dto.Tags ?? []).Select(x => x.Id).Concat(dto.TagIds ?? []).ToList(),
-            Title = dto.Title,
+            Title = dto.Title.Trim(TrimChars),
             IsPaid = dto.IsPaid,
             StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
             StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
@@ -39,7 +40,7 @@ public static class WorkshopV2DtoExtensions
             OwnershipType = dto.ProviderOwnership,
             AvailableSeats = dto.AvailableSeats ?? default,
             IncludedStudyGroupsIds = dto.IncludedStudyGroups?.Select(x => x.Id).ToList() ?? [],
-            ShortTitle = dto.ShortTitle,
+            ShortTitle = dto.ShortTitle.Trim(TrimChars),
             CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
             FormOfLearning = dto.FormOfLearning,
             WorkshopStatus = dto.Status,
@@ -145,8 +146,8 @@ public static class WorkshopV2DtoExtensions
     public static Workshop SetToModel(this WorkshopV2Dto dto, Workshop model)
     {
         model.Id = dto.Id;
-        model.Title = dto.Title;
-        model.ShortTitle = dto.ShortTitle;
+        model.Title = dto.Title?.Trim(TrimChars);
+        model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
         model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
