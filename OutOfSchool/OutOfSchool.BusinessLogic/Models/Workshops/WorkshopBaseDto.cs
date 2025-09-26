@@ -241,19 +241,24 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 yield return new ValidationResult("Keywords list should contain no more than 5 words", new[] { nameof(Keywords) });
             }
 
-            foreach (var keyword in keywordsList)
+            if (keywordsList.Any(string.IsNullOrWhiteSpace))
             {
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    yield return new ValidationResult($"Keyword cannot be empty or whitespace.", new[] { nameof(Keywords) });
-                }
-                else if (keyword.Length > 60)
-                {
-                    yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
-                }
+                yield return new ValidationResult(
+                    "Keyword cannot be empty or whitespace.",
+                    new[] { nameof(Keywords) });
             }
 
-            var cleanedKeyWordsList = keywordsList.Select(k => k.Trim());
+            if (keywordsList.Any(k => !string.IsNullOrWhiteSpace(k) && k.Length > 60))
+            {
+                yield return new ValidationResult(
+                    "Keyword must be no longer than 60 characters.",
+                    new[] { nameof(Keywords) });
+            }
+
+            var cleanedKeyWordsList = keywordsList
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .Select(k => k.Trim());
+            
             HashSet<string> keywordsSet = new(StringComparer.OrdinalIgnoreCase);
             
             if (!cleanedKeyWordsList.All(keywordsSet.Add))
