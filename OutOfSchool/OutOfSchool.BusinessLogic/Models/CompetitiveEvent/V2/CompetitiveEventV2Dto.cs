@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
@@ -11,6 +12,20 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from CompetitiveEventDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+
+        if ((CoverImage is null) == string.IsNullOrEmpty(CoverImageId))
+        {
+            yield return new ValidationResult(
+                "Must be filled either CoverImage or CoverImageId, but not both",
+                new[] { nameof(CoverImage), nameof(CoverImageId) });
+        }
+    }
 }
 
 public static class CompetitiveEventV2DtoExtensions
