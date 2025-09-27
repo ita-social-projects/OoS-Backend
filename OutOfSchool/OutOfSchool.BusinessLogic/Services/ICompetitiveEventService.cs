@@ -21,14 +21,14 @@ public interface ICompetitiveEventService
     /// </summary>
     /// <param name="dto">CompetitiveEvent entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<CompetitiveEventDto> Create(CompetitiveEventCreateUpdateDto dto);
+    Task<CompetitiveEventDto> Create(CompetitiveEventBaseDto dto);
 
     /// <summary>
     /// Update entity.
     /// </summary>
     /// <param name="dto">CompetitiveEvent entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<CompetitiveEventDto> Update(CompetitiveEventCreateUpdateDto dto);
+    Task<CompetitiveEventDto> Update(CompetitiveEventBaseDto dto);
 
     /// <summary>
     ///  Delete entity.

@@ -40,7 +40,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "PayRate is required")]
-    public PayRateType? PayRate { get; set; } = PayRateType.Class;
+    public PayRateType? PayRate { get; set; } = PayRateType.None;
 
     public bool AreThereBenefits { get; set; } = default;
 

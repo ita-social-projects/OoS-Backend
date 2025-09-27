@@ -64,8 +64,8 @@ public class CompetitiveEventService(
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <see cref="CompetitiveEventCreateUpdateDto"/> is null.</exception>
-    public async Task<CompetitiveEventDto> Create(CompetitiveEventCreateUpdateDto dto)
+    /// Thrown when <see cref="CompetitiveEventBaseDto"/> is null.</exception>
+    public async Task<CompetitiveEventDto> Create(CompetitiveEventBaseDto dto)
     {
         logger.LogDebug("CompetitiveEvent creating was started.");
 
@@ -80,7 +80,7 @@ public class CompetitiveEventService(
     }
 
     /// <inheritdoc/>
-    public async Task<CompetitiveEventDto> Update(CompetitiveEventCreateUpdateDto dto)
+    public async Task<CompetitiveEventDto> Update(CompetitiveEventBaseDto dto)
     {
         var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
@@ -279,7 +279,7 @@ public class CompetitiveEventService(
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown if the User has no rights to perform operation</exception>
     /// <exception cref="InvalidOperationException">Thrown if the created CompetitiveEvent does not contain any existing SubDirection.</exception>
-    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForCreating(CompetitiveEventCreateUpdateDto dto)
+    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForCreating(CompetitiveEventBaseDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -331,7 +331,7 @@ public class CompetitiveEventService(
     /// <exception cref="UnauthorizedAccessException">Thrown if the User has no rights to perform operation</exception>
     /// <exception cref="DbUpdateConcurrencyException">Thrown if the CompetitiveEvent with Id = {dto.Id} doesn't exist in the DB.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the the updated CompetitiveEvent does not contain any existing SubDirection.</exception>
-    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForUpdating(CompetitiveEventCreateUpdateDto dto)
+    private async Task<CompetitiveEvent> CheckAndPrepareCompetitiveEventForUpdating(CompetitiveEventBaseDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 

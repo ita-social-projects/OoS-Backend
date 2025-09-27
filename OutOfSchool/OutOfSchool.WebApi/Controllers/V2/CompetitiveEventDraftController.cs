@@ -63,6 +63,11 @@ public class CompetitiveEventDraftController : ControllerBase
             return BadRequest("Dto is null.");
         }
 
+        if ((competitiveEventV2Dto.ImageFiles ?? []).Count == 0 || (competitiveEventV2Dto.ImageIds ?? []).Count > 0)
+        {
+            return BadRequest("When creating a draft of CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -489,4 +494,4 @@ public class CompetitiveEventDraftController : ControllerBase
 
         return null;
     }
-} 
+}

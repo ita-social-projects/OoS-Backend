@@ -22,8 +22,15 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
         if ((CoverImage is null) == string.IsNullOrEmpty(CoverImageId))
         {
             yield return new ValidationResult(
-                "Must be filled either CoverImage or CoverImageId, but not both",
-                new[] { nameof(CoverImage), nameof(CoverImageId) });
+                "Either CoverImage or CoverImageId must be filled in, but not both.",
+                [nameof(CoverImage), nameof(CoverImageId)]);
+        }
+
+        if ((ImageFiles ?? []).Count == 0 && (ImageIds ?? []).Count == 0)
+        {
+            yield return new ValidationResult(
+            "At least one of the ImageFiles or ImageIds fields must be filled in.",
+            [nameof(ImageFiles), nameof(ImageIds)]);
         }
     }
 }
