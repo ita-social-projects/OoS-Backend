@@ -80,7 +80,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Terms of participation is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string TermsOfParticipation { get; set; }
-    
+
     public bool? AreThereBenefits { get; set; }
 
     [MinLength(3)]
@@ -113,13 +113,19 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
         if (RegistrationStartTime >= RegistrationEndTime)
         {
             yield return new ValidationResult(
-                 "The registration start time cannot be  equal to or earlier than the registration end time");
+                 "The registration start time cannot be equal to or earlier than the registration end time");
         }
 
         if (ScheduledStartTime >= ScheduledEndTime)
         {
             yield return new ValidationResult(
-                 "The scheduled start time cannot be  equal to or earlier than the scheduled end time");
+                 "The scheduled start time cannot be equal to or earlier than the scheduled end time");
+        }
+
+        if (ScheduledStartTime <= RegistrationEndTime)
+        {
+            yield return new ValidationResult(
+                 "The scheduled start time cannot be equal to or earlier than the registration end time");
         }
 
         if (NumberOfSeats != uint.MaxValue && (NumberOfSeats < 1 || NumberOfSeats > 100000))

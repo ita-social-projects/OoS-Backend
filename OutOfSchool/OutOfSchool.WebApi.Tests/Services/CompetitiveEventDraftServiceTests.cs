@@ -74,7 +74,7 @@ public class CompetitiveEventDraftServiceTests
     #region Create
 
     [Test]
-    public async Task Create_ThrowsArgumentNullException_WhenDtoIsNull()
+    public void Create_ThrowsArgumentNullException_WhenDtoIsNull()
     {
         // Arrange
         CompetitiveEventV2Dto dto = null;

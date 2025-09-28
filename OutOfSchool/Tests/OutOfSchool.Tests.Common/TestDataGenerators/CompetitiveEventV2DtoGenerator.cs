@@ -33,7 +33,7 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.OrganizerOfTheEventId, f => f.Random.Guid())
         .RuleFor(x => x.MinimumAge, f => f.Random.Int(5, 18))
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
-        .RuleFor(x => x.ImageIds, _ => new List<string>())
+        .RuleFor(x => x.ImageIds, f => new List<string>() { f.Image.LoremFlickrUrl()})
         .RuleFor(x => x.Contacts, f => new List<ContactsDto> { })
         .RuleFor(x => x.SubDirectionIds, f => new List<long> { f.Random.Long(1, 100) });
 
