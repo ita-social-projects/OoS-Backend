@@ -312,6 +312,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var competitiveEventDraft = await GetDraftById(id);
 
+        if (competitiveEventDraft == null)
+        {
+            throw new ArgumentException($"There is no CompetitiveEvent draft with such Id.");
+        }
+
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This Competitive event draft can`t be approved.");

@@ -39,7 +39,7 @@ public class CompetitiveEventDraftController : ControllerBase
     /// <summary>
     /// Create a draft of a competitive event.
     /// </summary>
-    /// <param name="competitiveEventV2Dto">Entity to add.</param>
+    /// <param name="dto">Entity to add.</param>
     /// <returns>Created <see cref="CompetitiveEventDraftResultDto"/>.</returns>
     /// <response code="201">Entity was created and returned with Id.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
@@ -56,40 +56,50 @@ public class CompetitiveEventDraftController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("/api/v{version:apiVersion}/competitions-drafts")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] CompetitiveEventV2Dto competitiveEventV2Dto)
+    public async Task<IActionResult> Create([FromForm] CompetitiveEventV2Dto dto)
     {
-        if (competitiveEventV2Dto is null)
+
+        var error = dto switch
         {
-            return BadRequest("Dto is null.");
+            null => BadRequest("CompetitiveEvent is null"),
+            _ when !ModelState.IsValid => BadRequest(ModelState),
+            _ when (dto.ImageFiles ?? []).Count == 0 || (dto.ImageIds ?? []).Count > 0
+            => BadRequest("When creating a draft of CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."),
+            _ => null
+        };
+
+        if (error != null)
+        {
+            return error;
         }
 
-        if ((competitiveEventV2Dto.ImageFiles ?? []).Count == 0 || (competitiveEventV2Dto.ImageIds ?? []).Count > 0)
+        try
         {
-            return BadRequest("When creating a draft of CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array.");
-        }
+            var providerValidationResult = await ValidateProvider(dto.OrganizerOfTheEventId).ConfigureAwait(false);
+            if (providerValidationResult != null)
+            {
+                return providerValidationResult;
+            }
 
-        if (!ModelState.IsValid)
+            var result = await competitiveEventDraftService.Create(dto).ConfigureAwait(false);
+
+            if (result == null)
+            {
+                return BadRequest("Returned result is null.");
+            }
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = result.CompetitiveEventDraft.CompetitiveEventDraftId },
+                result);
+        }
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(ModelState);
+            var errorMessage = $"Unable to create a draft of competitive event: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+
+            return BadRequest(errorMessage);
         }
-
-        var providerValidationResult = await ValidateProvider(competitiveEventV2Dto.OrganizerOfTheEventId).ConfigureAwait(false);
-        if (providerValidationResult != null)
-        {
-            return providerValidationResult;
-        }
-
-        var result = await competitiveEventDraftService.Create(competitiveEventV2Dto).ConfigureAwait(false);
-
-        if (result == null)
-        {
-            return BadRequest("Returned result is null.");
-        }
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = result.CompetitiveEventDraft.CompetitiveEventDraftId },
-            result);
     }
 
     /// <summary>

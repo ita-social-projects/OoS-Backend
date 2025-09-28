@@ -106,7 +106,7 @@ public class CompetitiveEventDraftControllerTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest?.StatusCode, Is.EqualTo(400));
-        Assert.That(badRequest?.Value.ToString(), Does.Contain("Dto is null"));
+        Assert.That(badRequest?.Value.ToString(), Does.Contain("CompetitiveEvent is null"));
     }
 
     [Test]
@@ -126,7 +126,7 @@ public class CompetitiveEventDraftControllerTests
     }
 
     [Test]
-    public async Task Create_ReturnsBadRequest_WhenImageFilesAreNullOrEmptyArray()
+    public async Task Create_ReturnsBadRequest_WhenImageFilesIsNullOrEmptyArray()
     {
         // Arrange
         var dto = new CompetitiveEventV2Dto();
@@ -142,7 +142,7 @@ public class CompetitiveEventDraftControllerTests
     }
 
     [Test]
-    public async Task Create_ReturnsBadRequest_WhenImageIdsIHaveValues()
+    public async Task Create_ReturnsBadRequest_WhenImageIdsHasValues()
     {
         // Arrange
         var dto = new CompetitiveEventV2Dto() { ImageIds = ["image"] };
@@ -171,6 +171,32 @@ public class CompetitiveEventDraftControllerTests
         Assert.That(result, Is.InstanceOf<ObjectResult>());
         var objectResult = result as ObjectResult;
         Assert.That(objectResult?.StatusCode, Is.EqualTo(403));
+    }
+
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            OrganizerOfTheEventId = Guid.NewGuid(),
+            ImageFiles = [It.IsAny<IFormFile>()]
+        };
+        competitiveEventDraftServiceMock.Setup(s => s.Create(dto, false))
+            .ThrowsAsync(new InvalidOperationException("error"));
+
+        providerServiceMock.Setup(s => s.IsBlocked(dto.OrganizerOfTheEventId))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await controller.Create(dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("error"));
     }
 
     #endregion

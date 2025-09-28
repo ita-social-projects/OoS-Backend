@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,6 +9,9 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.WebApi.Controllers.V2;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 public class CompetitiveEventsV2ControllerTests
@@ -100,7 +101,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsCreated_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2CreateRequestDto() { ImageFiles = [It.IsAny<IFormFile>()] };
         var expectedId = Guid.NewGuid();
         var resultDto = new CompetitiveEventResultDto
         {
@@ -147,7 +148,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2CreateRequestDto() { ImageFiles = [It.IsAny<IFormFile>()] };
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
         competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
 
@@ -157,6 +158,42 @@ public class CompetitiveEventsV2ControllerTests
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));
         Assert.That(badRequest.Value.ToString(), Does.Contain("error"));
+    }
+
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenImageFilesIsNullOrEmptyArray()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2CreateRequestDto();
+        userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
+        competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
+
+        // Act
+        var result = await controller.Create(dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("When creating CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."));
+    }
+
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenImageIdsHasValues()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2CreateRequestDto() { ImageIds = ["image"] };
+        userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
+        competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
+
+        // Act
+        var result = await controller.Create(dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("When creating CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."));
     }
 
     #endregion

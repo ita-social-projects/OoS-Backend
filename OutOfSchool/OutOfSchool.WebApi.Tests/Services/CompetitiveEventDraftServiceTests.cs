@@ -758,6 +758,19 @@ public class CompetitiveEventDraftServiceTests
     #region Approve
 
     [Test]
+    public void Approve_ReturnsArgumentException_IfDraftDoesNotExist()
+    {
+        // Arrange
+        Guid draftId = Guid.NewGuid();
+        var draft = (CompetitiveEventDraft) null;
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(draftId))
+            .ReturnsAsync(draft);
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () => await competitiveEventDraftService.Approve(draftId));
+    }
+
+    [Test]
     public void Approve_ReturnsArgumentException_IfDraftStatusIsNotPendingModerationOrEditedByModerator()
     {
         // Arrange
