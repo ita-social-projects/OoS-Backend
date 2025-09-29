@@ -192,7 +192,7 @@ public static class CompetitiveEventBaseDtoExtensions
     /// <returns>The same <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> instance passed in via <paramref name="model"/> after applying updates.</returns>
     /// <remarks>
     /// Fields that retain the model's existing value when the DTO value is null: RegistrationStartTime, RegistrationEndTime, PlannedFormatOfClasses, AreThereBenefits, MaximumAge, Price, CompetitiveSelection, and Contacts (Contacts is mapped via <c>dto.Contacts?.ToModel()</c>).
-    /// SubDirections is replaced with a new list built from <c>dto.SubDirectionIds</c>. CoverImageId is set to <c>dto.CoverageId.ToString()</c>.
+    /// SubDirections is replaced with a new list built from <c>dto.SubDirectionIds</c>
     /// </remarks>
     public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent SetToModel(this CompetitiveEventBaseDto dto, OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
     {

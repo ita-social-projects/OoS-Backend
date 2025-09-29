@@ -811,7 +811,7 @@ public class CompetitiveEventDraftControllerTests
         var result = await controller.GetById(id).ConfigureAwait(false);
 
         // Assert
-        Assert.IsInstanceOf<NotFoundResult>(result);
+        Assert.IsInstanceOf<NoContentResult>(result);
     }
 
     #endregion
