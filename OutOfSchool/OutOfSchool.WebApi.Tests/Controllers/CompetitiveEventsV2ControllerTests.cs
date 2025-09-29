@@ -101,7 +101,11 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsCreated_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto() { ImageFiles = [It.IsAny<IFormFile>()] };
+        var dto = new CompetitiveEventV2CreateRequestDto() 
+        { 
+            ImageFiles = [It.IsAny<IFormFile>()],
+            CoverImage = It.IsAny<IFormFile>()        
+        };
         var expectedId = Guid.NewGuid();
         var resultDto = new CompetitiveEventResultDto
         {

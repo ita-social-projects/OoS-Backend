@@ -181,8 +181,7 @@ public static class CompetitiveEventBaseDtoExtensions
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),
-        SubDirections = dto.SubDirectionIds.Select(id => new SubDirection { DirectionId = id }).ToList(),
-        CoverImageId = dto.CoverageId.ToString(),
+        SubDirections = [.. (dto.SubDirectionIds ?? []).Select(id => new SubDirection { Id = id })],
     };
 
     /// <summary>
@@ -220,8 +219,7 @@ public static class CompetitiveEventBaseDtoExtensions
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;
-        model.SubDirections = dto.SubDirectionIds.Select(id => new SubDirection { DirectionId = id }).ToList();
-        model.CoverImageId = dto.CoverageId.ToString();
+        model.SubDirections = [.. (dto.SubDirectionIds ?? []).Select(id => new SubDirection { Id = id })];
 
         return model;
     }
