@@ -101,10 +101,10 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsCreated_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto() 
-        { 
-            ImageFiles = [It.IsAny<IFormFile>()],
-            CoverImage = It.IsAny<IFormFile>()        
+        var dto = new CompetitiveEventV2CreateRequestDto()
+        {
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
         };
         var expectedId = Guid.NewGuid();
         var resultDto = new CompetitiveEventResultDto
@@ -152,7 +152,12 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto() { ImageFiles = [It.IsAny<IFormFile>()] };
+        var dto = new CompetitiveEventV2CreateRequestDto
+        {
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
+        };
+
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
         competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
 

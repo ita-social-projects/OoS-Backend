@@ -307,7 +307,7 @@ public class CompetitiveEventDraftController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var responseDto = await competitiveEventDraftService.GetCompetitiveEventDraftByIdMapped(id);
-        return responseDto is not null ? Ok(responseDto) : NotFound();
+        return responseDto is not null ? Ok(responseDto) : NoContent();
     }
 
     /// <summary>

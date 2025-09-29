@@ -269,7 +269,7 @@ public class CompetitiveEventServiceTests
 
         // Verify updated item
         var updatedItem = updatedEvent.CompetitiveEventDescriptionItems
-            .First(d => d.Id == initialDescriptionItems[0].Id);
+            .First(d => d.Id == initialDescriptionItems[1].Id);
         Assert.AreEqual("Updated Description 2", updatedItem.Description);
 
         // Verify new item
