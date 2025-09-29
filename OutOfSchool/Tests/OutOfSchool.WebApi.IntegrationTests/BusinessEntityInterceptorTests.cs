@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Common.Services;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common.DbContextTests;
@@ -218,7 +218,7 @@ public class BusinessEntityInterceptorTests
 
     private static DbContextOptions<OutOfSchoolDbContext> GetDbContextOptions(string userId)
     {
-        var contextAwareUserMock = new Mock<IContextAwareUserService>();
+        var contextAwareUserMock = new Mock<IContextAwareCurrentUser>();
         contextAwareUserMock.Setup(cu => cu.UserId).Returns(userId);
 
         var interceptor = new BusinessEntityInterceptor(contextAwareUserMock.Object);

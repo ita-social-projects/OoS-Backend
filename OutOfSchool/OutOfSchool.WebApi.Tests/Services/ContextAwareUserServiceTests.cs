@@ -1,22 +1,22 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Services;
-using System.Threading.Tasks;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Models;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 [TestFixture]
 public class ContextAwareUserServiceTests
 {
     private Mock<IHttpContextAccessor> mockedHttpContextAccessor;
-    private ContextAwareUserService contextAwareUserService;
+    private ContextAwareCurrentUser contextAwareUserService;
 
     [SetUp]
     public void SetUp()
     {
         mockedHttpContextAccessor = new Mock<IHttpContextAccessor>();
-        contextAwareUserService = new ContextAwareUserService(mockedHttpContextAccessor.Object);
+        contextAwareUserService = new ContextAwareCurrentUser(mockedHttpContextAccessor.Object);
     }
 
     [Test]

@@ -6,7 +6,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Tests.Common.DbContextTests;
 using System.Threading.Tasks;
-using OutOfSchool.Common.Services;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.IntegrationTests;
 
@@ -85,7 +85,7 @@ public class TrackableEntityInterceptorTests
 
     private static DbContextOptions<OutOfSchoolDbContext> GetDbContextOptions(string userId)
     {
-        var contextAwareUserMock = new Mock<IContextAwareUserService>();
+        var contextAwareUserMock = new Mock<IContextAwareCurrentUser>();
         contextAwareUserMock.Setup(cu => cu.UserId).Returns(userId);
 
         var interceptor = new TrackableEntityInterceptor(contextAwareUserMock.Object);

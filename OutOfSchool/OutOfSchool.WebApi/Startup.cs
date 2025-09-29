@@ -14,7 +14,6 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using OutOfSchool.AikomApiClient.Extensions;
-using OutOfSchool.AuthCommon.Services;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -34,7 +33,6 @@ using OutOfSchool.BusinessLogic.Services.Workshops;
 using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Common.Services;
 using OutOfSchool.EmailSender;
 using OutOfSchool.EmailSender.Services;
 using OutOfSchool.ExternalFileStore;
@@ -521,7 +519,7 @@ public static class Startup
         services.AddTransient(typeof(IContactsService<,>), typeof(ContactsService<,>));
         services.AddScoped<IDirectorManagementService, DirectorManagementService>();
         services.AddScoped<ITransactionManagerService, TransactionManagerService>();
-        services.AddScoped<IContextAwareUserService, ContextAwareUserService>();
+        services.AddScoped<IContextAwareCurrentUser, ContextAwareCurrentUser>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 

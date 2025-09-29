@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OutOfSchool.Common.Services;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services;
 
 public class BusinessEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly IContextAwareUserService? currentUser;
+    private readonly IContextAwareCurrentUser? currentUser;
 
 
-    public BusinessEntityInterceptor(IContextAwareUserService? currentUser)
+    public BusinessEntityInterceptor(IContextAwareCurrentUser? currentUser)
     {
         this.currentUser = currentUser;
     }
@@ -47,7 +47,7 @@ public class BusinessEntityInterceptor : SaveChangesInterceptor
 
     private static void UpdateBusinessEntities(
         DbContext context,
-        IContextAwareUserService? currentUser)
+        IContextAwareCurrentUser? currentUser)
     {
         var userId = currentUser?.UserId ?? string.Empty;
 

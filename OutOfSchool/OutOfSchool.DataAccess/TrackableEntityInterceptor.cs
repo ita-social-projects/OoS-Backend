@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OutOfSchool.Common.Services;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.BaseEntities;
 
 namespace OutOfSchool.Services;
 public class TrackableEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly IContextAwareUserService currentUser;
+    private readonly IContextAwareCurrentUser currentUser;
 
-    public TrackableEntityInterceptor(IContextAwareUserService currentUser)
+    public TrackableEntityInterceptor(IContextAwareCurrentUser currentUser)
     {
         this.currentUser = currentUser;
     }
