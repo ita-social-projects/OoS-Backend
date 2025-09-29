@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿#nullable enable
+
+using System.Security.Claims;
 
 namespace OutOfSchool.Common.Models;
 public interface IContextAwareCurrentUser : ICurrentUser
@@ -8,5 +10,5 @@ public interface IContextAwareCurrentUser : ICurrentUser
     /// </summary>
     bool IsSystemContext { get; }
 
-    ClaimsPrincipal Principal { get; }
+    ClaimsPrincipal? Principal { get; }
 }

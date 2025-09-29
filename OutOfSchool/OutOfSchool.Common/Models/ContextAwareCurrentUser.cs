@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿#nullable enable
+
+using Microsoft.AspNetCore.Http;
 using OutOfSchool.Common.Extensions;
 using System;
 using System.Linq;
@@ -19,7 +21,7 @@ public class ContextAwareCurrentUser : IContextAwareCurrentUser
 
     public bool IsSystemContext => httpContextAccessor.HttpContext is null;
 
-    public ClaimsPrincipal Principal => httpContextAccessor.HttpContext?.User;
+    public ClaimsPrincipal? Principal => httpContextAccessor.HttpContext?.User;
 
     public string UserId
     {
@@ -42,7 +44,7 @@ public class ContextAwareCurrentUser : IContextAwareCurrentUser
     }
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
     public string UserRole => Principal?.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role) ?? string.Empty;
-    public string GetClaimValue(string claimType) => Principal?.FindFirst(claimType)?.Value;
+    public string? GetClaimValue(string claimType) => Principal?.FindFirst(claimType)?.Value;
     public bool IsInRole(string role) => Principal?.IsInRole(role) ?? false;
     public bool HasClaim(string type, Func<string, bool> valueComparer = null) =>
         Principal?.Identities
