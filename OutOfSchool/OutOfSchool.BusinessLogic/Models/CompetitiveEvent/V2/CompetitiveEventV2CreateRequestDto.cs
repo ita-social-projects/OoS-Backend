@@ -21,7 +21,7 @@ public class CompetitiveEventV2CreateRequestDto : CompetitiveEventBaseDto
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // Run validations from CompetitiveEventDto
+        // Run validations from CompetitiveEventBaseDto
         foreach (var error in base.Validate(validationContext))
             yield return error;
 

@@ -9,7 +9,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 namespace OutOfSchool.WebApi.Tests.Validators;
 
 [TestFixture]
-public class CompetitiveEventV2DtoValidationTests
+public class CompetitiveEventV2CreateRequestDtoValidationTests
 {
     private DateTime date1;
     private DateTime date2;
@@ -25,7 +25,7 @@ public class CompetitiveEventV2DtoValidationTests
         date4 = date3.Add(new TimeSpan(30, 0, 0, 0));
     }
 
-        [Test]
+    [Test]
     public void Validate_WhenAllPropertiesAreCorrect_ShouldReturnNoValidationErrors()
     {
         // Arrange
@@ -126,9 +126,9 @@ public class CompetitiveEventV2DtoValidationTests
     #region Helpers
 
     // 
-    private CompetitiveEventV2Dto CreateTheCorrectDto()
+    private CompetitiveEventV2CreateRequestDto CreateTheCorrectDto()
     {
-        var dto = CompetitiveEventV2DtoGenerator.Generate();
+        var dto = CompetitiveEventV2DtoGenerator.Generate().ToV2CreateRequestDto();
         dto.RegistrationStartTime = date1;
         dto.RegistrationEndTime = date2;
         dto.ScheduledStartTime = date3;
