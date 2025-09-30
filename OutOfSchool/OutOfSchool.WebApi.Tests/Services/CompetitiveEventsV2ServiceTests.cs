@@ -214,20 +214,26 @@ public class CompetitiveEventsV2ServiceTests
         };
 
         repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
-            .ReturnsAsync(competitiveEvent).Verifiable(Times.Once); ;
+            .ReturnsAsync(competitiveEvent)
+            .Verifiable(Times.Once); ;
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>()))
-            .Returns<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>(f => f()).Verifiable(Times.Once);;
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>(f => f())
+            .Verifiable(Times.Once);;
         mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
             It.IsAny<Expression<Func<SubDirection, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
-            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted)).Verifiable(Times.Once); ;
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted))
+            .Verifiable(Times.Once);
         imageServiceMock.Setup(service => service.ChangeImagesAsync(competitiveEvent, It.IsAny<List<string>>(), It.IsAny<List<IFormFile>>()))
-            .ReturnsAsync(new MultipleImageChangingResult()).Verifiable(Times.Once); ;
+            .ReturnsAsync(new MultipleImageChangingResult())
+            .Verifiable(Times.Once);
         imageServiceMock.Setup(service => service.ChangeCoverImageAsync(competitiveEvent, It.IsAny<string>(), It.IsAny<IFormFile>()))
-            .ReturnsAsync(new ImageChangingResult()).Verifiable(Times.Once); ;
+            .ReturnsAsync(new ImageChangingResult())
+            .Verifiable(Times.Once);
         repoMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(It.IsAny<int>()).Verifiable(Times.Once);
+            .ReturnsAsync(It.IsAny<int>())
+            .Verifiable(Times.Once);
 
         // Act
         var result = await service.UpdateV2(dto);

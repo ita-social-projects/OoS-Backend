@@ -89,8 +89,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventBaseDto>()))
             .Verifiable(Times.Once);
         mockCompetitiveEventRepository
-            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Setup(m => m.Create(It.IsAny<CompetitiveEvent>()))
             .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Returns((Func<Task<CompetitiveEvent>> f) => f.Invoke())
             .Verifiable(Times.Once);
 
         // Act
@@ -132,8 +136,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .Setup(c => c.PrepareNewContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventBaseDto>()))
             .Verifiable(Times.Once);
         mockCompetitiveEventRepository
-            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Setup(m => m.Create(It.IsAny<CompetitiveEvent>()))
             .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Returns((Func<Task<CompetitiveEvent>> f) => f.Invoke())
             .Verifiable(Times.Once);
 
         // Act
@@ -185,8 +193,12 @@ class CompetitiveEventServiceUpdateAndCreateTests
             .ReturnsAsync(new List<SubDirection>() { new SubDirection { Id = 1 } })
             .Verifiable(Times.Once);
         mockCompetitiveEventRepository
-            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Setup(m => m.Create(It.IsAny<CompetitiveEvent>()))
             .ReturnsAsync(createdEvent)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
+            .Returns((Func<Task<CompetitiveEvent>> f) => f.Invoke())
             .Verifiable(Times.Once);
 
         // Act
@@ -509,7 +521,6 @@ class CompetitiveEventServiceUpdateAndCreateTests
     private void SetupMocksForUpdateTest(CompetitiveEvent competitiveEvent, CompetitiveEvent updatedCompetitiveEvent, Guid eventId)
     {
         mockCompetitiveEventRepository
-
             .Setup(r => r.GetByIdWithDetails(
                 eventId,
                 It.IsAny<string>(),
@@ -519,12 +530,21 @@ class CompetitiveEventServiceUpdateAndCreateTests
 
         mockCompetitiveEventRepository
             .Setup(r => r.Update(It.IsAny<CompetitiveEvent>()))
-            .ReturnsAsync((CompetitiveEvent input) => input)
+            .ReturnsAsync(updatedCompetitiveEvent)
+            .Verifiable(Times.Once);
+
+        mockDescriptionItemRepository
+            .Setup(r => r.Delete(It.IsAny<CompetitiveEventDescriptionItem>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once);
+
+        contactsService
+            .Setup(c => c.PrepareUpdatedContacts(It.IsAny<CompetitiveEvent>(), It.IsAny<CompetitiveEventBaseDto>()))
             .Verifiable(Times.Once);
 
         mockCompetitiveEventRepository
             .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEvent>>>()))
-            .ReturnsAsync(updatedCompetitiveEvent)
+            .Returns<Func<Task<CompetitiveEvent>>>(f => f())
             .Verifiable(Times.Once);
 
         mockSubDirectionRepository
