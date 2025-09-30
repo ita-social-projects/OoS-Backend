@@ -48,6 +48,7 @@ public class SensitiveWorkshopDraftServiceDBTests
     private ISensitiveWorkshopDraftService workshopDraftService;
     private IWorkshopDraftRepository workshopDraftRepository;
 
+    private Mock<ITransactionManagerService> transactionManagerServiceMock;
     private Mock<IRegistrySyncService> registrySyncServiceMock;
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
@@ -89,6 +90,7 @@ public class SensitiveWorkshopDraftServiceDBTests
         languageServiceMock = new Mock<ILanguageService>();
         changesLogServiceMock = new Mock<IChangesLogService>();
         workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
+        transactionManagerServiceMock = new Mock<ITransactionManagerService>();
 
         var options = new Mock<IOptions<UploadConcurrencySettings>>();
         var settings = new UploadConcurrencySettings();
@@ -106,6 +108,7 @@ public class SensitiveWorkshopDraftServiceDBTests
         workshopDraftService = new WorkshopDraftService(
                    logger.Object,
                    registrySyncServiceMock.Object,
+                   transactionManagerServiceMock.Object,
                    languageServiceMock.Object,
                    workshopDraftRepository,
                    workshopDraftImagesServiceMock.Object,
@@ -121,7 +124,6 @@ public class SensitiveWorkshopDraftServiceDBTests
                    institutionHierarchyRepositoryMock.Object,
                    codeficatorRepositoryMock.Object,
                    changesLogServiceMock.Object,
-                   institutionHierarchyServiceMock.Object,
                    institutionOptionsMock.Object,
                    imageStorageOptionsMock.Object);
 

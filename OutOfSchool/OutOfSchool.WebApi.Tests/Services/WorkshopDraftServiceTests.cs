@@ -50,6 +50,7 @@ public class WorkshopDraftServiceTests
 {
     private IWorkshopDraftService service;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMoq;
+    private Mock<ITransactionManagerService> transactionManagerServiceMoq;
     private Mock<IInstitutionHierarchyService> institutionHierarchyServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>> workshopDraftImagesServiceMock;
     private Mock<IEntityCoverImageInteractionService<TeacherDraft>> teacherDraftImagesServiceMock;
@@ -70,6 +71,7 @@ public class WorkshopDraftServiceTests
     [SetUp]
     public void SetUp()
     {
+        transactionManagerServiceMoq = new Mock<ITransactionManagerService>();
         workshopDraftRepoMoq = new Mock<IWorkshopDraftRepository>();
         workshopDraftImagesServiceMock = new Mock<IImageDependentEntityImagesInteractionService<WorkshopDraft>>();
         teacherDraftImagesServiceMock = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
@@ -119,6 +121,7 @@ public class WorkshopDraftServiceTests
         service = new WorkshopDraftService(
                    logger.Object,
                    registrySyncServiceMock.Object,
+                   transactionManagerServiceMoq.Object,
                    languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesServiceMock.Object,
@@ -134,7 +137,6 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    changesLogServiceMock.Object,
-                   institutionHierarchyServiceMock.Object,
                    institutionOptionsMock.Object,
                    imageStorageOptionsMock.Object);
         SetupInstitutionHierarchy();
@@ -695,7 +697,7 @@ public class WorkshopDraftServiceTests
         workshopDraftRepoMoq.Setup(x => x.Delete(It.IsAny<WorkshopDraft>()))
             .Returns(Task.CompletedTask).Verifiable(Times.Once);
         workshopServiceCombinerV2Moq
-           .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true))
+           .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), true,true))
            .ReturnsAsync(Result<WorkshopResultDto>.Success(new WorkshopResultDto()))
            .Verifiable(Times.Once);
         
@@ -1043,24 +1045,36 @@ public class WorkshopDraftServiceTests
 
         var workshopDrafts = new List<WorkshopDraft>();
 
-        workshopServiceCombinerV2Moq.Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
-            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
-        workshopServiceCombinerV2Moq.Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false))
-            .ReturnsAsync(Result<WorkshopResultDto>.Success(workshopResultDto)).Verifiable(Times.Once);
-        workshopDraftRepoMoq.Setup(x =>
-            x.Get(It.IsAny<int>(),
-                    It.IsAny<int>(),
-                    It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
-                    It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
-            .Returns(workshopDrafts.AsQueryable().BuildMock()).Verifiable(Times.Once);
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(It.IsAny<Guid>(), It.IsAny<bool>()))
+            .ReturnsAsync(workshopDto);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(workshopResultDto));
+
+        workshopDraftRepoMoq
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(workshopDrafts.AsQueryable().BuildMock());
+        
+        transactionManagerServiceMoq
+            .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()))
+            .Returns<Func<Task<WorkshopV2Dto>>>(f => f());
 
         // Act
         var result = await service.UpdateWorkshop(workshopV2Dto).ConfigureAwait(false);
 
         // Assert
         currentUserServiceMoq.VerifyAll();
-        workshopServiceCombinerV2Moq.VerifyAll();
         workshopDraftRepoMoq.VerifyAll();
+
+        workshopServiceCombinerV2Moq.Verify(
+            x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false),
+            Times.Once);
 
         result.Should().NotBeNull();
     }
@@ -1206,7 +1220,8 @@ public class WorkshopDraftServiceTests
         var service = new WorkshopDraftService(
                    logger.Object,
                    registrySyncServiceMock.Object,
-                   new Mock<ILanguageService>().Object,
+                   transactionManagerServiceMoq.Object,
+                   languageServiceMoq.Object,
                    workshopDraftRepoMoq.Object,
                    workshopDraftImagesService.Object,
                    providerServiceMoq.Object,
@@ -1221,7 +1236,6 @@ public class WorkshopDraftServiceTests
                    institutionHierarchyRepositoryMoq.Object,
                    codeficatorRepositoryMoq.Object,
                    new Mock<IChangesLogService>().Object,
-                   institutionHierarchyServiceMock.Object,
                    institutionOptionsMock.Object,
                    imageStorageOptionsMock.Object);
 

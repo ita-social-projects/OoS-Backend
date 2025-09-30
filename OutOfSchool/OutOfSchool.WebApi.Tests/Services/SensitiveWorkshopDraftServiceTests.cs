@@ -42,6 +42,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class SensitiveWorkshopDraftServiceTests
 {
     private ISensitiveWorkshopDraftService service;
+    private Mock<ITransactionManagerService> transactionManagerServiceMock;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMock;
     private Mock<IRegistrySyncService> registrySyncServiceMock;
     private Mock<IProviderService> providerServiceMock;
@@ -67,6 +68,7 @@ public class SensitiveWorkshopDraftServiceTests
     [SetUp]
     public void SetUp()
     {
+        transactionManagerServiceMock = new Mock<ITransactionManagerService>();
         workshopDraftRepoMock = new Mock<IWorkshopDraftRepository>();
         institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
         registrySyncServiceMock = new Mock<IRegistrySyncService>();
@@ -100,6 +102,7 @@ public class SensitiveWorkshopDraftServiceTests
         service = new WorkshopDraftService(
             logger.Object,
             registrySyncServiceMock.Object,
+            transactionManagerServiceMock.Object,
             languageServiceMock.Object,
             workshopDraftRepoMock.Object,
             workshopDraftImagesServiceMock.Object,
@@ -115,7 +118,6 @@ public class SensitiveWorkshopDraftServiceTests
             institutionHierarchyRepositoryMock.Object,
             codeficatorRepository.Object,
             changesLogServiceMock.Object,
-            institutionHierarchyServiceMock.Object,
             institutionOptionsMock.Object,
             imageStorageOptionsMock.Object);
 

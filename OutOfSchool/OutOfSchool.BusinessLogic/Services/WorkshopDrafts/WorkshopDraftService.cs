@@ -555,17 +555,17 @@ public class WorkshopDraftService(
         }
         
         workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
-        /*if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
-        }*/
+        }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
         return await transactionManagerService.ExecuteInTransactionAsync(async () =>
         {
             // 1. Firstly try to update our database
-            var updateResult = (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
+            var updateResult = (await workshopServicesCombinerV2.Update(workshopV2Dto,fromDraft:false,runInTransaction:false)).Value.Workshop;
 
             // 2. If minsport  - sync with external registry
             var institutionId = existingWorkshop.InstitutionId.ToString();
@@ -573,7 +573,7 @@ public class WorkshopDraftService(
             {
                 await registrySyncService.SyncWorkshopAsync(workshopV2Dto);
             }
-            return updateResult;
+            return updateResult; 
         });
     }
 
