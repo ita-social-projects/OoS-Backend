@@ -70,26 +70,28 @@ public class SportKindSyncService(
             }
         }
 
-        await hierarchyRepository.RunInTransaction(async () =>
+        if (toCreateEntities.Any() || toUpdateEntities.Any())
         {
-            //  Save all created / updated entities in one operation instead of creating every time in loop
-            if (toCreateEntities.Any())
+            await hierarchyRepository.RunInTransaction(async () =>
             {
-                await hierarchyRepository.Create(toCreateEntities).ConfigureAwait(false);
-            }
-            
-            // EF Core already tracks modified entities, SaveChanges will apply updates
-            if (toUpdateEntities.Any())
-            {
-                await hierarchyRepository.SaveChangesAsync().ConfigureAwait(false);
-            }
+                //  Save all created / updated entities in one operation instead of creating every time in loop
+                if (toCreateEntities.Any())
+                {
+                    await hierarchyRepository.Create(toCreateEntities).ConfigureAwait(false);
+                }
+                // EF Core already tracks modified entities, SaveChanges will apply updates
+                if (toUpdateEntities.Any())
+                {
+                    await hierarchyRepository.SaveChangesAsync().ConfigureAwait(false);
+                }
 
-            var updatedEntitiesCount  = toUpdateEntities.Count;
-            var createdEntitiesCount = toCreateEntities.Count;
-            changedEntitiesCount =  updatedEntitiesCount + createdEntitiesCount;
-            logger.LogInformation($"Sport kinds sync finished. {updatedEntitiesCount} updated and {createdEntitiesCount} created");
-            
-        });
+                var updatedEntitiesCount = toUpdateEntities.Count;
+                var createdEntitiesCount = toCreateEntities.Count;
+                changedEntitiesCount = updatedEntitiesCount + createdEntitiesCount;
+                logger.LogInformation(
+                    $"Sport kinds sync finished. {updatedEntitiesCount} updated and {createdEntitiesCount} created");
+            });
+        }
         return changedEntitiesCount;
     }
 }
