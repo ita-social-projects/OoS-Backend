@@ -215,10 +215,10 @@ public class CompetitiveEventsV2ServiceTests
 
         repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync(competitiveEvent)
-            .Verifiable(Times.Once); ;
+            .Verifiable(Times.Once);
         repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>()))
             .Returns<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>(f => f())
-            .Verifiable(Times.Once);;
+            .Verifiable(Times.Once);
         mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
             It.IsAny<Expression<Func<SubDirection, bool>>>(),
             It.IsAny<string>(),
