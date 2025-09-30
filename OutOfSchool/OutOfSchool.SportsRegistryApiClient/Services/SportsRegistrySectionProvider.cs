@@ -8,14 +8,14 @@ using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
 namespace OutOfSchool.SportsRegistryApiClient.Services;
 
-public class SportsRegistryProviderService : ISportsRegistryProviderService
+public class SportsRegistrySectionProvider : ISportsRegistrySectionProvider
 {
     private readonly ISportsRegistryApiService apiService;
-    private readonly ILogger<SportsRegistryProviderService> logger;
+    private readonly ILogger<SportsRegistrySectionProvider> logger;
 
-    public SportsRegistryProviderService(
+    public SportsRegistrySectionProvider(
         ISportsRegistryApiService apiService,
-        ILogger<SportsRegistryProviderService> logger)
+        ILogger<SportsRegistrySectionProvider> logger)
     {
         this.apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -39,55 +39,6 @@ public class SportsRegistryProviderService : ISportsRegistryProviderService
         var result = await apiService.UpdateSectionAsync(request).ConfigureAwait(false);
         return HandleResult(result,  RegistryConstants.UpdateAction,  request.SectionId );
     }
-    public async Task<Either<ErrorResponse, List<SportKindDto>>> GetAllSportKindsAsync(int pageSize = 50)
-    {
-        logger.LogInformation("Fetching ALL sport kinds from Sports Registry with PageSize={PageSize}", pageSize);
-
-        var all = new List<SportKindDto>();
-        int currentPage = 0;
-        int totalPages = 1; // we know this after first iteration
-
-        while (currentPage < totalPages)
-        {
-            var pageResult = await apiService.GetSportKindsAsync(currentPage, pageSize).ConfigureAwait(false);
-
-            var failed = pageResult.Match(
-                error =>
-                {
-                    logger.LogError("Failed to fetch page {Page}: {Message}", currentPage, error.Message);
-                    return true; // error
-                },
-                success =>
-                {
-                    var items = success.Content ?? new List<SportKindDto>();
-                    all.AddRange(items);
-
-                    totalPages = success.TotalPages; // now we know total pages
-
-                    logger.LogInformation(
-                        "Fetched page {Page}/{TotalPages}. Got {Count} items. Accumulated={Accumulated}",
-                        success.PageNo + 1, success.TotalPages, items.Count, all.Count);
-
-                    return false;
-                });
-
-            if (failed)
-            {
-                return new ErrorResponse
-                {
-                    HttpStatusCode = HttpStatusCode.BadRequest,
-                    Message = $"Failed to fetch sport kinds on page {currentPage}"
-                };
-            }
-
-            currentPage++;
-        }
-
-        logger.LogInformation("Finished fetching sport kinds. Total items={Count}", all.Count);
-
-        return all;
-    }
-
     private Either<ErrorResponse, SectionCreateUpdateResponse> HandleResult(
         Either<ErrorResponse, SectionCreateUpdateResponse> result,
         string actionDescription,

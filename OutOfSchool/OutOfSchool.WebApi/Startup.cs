@@ -124,7 +124,8 @@ public static class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseHeaderPropagation();
+        // TODO: need to review if we need it
+        //app.UseHeaderPropagation();
 
         app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
         {
@@ -254,14 +255,15 @@ public static class Startup
                 {
                     AutomaticDecompression = DecompressionMethods.GZip,
                 })
-            .AddHeaderPropagation()
+            // TODO: need to review if we need it
+            //.AddHeaderPropagation()
             .AddStandardResilienceHandler().Configure(o =>
             {
                 o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:AttemptTimeoutInSeconds"));
                 o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Communication:TimeoutInSeconds")); 
             //  o.Retry.MaxRetryAttempts = configuration.GetValue<int>("Communication:MaxNumberOfRetries");
             });
-
+        
         services.AddRazorPages();
         services.AddHttpContextAccessor();
         services.AddScoped<IMinistryAdminService, MinistryAdminService>();
@@ -592,7 +594,7 @@ public static class Startup
         services.AddDefaultQuartz(
             configuration,
             quartzConfig.ConnectionStringKey,
-            q =>
+                q =>
         {
             if (isImagesEnabled && storageConfig.Provider != StorageProviderType.Fake)
             {
@@ -607,6 +609,7 @@ public static class Startup
             q.AddAverageRatingCalculating(services, quartzConfig);
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(quartzConfig);
+            q.AddSportKindSync(quartzConfig);
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");
@@ -667,11 +670,12 @@ public static class Startup
         Func<HeaderPropagationContext, StringValues> defaultHeaderDelegate = context =>
             StringValues.IsNullOrEmpty(context.HeaderValue) ? Guid.NewGuid().ToString() : context.HeaderValue;
 
-        services.AddHeaderPropagation(options =>
+        // TODO: Need to review if we need it
+        /*services.AddHeaderPropagation(options =>
         {
             options.Headers.Add("Request-Id", defaultHeaderDelegate);
             options.Headers.Add("X-Request-Id", defaultHeaderDelegate);
-        });
+        });*/
 
         var mailConfig = configuration
             .GetSection(EmailOptions.SectionName)

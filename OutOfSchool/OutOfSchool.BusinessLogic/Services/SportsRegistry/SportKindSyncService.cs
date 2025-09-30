@@ -7,7 +7,7 @@ namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 
 /// <inheritdoc/>
 public class SportKindSyncService(
-    ISportsRegistryProviderService providerService,
+    ISportsRegistryDictionaryProvider dictionaryProvider,
     IInstitutionHierarchyRepository hierarchyRepository,
     ILogger<SportKindSyncService> logger,
     IOptions<InstitutionOptions> institutionOptions)
@@ -19,7 +19,7 @@ public class SportKindSyncService(
         var institutionId = Guid.Parse(institutionOptions.Value.MinistryOfSportId);
 
         // receive all sport kinds
-        var response = await providerService.GetAllSportKindsAsync().ConfigureAwait(false);
+        var response = await dictionaryProvider.GetAllSportKindsAsync().ConfigureAwait(false);
 
         var sportKinds = response.Match(
             error => throw new InvalidOperationException($"Failed to fetch sport kinds: {error.Message}"),

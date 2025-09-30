@@ -24,7 +24,7 @@ namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 /// </summary>
 public class RegistrySyncService : IRegistrySyncService
 {
-    private readonly ISportsRegistryProviderService sportsRegistryApiService;
+    private readonly ISportsRegistrySectionProvider sportsRegistrySectionApi;
     private readonly ICodeficatorService codeficatorService;
     private readonly IInstitutionHierarchyService institutionHierarchyService;
     private readonly ILogger<RegistrySyncService> logger;
@@ -33,19 +33,19 @@ public class RegistrySyncService : IRegistrySyncService
     /// <summary>
     /// Initializes a new instance of the <see cref="RegistrySyncService"/> class.
     /// </summary>
-    /// <param name="sportsRegistryApiService">Client for interacting with the external Sports Registry API.</param>
+    /// <param name="sportsRegistrySectionApi">Client for interacting with the external Sports Registry API.</param>
     /// <param name="codeficatorRepository">Repository for resolving CATOTTG codes.</param>
     /// <param name="institutionHierarchyService">Service for retrieving institution hierarchy data.</param>
     /// <param name="logger">Logger instance for error and information logging.</param>
     /// <param name="imageOptions">Options that provide the base image URL.</param>
     public RegistrySyncService(
-        ISportsRegistryProviderService sportsRegistryApiService,
+        ISportsRegistrySectionProvider sportsRegistrySectionApi,
         ICodeficatorService codeficatorService,
         IInstitutionHierarchyService institutionHierarchyService,
         ILogger<RegistrySyncService> logger,
         IOptions<ImageStorageOptions> imageOptions)
     {
-        this.sportsRegistryApiService = sportsRegistryApiService;
+        this.sportsRegistrySectionApi = sportsRegistrySectionApi;
         this.codeficatorService = codeficatorService;
         this.institutionHierarchyService = institutionHierarchyService;
         this.logger = logger;
@@ -63,7 +63,7 @@ public class RegistrySyncService : IRegistrySyncService
             // Create
             var request = draft.ToSportSectionPostRequest(baseImageUrl);
             await NormalizeRequestAsync(request, institutionHierarchyId);
-            var response = await sportsRegistryApiService.RegisterSectionAsync(request).ConfigureAwait(false);
+            var response = await sportsRegistrySectionApi.RegisterSectionAsync(request).ConfigureAwait(false);
             HandleDraftResponse(response, draft, isCreate: true);
         }
         else
@@ -71,7 +71,7 @@ public class RegistrySyncService : IRegistrySyncService
             // Update
             var request = draft.ToSportSectionUpdateRequest(baseImageUrl);
             await NormalizeRequestAsync(request, institutionHierarchyId);
-            var response = await sportsRegistryApiService.UpdateSectionAsync(request).ConfigureAwait(false);
+            var response = await sportsRegistrySectionApi.UpdateSectionAsync(request).ConfigureAwait(false);
             HandleDraftResponse(response, draft, isCreate: false);
         }
     }
@@ -85,7 +85,7 @@ public class RegistrySyncService : IRegistrySyncService
         var request = dto.ToSportSectionUpdateRequest(baseImageUrl);
         await NormalizeRequestAsync(request, institutionHierarchyId);
 
-        var response = await sportsRegistryApiService.UpdateSectionAsync(request).ConfigureAwait(false);
+        var response = await sportsRegistrySectionApi.UpdateSectionAsync(request).ConfigureAwait(false);
         response.Match(
             error =>
             {

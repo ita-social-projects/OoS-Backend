@@ -30,11 +30,12 @@ public static class SportsRegistryClientExtensions
         {
             services.TryAddTransient<ICommunicationService, CommunicationService>();
             services.TryAddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
-            services.TryAddTransient<ISportsRegistryProviderService, SportsRegistryProviderService>();
+            services.TryAddTransient<ISportsRegistrySectionProvider, SportsRegistrySectionProvider>();
+            services.TryAddTransient<ISportsRegistryDictionaryProvider, SportsRegistryDictionaryProvider>();
         }
         else
         {
-            services.TryAddSingleton<ISportsRegistryProviderService, DisabledSportsRegistryProviderService>();
+            services.TryAddSingleton<ISportsRegistrySectionProvider, DisabledSportsRegistryStub>();
         }
         
         return sportConfiguration;
