@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
@@ -84,7 +85,7 @@ public class CompetitiveEventDraftServiceTests
     }
 
     [Test]
-    public async Task Create_ReturnsDraftResultDto_WhenDtoIsValidAndCompetitiveEventDoesNotExist()
+    public async Task Create_ReturnsDraftResultDto_WhenDtoIsValidWithoutNewImagesAndCompetitiveEventDoesNotExist()
     {
         // Arrange
         var dto = new CompetitiveEventV2Dto()
@@ -131,10 +132,10 @@ public class CompetitiveEventDraftServiceTests
             .Verifiable(Times.Once);
         mockImageService.Setup(service => service.AddManyImagesAsync(draft, dto.ImageFiles))
             .ReturnsAsync(new MultipleImageUploadingResult())
-            .Verifiable(Times.Once);
+            .Verifiable(Times.Never);
         mockImageService.Setup(service => service.AddCoverImageAsync(draft, dto.CoverImage))
             .ReturnsAsync(Result<string>.Success("some text"))
-            .Verifiable(Times.Once);
+            .Verifiable(Times.Never);
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
             .Returns(catottgs.AsTestAsyncEnumerableQuery)
@@ -158,7 +159,7 @@ public class CompetitiveEventDraftServiceTests
     }
 
     [Test]
-    public async Task Create_ReturnsDraftResultDto_WhenDtoIsValidAndCompetitiveEventExists()
+    public async Task Create_ReturnsDraftResultDto_WhenDtoIsValidWithNewImagesAndCompetitiveEventExists()
     {
         // Arrange
         var dto = new CompetitiveEventV2Dto()
@@ -171,7 +172,9 @@ public class CompetitiveEventDraftServiceTests
                     IsDefault = true,
                     Address = ContactsAddressDtoGenerator.Generate()
                 }
-            ]
+            ],
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
         };
         var draft = dto.ToDraft();
         var catottgs = new List<CATOTTG>
@@ -1009,7 +1012,6 @@ public class CompetitiveEventDraftServiceTests
 
     #region UpdateCompetitiveEvent
 
-
     [Test]
     public void UpdateCompetitiveEvent_ReturnsInvalidOperationException_IfCompetitiveEventDoesNotExist()
     {
@@ -1018,10 +1020,12 @@ public class CompetitiveEventDraftServiceTests
         CompetitiveEventDto dto = null;
 
         mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
-            .ReturnsAsync(dto);
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto));
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -1033,10 +1037,12 @@ public class CompetitiveEventDraftServiceTests
         CompetitiveEventDto dto = v2dto;
 
         mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
-            .ReturnsAsync(dto);
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto));
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -1066,20 +1072,25 @@ public class CompetitiveEventDraftServiceTests
         };
 
         mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
-            .ReturnsAsync(dto);
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns(drafts.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<InvalidOperationException>(async () => await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto));
+        Mock.VerifyAll();
     }
 
     [Test]
-    public async Task UpdateCompetitiveEvent_CallCreate_IfModeratedFieldsChanged()
+    public async Task UpdateCompetitiveEvent_CallCreate_IfModeratedFieldsChangedAndDtoWithNewImages()
     {
         // Arrange
         CompetitiveEventV2Dto v2dto = CompetitiveEventV2DtoGenerator.Generate();
+        v2dto.ImageFiles = [Mock.Of<IFormFile>()];
+        v2dto.CoverImage = Mock.Of<IFormFile>();
         CompetitiveEventDraft draft = v2dto.ToDraft();
         CompetitiveEventDto dto = draft.ToDto();
         dto.Title = "new Title";
@@ -1099,29 +1110,38 @@ public class CompetitiveEventDraftServiceTests
         };
 
         mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
-            .ReturnsAsync(dto);
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Exactly(2));
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
-
+            .Returns(drafts.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
         mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
-            .Returns(Task.CompletedTask);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<CompetitiveEventDraft>>>()))
-            .ReturnsAsync(draft);
-        mockCompetitiveEventDraftRepository.Setup(repo => repo.Create(draft))
-            .ReturnsAsync(draft);
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Exactly(2));
+        mockCompetitiveEventDraftRepository
+            .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<CompetitiveEventDraft>>>()))
+            .Returns((Func<Task<CompetitiveEventDraft>> f) => f.Invoke())
+            .Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Create(It.IsAny<CompetitiveEventDraft>()))
+            .ReturnsAsync(draft)
+            .Verifiable(Times.Once);
         mockImageService.Setup(service => service.AddManyImagesAsync(draft, v2dto.ImageFiles))
-            .ReturnsAsync(new MultipleImageUploadingResult());
+            .ReturnsAsync(new MultipleImageUploadingResult())
+            .Verifiable(Times.Once);
         mockImageService.Setup(service => service.AddCoverImageAsync(draft, v2dto.CoverImage))
-            .ReturnsAsync(Result<string>.Success("some text"));
+            .ReturnsAsync(Result<string>.Success("some text"))
+            .Verifiable(Times.Once);
         mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
-            .Returns(catottgs.AsTestAsyncEnumerableQuery);
+            .Returns(catottgs.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
         mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
             It.IsAny<Expression<Func<SubDirection, bool>>>(),
             It.IsAny<string>(),
             It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
-            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted));
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted))
+            .Verifiable(Times.Once);
 
         // Act 
         var result = await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto);
@@ -1132,6 +1152,7 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.DirectionSubDirectionIds, Has.Count.EqualTo(1));
         Assert.That(result.DirectionSubDirectionIds
               .Select(x => (x.DirectionId, x.SubDirectionId)), Is.EqualTo(directionSubDirectionIds.Select(x => (x.DirectionId, x.SubDirectionId))));
+        Mock.VerifyAll();
     }
 
     [Test]
@@ -1144,18 +1165,25 @@ public class CompetitiveEventDraftServiceTests
         var drafts = new List<CompetitiveEventDraft>();
 
         mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
-            .ReturnsAsync(dto);
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
             It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
-            .Returns(drafts.AsTestAsyncEnumerableQuery);
+            .Returns(drafts.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
         mockCompetitiveEventService.Setup(s => s.UpdateV2(v2dto, false))
-            .ReturnsAsync(new CompetitiveEventResultDto() { CompetitiveEventV2 = draft.ToDto() });
+            .ReturnsAsync(new CompetitiveEventResultDto() { CompetitiveEventV2 = draft.ToDto() })
+            .Verifiable(Times.Once);
 
         // Act 
         var result = await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto);
 
         // Assert
         mockCompetitiveEventService.Verify(s => s.UpdateV2(It.IsAny<CompetitiveEventV2Dto>(), false), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<CompetitiveEventV2Dto>(result);
+        Assert.AreEqual(result.Title, v2dto.Title);
+        Mock.VerifyAll();
     }
 
     #endregion
