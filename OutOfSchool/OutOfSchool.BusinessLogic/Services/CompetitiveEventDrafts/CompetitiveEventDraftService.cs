@@ -102,34 +102,6 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             UploadingCoverImagesCompetitiveEventResult = draftImageUpdateResult.Value.uploadImagesResult.UploadingCoverImageResult,
             UploadingImagesResults = draftImageUpdateResult.Value.uploadImagesResult.UploadingImagesResults.MultipleKeyValueOperationResult
         };
-
-
-
-
-        //var createdCompetitiveEventDraft = await competitiveEventDraftRepository
-        //    .RunInTransaction(() => CreateCompetitiveEventDraft(competitiveEventV2Dto))
-        //    .ConfigureAwait(false);
-
-        //var uploadImagesResult = await UploadImages(createdCompetitiveEventDraft, competitiveEventV2Dto)
-        //    .ConfigureAwait(false);
-
-        //if (fromCompetitiveEvent)
-        //{
-        //    createdCompetitiveEventDraft.Images ??= [];
-        //    createdCompetitiveEventDraft.Images.AddRange(
-        //        (competitiveEventV2Dto.ImageIds ?? []).Select(id => new Image<CompetitiveEventDraft> { ExternalStorageId = id }));
-        //}
-
-        //await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);   
-
-        //logger.LogDebug("Competitive event draft created successfully.");
-
-        //return new CompetitiveEventDraftResultDto
-        //{
-        //    CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(createdCompetitiveEventDraft),
-        //    UploadingCoverImagesCompetitiveEventResult = uploadImagesResult.UploadingCoverImageResult,
-        //    UploadingImagesResults = uploadImagesResult.UploadingImagesResults?.MultipleKeyValueOperationResult
-        //};
     }
 
     // <inheritdoc/>
