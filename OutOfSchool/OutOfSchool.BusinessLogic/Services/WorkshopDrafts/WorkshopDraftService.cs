@@ -120,7 +120,7 @@ public class WorkshopDraftService(
             }
         }
 
-        ValidateCreateImages(workshopV2Dto, isNewDraft);
+        if (isNewDraft) ValidateImagesForNewDraft(workshopV2Dto);
 
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
@@ -1628,12 +1628,11 @@ public class WorkshopDraftService(
     }
 
     /// <summary>
-    /// Validates images depending on whether a new draft is created from existing workshop or not.
+    /// Validates images for a new draft.
     /// </summary>
     /// <param name="dto">Dto.</param>
-    /// <param name="isNewDraft">Flag to signal if the new draft is created from existing workshop.</param>
     /// <exception cref="ValidationException">Throws validation exception that will be handled in middleware.</exception>
-    private static void ValidateCreateImages(WorkshopV2Dto dto, bool isNewDraft)
+    private static void ValidateImagesForNewDraft(WorkshopV2Dto dto)
     {
         var errors = new StringBuilder();
 
@@ -1642,32 +1641,10 @@ public class WorkshopDraftService(
         bool hasImageFiles = dto.ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
         bool hasImageIds = dto.ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
 
-        bool hasInvalidFiles = dto.ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
-        bool hasInvalidIds = dto.ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
-
-        if (hasInvalidFiles) errors.Append("ImageFiles must not contain empty files.");
-        if (hasInvalidIds) errors.Append("ImageIds must not contain empty values.");
-        if (errors.Length > 0)
-            throw new ValidationException(errors.ToString());
-
-        if (isNewDraft)
-        {
-            if (hasCoverImageId || hasImageIds)
-                errors.Append("For a new draft you must upload image files, not IDs. ");
-            if (!hasCoverImage || !hasImageFiles)
-                errors.Append("Provide both CoverImage and ImageFiles.");
-
-            if (errors.Length > 0)
-                throw new ValidationException(errors.ToString());
-
-            return;
-        }
-
-        if (hasCoverImage == hasCoverImageId)
-            errors.Append("Provide exactly one of: CoverImage (file) or CoverImageId. ");
-
-        if (hasImageFiles == hasImageIds)
-            errors.Append("Provide exactly one of: ImageFiles or ImageIds.");
+        if (hasCoverImageId || hasImageIds)
+            errors.Append("For a new draft you must upload image files, not IDs. ");
+        if (!hasCoverImage || !hasImageFiles)
+            errors.Append("Provide both CoverImage and ImageFiles.");
 
         if (errors.Length > 0)
             throw new ValidationException(errors.ToString());
