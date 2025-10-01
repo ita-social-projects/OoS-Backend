@@ -241,6 +241,74 @@ public class CompetitiveEventDraftServiceTests
     }
 
     [Test]
+    public void Create_ThrowInvalidOperationException_WhenImageUploadFails()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto()
+        {
+            Id = Guid.NewGuid(),
+            Contacts =
+            [
+                new ContactsDto
+                {
+                    IsDefault = true,
+                    Address = ContactsAddressDtoGenerator.Generate()
+                }
+            ],
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
+        };
+        var draft = dto.ToDraft();
+        var catottgs = new List<CATOTTG>
+        {
+            new() { Id = 1, Name = "Test Codeficator" }
+        };
+        var directionSubDirectionIds = new List<DirectionSubDirectionIdsDto>
+        {
+            new() { DirectionId = 14, SubDirectionId = 54  }
+        };
+
+        var subDirections = new List<SubDirection>
+        {
+            new() { Id = 54, DirectionId = 14, Description = "description1", IsDeleted = false, Title = "title1"  },
+            new() { Id = 9, DirectionId = 10, Description = "description2", IsDeleted = true, Title = "title2"  }
+        };
+        var existedCompetitiveEventDto = new CompetitiveEventDto() { State = CompetitiveEventStates.Published };
+        var expectedResult = Result<(CompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult)>.Failed(new OperationError()
+        {
+            Code = "500",
+            Description = "Some error occurred"
+        });
+
+        mockCompetitiveEventService.Setup(service => service.GetById(dto.Id))
+            .ReturnsAsync(existedCompetitiveEventDto)
+            .Verifiable(Times.Once);
+        mockUserService.Setup(service => service.UserHasRights(It.IsAny<IUserRights[]>()))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Exactly(2));
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult)>>>>()))
+            .ReturnsAsync(expectedResult)
+            .Verifiable(Times.Once);
+        mockCodeficatorRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CATOTTG, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CATOTTG, object>>, SortDirection>>()))
+            .Returns(catottgs.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
+            It.IsAny<Expression<Func<SubDirection, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted))
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await competitiveEventDraftService.Create(dto, true));
+        Assert.That(ex.Message, Does.Contain("Some error occurred"));
+        Mock.VerifyAll();
+    }
+
+    [Test]
     public void Create_ThrowsInvalidOperationException_WhenCompetitiveEventStateIsArchived()
     {
         // Arrange
@@ -522,10 +590,6 @@ public class CompetitiveEventDraftServiceTests
             .Returns(Task.CompletedTask);
         mockCompetitiveEventService.Setup(service => service.GetById(id))
             .ReturnsAsync((CompetitiveEventDto)null);
-        mockImageService.Setup(service => service.ChangeCoverImageAsync(draft, dto.CompetitiveEventV2Dto.CoverImageId, dto.CompetitiveEventV2Dto.CoverImage))
-            .ReturnsAsync(coverImageResult);
-        mockImageService.Setup(service => service.ChangeImagesAsync(draft, dto.CompetitiveEventV2Dto.ImageIds, dto.CompetitiveEventV2Dto.ImageFiles))
-            .ReturnsAsync(imagesResult);
 
         // Act
         var result = await competitiveEventDraftService.Update(id, dto);
