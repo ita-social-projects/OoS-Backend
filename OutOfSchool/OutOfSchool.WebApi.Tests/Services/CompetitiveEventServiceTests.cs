@@ -121,7 +121,7 @@ public class CompetitiveEventServiceTests
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventCreateUpdateDto()
+        var input = new CompetitiveEventBaseDto()
         {
             Title = "Test",
             ShortTitle = "TestShort",
@@ -152,7 +152,7 @@ public class CompetitiveEventServiceTests
     public void Update_WhenDtoIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        CompetitiveEventCreateUpdateDto dto = null;
+        CompetitiveEventBaseDto dto = null;
 
         // Act and Assert
         Assert.ThrowsAsync<ArgumentNullException>(
@@ -163,7 +163,7 @@ public class CompetitiveEventServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedDto = new CompetitiveEventCreateUpdateDto()
+        var changedDto = new CompetitiveEventBaseDto()
         {
             Id = Guid.NewGuid(),
             Title = "Test",
@@ -186,7 +186,7 @@ public class CompetitiveEventServiceTests
     public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
     {
         // Arrange
-        var input = new CompetitiveEventCreateUpdateDto()
+        var input = new CompetitiveEventBaseDto()
         {
             Id = firstId,
             Title = "TestNew",
@@ -231,7 +231,7 @@ public class CompetitiveEventServiceTests
         context.CompetitiveEvents.Add(competitiveEvent);
         await context.SaveChangesAsync();
 
-        var updateDto = new CompetitiveEventCreateUpdateDto
+        var updateDto = new CompetitiveEventBaseDto
         {
             Id = eventId,
             Title = "Updated Test Event",
@@ -269,7 +269,7 @@ public class CompetitiveEventServiceTests
 
         // Verify updated item
         var updatedItem = updatedEvent.CompetitiveEventDescriptionItems
-            .First(d => d.Id == initialDescriptionItems[0].Id);
+            .First(d => d.Id == initialDescriptionItems[1].Id);
         Assert.AreEqual("Updated Description 2", updatedItem.Description);
 
         // Verify new item

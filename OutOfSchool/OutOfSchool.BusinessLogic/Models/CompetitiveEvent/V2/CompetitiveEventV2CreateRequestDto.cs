@@ -5,7 +5,7 @@ using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
-public class CompetitiveEventV2CreateRequestDto : CompetitiveEventCreateUpdateDto
+public class CompetitiveEventV2CreateRequestDto : CompetitiveEventBaseDto
 {
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
@@ -18,6 +18,27 @@ public class CompetitiveEventV2CreateRequestDto : CompetitiveEventCreateUpdateDt
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from CompetitiveEventBaseDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+
+        if ((CoverImage is null) == string.IsNullOrEmpty(CoverImageId))
+        {
+            yield return new ValidationResult(
+                "Must be filled either CoverImage or CoverImageId, but not both",
+                [nameof(CoverImage), nameof(CoverImageId)]);
+        }
+
+        if ((ImageFiles ?? []).Count == 0 && (ImageIds ?? []).Count == 0)
+        {
+            yield return new ValidationResult(
+            "At least one of the ImageFiles or ImageIds fields must be filled in.",
+            [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+    }
 }
 
 public static class CompetitiveEventV2CreateRequestDtoExtensions

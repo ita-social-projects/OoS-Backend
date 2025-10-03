@@ -83,8 +83,8 @@ public class CompetitiveEventControllerTests
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        CompetitiveEventCreateUpdateDto inputDto = FakeCompetitiveEventCreateDto();
-        competitiveEventService.Setup(x => x.Create(It.IsAny<CompetitiveEventCreateUpdateDto>()))
+        CompetitiveEventBaseDto inputDto = FakeCompetitiveEventCreateDto();
+        competitiveEventService.Setup(x => x.Create(It.IsAny<CompetitiveEventBaseDto>()))
             .ReturnsAsync(
             new CompetitiveEventDto()
             {
@@ -136,7 +136,7 @@ public class CompetitiveEventControllerTests
     {
         // Arrange
         var competitiveEvent = competitiveEvents.First();
-        var inputDto = new CompetitiveEventCreateUpdateDto()
+        var inputDto = new CompetitiveEventBaseDto()
         {
             Id = competitiveEvent.Id,
             Title = "Updated Title",
@@ -179,7 +179,7 @@ public class CompetitiveEventControllerTests
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        var inputDto = new CompetitiveEventCreateUpdateDto
+        var inputDto = new CompetitiveEventBaseDto
         {
             Id = nonExistentId,
             Title = "Non-existent Event",
@@ -204,7 +204,7 @@ public class CompetitiveEventControllerTests
     public async Task Update_WhenUnexpectedErrorOccurs_ReturnsInternalServerError()
     {
         // Arrange
-        var inputDto = new CompetitiveEventCreateUpdateDto
+        var inputDto = new CompetitiveEventBaseDto
         {
             Id = Guid.NewGuid(),
             Title = "Test Event",
@@ -409,12 +409,12 @@ public class CompetitiveEventControllerTests
         Assert.IsNotNull(badRequestResult);
         Assert.AreEqual(message, badRequestResult.Value);
     }
-    private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventCreateUpdateDto expected, CompetitiveEventDto actual)
+    private void AssertCompetitiveEventPropertiesAreEqual(CompetitiveEventBaseDto expected, CompetitiveEventDto actual)
     {
         Assert.That(actual, Is.Not.Null, "CompetitiveEventDto should not be null");
 
         // Get properties that are primitive, string, DateTimeOffset, or decimal types (simple types)
-        var simpleProperties = typeof(CompetitiveEventCreateUpdateDto)
+        var simpleProperties = typeof(CompetitiveEventBaseDto)
             .GetProperties()
             .Where(p => (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(DateTimeOffset) || p.PropertyType == typeof(decimal))
             && !p.Name.Contains("Id", StringComparison.OrdinalIgnoreCase)); 
@@ -436,17 +436,17 @@ public class CompetitiveEventControllerTests
         }
     }
 
-    private static CompetitiveEventCreateUpdateDto FakeInvalidCreateDto()
+    private static CompetitiveEventBaseDto FakeInvalidCreateDto()
     {
-        return new CompetitiveEventCreateUpdateDto
+        return new CompetitiveEventBaseDto
         {
             Title = "Title",
             ShortTitle = "Short Title",
         };
     }
-    private static CompetitiveEventCreateUpdateDto FakeCompetitiveEventCreateDto()
+    private static CompetitiveEventBaseDto FakeCompetitiveEventCreateDto()
     {
-        return new CompetitiveEventCreateUpdateDto()
+        return new CompetitiveEventBaseDto()
         {
             Title = "New Event",
             ScheduledStartTime = DateTime.UtcNow,

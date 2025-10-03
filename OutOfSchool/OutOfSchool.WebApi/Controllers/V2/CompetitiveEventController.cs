@@ -127,6 +127,8 @@ public class CompetitiveEventController : ControllerBase
             null => BadRequest("CompetitiveEvent is null"),
             _ when !ModelState.IsValid => BadRequest(ModelState),
             _ when await IsCurrentUserBlocked() => StatusCode(403, "User is blocked"),
+            _ when (dto.ImageFiles ?? []).Count == 0 || (dto.ImageIds ?? []).Count > 0 
+            => BadRequest("When creating CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."),
             _ => null
         };
 

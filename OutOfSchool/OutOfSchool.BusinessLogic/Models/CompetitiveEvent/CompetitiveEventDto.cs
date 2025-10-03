@@ -17,6 +17,13 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
     public IList<string> ImageIds { get; set; }
     public CompetitiveEventCoverageDto Coverage { get; set; }
     public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from CompetitiveEventBaseDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+    }
 }
 
 public static class CompetitiveEventDtoExtensions
