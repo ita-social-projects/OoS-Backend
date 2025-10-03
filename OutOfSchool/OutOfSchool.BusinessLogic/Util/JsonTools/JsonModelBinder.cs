@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using System.Text.Json;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -12,16 +14,24 @@ public class JsonModelBinder : IModelBinder
         }
 
         var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+
         if (valueProviderResult != ValueProviderResult.None)
         {
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
-
             var valueAsString = valueProviderResult.FirstValue;
-            var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType);
-            if (result != null)
+
+            try
             {
-                bindingContext.Result = ModelBindingResult.Success(result);
-                return Task.CompletedTask;
+                var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType);
+                
+                if (result != null)
+                {
+                    bindingContext.Result = ModelBindingResult.Success(result);
+                }
+            }
+            catch (JsonException jsonException)
+            {
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, jsonException, bindingContext.ModelMetadata);
             }
         }
         return Task.CompletedTask;
