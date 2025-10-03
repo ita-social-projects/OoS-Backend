@@ -2,11 +2,11 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models.BaseEntities;
 using OutOfSchool.Tests.Common.DbContextTests;
 using System.Threading.Tasks;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.WebApi.IntegrationTests;
 
@@ -85,10 +85,10 @@ public class TrackableEntityInterceptorTests
 
     private static DbContextOptions<OutOfSchoolDbContext> GetDbContextOptions(string userId)
     {
-        var currentUserMock = new Mock<ICurrentUser>();
-        currentUserMock.Setup(cu => cu.UserId).Returns(userId);
+        var contextAwareUserMock = new Mock<IContextAwareCurrentUser>();
+        contextAwareUserMock.Setup(cu => cu.UserId).Returns(userId);
 
-        var interceptor = new TrackableEntityInterceptor(currentUserMock.Object);
+        var interceptor = new TrackableEntityInterceptor(contextAwareUserMock.Object);
 
         var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

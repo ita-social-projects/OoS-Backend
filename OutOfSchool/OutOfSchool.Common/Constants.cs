@@ -339,4 +339,12 @@ public static class Constants
         public const string DeputyDirector = "Заступник директора";
         public const string Employee = "Співробітник ЗО";
     }
+
+    public static class SystemUserConstants
+    {
+        public const string SystemUserId = "00000000-0000-0000-0000-000000000001";
+        public const string SystemUserRole = "system";
+        public const string SystemUserName = "system";
+        public const string SystemUserEmail = "system@outofschool.local";
+    }
 }

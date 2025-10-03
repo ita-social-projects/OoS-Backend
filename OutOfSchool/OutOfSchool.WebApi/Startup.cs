@@ -13,7 +13,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
-using OutOfSchool.AikomApiClient.Extensions;    
+using OutOfSchool.AikomApiClient.Extensions;
 using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Extensions.Startup;
 using OutOfSchool.BusinessLogic.Config.SearchString;
@@ -519,6 +519,7 @@ public static class Startup
         services.AddTransient(typeof(IContactsService<,>), typeof(ContactsService<,>));
         services.AddScoped<IDirectorManagementService, DirectorManagementService>();
         services.AddScoped<ITransactionManagerService, TransactionManagerService>();
+        services.AddScoped<IContextAwareCurrentUser, ContextAwareCurrentUser>();
 
         services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 

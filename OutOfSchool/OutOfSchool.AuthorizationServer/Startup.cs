@@ -16,6 +16,7 @@ using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -292,8 +293,15 @@ public static class Startup
         services.AddTransient<IProfileService, ProfileService>();
         services.AddScoped<IUserService, UserService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
+        services.AddScoped<ISystemUserInitializer, SystemUserInitializer>();
+        services.AddScoped<ContextAwareCurrentUser>();
+        services.AddScoped<IContextAwareCurrentUser>(sp =>
+            sp.GetRequiredService<ContextAwareCurrentUser>());
+        services.AddScoped<ICurrentUser>(sp =>
+            sp.GetRequiredService<ContextAwareCurrentUser>());
 
         services.AddHostedService<IdentityRolesInitializerHostedService>();
+        services.AddHostedService<SystemUserInitializerHostedService>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(

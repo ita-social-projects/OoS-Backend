@@ -47,6 +47,9 @@ public class User : IdentityUser, IKeyedEntity<string>, ISoftDeleted
     // If it's true then user must change his password before the logging into the system
     public bool MustChangePassword { get; set; }
 
+    // If it's true then user cannot be deleted or modified
+    public bool IsSystemProtected { get; set; } = false;
+
     public virtual Individual? Individual { get; set; }
 }
 

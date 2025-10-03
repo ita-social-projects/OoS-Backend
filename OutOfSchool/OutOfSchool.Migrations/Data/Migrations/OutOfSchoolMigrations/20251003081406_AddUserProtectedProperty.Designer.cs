@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -11,9 +12,11 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251003081406_AddUserProtectedProperty")]
+    partial class AddUserProtectedProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -921,6 +924,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("date")
                         .HasDefaultValue(new DateOnly(9999, 12, 31));
 
+                    b.Property<string>("AdditionalDescription")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
                     b.Property<bool>("AreThereBenefits")
                         .HasColumnType("tinyint(1)");
 
@@ -997,6 +1004,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<int>("PlannedFormatOfClasses")
                         .HasColumnType("int");
+
+                    b.Property<string>("PreferentialTermsOfParticipation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<int>("Price")
                         .HasColumnType("int");
@@ -2270,11 +2281,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(8)
                         .HasColumnType("varchar(8)");
 
-                    b.Property<string>("EdrpouUniqKey")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("varchar(255)")
-                        .HasComputedColumnSql("\r\n                CASE \r\n                    WHEN `IsStructuralUnit` = 1 \r\n                    THEN CONCAT(`Edrpou`, '-', REPLACE(LOWER(`Id`), '-', ''))\r\n                    ELSE `Edrpou`\r\n                END", true);
-
                     b.Property<Guid?>("ExternalId")
                         .HasColumnType("binary(16)");
 
@@ -2352,9 +2358,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Ownership")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("ParentProviderId")
-                        .HasColumnType("UUID(16)");
-
                     b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -2389,17 +2392,14 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EdrpouUniqKey")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Providers_EdrpouUniqKey");
+                    b.HasIndex("Edrpou")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionId");
 
                     b.HasIndex("InstitutionStatusId");
 
                     b.HasIndex("IsDeleted");
-
-                    b.HasIndex("ParentProviderId");
 
                     b.HasIndex("TypeId");
 
@@ -4980,11 +4980,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .WithMany("Providers")
                         .HasForeignKey("InstitutionStatusId");
 
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "ParentProvider")
-                        .WithMany("Branches")
-                        .HasForeignKey("ParentProviderId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("OutOfSchool.Services.Models.ProviderType", "Type")
                         .WithMany("Providers")
                         .HasForeignKey("TypeId")
@@ -5169,8 +5164,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Institution");
 
                     b.Navigation("InstitutionStatus");
-
-                    b.Navigation("ParentProvider");
 
                     b.Navigation("Type");
                 });
@@ -5642,8 +5635,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Navigation("Branches");
-
                     b.Navigation("CompetitiveEventDrafts");
 
                     b.Navigation("Images");
