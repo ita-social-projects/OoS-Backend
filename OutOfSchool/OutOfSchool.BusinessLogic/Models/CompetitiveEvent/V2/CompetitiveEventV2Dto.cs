@@ -236,4 +236,40 @@ public static class CompetitiveEventV2DtoExtensions
 
         return model;
     }
+
+    /// <summary>
+    /// Creates a new CompetitiveEvent domain model populated from the DTO.
+    /// </summary>
+    /// <remarks>
+    /// Nullable DTO fields are converted with sensible defaults: null registration times and <see cref="PlannedFormatOfClasses"/> are set to their default values; <see cref="AreThereBenefits"/>, <see cref="CompetitiveSelection"/> default to false; <see cref="MaximumAge"/> and <see cref="Price"/> default to 0. Contacts are mapped via <c>dto.Contacts?.ToModel()</c>. The DTO's <see cref="CoverImageId"/> is copied to the model.
+    /// </remarks>
+    /// <returns>A new <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> instance with properties copied from the DTO.</returns>
+    public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent ToModel(this CompetitiveEventV2Dto dto)
+    => new()
+    {
+        Title = dto.Title,
+        ShortTitle = dto.ShortTitle,
+        State = dto.State,
+        RegistrationStartTime = dto.RegistrationStartTime ?? default,
+        RegistrationEndTime = dto.RegistrationEndTime ?? default,
+        ParentId = dto.ParentId,
+        CoverageId = dto.CoverageId,
+        ScheduledStartTime = dto.ScheduledStartTime,
+        ScheduledEndTime = dto.ScheduledEndTime,
+        NumberOfSeats = dto.NumberOfSeats,
+        CompetitiveEventAccountingTypeId = dto.CompetitiveEventAccountingTypeId,
+        DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure,
+        OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
+        PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
+        VenueName = dto.VenueName,
+        TermsOfParticipation = dto.TermsOfParticipation,
+        AreThereBenefits = dto.AreThereBenefits ?? false,
+        Benefits = dto.Benefits,
+        MinimumAge = dto.MinimumAge,
+        MaximumAge = dto.MaximumAge ?? 0,
+        Price = dto.Price ?? 0,
+        CompetitiveSelection = dto.CompetitiveSelection ?? false,
+        Contacts = dto.Contacts?.ToModel(),
+        CoverImageId = dto.CoverImageId,
+    };
 }
