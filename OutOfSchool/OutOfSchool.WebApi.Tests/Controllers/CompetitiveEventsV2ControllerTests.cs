@@ -101,7 +101,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsCreated_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto()
+        var dto = new CompetitiveEventV2Dto()
         {
             ImageFiles = [Mock.Of<IFormFile>()],
             CoverImage = Mock.Of<IFormFile>()
@@ -138,7 +138,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsForbidden_WhenUserIsBlocked()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2Dto();
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(true);
 
         var result = await controller.Create(dto);
@@ -152,7 +152,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto
+        var dto = new CompetitiveEventV2Dto
         {
             ImageFiles = [Mock.Of<IFormFile>()],
             CoverImage = Mock.Of<IFormFile>()
@@ -173,7 +173,7 @@ public class CompetitiveEventsV2ControllerTests
     public async Task Create_ReturnsBadRequest_WhenImageFilesIsNullOrEmptyArray()
     {
         // Arrange
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2Dto();
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
         competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
 
@@ -191,7 +191,7 @@ public class CompetitiveEventsV2ControllerTests
     public async Task Create_ReturnsBadRequest_WhenImageIdsHasValues()
     {
         // Arrange
-        var dto = new CompetitiveEventV2CreateRequestDto() { ImageIds = ["image"] };
+        var dto = new CompetitiveEventV2Dto() { ImageIds = ["image"] };
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
         competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
 
