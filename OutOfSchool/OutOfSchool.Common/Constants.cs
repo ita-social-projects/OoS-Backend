@@ -10,7 +10,7 @@ public static class Constants
 
     public const int MaxEmailTypeLength = 60;
 
-    public const int MaxEmailAddressLength = 256;
+    public const int MaxEmailAddressLength = 254;
 
     public const long DefaultCityCodeficatorId = 31737;
 
