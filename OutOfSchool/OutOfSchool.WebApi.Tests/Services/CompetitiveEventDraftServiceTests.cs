@@ -1035,12 +1035,13 @@ public class CompetitiveEventDraftServiceTests
         CompetitiveEventDraft draft = new()
         {
             DraftStatus = CompetitiveEventDraftStatus.PendingModeration,
-            CompetitiveEventId = null
+            CompetitiveEventId = null,
+            CompetitiveEventDraftContent = CompetitiveEventDraftContentGenerator.Generate()
         };
 
         mockCompetitiveEventDraftRepository.Setup(repo => repo.GetById(draftId))
             .ReturnsAsync(draft);
-        mockCompetitiveEventService.Setup(s => s.CreateV2(It.IsAny<CompetitiveEventV2CreateRequestDto>()))
+        mockCompetitiveEventService.Setup(s => s.CreateV2(It.IsAny<CompetitiveEventV2Dto>()))
            .ReturnsAsync(new CompetitiveEventResultDto());
         mockCompetitiveEventDraftRepository.Setup(repo => repo.Delete(draft))
             .Returns(Task.CompletedTask);
@@ -1049,7 +1050,7 @@ public class CompetitiveEventDraftServiceTests
         await competitiveEventDraftService.Approve(draftId);
 
         // Assert
-        mockCompetitiveEventService.Verify(s => s.CreateV2(It.IsAny<CompetitiveEventV2CreateRequestDto>()), Times.Once);
+        mockCompetitiveEventService.Verify(s => s.CreateV2(It.IsAny<CompetitiveEventV2Dto>()), Times.Once);
         mockCompetitiveEventDraftRepository.Verify(repo => repo.Delete(draft), Times.Once);
     }
 

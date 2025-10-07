@@ -292,7 +292,7 @@ public class CompetitiveEventService(
         //    throw new InvalidOperationException(errorMessage);
         //}
 
-        var competitiveEvent = dto is CompetitiveEventV2CreateRequestDto v2Dto
+        var competitiveEvent = dto is CompetitiveEventV2Dto v2Dto
             ? v2Dto.ToModel()
             : dto.ToModel();
 
@@ -396,7 +396,7 @@ public class CompetitiveEventService(
     /// <param name="dto">The DTO containing data for the new competitive event with images</param>
     /// <returns>A result DTO containing the created competitive event and image upload results</returns>
     /// <exception cref="ArgumentNullException">Thrown if the DTO is null.</exception>
-    public async Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2CreateRequestDto dto)
+    public async Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2Dto dto)
     {
         logger.LogDebug("CompetitiveEvent creating was started.");
 
@@ -460,7 +460,7 @@ public class CompetitiveEventService(
     public async Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2Dto dto, bool fromDraft = false)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto.ToV2CreateRequestDto());
+        var competitiveEvent = await CheckAndPrepareCompetitiveEventForUpdating(dto);
 
         async Task<(CompetitiveEvent updatedCompetitiveEvent, MultipleImageChangingResult multipleImageChangingResult,
            ImageChangingResult changingCoverImageResult)> UpdateCompetitiveEventWithDependencies()

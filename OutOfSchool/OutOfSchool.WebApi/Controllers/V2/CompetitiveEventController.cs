@@ -120,7 +120,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] CompetitiveEventV2CreateRequestDto dto)
+    public async Task<IActionResult> Create([FromForm] CompetitiveEventV2Dto dto)
     {
         var error = dto switch
         {

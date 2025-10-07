@@ -89,7 +89,7 @@ public class CompetitiveEventsV2ServiceTests
             ]
         };
 
-        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
+        var dto = new CompetitiveEventV2Dto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
         var expectedDto = new CompetitiveEventV2Dto { Id = createdEntity.Id };
 
         repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
@@ -120,7 +120,7 @@ public class CompetitiveEventsV2ServiceTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var dto = new CompetitiveEventV2CreateRequestDto
+        var dto = new CompetitiveEventV2Dto
         {
             ImageFiles = null,
             CoverImage = null,

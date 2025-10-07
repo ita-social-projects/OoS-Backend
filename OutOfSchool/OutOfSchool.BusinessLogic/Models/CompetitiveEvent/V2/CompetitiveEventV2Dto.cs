@@ -202,44 +202,8 @@ public static class CompetitiveEventV2DtoExtensions
         CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
     };
 
-    public static CompetitiveEventV2CreateRequestDto ToV2CreateRequestDto(this CompetitiveEventV2Dto competitiveEventV2Dto)
-    {
-        ArgumentNullException.ThrowIfNull(competitiveEventV2Dto);
-
-        return new()
-        {
-            AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
-            Benefits = competitiveEventV2Dto.Benefits,
-            CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
-            Contacts = competitiveEventV2Dto.Contacts ?? new List<ContactsDto>(),
-            DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
-            MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
-            MinimumAge = competitiveEventV2Dto.MinimumAge,
-            NumberOfSeats = competitiveEventV2Dto.NumberOfSeats,
-            OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
-            ParentId = competitiveEventV2Dto.ParentId,
-            PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
-            Price = competitiveEventV2Dto.Price ?? default,
-            RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
-            RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
-            ScheduledEndTime = competitiveEventV2Dto.ScheduledEndTime,
-            ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
-            ShortTitle = competitiveEventV2Dto.ShortTitle,
-            Title = competitiveEventV2Dto.Title,
-            TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
-            VenueName = competitiveEventV2Dto.VenueName,
-            SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? [],
-            CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems,
-            CoverageId = competitiveEventV2Dto.CoverageId,
-            CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
-            CoverImageId = competitiveEventV2Dto.CoverImageId,
-            Id = competitiveEventV2Dto.Id,
-            ImageIds = competitiveEventV2Dto.ImageIds,
-        };
-    }
-
     /// <summary>
-    /// Copies values from a CompetitiveEventV2CreateRequestDto into an existing CompetitiveEvent domain model, updating the model in-place.
+    /// Copies values from a CompetitiveEventV2Dto into an existing CompetitiveEvent domain model, updating the model in-place.
     /// </summary>
     /// <param name="dto">Source DTO containing new values; nullable properties on the DTO will not overwrite existing model values.</param>
     /// <param name="model">The existing domain model to update.</param>
@@ -272,4 +236,40 @@ public static class CompetitiveEventV2DtoExtensions
 
         return model;
     }
+
+    /// <summary>
+    /// Creates a new CompetitiveEvent domain model populated from the DTO.
+    /// </summary>
+    /// <remarks>
+    /// Nullable DTO fields are converted with sensible defaults: null registration times and <see cref="PlannedFormatOfClasses"/> are set to their default values; <see cref="AreThereBenefits"/>, <see cref="CompetitiveSelection"/> default to false; <see cref="MaximumAge"/> and <see cref="Price"/> default to 0. Contacts are mapped via <c>dto.Contacts?.ToModel()</c>. The DTO's <see cref="CoverImageId"/> is copied to the model.
+    /// </remarks>
+    /// <returns>A new <see cref="OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent"/> instance with properties copied from the DTO.</returns>
+    public static OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent ToModel(this CompetitiveEventV2Dto dto)
+    => new()
+    {
+        Title = dto.Title,
+        ShortTitle = dto.ShortTitle,
+        State = dto.State,
+        RegistrationStartTime = dto.RegistrationStartTime ?? default,
+        RegistrationEndTime = dto.RegistrationEndTime ?? default,
+        ParentId = dto.ParentId,
+        CoverageId = dto.CoverageId,
+        ScheduledStartTime = dto.ScheduledStartTime,
+        ScheduledEndTime = dto.ScheduledEndTime,
+        NumberOfSeats = dto.NumberOfSeats,
+        CompetitiveEventAccountingTypeId = dto.CompetitiveEventAccountingTypeId,
+        DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure,
+        OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
+        PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
+        VenueName = dto.VenueName,
+        TermsOfParticipation = dto.TermsOfParticipation,
+        AreThereBenefits = dto.AreThereBenefits ?? false,
+        Benefits = dto.Benefits,
+        MinimumAge = dto.MinimumAge,
+        MaximumAge = dto.MaximumAge ?? 120,
+        Price = dto.Price ?? 0,
+        CompetitiveSelection = dto.CompetitiveSelection ?? false,
+        Contacts = dto.Contacts?.ToModel(),
+        CoverImageId = dto.CoverImageId,
+    };
 }
