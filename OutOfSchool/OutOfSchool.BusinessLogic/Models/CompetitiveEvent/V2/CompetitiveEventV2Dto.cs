@@ -266,7 +266,7 @@ public static class CompetitiveEventV2DtoExtensions
         AreThereBenefits = dto.AreThereBenefits ?? false,
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
-        MaximumAge = dto.MaximumAge ?? 0,
+        MaximumAge = dto.MaximumAge ?? 120,
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),
