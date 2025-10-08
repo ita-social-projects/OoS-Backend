@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <NuGetAuditMode>direct</NuGetAuditMode>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>f9231d3e-ab3d-46b4-a74e-a8e73c7c21f4</UserSecretsId>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <PackageReference Include="MySqlConnector" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Microsoft.FeatureManagement" />
+        <PackageReference Include="Serilog.AspNetCore" />
+        <PackageReference Include="Serilog.Exceptions" />
+        <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" />
+        <PackageReference Include="Elastic.CommonSchema.Serilog" />
+        <PackageReference Include="Serilog.Settings.Configuration" />
+        <PackageReference Include="Serilog.Sinks.File" />
+        <PackageReference Include="Serilog.Expressions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.BusinessLogic\OutOfSchool.BusinessLogic.csproj" />
+        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.Common.csproj" />
+        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+        <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.ExternalFileStore.Impl\OutOfSchool.ExternalFileStore.Impl.csproj" />
+        <ProjectReference Include="..\OutOfSchool.SportsRegistryApiClient\OutOfSchool.SportsRegistryApiClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="./appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+</Project>
