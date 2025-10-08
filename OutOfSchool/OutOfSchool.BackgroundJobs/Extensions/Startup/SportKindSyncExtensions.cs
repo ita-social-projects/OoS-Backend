@@ -22,9 +22,7 @@ public static class SportKindSyncExtensions
             .ForJob(sportKindSyncJobKey)
             .StartNow()
             .WithCronSchedule(
-                quartzConfig.CronSchedules.SportKindSyncCronScheduleString,
-                x => x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("Europe/Kyiv"))
-                    .WithMisfireHandlingInstructionDoNothing()
+                quartzConfig.CronSchedules.SportKindSyncCronScheduleString
             ));
     }
 }
