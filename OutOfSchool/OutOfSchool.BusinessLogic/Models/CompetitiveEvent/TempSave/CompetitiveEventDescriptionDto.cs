@@ -14,12 +14,12 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     // This property uses only for storing dto in Redis
     [ConditionalMinLength("Images", 1, ErrorMessage = "At least one image is required")]
     [ConditionalMaxLength("Images", 10, ErrorMessage = "The image collection must contain less than 10 items")]
-    public List<string> Base64ImageFiles { get; set; }
+    public List<string> Base64ImageFiles { get; set; } = [];
 
     [FromForm]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
-    public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; }
+    public List<CompetitiveEventDescriptionItemDto> CompetitiveEventDescriptionItems { get; set; } = [];
 
     [Required]
     public int CoverageId { get; set; }
@@ -50,7 +50,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public int? Price { get; set; }
 
     public bool? AreThereBenefits { get; set; }
@@ -63,7 +63,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // Run validations from CompetitiveEventDescriptionDto
+        // Run validations from CompetitiveEventAboutDto
         foreach (var error in base.Validate(validationContext))
             yield return error;
     }

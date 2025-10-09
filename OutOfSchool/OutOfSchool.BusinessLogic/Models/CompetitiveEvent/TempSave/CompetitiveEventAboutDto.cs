@@ -55,19 +55,19 @@ public class CompetitiveEventAboutDto : IValidatableObject
         if (RegistrationStartTime >= RegistrationEndTime)
         {
             yield return new ValidationResult(
-                 "The registration start time cannot be equal to or earlier than the registration end time");
+                 "Registration start time must be before registration end time.");
         }
 
         if (ScheduledStartTime >= ScheduledEndTime)
         {
             yield return new ValidationResult(
-                 "The scheduled start time cannot be equal to or earlier than the scheduled end time");
+                 "Scheduled start time must be before scheduled end time");
         }
 
         if (ScheduledStartTime <= RegistrationEndTime)
         {
             yield return new ValidationResult(
-                 "The scheduled start time cannot be equal to or earlier than the registration end time");
+                 "Scheduled start time must be after registration end time");
         }
 
         if (NumberOfSeats != uint.MaxValue && (NumberOfSeats < 1 || NumberOfSeats > 100000))
