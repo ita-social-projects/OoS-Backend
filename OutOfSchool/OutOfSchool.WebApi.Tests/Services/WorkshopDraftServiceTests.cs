@@ -1264,7 +1264,182 @@ public class WorkshopDraftServiceTests
 
         result.Should().NotBeNull();
     }
-     #endregion
+
+    [Test]
+    public async Task UpdateWorkshop_WhenNotMinistry_ShouldNotCallRegistrySync()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate()
+            .WithProvider()
+            .WithTeachers()
+            .WithLanguage();
+
+        var workshopDto = workshop.ToV2Dto();
+       
+        var nonMinistryInstitutionId = Guid.NewGuid();
+        workshopDto.InstitutionId = nonMinistryInstitutionId;
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(workshopDto.Id, true))
+            .ReturnsAsync(workshopDto);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(new WorkshopResultDto { Workshop = workshopDto }));
+
+        workshopDraftRepoMoq
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(new List<WorkshopDraft>().AsQueryable().BuildMock());
+
+        // Act
+        await service.UpdateWorkshop(workshopDto);
+        registrySyncServiceMock.Verify(x => x.SyncWorkshopAsync(It.IsAny<WorkshopV2Dto>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenDraftExists_ShouldNotCallRegistrySync()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers().WithLanguage();
+        var workshopDto = workshop.ToV2Dto();
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(workshopDto.Id, true))
+            .ReturnsAsync(workshopDto);
+
+        var existingDrafts = new List<WorkshopDraft> { new WorkshopDraft() };
+        workshopDraftRepoMoq
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(existingDrafts.AsQueryable().BuildMock());
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateWorkshop(workshopDto));
+        registrySyncServiceMock.Verify(x => x.SyncWorkshopAsync(It.IsAny<WorkshopV2Dto>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenModeratedFieldsNotChanged_ShouldUpdateAndSyncIfMinistry()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate()
+           .WithProvider()
+           .WithTeachers();
+        AddSportMinistryProvider(workshop);
+       
+        var workshopDto = workshop.ToV2Dto();
+        workshopDto.InstitutionId = ministryOfSportId;
+
+        var existingWorkshopDto = workshop.ToDto();
+        existingWorkshopDto.InstitutionId = ministryOfSportId;
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(workshop.Id, true))
+            .ReturnsAsync(existingWorkshopDto);
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(
+                new WorkshopResultDto { Workshop = workshopDto }));
+
+        transactionManagerServiceMoq
+            .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()))
+            .Returns<Func<Task<WorkshopV2Dto>>>(f => f());
+
+        var emptyDrafts = new List<WorkshopDraft>().AsQueryable();
+        workshopDraftRepoMoq
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<WorkshopDraft, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(emptyDrafts.BuildMock());
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopDto);
+
+        // Assert
+        result.Should().NotBeNull();
+
+        workshopServiceCombinerV2Moq.Verify(
+            x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false),
+            Times.Once);
+
+        registrySyncServiceMock.Verify(
+            x => x.SyncWorkshopAsync(It.Is<WorkshopV2Dto>(dto => dto.Id == workshop.Id)),
+            Times.Once);
+
+        transactionManagerServiceMoq.Verify(
+            x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_WhenUpdateFails_ShouldThrowException()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate().WithProvider();
+        var workshopDto = workshop.ToV2Dto();
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(workshopDto.Id, true))
+            .ReturnsAsync(workshop.ToDto());
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false))
+            .ReturnsAsync(Result<WorkshopResultDto>.Failed());
+
+        // Act & Assert
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateWorkshop(workshopDto));
+        registrySyncServiceMock.Verify(x => x.SyncWorkshopAsync(It.IsAny<WorkshopV2Dto>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateWorkshop_PositiveScenario_ShouldUpdateAndSync()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        AddSportMinistryProvider(workshop);
+        var workshopDto = workshop.ToV2Dto();
+        workshopDto.InstitutionId = ministryOfSportId;
+
+        var existingWorkshopDto = workshop.ToDto();
+        existingWorkshopDto.InstitutionId = ministryOfSportId;
+
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.GetById(workshop.Id, true))
+            .ReturnsAsync(existingWorkshopDto);
+       
+        workshopServiceCombinerV2Moq
+            .Setup(x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false))
+            .ReturnsAsync(Result<WorkshopResultDto>.Success(new WorkshopResultDto { Workshop = workshopDto }));
+
+        transactionManagerServiceMoq
+            .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()))
+            .Returns<Func<Task<WorkshopV2Dto>>>(f => f());
+
+        workshopDraftRepoMoq
+            .Setup(x => x.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<WorkshopDraft, bool>>>(), It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
+            .Returns(new List<WorkshopDraft>().AsQueryable().BuildMock());
+
+        // Act
+        var result = await service.UpdateWorkshop(workshopDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        workshopServiceCombinerV2Moq.Verify(x => x.Update(It.IsAny<WorkshopV2Dto>(), false, false), Times.Once);
+        transactionManagerServiceMoq.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()), Times.Once);
+        registrySyncServiceMock.Verify(x => x.SyncWorkshopAsync(It.Is<WorkshopV2Dto>(dto => dto.Id == workshop.Id)), Times.Once);
+    }
+  
+    #endregion
 
     #region CreateDraftForReactivation
 
@@ -1389,7 +1564,6 @@ public class WorkshopDraftServiceTests
 
         // Assert
         workshopDraftRepoMoq.VerifyAll();
-
         result.Should().BeNull();
     }
     #endregion
