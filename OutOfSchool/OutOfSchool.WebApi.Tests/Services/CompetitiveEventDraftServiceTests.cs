@@ -373,7 +373,27 @@ public class CompetitiveEventDraftServiceTests
         // Assert
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
-        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, Does.Contain("Dto's id can't be empty"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, Does.Contain("ID in route can't be empty."));
+    }
+
+    [Test]
+    public async Task Update_ReturnsFailedResult_IfIdIsNotEmptyButDtoIdIsEmpty()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = Guid.Empty,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto()
+        };
+
+        // Act
+        var result = await competitiveEventDraftService.Update(id, dto);
+
+        // Assert
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, Does.Contain("Dto's id can't be empty."));
     }
 
     [Test]
