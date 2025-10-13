@@ -5,8 +5,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of unified URL.
     /// </summary>
-    // TODO: When we finish transition to unified contacts - change to 2048 (Max length for Chrome, which is minimal between browsers)
-    public const int MaxUnifiedUrlLength = 256;
+    public const int MaxUnifiedUrlLength = 2000;
 
     public const int MaxEmailTypeLength = 60;
 
@@ -135,7 +134,7 @@ public static class Constants
     /// <summary>
     /// Minimum length of workshop title.
     /// </summary>
-    public const int MinWorkshopTitleLength = 1;
+    public const int MinWorkshopTitleLength = 3;
 
     /// <summary>
     /// Maximum length of workshop title.
@@ -185,7 +184,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of terms of participation.
     /// </summary>
-    public const int MaxTermsOfParticipationLength = 2000;
+    public const int MaxTermsOfParticipationLength = 500;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.
@@ -245,12 +244,12 @@ public static class Constants
     /// <summary>
     /// The maximum length allowed for the competitive event title.
     /// </summary>
-    public const int MaxCompetitiveEventTitleLength = 250;
+    public const int MaxCompetitiveEventTitleLength = 120;
 
     /// <summary>
     /// The minimum length required for the competitive event title.
     /// </summary>
-    public const int MinCompetitiveEventTitleLength = 1;
+    public const int MinCompetitiveEventTitleLength = 3;
 
     /// <summary>
     /// The maximum length allowed for the competitive event short title.

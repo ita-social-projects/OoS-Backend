@@ -18,12 +18,16 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Short title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; }
 
     [Required]
@@ -58,9 +62,11 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set; }
 
+    [Required(ErrorMessage = "Information about the selection is required")]
     [MinLength(3)]
     [MaxLength(Constants.EnrollmentProcedureDescription)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     [Required]
@@ -78,7 +84,8 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [MinLength(3)]
     [MaxLength(Constants.MaxTermsOfParticipationLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Terms of participation is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Participation terms must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string TermsOfParticipation { get; set; }
 
     public bool? AreThereBenefits { get; set; }
