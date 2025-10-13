@@ -106,8 +106,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         return new CompetitiveEventDraftResultDto
         {
             CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(draftImageUpdateResult.Value.createdCompetitiveEventDraft),
-            UploadingCoverImagesCompetitiveEventResult = draftImageUpdateResult.Value.uploadImagesResult.UploadingCoverImageResult,
-            UploadingImagesResults = draftImageUpdateResult.Value.uploadImagesResult.UploadingImagesResults.MultipleKeyValueOperationResult
+            UploadingCoverImagesCompetitiveEventResult = draftImageUpdateResult.Value.uploadImagesResult?.UploadingCoverImageResult,
+            UploadingImagesResults = draftImageUpdateResult.Value.uploadImagesResult?.UploadingImagesResults?.MultipleKeyValueOperationResult
         };
     }
 
@@ -128,11 +128,20 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
             {
                 Code = "400",
+                Description = "ID in route can't be empty."
+            });
+        }
+
+        if (competitiveEventDraftUpdateDto.Id == Guid.Empty)
+        {
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = "400",
                 Description = "Dto's id can't be empty."
             });
         }
 
-        if (competitiveEventDraftUpdateDto.Id != Guid.Empty && competitiveEventDraftUpdateDto.Id != id)
+        if (competitiveEventDraftUpdateDto.Id != id)
         {
             return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
             {
@@ -328,7 +337,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         logger.LogDebug("Approving CompetitiveEventDraft started. CompetitiveEventDraft Id = {Id}.", id);
 
         var competitiveEventDraft = await GetDraftById(id) ?? throw new ArgumentException($"There is no CompetitiveEvent draft with such Id.");
-        
+
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
         {
             throw new ArgumentException("This Competitive event draft can`t be approved.");
@@ -874,22 +883,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             new EmployeeRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId))
             .ConfigureAwait(false);
 
-        if (competitiveEventDraftUpdateDto.Id != Guid.Empty)
-        {
-            var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventDraftUpdateDto.Id)
-                .ConfigureAwait(false);
+        var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id)
+         .ConfigureAwait(false);
 
-            if (existingCompetitiveEvent == null)
-            {
-                competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id = Guid.Empty;
-            }
-            else
-            {
-                await currentUserService.UserHasRights(
-                    new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
-                    new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId))
-                    .ConfigureAwait(false);
-            }
+        if (existingCompetitiveEvent == null)
+        {
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id = Guid.Empty;
+        }
+        else
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
+                new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId))
+                .ConfigureAwait(false);
         }
 
         if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
