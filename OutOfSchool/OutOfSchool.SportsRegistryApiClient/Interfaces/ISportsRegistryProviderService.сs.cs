@@ -4,7 +4,8 @@ using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
 namespace OutOfSchool.SportsRegistryApiClient.Interfaces;
 
-public interface ISportsRegistryProviderService
+public interface ISportsRegistrySectionProvider
 {
-    Task<Either<ErrorResponse, SectionCreateResponse>> RegisterSectionAsync(SportsSectionPostRequest request);
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest request);
+    Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request);
 }

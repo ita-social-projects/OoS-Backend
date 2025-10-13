@@ -85,4 +85,15 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
         var query = db.CATOTTGs.Where(c => parentIds.Contains(c.ParentId.Value)).Select(c => c.Id);
         return await query.ToListAsync().ConfigureAwait(false);
     }
+    
+    //// <inheritdoc/>
+    public async Task<string?> GetCodeByIdAsync(long id)
+    {
+        return await db.CATOTTGs
+            .Where(x => !x.IsDeleted && x.Id == id)
+            .Select(x => x.Code)
+            .AsNoTracking()
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+    }
 }

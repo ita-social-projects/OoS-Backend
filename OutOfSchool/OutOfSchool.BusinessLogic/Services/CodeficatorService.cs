@@ -100,12 +100,10 @@ public class CodeficatorService(ICodeficatorRepository codeficatorRepository) : 
     }
 
     /// <inheritdoc/>
-    public async Task<string?> GetCodeById(long id)
+    public async Task<string?> GetCodeByIdAsync(long id)
     {
-        var entity = await codeficatorRepository.GetById(id).ConfigureAwait(false);
-        return entity?.Code;
+        return await codeficatorRepository.GetCodeByIdAsync(id);
     }
-
     #region privateMethods
 
     private static Expression<Func<CATOTTG, bool>> GetFilter(long? parentId, CodeficatorCategory level)
