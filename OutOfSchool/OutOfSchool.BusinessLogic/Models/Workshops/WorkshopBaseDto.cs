@@ -23,7 +23,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Workshop title is required")]
+    [Required(ErrorMessage = "Workshop short title is required")]
     [MinLength(Constants.MinWorkshopTitleLength,ErrorMessage = "This field must contain from 3 to 120 characters.")]
     [MaxLength(Constants.MaxWorkshopTitleLength,ErrorMessage = "This field must contain from 3 to 120 characters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "This field must contain at least one letter.")]
