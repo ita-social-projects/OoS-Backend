@@ -39,9 +39,8 @@ public class ExceptionMiddlewareExtension
         catch (ArgumentException ex)
         {
             logger.LogError($"Exception information: {ex}");
-
-            var messageForUser = "Validation error. Please check your input data and try again. If you are sure of input data please contact support.";
-
+            var baseMessageForUser = "Validation error. Please check your input data and try again. If you are sure of input data please contact support.";
+            var messageForUser = string.IsNullOrWhiteSpace(ex.Message) ? baseMessageForUser : ex.Message;
             await HandleExceptionAsync(context, messageForUser, StatusCodes.Status400BadRequest).ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException ex)
