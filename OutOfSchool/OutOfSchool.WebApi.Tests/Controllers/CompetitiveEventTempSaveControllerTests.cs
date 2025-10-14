@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
 using OutOfSchool.BusinessLogic.Services.TempSave;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
@@ -15,24 +15,24 @@ using OutOfSchool.WebApi.Controllers.V1;
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
 [TestFixture]
-public class WorkshopTempSaveControllerTests
+public class CompetitiveEventTempSaveControllerTests
 {
     private readonly string userId = "someUserId";
     private string key;
-    private Mock<ITempSaveService<WorkshopMainRequiredPropertiesDto>> tempSaveService;
-    private WorkshopTempSaveController controller;
+    private Mock<ITempSaveService<CompetitiveEventAboutDto>> tempSaveService;
+    private CompetitiveEventTempSaveController controller;
     private ClaimsPrincipal user;
-    private WorkshopMainRequiredPropertiesDto baseDto;
-    private WorkshopDescriptionDto derivedDto;
+    private CompetitiveEventAboutDto baseDto;
+    private CompetitiveEventContactsDto derivedDto;
 
     [SetUp]
     public void Setup()
     {
         user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId)]));
-        baseDto = GetBaseWorkshopDtoFakeDraft();
-        derivedDto = GetDerivedWorkshopDtoFakeDraft();
-        tempSaveService = new Mock<ITempSaveService<WorkshopMainRequiredPropertiesDto>>();
-        controller = new WorkshopTempSaveController(tempSaveService.Object);
+        baseDto = GetCompetitiveEventAboutDto();
+        derivedDto = GetCompetitiveEventContactsDto();
+        tempSaveService = new Mock<ITempSaveService<CompetitiveEventAboutDto>>();
+        controller = new CompetitiveEventTempSaveController(tempSaveService.Object);
         key = GettingUserProperties.GetUserId(user);
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
     }
@@ -178,7 +178,7 @@ public class WorkshopTempSaveControllerTests
     {
         // Arrange
         tempSaveService.Setup(ds => ds.RestoreAsync(key))
-            .ReturnsAsync(default(WorkshopMainRequiredPropertiesDto))
+            .ReturnsAsync(default(CompetitiveEventAboutDto))
             .Verifiable(Times.Once);
 
         // Act
@@ -198,7 +198,7 @@ public class WorkshopTempSaveControllerTests
     {
         // Arrange
         tempSaveService.Setup(ds => ds.RestoreAsync(key))
-            .ReturnsAsync(default(WorkshopRequiredPropertiesDto))
+            .ReturnsAsync(default(CompetitiveEventContactsDto))
             .Verifiable(Times.Once);
 
         // Act
@@ -277,9 +277,9 @@ public class WorkshopTempSaveControllerTests
         tempSaveService.VerifyAll();
     }
 
-    private static WorkshopMainRequiredPropertiesDto GetBaseWorkshopDtoFakeDraft() =>
-        WorkshopMainRequiredPropertiesDtoGenerator.Generate();
+    private static CompetitiveEventAboutDto GetCompetitiveEventAboutDto() =>
+        CompetitiveEventContactsDtoGenerator.Generate();
 
-    private static WorkshopDescriptionDto GetDerivedWorkshopDtoFakeDraft() =>
-        WorkshopDescriptionDtoGenerator.Generate();
+    private static CompetitiveEventContactsDto GetCompetitiveEventContactsDto() =>
+        CompetitiveEventContactsDtoGenerator.Generate();
 }

@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
-using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Validators;
 
 [TestFixture]
-public class CompetitiveEventV2DtoValidationTests
+public class CompetitiveEventContactsDtoValidationTests
 {
     private DateTime date1;
     private DateTime date2;
@@ -25,7 +25,7 @@ public class CompetitiveEventV2DtoValidationTests
         date4 = date3.Add(new TimeSpan(30, 0, 0, 0));
     }
 
-        [Test]
+    [Test]
     public void Validate_WhenAllPropertiesAreCorrect_ShouldReturnNoValidationErrors()
     {
         // Arrange
@@ -126,9 +126,9 @@ public class CompetitiveEventV2DtoValidationTests
     #region Helpers
 
     // 
-    private CompetitiveEventV2Dto CreateTheCorrectDto()
+    private CompetitiveEventContactsDto CreateTheCorrectDto()
     {
-        var dto = CompetitiveEventV2DtoGenerator.Generate();
+        var dto = CompetitiveEventContactsDtoGenerator.Generate();
         dto.RegistrationStartTime = date1;
         dto.RegistrationEndTime = date2;
         dto.ScheduledStartTime = date3;
