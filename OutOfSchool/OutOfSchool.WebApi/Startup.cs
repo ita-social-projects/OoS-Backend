@@ -289,16 +289,11 @@ public static class Startup
         services.Configure<ImageOptions<TeacherDraft>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
         services.Configure<ImageOptions<WorkshopDraft>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
         services.Configure<ImageOptions<CompetitiveEventDraft>>(configuration.GetSection($"Images:{nameof(CompetitiveEvent)}:Specs"));
+        
+        var mariaDbVersion = configuration.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mariaDbServerVersion = configuration["MariaDbServerVersion"];
-        var serverVersion = new MariaDbServerVersion(new Version(mariaDbServerVersion));
-        if (serverVersion.Version.Major < Constants.MariaDbServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
-        }
-
-        //registartion of thumbnail generation 
+        // registartion of thumbnail generation 
         builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
         builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
 

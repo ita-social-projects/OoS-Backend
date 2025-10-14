@@ -2,6 +2,7 @@
 
 public static class Constants
 {
+    public const string MariaDbServerVersion = "MariaDbServerVersion";
     /// <summary>
     /// Maximum length of unified URL.
     /// </summary>

@@ -4,20 +4,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.AuthCommon;
-using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Services;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var config = context.Configuration;
-        // TODO: Move version check into an extension to reuse code across apps
-        var mariaDbServerVersion = config["MariaDbServerVersion"];
-        var serverVersion = new MariaDbServerVersion(new Version(mariaDbServerVersion));
-        if (serverVersion.Version.Major < Constants.MariaDbServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
-        }
+        var mariaDbVersion = config.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         var connectionString = config.GetConnectionString("DefaultConnection");
 
