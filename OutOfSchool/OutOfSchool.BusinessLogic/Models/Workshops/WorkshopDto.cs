@@ -45,12 +45,6 @@ public class WorkshopDto : WorkshopCreateUpdateDto, IHasRating
     public string LanguageOfEducationName { get; set; }
     
     public Guid? MinsportSectionId { get; set; }
-
-    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        foreach (var error in base.Validate(validationContext))
-            yield return error;
-    }
 }
 
 public static class WorkshopDtoExtensions
