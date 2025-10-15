@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using NuGet.Packaging;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
@@ -21,6 +19,10 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+using System.Text;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -96,6 +98,8 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
+        bool isNewDraft = true;
+
         if (workshopV2Dto.Id != Guid.Empty)
         {
             var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
@@ -111,8 +115,13 @@ public class WorkshopDraftService(
                     throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
                 }
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+
+                isNewDraft = false;
             }
         }
+
+        if (isNewDraft) ValidateImagesForNewDraft(workshopV2Dto);
+
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
         NormalizeConditionalFields(workshopV2Dto);
@@ -1618,5 +1627,28 @@ public class WorkshopDraftService(
         var institutionId = draft?.Provider?.Institution?.Id.ToString();
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Validates images for a new draft.
+    /// </summary>
+    /// <param name="dto">Dto.</param>
+    /// <exception cref="ValidationException">Throws validation exception that will be handled in middleware.</exception>
+    private static void ValidateImagesForNewDraft(WorkshopV2Dto dto)
+    {
+        var errors = new StringBuilder();
+
+        bool hasCoverImage = dto.CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(dto.CoverImageId);
+        bool hasImageFiles = dto.ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = dto.ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasCoverImageId || hasImageIds)
+            errors.Append("For a new draft you must upload image files, not IDs. ");
+        if (!hasCoverImage || !hasImageFiles)
+            errors.Append("Provide both CoverImage and ImageFiles.");
+
+        if (errors.Length > 0)
+            throw new ValidationException(errors.ToString());
     }
 }

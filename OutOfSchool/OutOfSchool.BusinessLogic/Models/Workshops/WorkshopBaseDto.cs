@@ -167,7 +167,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // TODO: Validate DateTimeRanges are not empty when frontend is ready
         foreach (var dateTimeRange in DateTimeRanges)
