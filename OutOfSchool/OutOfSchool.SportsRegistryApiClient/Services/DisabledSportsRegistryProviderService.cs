@@ -22,4 +22,6 @@ sealed class DisabledSportsRegistryStub : ISportsRegistrySectionProvider, ISport
     public Task<Either<ErrorResponse, List<SportKindDto>>> GetAllSportKindsAsync(int pageSize = 50)
         => Task.FromResult<Either<ErrorResponse,List<SportKindDto>>> (Disabled("GetSportKinds"));
 
+    public Task<Either<ErrorResponse, List<SportsSectionUpdateRequest>>> GetUpdatedWorkshopsAsync(int pageSize = 50)
+        => Task.FromResult<Either<ErrorResponse, List<SportsSectionUpdateRequest>>>(Disabled("GetUpdatedWorkshops"));
 }

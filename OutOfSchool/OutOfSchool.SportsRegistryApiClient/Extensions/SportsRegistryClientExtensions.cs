@@ -32,6 +32,7 @@ public static class SportsRegistryClientExtensions
             services.TryAddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
             services.TryAddTransient<ISportsRegistrySectionProvider, SportsRegistrySectionProvider>();
             services.TryAddTransient<ISportsRegistryDictionaryProvider, SportsRegistryDictionaryProvider>();
+            services.TryAddTransient<ISportsRegistryWorkshopProvider, SportsRegistryWorkshopProviderService>();
         }
         else
         {

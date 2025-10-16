@@ -25,4 +25,12 @@ public interface ISportsRegistryApiService
     /// <returns>A collection of sport kinds with their codes, names, and metadata.</returns>
     Task<Either<ErrorResponse, SportKindListResponse>> GetSportKindsAsync(int page = 0, int pageSize = 100);
 
+    /// <summary>
+    /// Retrieves a paged list of sports sections (workshops) from the Sports Registry.
+    /// </summary>
+    /// <returns>
+    /// A paged response containing the sports sections 
+    /// or an <see cref="ErrorResponse"/> if the request fails.
+    /// </returns>
+    Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(int page = 0, int pageSize = 100);
 }
