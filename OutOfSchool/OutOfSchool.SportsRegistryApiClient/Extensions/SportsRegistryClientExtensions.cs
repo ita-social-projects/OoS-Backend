@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -5,6 +6,7 @@ using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.SportsRegistryApiClient.Config;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+
 using OutOfSchool.SportsRegistryApiClient.Services;
 
 namespace OutOfSchool.SportsRegistryApiClient.Extensions;

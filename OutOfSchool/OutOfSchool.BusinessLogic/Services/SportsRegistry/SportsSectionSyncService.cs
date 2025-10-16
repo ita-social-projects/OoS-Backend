@@ -44,7 +44,7 @@ public class SportsSectionSyncService(
             if (!existingLookup.TryGetValue(section.SectionId, out var workshop))
             {
                 //Create draft
-                toCreate.Add(new Workshop() // WorkshopDraft
+                toCreate.Add(new Workshop() // section.ToWorkshopDraft()
                 {
                     Id = Guid.NewGuid(),
                    

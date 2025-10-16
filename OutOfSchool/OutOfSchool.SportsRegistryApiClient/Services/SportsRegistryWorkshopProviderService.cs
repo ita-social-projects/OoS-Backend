@@ -3,6 +3,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.Net;
+using OutOfSchool.SportsRegistryApiClient.Models.External;
 
 namespace OutOfSchool.SportsRegistryApiClient.Services;
 public class SportsRegistryWorkshopProviderService : ISportsRegistryWorkshopProvider
@@ -17,9 +18,9 @@ public class SportsRegistryWorkshopProviderService : ISportsRegistryWorkshopProv
         this.apiService = apiService;
         this.logger = logger;
     }
-   public async Task<Either<ErrorResponse, List<SportsSectionUpdateRequest>>> GetAllSportsSectionsAsync(int pageSize = 50)
+   public async Task<Either<ErrorResponse, List<ExternalSportsSectionDto>>> GetAllSportsSectionsAsync(int pageSize = 50)
     {
-        var all = new List<SportsSectionUpdateRequest>();
+        var all = new List<ExternalSportsSectionDto>();
         int currentPage = 0;
         int totalPages = 1;
 
@@ -36,7 +37,7 @@ public class SportsRegistryWorkshopProviderService : ISportsRegistryWorkshopProv
                 },
                 success =>
                 {
-                    var items = success.Content ?? new List<SportsSectionUpdateRequest>();
+                    var items = success.Content ?? new List<ExternalSportsSectionDto>();
                     all.AddRange(items);
                     totalPages = success.TotalPages;
                     return false;
