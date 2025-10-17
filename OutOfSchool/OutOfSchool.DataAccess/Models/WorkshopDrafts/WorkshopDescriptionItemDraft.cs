@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.Services.Models.WorkshopDrafts;
+﻿using System;
+
+namespace OutOfSchool.Services.Models.WorkshopDrafts;
 
 /// <summary>
 ///     Will be stored as nested objects in the JSON format of the workshop draft.
@@ -6,6 +8,8 @@
 /// </summary>
 public class WorkshopDescriptionItemDraft
 {
+    public Guid? Id { get; set; }
+
     public string SectionName { get; set; }
 
     public string Description { get; set; }

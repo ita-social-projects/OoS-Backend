@@ -1,6 +1,5 @@
 ﻿using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Tag;
-using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using System.ComponentModel.DataAnnotations;
@@ -191,9 +190,7 @@ public static class WorkshopV2DtoExtensions
         model.CompetitiveSelection = dto.CompetitiveSelection;
         model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.WorkshopDescriptionItems = dto.WorkshopDescriptionItems?.SetToModel(model.WorkshopDescriptionItems)
-            .Concat(model.WorkshopDescriptionItems ?? [])
-            .Distinct(new WorkshopDescriptionItemComparerWithoutKeys())
-            .ToList();
+            ?? new List<WorkshopDescriptionItem>();
         model.StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate();
         model.StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate();
         model.InstitutionHierarchyId = dto.InstitutionHierarchyId;
