@@ -404,7 +404,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
 
-        if (AreModeratedFieldsChanged(competitiveEventV2Dto, existingCompetitiveEvent))
+        if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {
             logger.LogDebug("Moderated fields was changed. CompetitiveEvent draft creation initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
             return (await Create(competitiveEventV2Dto, true)).CompetitiveEventDraft.CompetitiveEventDetails;
@@ -419,7 +419,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
     /// <summary>
     /// Determines whether any moderated fields differ between an incoming V2 DTO and an existing competitive event.
-    /// Except case when a new value equals null or an empty string..
+    /// Except case when a new value equals null or an empty string.
     /// </summary>
     /// <param name="competitiveEventV2Dto">The incoming competitive event data to compare.</param>
     /// <param name="existingCompetitiveEvent">The existing competitive event to compare against.</param>
@@ -433,7 +433,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
     /// If any of the above parameters are different and the new values are not null or an empty string, the method returns true; otherwise false.
     /// </remarks>
-    private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
+    private static bool ShouldBeModerate(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
     {
         if (competitiveEventV2Dto.CoverImage != null || competitiveEventV2Dto.ImageFiles != null)
         {

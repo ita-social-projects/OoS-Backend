@@ -22,6 +22,7 @@ public class ModeratorCompetitiveEventDraftEditDto
 
     public string VenueName { get; set; }
 
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
     public string PreferentialTermsOfParticipation { get; set; }

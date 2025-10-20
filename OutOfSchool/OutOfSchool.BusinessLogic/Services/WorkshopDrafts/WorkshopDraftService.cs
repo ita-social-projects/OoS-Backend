@@ -549,7 +549,7 @@ public class WorkshopDraftService(
             throw new InvalidOperationException("WorkshopDraft for this Workshop exists. Workshop can`t be updated.");
         }
 
-        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        if (ShouldBeModerate(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
 
@@ -1271,7 +1271,7 @@ public class WorkshopDraftService(
         }).ToList();
     }
 
-    private static bool AreModeratedFieldsChanged(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
+    private static bool ShouldBeModerate(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
     {
         if (workshopV2Dto.CoverImage != null ||
             workshopV2Dto.ImageFiles != null)
@@ -1306,7 +1306,7 @@ public class WorkshopDraftService(
             var newValue = field(workshopV2Dto);
             var oldValue = field(existingWorkshop);
 
-            return !string.Equals(newValue, oldValue, StringComparison.Ordinal);
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal) && !string.IsNullOrEmpty(newValue);
         });
     }
     private async Task SetLanguageNameOrThrow(WorkshopV2Dto dto)
