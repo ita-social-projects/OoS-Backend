@@ -58,8 +58,8 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MaxLength(Constants.MaxVenueNameLength)]
     public string VenueName { get; set; } = string.Empty;
 
-    [MaxLength(Constants.MaxTermsOfParticipationLength)]
-    public string TermsOfParticipation { get; set; } = string.Empty;
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    public string CompetitiveSelectionDescription { get; set; } = string.Empty;
 
     public bool AreThereBenefits { get; set; }
 
@@ -76,9 +76,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     public int Price { get; set; } = 0;
 
     public bool CompetitiveSelection { get; set; }
-
-    [MaxLength(2000)]
-    public string CompetitiveSelectionDescription { get; set; }
 
     public string CoverImageId { get; set; } = string.Empty;
 
@@ -130,7 +127,7 @@ public static class CompetitiveEventInfoDtoExtensions
             DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,
             VenueName = model.VenueName,
-            TermsOfParticipation = model.TermsOfParticipation,
+            CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,

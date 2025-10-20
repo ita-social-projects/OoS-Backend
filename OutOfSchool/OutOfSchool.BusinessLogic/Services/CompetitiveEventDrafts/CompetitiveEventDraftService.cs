@@ -419,18 +419,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
     /// <summary>
     /// Determines whether any moderated fields differ between an incoming V2 DTO and an existing competitive event.
+    /// Except case when a new value equals null or an empty string..
     /// </summary>
     /// <param name="competitiveEventV2Dto">The incoming competitive event data to compare.</param>
     /// <param name="existingCompetitiveEvent">The existing competitive event to compare against.</param>
     /// <returns>
-    /// True if any moderated field has changed and therefore requires moderation; otherwise false.
+    /// True if any moderated field has changed and the new value is not null or an empty string and therefore requires moderation; false otherwise.
     /// </returns>
     /// <remarks>
     /// The comparison considers:
     /// - Presence of new images (CoverImage or ImageFiles) on the V2 DTO.
     /// - Competitive event description items compared by concatenating SectionName and Description in sequence (order-sensitive).
     /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
-    /// If any of the above differ, the method returns true.
+    /// If any of the above parameters are different and the new values are not null or an empty string, the method returns true; otherwise false.
     /// </remarks>
     private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
     {
@@ -450,7 +451,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             ce => ce.ShortTitle,
             ce => ce.Title,
             ce => ce.DescriptionOfTheEnrollmentProcedure,
-            ce => ce.TermsOfParticipation,
+            ce => ce.CompetitiveSelectionDescription,
             ce => ce.Benefits,
             ce => ce.VenueName,
             ce => string.Join(" | ", (ce.Contacts ?? []).Select(c => c?.ToString()))
@@ -461,7 +462,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             var newValue = field(competitiveEventV2Dto);
             var oldValue = field(existingCompetitiveEvent);
 
-            return !string.Equals(newValue, oldValue, StringComparison.Ordinal);
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal) && !string.IsNullOrEmpty(newValue);
         });
     }
 

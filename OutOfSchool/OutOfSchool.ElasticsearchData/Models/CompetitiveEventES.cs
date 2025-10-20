@@ -43,7 +43,7 @@ public class CompetitiveEventES
 
     public string VenueName { get; set; }
 
-    public string TermsOfParticipation { get; set; }
+    public string CompetitiveSelectionDescription { get; set; }
 
     public string PreferentialTermsOfParticipation { get; set; }
 

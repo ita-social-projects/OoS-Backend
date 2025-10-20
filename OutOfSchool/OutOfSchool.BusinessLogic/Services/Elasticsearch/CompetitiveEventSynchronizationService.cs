@@ -55,7 +55,7 @@ public static class CompetitiveEventESExtensions
             OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses,
             VenueName = dto.VenueName,
-            TermsOfParticipation = dto.TermsOfParticipation,
+            CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
             AreThereBenefits = dto.AreThereBenefits,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,

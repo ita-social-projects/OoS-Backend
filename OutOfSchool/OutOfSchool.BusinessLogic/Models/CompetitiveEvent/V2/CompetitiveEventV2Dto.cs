@@ -67,7 +67,7 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = model.OrganizerOfTheEventId,
         PlannedFormatOfClasses = model.PlannedFormatOfClasses,
         VenueName = model.VenueName,
-        TermsOfParticipation = model.TermsOfParticipation,
+        CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
         AreThereBenefits = model.AreThereBenefits,
         Benefits = model.Benefits,
         MinimumAge = model.MinimumAge,
@@ -123,7 +123,7 @@ public static class CompetitiveEventV2DtoExtensions
             OrganizerOfTheEventId = draft.CompetitiveEventDraftContent.OrganizerOfTheEventId,
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
-            TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
+            CompetitiveSelectionDescription = draft.CompetitiveEventDraftContent?.CompetitiveSelectionDescription,
             AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
             Benefits = draft.CompetitiveEventDraftContent?.Benefits,
             MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
@@ -171,7 +171,7 @@ public static class CompetitiveEventV2DtoExtensions
     /// </summary>
     /// <param name="competitiveEventV2Dto">Source DTO to convert; its nullable fields are mapped with sensible defaults.</param>
     /// <returns>
-    /// A new CompetitiveEventDraftContent populated from the DTO. Nullable booleans and numeric fields are replaced with their default values when null;
+    /// A new CompetitiveEventDraftContent populated from the DTO. Nullable boolean and numeric fields are replaced with their default values when null;
     /// <see cref="Contacts"/> is an empty list if DTO contacts are null; <see cref="SubDirectionIds"/> is an empty list if null; 
     /// <see cref="CompetitiveEventDescriptionItems"/> is mapped using the DTO's ToModel() when present.
     /// </returns>
@@ -196,7 +196,7 @@ public static class CompetitiveEventV2DtoExtensions
         ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
         ShortTitle = competitiveEventV2Dto.ShortTitle,
         Title = competitiveEventV2Dto.Title,
-        TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
+        CompetitiveSelectionDescription = competitiveEventV2Dto.CompetitiveSelectionDescription,
         VenueName = competitiveEventV2Dto.VenueName,
         SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? [],
         CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
@@ -225,7 +225,7 @@ public static class CompetitiveEventV2DtoExtensions
         model.OrganizerOfTheEventId = dto.OrganizerOfTheEventId;
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
-        model.TermsOfParticipation = dto.TermsOfParticipation;
+        model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
@@ -262,7 +262,7 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
         PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
         VenueName = dto.VenueName,
-        TermsOfParticipation = dto.TermsOfParticipation,
+        CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
         AreThereBenefits = dto.AreThereBenefits ?? false,
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
