@@ -419,7 +419,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
     /// <summary>
     /// Determines whether any moderated fields differ between an incoming V2 DTO and an existing competitive event.
-    /// Except case when a new value equals null or an empty string.
+    /// Returns false when the new value is null or an empty string.
     /// </summary>
     /// <param name="competitiveEventV2Dto">The incoming competitive event data to compare.</param>
     /// <param name="existingCompetitiveEvent">The existing competitive event to compare against.</param>
@@ -430,9 +430,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     /// The comparison considers:
     /// - Presence of new images (CoverImage or ImageFiles) on the V2 DTO.
     /// - Competitive event description items compared by concatenating SectionName and Description in sequence (order-sensitive).
-    /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
-    /// If any of the above parameters are different and the new values are not null or an empty string, the method returns true; otherwise false.
-    /// </remarks>
+    /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, CompetitiveSelectionDescription, Benefits, VenueName, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
+    /// If any of the above fields are different and the new value is not null or an empty string, the method returns true; otherwise false.    /// </remarks>
     private static bool ShouldBeModerate(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
     {
         if (competitiveEventV2Dto.CoverImage != null || competitiveEventV2Dto.ImageFiles != null)

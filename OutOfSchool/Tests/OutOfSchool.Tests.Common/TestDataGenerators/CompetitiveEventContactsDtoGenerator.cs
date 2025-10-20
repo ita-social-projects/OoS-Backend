@@ -38,7 +38,7 @@ public static class CompetitiveEventContactsDtoGenerator
         .RuleFor(x => x.Benefits, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.CompetitiveSelection, true)
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentences(3))
-        .RuleFor(x => x.VenueName, f => f.Lorem.Text())
+        .RuleFor(x => x.VenueName, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.DescriptionOfTheEnrollmentProcedure, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.Price, f => f.Random.Int(1, 100))
         .RuleFor(x => x.PlannedFormatOfClasses, f => f.PickRandom<FormOfLearning>());
