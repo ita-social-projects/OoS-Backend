@@ -47,6 +47,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsPaid { get; set; } = false;
 
     [Column(TypeName = "decimal(18,2)")]
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 
