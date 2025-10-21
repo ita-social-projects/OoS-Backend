@@ -28,7 +28,7 @@ public class TimespanConverter : JsonConverter<TimeSpan>
 
         try
         {
-            return TimeSpan.ParseExact(str, TimeSpanFormatString, null);
+            return TimeSpan.ParseExact(str, TimeSpanFormatString, CultureInfo.InvariantCulture);
         }
         catch (FormatException ex)
         {

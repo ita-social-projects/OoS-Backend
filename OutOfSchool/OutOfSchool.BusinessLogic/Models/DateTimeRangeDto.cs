@@ -22,7 +22,7 @@ public class DateTimeRangeDto : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (StartTime >= EndTime)
-            yield return new ValidationResult("The end date cannot be equal to or earlier than the start date.", new[] { nameof(EndTime) });
+            yield return new ValidationResult("The end time cannot be equal to or earlier than the start time.", new[] { nameof(EndTime) });
 
         if (Workdays.IsNullOrEmpty() || Workdays.Any(workday => workday == DaysBitMask.None))
         {
