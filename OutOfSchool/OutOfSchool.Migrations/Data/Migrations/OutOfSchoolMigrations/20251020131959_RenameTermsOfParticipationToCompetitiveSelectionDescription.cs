@@ -96,7 +96,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
             // Next, rename the column back to its original name
             migrationBuilder.RenameColumn(
                 name: "CompetitiveSelectionDescription",
-                table: "Customers",
+                table: "CompetitiveEvents",
                 newName: "TermsOfParticipation");
 
             migrationBuilder.AlterColumn<string>(
