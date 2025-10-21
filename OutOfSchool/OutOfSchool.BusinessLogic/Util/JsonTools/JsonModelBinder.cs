@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using OutOfSchool.BusinessLogic.Models.Workshops;
-using System.Text.Json;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 

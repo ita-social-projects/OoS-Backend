@@ -35,10 +35,10 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     public bool? CompetitiveSelection { get; set; }
 
     [MinLength(3)]
-    [MaxLength(Constants.MaxTermsOfParticipationLength)]
-    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Terms of participation is required")]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
-    public string TermsOfParticipation { get; set; }
+    public string CompetitiveSelectionDescription { get; set; }
 
     [MinLength(3)]
     [MaxLength(Constants.MaxVenueNameLength)]

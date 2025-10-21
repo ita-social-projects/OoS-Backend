@@ -174,7 +174,7 @@ public static class Constants
     public const int MaxProviderShortTitleLength = 60;
 
     /// <summary>
-    /// Maximum length of position desctiption.
+    /// Maximum length of position description.
     /// </summary>
     public const int MaxPositionDescriptionLength = 500;
 
@@ -184,9 +184,9 @@ public static class Constants
     public const int EnrollmentProcedureDescription = 500;
 
     /// <summary>
-    /// Maximum length of terms of participation.
+    /// Maximum length of competitive selection description.
     /// </summary>
-    public const int MaxTermsOfParticipationLength = 2000;
+    public const int MaxCompetitiveSelectionDescriptionLength = 500;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.

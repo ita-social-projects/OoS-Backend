@@ -1275,5 +1275,69 @@ public class CompetitiveEventDraftServiceTests
         Mock.VerifyAll();
     }
 
+    [Test]
+    public async Task UpdateCompetitiveEvent_CallUpdateV2_IfModeratedFieldsChangedButNewValueIsNull()
+    {
+        // Arrange
+        CompetitiveEventV2Dto v2dto = CompetitiveEventV2DtoGenerator.Generate();
+        CompetitiveEventDraft draft = v2dto.ToDraft();
+        CompetitiveEventDto dto = draft.ToDto();
+        v2dto.Benefits = null;
+        var drafts = new List<CompetitiveEventDraft>();
+
+        mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns(drafts.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventService.Setup(s => s.UpdateV2(v2dto, false))
+            .ReturnsAsync(new CompetitiveEventResultDto() { CompetitiveEventV2 = draft.ToDto() })
+            .Verifiable(Times.Once);
+
+        // Act 
+        var result = await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto);
+
+        // Assert
+        mockCompetitiveEventService.Verify(s => s.UpdateV2(It.IsAny<CompetitiveEventV2Dto>(), false), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<CompetitiveEventV2Dto>(result);
+        Assert.AreEqual(result.Title, v2dto.Title);
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task UpdateCompetitiveEvent_CallUpdateV2_IfModeratedFieldsChangedButNewValueIsEmptyString()
+    {
+        // Arrange
+        CompetitiveEventV2Dto v2dto = CompetitiveEventV2DtoGenerator.Generate();
+        CompetitiveEventDraft draft = v2dto.ToDraft();
+        CompetitiveEventDto dto = draft.ToDto();
+        v2dto.Benefits = string.Empty;
+        var drafts = new List<CompetitiveEventDraft>();
+
+        mockCompetitiveEventService.Setup(repo => repo.GetById(v2dto.Id))
+            .ReturnsAsync(dto)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository.Setup(repo => repo.Get(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Expression<Func<CompetitiveEventDraft, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<CompetitiveEventDraft, object>>, SortDirection>>()))
+            .Returns(drafts.AsTestAsyncEnumerableQuery)
+            .Verifiable(Times.Once);
+        mockCompetitiveEventService.Setup(s => s.UpdateV2(v2dto, false))
+            .ReturnsAsync(new CompetitiveEventResultDto() { CompetitiveEventV2 = draft.ToDto() })
+            .Verifiable(Times.Once);
+
+        // Act 
+        var result = await competitiveEventDraftService.UpdateCompetitiveEvent(v2dto);
+
+        // Assert
+        mockCompetitiveEventService.Verify(s => s.UpdateV2(It.IsAny<CompetitiveEventV2Dto>(), false), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<CompetitiveEventV2Dto>(result);
+        Assert.AreEqual(result.Title, v2dto.Title);
+        Mock.VerifyAll();
+    }
+
     #endregion
 }

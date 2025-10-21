@@ -33,9 +33,13 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.OrganizerOfTheEventId, f => f.Random.Guid())
         .RuleFor(x => x.MinimumAge, f => f.Random.Int(5, 18))
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
-        .RuleFor(x => x.ImageIds, f => new List<string>() { f.Image.LoremFlickrUrl()})
+        .RuleFor(x => x.ImageIds, f => new List<string>() { f.Image.LoremFlickrUrl() })
         .RuleFor(x => x.Contacts, f => new List<ContactsDto> { })
-        .RuleFor(x => x.SubDirectionIds, f => new List<long> { f.Random.Long(1, 100) });
+        .RuleFor(x => x.SubDirectionIds, f => new List<long> { f.Random.Long(1, 100) })
+        .RuleFor(x => x.AreThereBenefits, true)
+        .RuleFor(x => x.Benefits, f => f.Lorem.Sentence(10))
+        .RuleFor(x => x.CompetitiveSelection, true)
+        .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(10));
 
     public static CompetitiveEventV2Dto Generate() => Faker.Generate();
 

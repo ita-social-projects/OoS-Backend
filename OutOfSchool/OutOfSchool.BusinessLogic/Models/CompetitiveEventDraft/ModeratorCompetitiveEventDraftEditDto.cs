@@ -22,7 +22,8 @@ public class ModeratorCompetitiveEventDraftEditDto
 
     public string VenueName { get; set; }
 
-    public string TermsOfParticipation { get; set; }
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    public string CompetitiveSelectionDescription { get; set; }
 
     public string PreferentialTermsOfParticipation { get; set; }
 
@@ -53,7 +54,7 @@ public static class ModeratorCompetitiveEventDraftEditDtoExtensions
         model.CompetitiveEventDraftContent.ShortTitle = dto.ShortTitle;
         model.CompetitiveEventDraftContent.DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure;
         model.CompetitiveEventDraftContent.VenueName = dto.VenueName;
-        model.CompetitiveEventDraftContent.TermsOfParticipation = dto.TermsOfParticipation;
+        model.CompetitiveEventDraftContent.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.CompetitiveEventDraftContent.Benefits = dto.Benefits;       
         model.CompetitiveEventDraftContent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToDraft();
 

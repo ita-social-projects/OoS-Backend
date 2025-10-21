@@ -76,10 +76,10 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public string VenueName { get; set; }
 
     [MinLength(3)]
-    [MaxLength(Constants.MaxTermsOfParticipationLength)]
-    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Terms of participation is required")]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
-    public string TermsOfParticipation { get; set; }
+    public string CompetitiveSelectionDescription { get; set; }
 
     public bool? AreThereBenefits { get; set; }
 
@@ -174,7 +174,7 @@ public static class CompetitiveEventBaseDtoExtensions
         OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
         PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
         VenueName = dto.VenueName,
-        TermsOfParticipation = dto.TermsOfParticipation,
+        CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
         AreThereBenefits = dto.AreThereBenefits ?? false,
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
@@ -212,7 +212,7 @@ public static class CompetitiveEventBaseDtoExtensions
         model.OrganizerOfTheEventId = dto.OrganizerOfTheEventId;
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
-        model.TermsOfParticipation = dto.TermsOfParticipation;
+        model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;

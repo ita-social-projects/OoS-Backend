@@ -36,7 +36,7 @@ public class CompetitiveEventDraftContent : IHasContacts
 
     public string VenueName { get; set; }
 
-    public string TermsOfParticipation { get; set; }
+    public string CompetitiveSelectionDescription { get; set; }
 
     public bool AreThereBenefits { get; set; }
 
