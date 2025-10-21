@@ -84,6 +84,7 @@ public class TimespanConverterTest
         try
         {
             var result = Converter.Read(ref reader, typeToConvert, options);
+            Assert.Fail();
         }
         catch (JsonException ex)
         {
@@ -107,6 +108,7 @@ public class TimespanConverterTest
         try
         {
             var result = Converter.Read(ref reader, typeToConvert, options);
+            Assert.Fail();
         }
         catch (JsonException ex)
         {
