@@ -43,12 +43,7 @@ public class DateTimeRangeDto : IValidatableObject
                 }
             }
 
-            var daysHs = new HashSet<DaysBitMask>();
-            if (!Workdays.All(daysHs.Add))
-            {
-                yield return new ValidationResult("Workdays contain duplications.",
-                    new[] { nameof(Workdays) });
-            }
+            Workdays = Workdays.Distinct().ToList();
         }
     }
 }
@@ -71,7 +66,8 @@ public static class DateTimeRangeDtoExtensions
     public static DateTimeRangeES ToES(this DateTimeRangeDto dto)
     {
         var workdays = dto.Workdays?.ToDaysBitMask()
-            .ToDaysBitMaskEnumerable();
+            .ToDaysBitMaskEnumerable()
+            .ToHashSet();
 
         return new()
         {
