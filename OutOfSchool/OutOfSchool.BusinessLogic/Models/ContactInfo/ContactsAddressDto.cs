@@ -13,15 +13,15 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [Required(ErrorMessage = "Street is required")]
     [MinLength(1)]
     [MaxLength(60)]
-    [RegularExpression(@"^[\p{IsCyrillic}0-9'.\-\(\) ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: ' . - ( )")]
-    [MustContain(RequiredCharacterType.CyrillicLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Street must contain at least one Cyrillic letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9\s\-'’\.]+$", ErrorMessage = "Only Cyrillic letters, numbers, spaces, '-', '.', and apostrophe are allowed.")]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]
     [MinLength(1)]
     [MaxLength(15)]
-    [RegularExpression(@"^[\p{IsCyrillic}0-9\/\-\. ]+$", ErrorMessage = "Field must contain only numbers, Cyrillic letters, spaces, and the following symbols: / - .")]
-    [MustContain(RequiredCharacterType.Digit)]
+    [MustContain(RequiredCharacterType.AnyDigit, ErrorMessage = "Building number must contain at least one number.")]
+    [RegularExpression(@"^[\p{IsCyrillic}0-9\s\-\/]+$", ErrorMessage = "Only Cyrillic letters, numbers, spaces, '-', and '/' are allowed.")]
     public string BuildingNumber { get; set; } = string.Empty;
 
     public double Latitude { get; set; }

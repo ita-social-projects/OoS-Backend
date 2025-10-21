@@ -8,10 +8,11 @@ namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
 public class WorkshopDescriptionItemDto
 {
-    [Required]
+    [Required(ErrorMessage = "SectionName field is required")]
     [MinLength(3)]
-    [MaxLength(100)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MaxLength(120)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "SectionName field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string SectionName { get; set; }
 
     [Required]
