@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -8,7 +6,8 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -169,29 +168,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // TODO: Validate DateTimeRanges are not empty when frontend is ready
-        foreach (var dateTimeRange in DateTimeRanges)
-        {
-            if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
-            {
-                yield return new ValidationResult(
-                     "The end date cannot be equal to or earlier than the start date");
-            }
-
-            if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
-            {
-                yield return new ValidationResult(
-                    "Workdays are required");
-            }
-
-            var daysHs = new HashSet<DaysBitMask>();
-            if (!dateTimeRange.Workdays.All(daysHs.Add))
-            {
-                yield return new ValidationResult(
-                    "Workdays contain duplications");
-            }
-        }
-
         if (NoAgeRestrictions)
         {
             MinAge = 0;
