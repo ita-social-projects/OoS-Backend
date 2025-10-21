@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Validators;
+/// <summary>
+/// Attribute to validate that a decimal number does not exceed a specified number of decimal places.
+/// </summary>
 public class MaxDecimalPlacesAttribute : ValidationAttribute
 {
     private readonly int maxDecimalPlaces;
@@ -12,10 +15,9 @@ public class MaxDecimalPlacesAttribute : ValidationAttribute
 
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if (value is decimal d)
+        if (value is decimal d && GetDecimalPlaces(d) > maxDecimalPlaces)
         {
-            if (GetDecimalPlaces(d) > maxDecimalPlaces)
-                return new ValidationResult(ErrorMessage ?? $"The field must not have more than {maxDecimalPlaces} decimal places.");
+            return new ValidationResult(ErrorMessage ?? $"The field must not have more than {maxDecimalPlaces} decimal places.");
         }
 
         return ValidationResult.Success;
