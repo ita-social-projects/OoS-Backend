@@ -5,6 +5,5 @@ public enum RequiredCharacterType
     Digit,
     LatinLetter,
     CyrillicLetter,
-    AnyLetter,
-    AnyDigit
+    AnyLetter
 }

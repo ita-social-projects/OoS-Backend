@@ -20,7 +20,7 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [Required(ErrorMessage = "Building number is required")]
     [MinLength(1)]
     [MaxLength(15)]
-    [MustContain(RequiredCharacterType.AnyDigit, ErrorMessage = "Building number must contain at least one number.")]
+    [MustContain(RequiredCharacterType.Digit, ErrorMessage = "Building number must contain at least one number.")]
     [RegularExpression(@"^[\p{IsCyrillic}0-9\s\-\/]+$", ErrorMessage = "Only Cyrillic letters, numbers, spaces, '-', and '/' are allowed.")]
     public string BuildingNumber { get; set; } = string.Empty;
 
