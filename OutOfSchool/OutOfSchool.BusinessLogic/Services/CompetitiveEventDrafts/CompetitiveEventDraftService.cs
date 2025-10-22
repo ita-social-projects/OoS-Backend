@@ -876,9 +876,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         await currentUserService.UserHasRights(
             new ProviderRights(competitiveEventDraft.ProviderId),
-            new EmployeeRights(competitiveEventDraft.ProviderId))
-            .ConfigureAwait(false);
-        await currentUserService.UserHasRights(
+            new EmployeeRights(competitiveEventDraft.ProviderId),
             new ProviderRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
             new EmployeeRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId))
             .ConfigureAwait(false);
@@ -914,13 +912,15 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         var coverImageResult = await competitiveEventDraftImagesService
             .ChangeCoverImageAsync(competitiveEventDraft,
             competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.CoverImageId,
-            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.CoverImage)
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.CoverImage,
+            true)
             .ConfigureAwait(false);
 
         var imagesResult = await competitiveEventDraftImagesService
             .ChangeImagesAsync(competitiveEventDraft,
             competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageIds,
-            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageFiles)
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.ImageFiles,
+            true)
             .ConfigureAwait(false);
 
         await competitiveEventDraftRepository.Update(competitiveEventDraft);

@@ -53,6 +53,7 @@ public interface IEntitySetOfImagesInteractionService<in TEntity>
     /// <param name="entity">Entity.</param>
     /// <param name="oldImageIds">Image ids we shouldn't remove from entities.</param>
     /// <param name="newImages">Images we should add to the entity.</param>
+    /// <param name="isFromDraft">Flag to signal if the updated value is taken from draft.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleImageChangingResult"/> of the operation.</returns>
-    public Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages);
+    public Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages, bool isFromDraft = false);
 }

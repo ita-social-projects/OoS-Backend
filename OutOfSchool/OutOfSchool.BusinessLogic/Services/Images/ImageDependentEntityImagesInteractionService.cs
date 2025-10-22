@@ -95,7 +95,7 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
         => await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public async Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages)
+    public async Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages, bool isFromDraft = false)
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
         _ = entity.Images ?? throw new NullReferenceException($"Entity {nameof(entity.Images)} cannot be null collection");
@@ -170,7 +170,7 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
     }
 
     /// <inheritdoc/>
-    public async Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage)
+    public async Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage, bool isFromDraft = false)
     {
         _ = entity ?? throw new ArgumentNullException(nameof(entity));
 

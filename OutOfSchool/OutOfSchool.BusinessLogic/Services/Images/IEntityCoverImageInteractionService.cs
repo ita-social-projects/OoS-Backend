@@ -27,6 +27,7 @@ public interface IEntityCoverImageInteractionService<in TEntity>
     /// <param name="entity">Entity.</param>
     /// <param name="dtoImageId">Image id to change.</param>
     /// <param name="newImage">Image we should add to the entity.</param>
+    /// <param name="isFromDraft">Flag to signal if the updated value is taken from draft.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageChangingResult"/> of the operation.</returns>
-    public Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage);
+    public Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage, bool isFromDraft = false);
 }
