@@ -304,6 +304,9 @@ public class WorkshopDraftService(
 
         var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
+        if (workshopDraft is null) 
+            return;
+
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
         if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
@@ -882,13 +885,6 @@ public class WorkshopDraftService(
 
         var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(id, includeExpression: query =>
             query.Include(wd => wd.Images));
-
-        if (workshopDraft == null)
-        {
-            throw new ArgumentException(
-                nameof(id),
-                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
-        }
 
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
 
