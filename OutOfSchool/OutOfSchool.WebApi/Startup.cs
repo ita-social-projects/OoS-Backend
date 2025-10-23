@@ -400,6 +400,8 @@ public static class Startup
         services.AddTransient<ISubDirectionService, SubDirectionService>();
         services.AddTransient<IRegistrySyncService, RegistrySyncService>();
         services.AddTransient<ISportKindSyncService, SportKindSyncService>();
+        services.AddTransient<ISportsSectionSyncService, SportsSectionSyncService>();
+
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 
@@ -610,6 +612,8 @@ public static class Startup
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(quartzConfig);
             q.AddSportKindSync(quartzConfig);
+            q.AddSportsSectionSync(quartzConfig);
+
         });
 
         var isRedisEnabled = configuration.GetValue<bool>("Redis:Enabled");

@@ -96,4 +96,14 @@ public class CodeficatorRepository : EntityRepositorySoftDeleted<long, CATOTTG>,
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
     }
+
+    //// <inheritdoc/>
+    public async Task<long?> GetIdByCodeAsync(string code)
+    {
+        return await db.CATOTTGs
+          .Where(x => !x.IsDeleted && x.Code == code)
+          .Select(x => (long?)x.Id)                  
+          .FirstOrDefaultAsync()
+          .ConfigureAwait(false);
+    }
 }

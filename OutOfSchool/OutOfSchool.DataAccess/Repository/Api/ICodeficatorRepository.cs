@@ -43,5 +43,15 @@ public interface ICodeficatorRepository : IEntityRepositorySoftDeleted<long, CAT
     /// The task result contains the Code as a <see cref="string"/> if the entity exists; otherwise, <c>null</c>.
     /// </returns>
     public Task<string?> GetCodeByIdAsync(long id);
-    
+
+    /// <summary>
+    /// Gets the Id of a CATOTTG entity by its Code.
+    /// </summary>
+    /// <param name="code">The Code of the CATOTTG entity.</param>
+    /// <returns>
+    /// A <see cref="Task{TResult}"/> representing the asynchronous operation.
+    /// The task result contains the Id as a <see cref="long"/> if an entity with the specified code exists; otherwise, <c>null</c>.
+    /// </returns>
+    Task<long?> GetIdByCodeAsync(string code);
+
 }

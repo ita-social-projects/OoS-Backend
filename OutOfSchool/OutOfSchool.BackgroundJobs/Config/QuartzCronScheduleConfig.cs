@@ -19,4 +19,6 @@ public class QuartzCronScheduleConfig
     public string EmailSenderCronScheduleString { get; set; }
     
     public string SportKindSyncCronScheduleString { get; set; }
+
+    public string SportsSectionSyncCronScheduleString { get; set; }
 }

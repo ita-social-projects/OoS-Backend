@@ -1,12 +1,15 @@
-﻿using OutOfSchool.Services.Models.WorkshopDrafts;
+﻿//using System.Linq;
+using OutOfSchool.BusinessLogic.Util.Mappers;
+using OutOfSchool.Services.Enums.WorkshopStatus;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
-using System.Linq;
-
 namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 public class SportsSectionSyncService(
     ISportsRegistryWorkshopProvider workshopProvider,
+    IWorkshopDraftRepository workshopDraftRepository,
     IWorkshopRepository workshopRepository,
+    ICodeficatorRepository codeficatorRepository,
     ILogger<SportsSectionSyncService> logger)
     : ISportsSectionSyncService
 {
@@ -34,45 +37,86 @@ public class SportsSectionSyncService(
             .GetByFilter(w => w.MinsportSectionId.HasValue && registrySectionsId.Contains(w.MinsportSectionId.Value))
             .ConfigureAwait(false);
 
+        var existingWorkshopDrafts = await workshopDraftRepository
+            .GetByFilter(w => w.MinsportSectionId.HasValue && registrySectionsId.Contains(w.MinsportSectionId.Value))
+            .ConfigureAwait(false);
+
         var existingLookup = existingWorkshops.ToDictionary(w => w.MinsportSectionId!.Value);
+        var existingDraftLookup = existingWorkshopDrafts.ToDictionary(w => w.MinsportSectionId!.Value);
 
-        var toCreate = new List<Workshop>(); // WorkshopDraft?
-        var toUpdate = new List<Workshop>();
+        var toCreate = new List<WorkshopDraft>();
+        var toUpdate = new List<WorkshopDraft>();
 
-        foreach (var section in sportsSections)
+        foreach (var section in sportsSections) // check
         {
-            if (!existingLookup.TryGetValue(section.SectionId, out var workshop))
+            existingDraftLookup.TryGetValue(section.SectionId, out var existingDraft);
+            existingLookup.TryGetValue(section.SectionId, out var existingWorkshop);
+
+            DateTimeOffset? lastUpdate = existingDraft?.ModifiedAt
+                              ?? (existingWorkshop?.UpdatedAt.HasValue == true
+                                  ? new DateTimeOffset(existingWorkshop.UpdatedAt.Value)
+                                  : (DateTimeOffset?)null);
+
+            if (!lastUpdate.HasValue || section.UpdatedInRegistryAt > lastUpdate.Value)
             {
-                //Create draft
-                toCreate.Add(new Workshop() // section.ToWorkshopDraft()
+                WorkshopDraft draft;
+
+                if (existingDraft != null)
                 {
-                    Id = Guid.NewGuid(),
-                   
-                    Title = section.SectionName,
-                  
-                    // TODO: map other fields
-                });
+                    // update existing draft
+                    draft = section.MapToExistingDraft(existingDraft);
+                    draft.DraftStatus = WorkshopDraftStatus.PendingModeration; // to ask Dima
+                    toUpdate.Add(draft);
+                }
+                else if (existingWorkshop != null)
+                {
+                    // no draft,  only workshop - create draft
+                    draft = section.ToWorkshopDraft(existingWorkshop.ProviderId);
+
+                    //draft = existingWorkshop.ToDraft(); // may be this way?
+                    //draft = section.MapToExistingDraft(draft);
+
+                    toCreate.Add(draft);
+                }
+                else
+                {
+                    // no workshop, no draft - new draft
+                    draft = section.ToWorkshopDraft(GetProviderId());
+                    toCreate.Add(draft);
+                }
+
+                //  update CATOTTGId
+                draft.CATOTTGId = await GetIdByCatottgCode(section.SectionAddressLocalityDictIdCode) ?? 0;
+                break; // temporary for testing purposes
             }
-            //else if (section.UpdatedAt > workshop.RegistrySyncDate)
-            //{
-            //    // Update draft
-            //    workshop.Title = section.Name;
-              //}
         }
 
-        // need to review
         if (toCreate.Any() || toUpdate.Any())
         {
-            await workshopRepository.RunInTransaction(async () =>
+            await workshopDraftRepository.RunInTransaction(async () =>
             {
                 if (toCreate.Any())
                 {
-                    await workshopRepository.Create(toCreate).ConfigureAwait(false);
+                    foreach (var draft in toCreate)
+                    {
+                        logger.LogDebug(
+                            "Creating WorkshopDraft. SectionId: {SectionId}, Title: {Title}",
+                            draft.MinsportSectionId, draft.WorkshopDraftContent.Title);
+                    }
+                    await workshopDraftRepository.Create(toCreate).ConfigureAwait(false);
                 }
 
                 if (toUpdate.Any())
                 {
-                    await workshopRepository.SaveChangesAsync().ConfigureAwait(false);
+                    foreach (var draft in toUpdate)
+                    {
+                        logger.LogDebug(
+                            "Updating WorkshopDraft. SectionId: {SectionId}, Title: {Title}, DraftStatus: {DraftStatus}",
+                            draft.MinsportSectionId,
+                            draft.WorkshopDraftContent.Title,
+                            draft.DraftStatus);
+                    }
+                    await workshopDraftRepository.SaveChangesAsync().ConfigureAwait(false);
                 }
 
                 logger.LogInformation(
@@ -82,5 +126,20 @@ public class SportsSectionSyncService(
         }
 
         return toCreate.Count + toUpdate.Count;
+    }
+
+    private async Task<long?> GetIdByCatottgCode(string sectionAddressLocalityDictIdCode)
+    {
+        return await codeficatorRepository.GetIdByCodeAsync(sectionAddressLocalityDictIdCode);
+    }
+    private Guid GetProviderIdForExistingWorkshop() // TO DO
+    {
+        return Guid.Parse("08da842d-12fc-4865-85c5-ec6e6142abad"); // sleep@gmail.com temporary
+    }
+
+
+    private Guid GetProviderId() // TO DO 
+    {
+        return Guid.Parse("08da842d-12fc-4865-85c5-ec6e6142abad"); // sleep@gmail.com temporary
     }
 }

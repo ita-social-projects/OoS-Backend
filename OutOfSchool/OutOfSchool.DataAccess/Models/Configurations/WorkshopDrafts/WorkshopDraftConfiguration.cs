@@ -38,5 +38,9 @@ public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<Works
                .WithOne()
                .HasForeignKey<WorkshopDraft>(x => x.WorkshopId)
                .IsRequired(false);
+
+        builder.Property(x => x.MinsportSectionId)
+               .HasColumnType("UUID")
+               .IsRequired(false);
     }
 }
