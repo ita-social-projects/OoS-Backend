@@ -21,7 +21,7 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
     [MinLength(1)]
     [MaxLength(15)]
     [MustContain(RequiredCharacterType.Digit, ErrorMessage = "Building number must contain at least one number.")]
-    [RegularExpression(@"^[\p{IsCyrillic}0-9\s\-\/]+$", ErrorMessage = "Only Cyrillic letters, numbers, spaces, '-', and '/' are allowed.")]
+    [RegularExpression(@"^[0-9]+[0-9А-Яа-яЇїІіЄєҐґA-Za-z\-\/]*$", ErrorMessage = "Building number must start with a digit and may only contain Cyrillic or Latin letters, digits, '-' and '/', without spaces.")]
     public string BuildingNumber { get; set; } = string.Empty;
 
     public double Latitude { get; set; }
