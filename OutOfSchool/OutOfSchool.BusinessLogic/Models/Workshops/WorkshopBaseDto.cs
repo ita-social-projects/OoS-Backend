@@ -76,10 +76,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [CollectionNotEmpty(ErrorMessage = "At least one description item is required")]
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
-    public Guid? InstitutionId { get; set; }
-
-    public string Institution { get; set; }
-
     public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }

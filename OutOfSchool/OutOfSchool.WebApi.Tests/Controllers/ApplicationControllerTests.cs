@@ -851,8 +851,6 @@ public class ApplicationControllerTests
             Rating = w.Rating,
             ProviderLicenseStatus = w.ProviderLicenseStatus,
             InstitutionHierarchyId = w.InstitutionHierarchyId,
-            InstitutionId = w.InstitutionId,
-            Institution = w.Institution,
             AvailableSeats = (uint)w.AvailableSeats,
             TakenSeats = w.TakenSeats,
         }).ToList();

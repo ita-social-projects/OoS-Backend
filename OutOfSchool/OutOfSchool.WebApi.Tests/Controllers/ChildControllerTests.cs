@@ -331,8 +331,6 @@ public class ChildControllerTests
                 Rating = existingWorkshop.Rating,
                 ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
-                InstitutionId = existingWorkshop.InstitutionId,
-                Institution = existingWorkshop.Institution,
                 AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })

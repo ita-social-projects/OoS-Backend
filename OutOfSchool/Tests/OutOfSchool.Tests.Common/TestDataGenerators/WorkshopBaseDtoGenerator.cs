@@ -25,8 +25,6 @@ public static class WorkshopBaseDtoGenerator
         .RuleFor(x => x.CompetitiveSelection, f => f.Random.Bool())
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence())
         .RuleFor(x => x.WorkshopDescriptionItems, f => WorkshopDescriptionItemDtoGenerator.Generate(6))
-        .RuleFor(x => x.InstitutionId, f => f.Random.Guid())
-        .RuleFor(x => x.Institution, f => f.Lorem.Word())
         .RuleFor(x => x.InstitutionHierarchyId, f => f.Random.Guid())
         .RuleFor(x => x.InstitutionHierarchy, f => f.Lorem.Word())
         .RuleFor(x => x.DirectionIds, _ => new List<long>())
