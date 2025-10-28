@@ -17,8 +17,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(Constants.MinWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 120 characters.")]
-    [MaxLength(Constants.MaxWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 120 characters.")]
+    [MinLength(Constants.MinWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 250 characters.")]
+    [MaxLength(Constants.MaxWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 250 characters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
