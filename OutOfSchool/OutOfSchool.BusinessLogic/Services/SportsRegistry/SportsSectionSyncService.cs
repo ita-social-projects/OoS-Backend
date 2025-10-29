@@ -10,6 +10,7 @@ public class SportsSectionSyncService(
     IWorkshopDraftRepository workshopDraftRepository,
     IWorkshopRepository workshopRepository,
     ICodeficatorRepository codeficatorRepository,
+    IProviderRepository providerRepository,
     ILogger<SportsSectionSyncService> logger)
     : ISportsSectionSyncService
 {
@@ -47,7 +48,9 @@ public class SportsSectionSyncService(
         var toCreate = new List<WorkshopDraft>();
         var toUpdate = new List<WorkshopDraft>();
 
-        foreach (var section in sportsSections) // check
+        var tempSectionList = sportsSections.Where(s => s.OrganizationCode == "45080641").ToList(); // temporary for testing purposes
+        foreach (var section in tempSectionList ) // check
+        //foreach (var section in sportsSections) // check
         {
             existingDraftLookup.TryGetValue(section.SectionId, out var existingDraft);
             existingLookup.TryGetValue(section.SectionId, out var existingWorkshop);
@@ -55,7 +58,7 @@ public class SportsSectionSyncService(
             DateTimeOffset? lastUpdate = existingDraft?.ModifiedAt
                               ?? (existingWorkshop?.UpdatedAt.HasValue == true
                                   ? new DateTimeOffset(existingWorkshop.UpdatedAt.Value)
-                                  : (DateTimeOffset?)null);
+                                  : null);
 
             if (!lastUpdate.HasValue || section.UpdatedInRegistryAt > lastUpdate.Value)
             {
@@ -81,7 +84,10 @@ public class SportsSectionSyncService(
                 else
                 {
                     // no workshop, no draft - new draft
-                    draft = section.ToWorkshopDraft(GetProviderId());
+                    var providerId = await GetProviderIdAsync(section.OrganizationCode).ConfigureAwait(false);
+                    if (!providerId.HasValue)
+                        continue; // skip sections without valid provider
+                    draft = section.ToWorkshopDraft(providerId.Value);
                     toCreate.Add(draft);
                 }
 
@@ -132,14 +138,9 @@ public class SportsSectionSyncService(
     {
         return await codeficatorRepository.GetIdByCodeAsync(sectionAddressLocalityDictIdCode);
     }
-    private Guid GetProviderIdForExistingWorkshop() // TO DO
+   
+    private async Task<Guid?> GetProviderIdAsync(string edrpou)
     {
-        return Guid.Parse("08da842d-12fc-4865-85c5-ec6e6142abad"); // sleep@gmail.com temporary
-    }
-
-
-    private Guid GetProviderId() // TO DO 
-    {
-        return Guid.Parse("08da842d-12fc-4865-85c5-ec6e6142abad"); // sleep@gmail.com temporary
+        return await providerRepository.GetIdByEdrpouAsync(edrpou);
     }
 }

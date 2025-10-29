@@ -11,4 +11,6 @@ public interface IProviderRepository : ISensitiveEntityRepositorySoftDeleted<Pro
     Task<Provider> GetWithNavigations(Guid id);
 
     Task<List<int>> CheckExistsByEdrpous(Dictionary<int, string> edrpous);
+
+    public Task<Guid?> GetIdByEdrpouAsync(string edrpou);
 }
