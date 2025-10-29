@@ -140,7 +140,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of workshop title.
     /// </summary>
-    public const int MaxWorkshopTitleLength = 120;
+    public const int MaxWorkshopTitleLength = 250;
 
     /// <summary>
     /// Minimum length of workshop short title.
