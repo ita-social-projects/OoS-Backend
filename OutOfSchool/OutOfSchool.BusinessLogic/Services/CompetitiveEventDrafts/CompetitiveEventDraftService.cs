@@ -876,9 +876,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         await currentUserService.UserHasRights(
             new ProviderRights(competitiveEventDraft.ProviderId),
-            new EmployeeRights(competitiveEventDraft.ProviderId))
-            .ConfigureAwait(false);
-        await currentUserService.UserHasRights(
+            new EmployeeRights(competitiveEventDraft.ProviderId),
             new ProviderRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
             new EmployeeRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId))
             .ConfigureAwait(false);
