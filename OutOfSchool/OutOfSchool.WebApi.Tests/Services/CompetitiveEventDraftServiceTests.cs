@@ -1341,3 +1341,318 @@ public class CompetitiveEventDraftServiceTests
 
     #endregion
 }
+
+    #region Update Tests - User Rights Checking
+
+    [Test]
+    public async Task Update_WhenCalledWithValidDto_ShouldCheckUserRightsOnce()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var organizerId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = providerId,
+            Status = CompetitiveEventDraftStatus.Open
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = organizerId,
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetByIdWithDetails(draftId))
+            .ReturnsAsync(existingDraft);
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId),
+                It.Is<ProviderRights>(p => p.ProviderId == organizerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == organizerId)))
+            .Returns(Task.CompletedTask);
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.Update(It.IsAny<CompetitiveEventDraft>(), It.IsAny<Action<CompetitiveEventDraft>>()))
+            .Returns(Task.CompletedTask);
+
+        mockChangesLogService
+            .Setup(x => x.AddEntityChangesLogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await competitiveEventDraftService.Update(updateDto);
+
+        // Assert
+        mockUserService.Verify(
+            x => x.UserHasRights(
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId),
+                It.Is<ProviderRights>(p => p.ProviderId == organizerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == organizerId)),
+            Times.Once,
+            "UserHasRights should be called exactly once with all four rights parameters");
+    }
+
+    [Test]
+    public async Task Update_WhenUserLacksRightsForOriginalProvider_ShouldThrowException()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var organizerId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = providerId,
+            Status = CompetitiveEventDraftStatus.Open
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = organizerId,
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetByIdWithDetails(draftId))
+            .ReturnsAsync(existingDraft);
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId),
+                It.Is<ProviderRights>(p => p.ProviderId == organizerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == organizerId)))
+            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights"));
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await competitiveEventDraftService.Update(updateDto));
+    }
+
+    [Test]
+    public async Task Update_WhenUserLacksRightsForNewOrganizer_ShouldThrowException()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var organizerId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = providerId,
+            Status = CompetitiveEventDraftStatus.Open
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = organizerId,
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetByIdWithDetails(draftId))
+            .ReturnsAsync(existingDraft);
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId),
+                It.Is<ProviderRights>(p => p.ProviderId == organizerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == organizerId)))
+            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights for new organizer"));
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await competitiveEventDraftService.Update(updateDto));
+    }
+
+    [Test]
+    public async Task Update_WhenProvidersAreSame_ShouldStillCheckUserRightsOnce()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = providerId,
+            Status = CompetitiveEventDraftStatus.Open
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = providerId, // Same as original provider
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetByIdWithDetails(draftId))
+            .ReturnsAsync(existingDraft);
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId),
+                It.Is<ProviderRights>(p => p.ProviderId == providerId),
+                It.Is<EmployeeRights>(e => e.ProviderId == providerId)))
+            .Returns(Task.CompletedTask);
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.Update(It.IsAny<CompetitiveEventDraft>(), It.IsAny<Action<CompetitiveEventDraft>>()))
+            .Returns(Task.CompletedTask);
+
+        mockChangesLogService
+            .Setup(x => x.AddEntityChangesLogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await competitiveEventDraftService.Update(updateDto);
+
+        // Assert
+        mockUserService.Verify(
+            x => x.UserHasRights(
+                It.IsAny<ProviderRights>(),
+                It.IsAny<EmployeeRights>(),
+                It.IsAny<ProviderRights>(),
+                It.IsAny<EmployeeRights>()),
+            Times.Once,
+            "UserHasRights should be called exactly once even when providers are the same");
+    }
+
+    [Test]
+    public async Task Update_WhenCalled_ShouldPassCorrectProviderIdsToUserRightsCheck()
+    {
+        // Arrange
+        var originalProviderId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var newOrganizerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = originalProviderId,
+            Status = CompetitiveEventDraftStatus.Open
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = newOrganizerId,
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetByIdWithDetails(draftId))
+            .ReturnsAsync(existingDraft);
+
+        ProviderRights capturedProviderRights1 = null;
+        EmployeeRights capturedEmployeeRights1 = null;
+        ProviderRights capturedProviderRights2 = null;
+        EmployeeRights capturedEmployeeRights2 = null;
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                It.IsAny<ProviderRights>(),
+                It.IsAny<EmployeeRights>(),
+                It.IsAny<ProviderRights>(),
+                It.IsAny<EmployeeRights>()))
+            .Callback<ProviderRights, EmployeeRights, ProviderRights, EmployeeRights>((pr1, er1, pr2, er2) =>
+            {
+                capturedProviderRights1 = pr1;
+                capturedEmployeeRights1 = er1;
+                capturedProviderRights2 = pr2;
+                capturedEmployeeRights2 = er2;
+            })
+            .Returns(Task.CompletedTask);
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.Update(It.IsAny<CompetitiveEventDraft>(), It.IsAny<Action<CompetitiveEventDraft>>()))
+            .Returns(Task.CompletedTask);
+
+        mockChangesLogService
+            .Setup(x => x.AddEntityChangesLogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await competitiveEventDraftService.Update(updateDto);
+
+        // Assert
+        capturedProviderRights1.Should().NotBeNull();
+        capturedProviderRights1.ProviderId.Should().Be(originalProviderId);
+        capturedEmployeeRights1.Should().NotBeNull();
+        capturedEmployeeRights1.ProviderId.Should().Be(originalProviderId);
+        capturedProviderRights2.Should().NotBeNull();
+        capturedProviderRights2.ProviderId.Should().Be(newOrganizerId);
+        capturedEmployeeRights2.Should().NotBeNull();
+        capturedEmployeeRights2.ProviderId.Should().Be(newOrganizerId);
+    }
+
+    #endregion
+}
