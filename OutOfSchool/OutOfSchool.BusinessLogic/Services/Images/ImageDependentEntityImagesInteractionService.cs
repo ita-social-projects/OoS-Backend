@@ -179,7 +179,7 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
         }
         else
         {
-            Logger.LogTrace("Skip external deletion for image {CoverImageId}: referenced by {refCount} entities", entity.CoverImageId, refCount);
+            Logger.LogTrace("Skip external deletion for image {CoverImageId}: referenced by {RefCount} entities", entity.CoverImageId, refCount);
         }
 
         entity.CoverImageId = null;
@@ -290,7 +290,7 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
             }
             else
             {
-                Logger.LogTrace("Skip external deletion for image {imageId}: referenced by {refCount} entities", imageId, refCount);
+                Logger.LogTrace("Skip external deletion for image {ImageId}: referenced by {RefCount} entities", imageId, refCount);
             }
 
             RemoveImageFromEntity(entity, imageId);
