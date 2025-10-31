@@ -400,7 +400,7 @@ public static class Startup
         services.AddTransient<ISubDirectionService, SubDirectionService>();
         services.AddTransient<IRegistrySyncService, RegistrySyncService>();
         services.AddTransient<ISportKindSyncService, SportKindSyncService>();
-        //services.AddTransient<ISportsSectionSyncService, SportsSectionSyncService>();
+        services.AddTransient<ISportsSectionSyncService, SportsSectionSyncService>();
 
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
