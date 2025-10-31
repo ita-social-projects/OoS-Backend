@@ -58,7 +58,7 @@ public class RegistrySyncService : IRegistrySyncService
         var institutionHierarchyId = draft.WorkshopDraftContent.InstitutionHierarchyId
             ?? throw new ArgumentException("InstitutionHierarchyId cannot be null.");
 
-        if (draft.WorkshopDraftContent?.MinsportSectionId is null)
+        if (draft.MinsportSectionId is null)
         {
             // Create
             var request = draft.ToSportSectionPostRequest(baseImageUrl);
