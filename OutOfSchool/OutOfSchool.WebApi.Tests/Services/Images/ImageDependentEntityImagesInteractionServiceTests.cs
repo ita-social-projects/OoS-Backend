@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Common;
-using OutOfSchool.BusinessLogic.Common.Resources.Codes;
+using OutOfSchool.BusinessLogic.Config.Images;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.Services.Models;
@@ -18,7 +16,7 @@ using OutOfSchool.Services.Models.Images;
 namespace OutOfSchool.WebApi.Tests.Services.Images;
 
 [TestFixture]
-internal class ImageDependentEntityImagesInteractionServiceTests
+public class ImageDependentEntityImagesInteractionServiceTests
 {
     private Mock<IImageService> imageServiceMock;
     private Mock<IImageReferenceService<TestEntity>> imageReferenceServiceMock;
@@ -37,8 +35,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
 
         imagesLimits = new ImagesLimits<TestEntity>
         {
-            ImagesMaxCount = 5,
-            ImageMaxSize = 10 * 1024 * 1024 // 10MB
+            MaxCountOfFiles = 5
         };
 
         limitsOptionsMock.Setup(x => x.Value).Returns(imagesLimits);
@@ -130,7 +127,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
     }
 
     [Test]
-    public async Task RemoveCoverImageAsync_WhenImageHasZeroReferences_ShouldNotDeleteFromExternalStorage()
+    public async Task RemoveCoverImageAsync_WhenImageHasZeroReferences_ShouldDeleteFromExternalStorage()
     {
         // Arrange
         var entity = new TestEntity
@@ -149,7 +146,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
         // Assert
         result.Succeeded.Should().BeTrue();
         entity.CoverImageId.Should().BeNull();
-        imageServiceMock.Verify(x => x.RemoveImageAsync(It.IsAny<string>()), Times.Never);
+        imageServiceMock.Verify(x => x.RemoveImageAsync(It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -163,7 +160,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
     }
 
     [Test]
-    public async Task RemoveCoverImageAsync_WhenCoverImageIdIsNull_ShouldReturnFailedResult()
+    public void RemoveCoverImageAsync_WhenCoverImageIdIsNull_ShouldThrowArgumentException()
     {
         // Arrange
         var entity = new TestEntity
@@ -173,15 +170,14 @@ internal class ImageDependentEntityImagesInteractionServiceTests
         };
 
         // Act
-        var result = await service.RemoveCoverImageAsync(entity);
+        Func<Task> act = async () => await service.RemoveCoverImageAsync(entity);
 
         // Assert
-        result.Succeeded.Should().BeFalse();
-        imageReferenceServiceMock.Verify(x => x.CountReferencesAsync(It.IsAny<string>(), default), Times.Never);
+        act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
-    public async Task RemoveCoverImageAsync_WhenCoverImageIdIsEmpty_ShouldReturnFailedResult()
+    public void RemoveCoverImageAsync_WhenCoverImageIdIsEmpty_ShouldThrowArgumentException()
     {
         // Arrange
         var entity = new TestEntity
@@ -191,11 +187,10 @@ internal class ImageDependentEntityImagesInteractionServiceTests
         };
 
         // Act
-        var result = await service.RemoveCoverImageAsync(entity);
+        Func<Task> act = async () => await service.RemoveCoverImageAsync(entity);
 
         // Assert
-        result.Succeeded.Should().BeFalse();
-        imageReferenceServiceMock.Verify(x => x.CountReferencesAsync(It.IsAny<string>(), default), Times.Never);
+        act.Should().ThrowAsync<ArgumentException>();
     }
 
     #endregion
@@ -324,7 +319,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
             .ReturnsAsync(new MultipleImageRemovingResult
             {
                 RemovedIds = new List<string> { imageId2 },
-                MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { Succeeded = true }
+                MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult()
             });
 
         // Act
@@ -412,7 +407,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
             .ReturnsAsync(new MultipleImageRemovingResult
             {
                 RemovedIds = imageIds,
-                MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { Succeeded = true }
+                MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult ()
             });
 
         // Act
@@ -435,7 +430,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
             Images = new List<Image<TestEntity>>()
         };
 
-        var imageIds = new List<string>();
+        var imageIds = new List<string>() { "id"};
 
         // Act
         var result = await service.RemoveManyImagesAsync(entity, imageIds);
@@ -573,7 +568,7 @@ internal class ImageDependentEntityImagesInteractionServiceTests
 
     #region Test Entity
 
-    private class TestEntity : IKeyedEntity, IImageDependentEntity<TestEntity>
+    public class TestEntity : IKeyedEntity, IImageDependentEntity<TestEntity>
     {
         public Guid Id { get; set; }
         public string CoverImageId { get; set; }

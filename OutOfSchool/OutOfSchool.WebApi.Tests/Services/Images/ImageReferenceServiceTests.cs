@@ -18,7 +18,7 @@ using OutOfSchool.Tests.Common.DbContextTests;
 namespace OutOfSchool.WebApi.Tests.Services.Images;
 
 [TestFixture]
-internal class ImageReferenceServiceTests
+public class ImageReferenceServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private TestOutOfSchoolDbContext context;
@@ -49,7 +49,7 @@ internal class ImageReferenceServiceTests
         var service = new ImageReferenceService<Workshop>(context);
 
         // Act
-        var result = await service.CountReferencesAsync(null);
+        var result = await service.CountReferencesAsync((string)null);
 
         // Assert
         result.Should().Be(0);
@@ -105,8 +105,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -127,9 +126,9 @@ internal class ImageReferenceServiceTests
         var imageId = "shared-cover-image";
         var workshops = new[]
         {
-            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 1", CoverImageId = imageId, ProviderId = Guid.NewGuid(), ProviderTitle = "Provider 1" },
-            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 2", CoverImageId = imageId, ProviderId = Guid.NewGuid(), ProviderTitle = "Provider 2" },
-            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 3", CoverImageId = imageId, ProviderId = Guid.NewGuid(), ProviderTitle = "Provider 3" }
+            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 1", CoverImageId = imageId, ProviderId = Guid.NewGuid() },
+            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 2", CoverImageId = imageId, ProviderId = Guid.NewGuid() },
+            new Workshop { Id = Guid.NewGuid(), Title = "Workshop 3", CoverImageId = imageId, ProviderId = Guid.NewGuid() }
         };
         context.Workshops.AddRange(workshops);
         await context.SaveChangesAsync();
@@ -152,8 +151,7 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -185,8 +183,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -217,7 +214,8 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             ProviderId = Guid.NewGuid(),
-            CoverImageId = imageId
+            CoverImageId = imageId,
+            WorkshopDraftContent = new WorkshopDraftContent()
         };
         context.WorkshopDrafts.Add(draft);
         await context.SaveChangesAsync();
@@ -241,8 +239,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
 
@@ -250,7 +247,8 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             ProviderId = Guid.NewGuid(),
-            CoverImageId = imageId
+            CoverImageId = imageId,
+            WorkshopDraftContent= new WorkshopDraftContent()
         };
         context.WorkshopDrafts.Add(draft);
         await context.SaveChangesAsync();
@@ -275,7 +273,7 @@ internal class ImageReferenceServiceTests
         var service = new ImageReferenceService<CompetitiveEvent>(context);
 
         // Act
-        var result = await service.CountReferencesAsync(null);
+        var result = await service.CountReferencesAsync((string)null);
 
         // Assert
         result.Should().Be(0);
@@ -305,7 +303,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Competitive Event",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid()
+            ShortTitle = "short title"
         };
         context.CompetitiveEvents.Add(competitiveEvent);
         await context.SaveChangesAsync();
@@ -328,7 +326,8 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             ProviderId = Guid.NewGuid(),
-            CoverImageId = imageId
+            CoverImageId = imageId,
+            CompetitiveEventDraftContent = new CompetitiveEventDraftContent()
         };
         context.CompetitiveEventDrafts.Add(draft);
         await context.SaveChangesAsync();
@@ -351,7 +350,7 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             Title = "Test Event",
-            ProviderId = Guid.NewGuid()
+            ShortTitle = "Title"
         };
         context.CompetitiveEvents.Add(competitiveEvent);
         await context.SaveChangesAsync();
@@ -361,7 +360,7 @@ internal class ImageReferenceServiceTests
             EntityId = competitiveEvent.Id,
             ExternalStorageId = imageId
         };
-        context.CompetitiveEventImages.Add(galleryImage);
+        context.CompetitiveEventsImages.Add(galleryImage);
         await context.SaveChangesAsync();
 
         var service = new ImageReferenceService<CompetitiveEvent>(context);
@@ -431,8 +430,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -464,8 +462,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Workshop 1",
             CoverImageId = imageId1,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Provider 1"
+            ProviderId = Guid.NewGuid()
         };
 
         // image-2: used twice
@@ -474,16 +471,14 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Workshop 2",
             CoverImageId = imageId2,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Provider 2"
+            ProviderId = Guid.NewGuid()
         };
         var workshop3 = new Workshop
         {
             Id = Guid.NewGuid(),
             Title = "Workshop 3",
             CoverImageId = imageId2,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Provider 3"
+            ProviderId = Guid.NewGuid()
         };
 
         // image-3: used in gallery
@@ -491,8 +486,7 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             Title = "Workshop 4",
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Provider 4"
+            ProviderId = Guid.NewGuid()
         };
 
         context.Workshops.AddRange(workshop1, workshop2, workshop3, workshop4);
@@ -533,8 +527,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
 
@@ -543,7 +536,8 @@ internal class ImageReferenceServiceTests
         {
             Id = Guid.NewGuid(),
             ProviderId = Guid.NewGuid(),
-            CoverImageId = imageId
+            CoverImageId = imageId,
+            WorkshopDraftContent = new WorkshopDraftContent()
         };
         context.WorkshopDrafts.Add(draft);
 
@@ -615,8 +609,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -640,8 +633,7 @@ internal class ImageReferenceServiceTests
             Id = Guid.NewGuid(),
             Title = "Test Workshop",
             CoverImageId = imageId,
-            ProviderId = Guid.NewGuid(),
-            ProviderTitle = "Test Provider"
+            ProviderId = Guid.NewGuid()
         };
         context.Workshops.Add(workshop);
         await context.SaveChangesAsync();
@@ -668,7 +660,7 @@ internal class ImageReferenceServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Should().HaveCount(1000);
-        result.Values.Should().AllBe(0);
+        result.Values.Should().AllBeEquivalentTo(0);
     }
 
     #endregion
