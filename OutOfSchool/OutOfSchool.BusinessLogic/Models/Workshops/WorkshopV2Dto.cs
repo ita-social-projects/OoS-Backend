@@ -64,8 +64,8 @@ public static class WorkshopV2DtoExtensions
             ParentWorkshopId = dto.ParentWorkshopId,
             Contacts = dto.Contacts?.ToModel() ?? [],
             IsChampionPath = dto.IsChampionPath,
-            NoAgeRestrictions = dto.NoAgeRestrictions,
-            MinsportSectionId = dto.MinsportSectionId
+            NoAgeRestrictions = dto.NoAgeRestrictions
+            //MinsportSectionId = dto.MinsportSectionId
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)

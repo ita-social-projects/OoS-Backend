@@ -23,7 +23,7 @@ public static class WorkshopDraftToSportSectionExtensions
     public static SportsSectionUpdateRequest ToSportSectionUpdateRequest(
         this WorkshopDraft draft, [NotNull] string baseImageUrl)
     {
-        var sectionId = draft.WorkshopDraftContent?.MinsportSectionId
+        var sectionId = draft.MinsportSectionId
             ?? throw new ArgumentException("SectionId is required for update.", nameof(draft));
 
         return new SportsSectionUpdateRequest

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.External;
 
@@ -72,4 +73,19 @@ public class ExternalPhotoDto
 {
     public Guid Id { get; set; }
     public string Checksum { get; set; }
+}
+
+public class ExternalScheduleItem
+{
+    [JsonPropertyName("sectionScheduleTimeFrom")]
+    public string SectionScheduleTimeFrom { get; set; }
+
+    [JsonPropertyName("sectionScheduleTimeTo")]
+    public string SectionScheduleTimeTo { get; set; }
+
+    [JsonPropertyName("section_schedule_weekday")]
+    public string SectionScheduleWeekday { get; set; }
+
+    [JsonPropertyName("sectionScheduleWeekdayDictName")]
+    public string SectionScheduleWeekdayDictName { get; set; }
 }

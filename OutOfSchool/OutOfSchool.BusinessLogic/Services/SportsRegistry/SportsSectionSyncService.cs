@@ -4,6 +4,8 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+using OutOfSchool.SportsRegistryApiClient.Models.External;
+using static System.Collections.Specialized.BitVector32;
 namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 public class SportsSectionSyncService(
     ISportsRegistryWorkshopProvider workshopProvider,
@@ -49,7 +51,7 @@ public class SportsSectionSyncService(
         var toUpdate = new List<WorkshopDraft>();
 
         var tempSectionList = sportsSections.Where(s => s.OrganizationCode == "45080641").ToList(); // temporary for testing purposes
-        foreach (var section in tempSectionList ) // check
+        foreach (var section in tempSectionList) 
         //foreach (var section in sportsSections) // check
         {
             existingDraftLookup.TryGetValue(section.SectionId, out var existingDraft);
@@ -62,38 +64,66 @@ public class SportsSectionSyncService(
 
             if (!lastUpdate.HasValue || section.UpdatedInRegistryAt > lastUpdate.Value)
             {
+                // try to retrieve CATOTTGId before creating/updating draft
+                var catottgId = await TryGetCatottgIdAsync(section).ConfigureAwait(false);
+                if (!catottgId.HasValue)
+                { 
+                    continue; // skip sections without valid CATOTTGId
+                }
+
                 WorkshopDraft draft;
 
                 if (existingDraft != null)
                 {
                     // update existing draft
-                    draft = section.MapToExistingDraft(existingDraft);
-                    draft.DraftStatus = WorkshopDraftStatus.PendingModeration; // to ask Dima
+                    draft = section.MapToExistingDraft(existingDraft, catottgId.Value);
+                    draft.DraftStatus = WorkshopDraftStatus.PendingModeration;
                     toUpdate.Add(draft);
+                    logger.LogDebug(
+                        "Updating existing draft for section {SectionId}. DraftId={DraftId}, ProviderId={ProviderId}",
+                        section.SectionId, draft.Id, draft.ProviderId);
                 }
                 else if (existingWorkshop != null)
                 {
+                    if (existingWorkshop.MinsportSectionId != section.SectionId)
+                    {
+                        logger.LogWarning(
+                            "Mismatch between MinsportSectionId and SectionId for workshop {WorkshopId}: expected {Expected}, got {Actual}. Skipping sync for this section.",
+                            existingWorkshop.Id,
+                            existingWorkshop.MinsportSectionId,
+                            section.SectionId);
+                        continue; //skip sync section to not create draft for wrong section
+                    }
                     // no draft,  only workshop - create draft
-                    draft = section.ToWorkshopDraft(existingWorkshop.ProviderId);
-
-                    //draft = existingWorkshop.ToDraft(); // may be this way?
-                    //draft = section.MapToExistingDraft(draft);
+                    draft = section.ToWorkshopDraft(existingWorkshop.ProviderId, catottgId.Value);
+                    draft.WorkshopId = existingWorkshop.Id;
+                    draft.MinsportSectionId = existingWorkshop.MinsportSectionId;
 
                     toCreate.Add(draft);
+                    logger.LogInformation(
+                        "Creating new draft for existing workshop {WorkshopId} from section {SectionId}. ProviderId={ProviderId}",
+                        existingWorkshop.Id, section.SectionId, draft.ProviderId);
                 }
                 else
                 {
                     // no workshop, no draft - new draft
                     var providerId = await GetProviderIdAsync(section.OrganizationCode).ConfigureAwait(false);
                     if (!providerId.HasValue)
+                    {
+                        logger.LogWarning("Skipping section {SectionId} because provider was not found.", section.SectionId);
                         continue; // skip sections without valid provider
-                    draft = section.ToWorkshopDraft(providerId.Value);
+                    }
+                    draft = section.ToWorkshopDraft(providerId.Value, catottgId.Value);
                     toCreate.Add(draft);
                 }
-
-                //  update CATOTTGId
-                draft.CATOTTGId = await GetIdByCatottgCode(section.SectionAddressLocalityDictIdCode) ?? 0;
+               
                 break; // temporary for testing purposes
+            }
+            else
+            {
+                logger.LogDebug(
+                    "Section {SectionId} not updated (UpdatedInRegistryAt={UpdatedAt}). Last known update={LastUpdate}",
+                    section.SectionId, section.UpdatedInRegistryAt, lastUpdate);
             }
         }
 
@@ -134,11 +164,22 @@ public class SportsSectionSyncService(
         return toCreate.Count + toUpdate.Count;
     }
 
-    private async Task<long?> GetIdByCatottgCode(string sectionAddressLocalityDictIdCode)
+    private async Task<long?> TryGetCatottgIdAsync(ExternalSportsSectionDto section)
     {
-        return await codeficatorRepository.GetIdByCodeAsync(sectionAddressLocalityDictIdCode);
+        var catottgId = await codeficatorRepository.GetIdByCodeAsync(section.SectionAddressLocalityDictIdCode)
+            .ConfigureAwait(false);
+
+        if (!catottgId.HasValue)
+        {
+            logger.LogWarning(
+                "Skipping section {SectionId} because CATOTTG code '{CatottgCode}' was not found.",
+                section.SectionId,
+                section.SectionAddressLocalityDictIdCode);
+        }
+
+        return catottgId;
     }
-   
+
     private async Task<Guid?> GetProviderIdAsync(string edrpou)
     {
         return await providerRepository.GetIdByEdrpouAsync(edrpou);

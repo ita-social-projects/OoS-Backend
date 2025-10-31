@@ -95,5 +95,5 @@ public class WorkshopDraftContent :
     
     public bool IsChampionPath { get;set; }
     
-    public Guid? MinsportSectionId { get; set; }
+   // public Guid? MinsportSectionId { get; set; }
 }
