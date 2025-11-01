@@ -14,6 +14,8 @@ public class WorkshopDraftConfiguration : TrackableBaseEntityConfiguration<Works
         builder.Property(x => x.Id).HasColumnType("UUID");
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.CoverImageId);
+
         builder.Property(x => x.ProviderId)
             .IsRequired();
 
