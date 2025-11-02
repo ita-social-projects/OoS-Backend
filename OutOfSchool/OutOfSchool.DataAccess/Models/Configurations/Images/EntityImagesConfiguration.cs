@@ -4,14 +4,14 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models.Configurations.Images;
 
-internal class EntityImagesConfiguration<TEntity>(bool hasImages = false) : IEntityTypeConfiguration<Image<TEntity>>
+internal class EntityImagesConfiguration<TEntity>(bool hasIndex = false) : IEntityTypeConfiguration<Image<TEntity>>
     where TEntity : class, IImageDependentEntity<TEntity>
 {
     public void Configure(EntityTypeBuilder<Image<TEntity>> builder)
     {
         builder.HasKey(nameof(Image<TEntity>.EntityId), nameof(Image<TEntity>.ExternalStorageId));
 
-        if (hasImages)
+        if (hasIndex)
         {
             builder.HasIndex(nameof(Image<TEntity>.ExternalStorageId));
         }

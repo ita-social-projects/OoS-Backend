@@ -1382,7 +1382,8 @@ public class CompetitiveEventDraftServiceTests
 
         mockCompetitiveEventDraftRepository
             .Setup(x => x.GetById(draftId))
-            .ReturnsAsync(existingDraft);
+            .ReturnsAsync(existingDraft)
+            .Verifiable(Times.Once);
 
         mockUserService
             .Setup(x => x.UserHasRights(
@@ -1391,65 +1392,12 @@ public class CompetitiveEventDraftServiceTests
                 new ProviderRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
                 new EmployeeRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId)
                 ))
-            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights"));
+            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights"))
+            .Verifiable(Times.Once);
 
         // Act & Assert
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await competitiveEventDraftService.Update(draftId, updateDto));
-    }
-
-    [Test]
-    public void Update_WhenUserLacksRightsForNewOrganizer_ShouldThrowException()
-    {
-        // Arrange
-        var providerId = Guid.NewGuid();
-        var organizerId = Guid.NewGuid();
-        var draftId = Guid.NewGuid();
-        var competitiveEventId = Guid.NewGuid();
-
-        var existingDraft = new CompetitiveEventDraft
-        {
-            Id = draftId,
-            ProviderId = providerId
-        };
-
-        var updateDto = new CompetitiveEventDraftUpdateDto
-        {
-            Id = draftId,
-            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
-            {
-                Id = competitiveEventId,
-                OrganizerOfTheEventId = organizerId,
-                Contacts = new List<ContactsDto>
-                {
-                    new ContactsDto
-                    {
-                        IsDefault = true,
-                        Address = ContactsAddressDtoGenerator.Generate()
-                    }
-                }
-            }
-        };
-
-        mockCompetitiveEventDraftRepository
-           .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
-           .Returns((Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>> f) => f.Invoke())
-           .Verifiable(Times.Once);
-
-        mockCompetitiveEventDraftRepository
-            .Setup(x => x.GetById(draftId))
-            .ReturnsAsync(existingDraft);
-
-        mockUserService
-            .Setup(x => x.UserHasRights(
-                new ProviderRights(existingDraft.ProviderId),
-                new EmployeeRights(existingDraft.ProviderId),
-                new ProviderRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
-                new EmployeeRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId)
-                ))
-            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights for new organizer"));
-
-        // Act & Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await competitiveEventDraftService.Update(draftId, updateDto));
+        Mock.VerifyAll();
     }
 
     #endregion
