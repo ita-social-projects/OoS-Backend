@@ -1344,7 +1344,7 @@ public class CompetitiveEventDraftServiceTests
     #region Update Tests - User Rights Checking
 
     [Test]
-    public void Update_WhenUserLacksRightsForOriginalProvider_ShouldThrowException()
+    public void Update_WhenUserLacksRequiredRights_ShouldThrowException()
     {
         // Arrange
         var providerId = Guid.NewGuid();
