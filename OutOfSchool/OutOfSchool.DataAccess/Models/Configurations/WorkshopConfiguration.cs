@@ -10,6 +10,8 @@ internal class WorkshopConfiguration : BusinessEntityWithContactsConfiguration<W
     {
         base.Configure(builder);
 
+        builder.HasIndex(x => x.CoverImageId);
+
         builder.HasMany(x => x.WorkshopDescriptionItems)
              .WithOne(x => x.Workshop)
              .HasForeignKey(x => x.WorkshopId)

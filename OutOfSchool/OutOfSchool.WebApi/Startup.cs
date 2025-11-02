@@ -293,7 +293,7 @@ public static class Startup
         var mariaDbVersion = configuration.GetAndValidateMariaDbVersion();
         var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
-        // registartion of thumbnail generation 
+        // registration of thumbnail generation 
         builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
         builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
 
@@ -426,6 +426,15 @@ public static class Startup
         
         // competitive event draft images in the external storage
         services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>, ImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
+
+        // counting references to images in external storage
+        services.AddScoped<IImageReferenceService<Workshop>, ImageReferenceService<Workshop>>();
+        services.AddScoped<IImageReferenceService<WorkshopDraft>, ImageReferenceService<WorkshopDraft>>();
+        services.AddScoped<IImageReferenceService<CompetitiveEvent>, ImageReferenceService<CompetitiveEvent>>();
+        services.AddScoped<IImageReferenceService<CompetitiveEventDraft>, ImageReferenceService<CompetitiveEventDraft>>();
+        services.AddScoped<IImageReferenceService<Provider>, ImageReferenceService<Provider>>();
+        services.AddScoped<IImageReferenceService<Teacher>, ImageReferenceService<Teacher>>();
+        services.AddScoped<IImageReferenceService<TeacherDraft>, ImageReferenceService<TeacherDraft>>();
 
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();
