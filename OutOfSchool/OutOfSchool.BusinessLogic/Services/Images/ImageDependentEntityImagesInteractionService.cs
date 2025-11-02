@@ -285,7 +285,7 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
 
             if (refCount <= 1)
             {
-                Logger.LogTrace("Removing an image for the entity was started");
+                Logger.LogTrace("Deleting image from external storage");
                 await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
             }
             else
