@@ -503,6 +503,7 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(draft.ToResponseDto().CompetitiveEventDraftId));
+        Assert.That(result.Value.CompetitiveEventDraft.DraftStatus, Is.EqualTo(CompetitiveEventDraftStatus.Draft));
         Mock.VerifyAll();
     }
 
@@ -575,6 +576,7 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(draft.ToResponseDto().CompetitiveEventDraftId));
+        Assert.That(result.Value.CompetitiveEventDraft.DraftStatus, Is.EqualTo(CompetitiveEventDraftStatus.Draft));
         Mock.VerifyAll();
     }
 
