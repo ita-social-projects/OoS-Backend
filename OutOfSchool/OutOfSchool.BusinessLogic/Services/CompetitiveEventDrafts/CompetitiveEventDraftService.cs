@@ -908,6 +908,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.SetToDraft(competitiveEventDraft);
+        competitiveEventDraft.DraftStatus = CompetitiveEventDraftStatus.Draft;
 
         var coverImageResult = await competitiveEventDraftImagesService
             .ChangeCoverImageAsync(competitiveEventDraft,
