@@ -171,7 +171,11 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                 });
 
                 services.AddTransient<IStringLocalizer<SharedResource>, PassthroughStringLocalizer<SharedResource>>();
-
+                services.AddScoped<IImageReferenceService<Workshop>, ImageReferenceService<Workshop>>();
+                services.AddScoped<IImageReferenceService<WorkshopDraft>, ImageReferenceService<WorkshopDraft>>();
+                services.AddScoped<IImageReferenceService<Provider>, ImageReferenceService<Provider>>();
+                services.AddScoped<IImageReferenceService<Teacher>, ImageReferenceService<Teacher>>();
+                services.AddScoped<IImageReferenceService<TeacherDraft>, ImageReferenceService<TeacherDraft>>();
                 services.AddTransient<ILanguageService, LanguageService>();
                 services.AddTransient<IProviderService, ProviderService>();
                 services.AddTransient<ICurrentUserService, CurrentUserService>();
