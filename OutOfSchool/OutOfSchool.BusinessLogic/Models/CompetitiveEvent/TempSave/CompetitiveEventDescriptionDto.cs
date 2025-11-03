@@ -61,6 +61,8 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string Benefits { get; set; }
 
+    public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // Run validations from CompetitiveEventAboutDto
