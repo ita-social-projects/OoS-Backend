@@ -143,8 +143,8 @@ public static class ContactsAddressDtoExtensions
         {
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
-            Latitude = Math.Abs(contactsAddress.Latitude - 0d) < Epsilon ? contactsAddress.CATOTTG.Latitude : contactsAddress.Latitude,
-            Longitude = Math.Abs(contactsAddress.Longitude - 0d) < Epsilon ? contactsAddress.CATOTTG.Longitude : contactsAddress.Longitude,
+            Latitude = Math.Abs(contactsAddress.Latitude - 0d) < Epsilon && contactsAddress.CATOTTG != null ? contactsAddress.CATOTTG.Latitude : contactsAddress.Latitude,
+            Longitude = Math.Abs(contactsAddress.Longitude - 0d) < Epsilon && contactsAddress.CATOTTG != null ? contactsAddress.CATOTTG.Longitude : contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
             CodeficatorAddress = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };
