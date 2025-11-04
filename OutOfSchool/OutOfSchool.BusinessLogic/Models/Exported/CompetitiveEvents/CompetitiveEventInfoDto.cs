@@ -63,7 +63,7 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public bool AreThereBenefits { get; set; }
 
-    [MaxLength(Constants.MaxBenefitsLength)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string Benefits { get; set; } = string.Empty;
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]

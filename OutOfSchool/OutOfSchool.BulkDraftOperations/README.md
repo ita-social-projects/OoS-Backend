@@ -1,6 +1,6 @@
 # OutOfSchool Bulk Draft Operations
 
-This application provides command-line tools for managing workshop drafts, including converting existing workshops to drafts and approving workshop drafts in bulk.
+This application provides command-line tools for managing workshop and competitive event drafts, including converting existing entities to drafts and approving workshop drafts in bulk.
 
 ## Available Operations
 
@@ -24,16 +24,18 @@ JSON Format:
 ]
 ```
 
-### 2. Convert Workshops to Drafts (`convert`)
+### 2. Convert to Drafts (`convert`)
 
-Converts workshops created since a specified date into draft status.
+Converts workshops or competitive events created since a specified date into draft status.
 
 Usage:
 ```bash
-dotnet run -- convert --since=2025-01-10
+dotnet run -- convert --entity=workshops --since=2025-01-10
+dotnet run -- convert --entity=competitions --since=2025-01-10
 ```
 
 Parameters:
+- `--entity`: Required. One of `workshops` or `competitions` (aliases: `ws`, `ce`, `competitive-events`).
 - `--since`, `--date`, or `--after`: Date in YYYY-MM-DD format (default: 6 hours ago)
 
 ## Getting Help
@@ -60,7 +62,10 @@ The application uses standard .NET configuration sources:
 dotnet run -- approve --file=my-workshops.json
 
 # Convert workshops created since a specific date
-dotnet run -- convert --since=2025-01-01
+dotnet run -- convert --entity=workshops --since=2025-01-01
+
+# Convert competitive events created since a specific date
+dotnet run -- convert --entity=competitions --since=2025-01-01
 
 # Show help
 dotnet run -- help
