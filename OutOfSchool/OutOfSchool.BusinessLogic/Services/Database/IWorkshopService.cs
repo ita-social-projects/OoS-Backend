@@ -124,7 +124,9 @@ public interface IWorkshopService
     /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
     Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
 
-    Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
+    Task<IEnumerable<Workshop>> GetByIdsWithIncludes(
+        IEnumerable<Guid> ids,
+        Func<IQueryable<Workshop>, IQueryable<Workshop>> includeExpression = null);
 
     /// <summary>
     /// Retrieves a paginated list of workshops along with their attachment status

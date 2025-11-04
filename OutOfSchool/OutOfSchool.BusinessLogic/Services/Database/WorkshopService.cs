@@ -961,9 +961,11 @@ public class WorkshopService(
         return predicate;
     }
 
-    public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
+    public async Task<IEnumerable<Workshop>> GetByIdsWithIncludes(
+        IEnumerable<Guid> ids,
+        Func<IQueryable<Workshop>, IQueryable<Workshop>> includeExpression)
     {
-        return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
+        return await workshopRepository.GetByIds(ids, includeExpression).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
