@@ -179,4 +179,7 @@ public static class WorkshopDtoExtensions
 
     public static List<WorkshopDto> ToDto(this IEnumerable<Workshop> list)
         => list.MapToList(ToDto);
+    
+    public static List<WorkshopES> ToES(this IEnumerable<Workshop> list)
+        => list.ToDto().MapToList(ToES);
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Base.Api;
@@ -18,7 +19,9 @@ public interface IWorkshopRepository : IEntityRepositorySoftDeleted<Guid, Worksh
     /// The task result contains the workshop entity with its navigation properties loaded, or null if not found.</returns>
     Task<Workshop> GetWithNavigations(Guid id, bool asNoTracking = false);
 
-    Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
+    Task<IEnumerable<Workshop>> GetByIds(
+        IEnumerable<Guid> ids,
+        Func<IQueryable<Workshop>, IQueryable<Workshop>> includeExpression = null);
 
     /// <summary>
     /// Update IsBlocked property in all workshops with specified provider.
