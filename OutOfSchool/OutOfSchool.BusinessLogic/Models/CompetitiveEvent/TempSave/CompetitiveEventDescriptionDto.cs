@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
-using System.ComponentModel.DataAnnotations;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
@@ -56,7 +56,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     public bool? AreThereBenefits { get; set; }
 
     [MinLength(3)]
-    [MaxLength(Constants.MaxBenefitsLength)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string Benefits { get; set; }

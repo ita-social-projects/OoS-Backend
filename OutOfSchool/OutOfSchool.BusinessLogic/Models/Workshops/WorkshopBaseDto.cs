@@ -66,7 +66,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool CompetitiveSelection { get; set; }
 
     [MinLength(3)]
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "CompetitiveSelectionDescription field is required")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "CompetitiveSelectionDescription field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
@@ -102,7 +102,6 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [Required]
     public Guid ProviderId { get; set; }
 
-    [Required]
     [MaxLength(Constants.MaxProviderFullTitleLength)]
     public string ProviderTitle { get; set; } = string.Empty;
 
@@ -124,7 +123,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsInclusive { get; set; } = false;
 
     [MinLength(3)]
-    [MaxLength(500)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "EnrollmentProcedureDescription field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string EnrollmentProcedureDescription { get; set; }
@@ -134,7 +133,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsChampionPath { get; set; } = false;
 
     [MinLength(3)]
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string PreferentialTermsOfParticipation { get; set; }

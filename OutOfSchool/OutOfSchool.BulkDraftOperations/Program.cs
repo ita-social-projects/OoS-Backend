@@ -85,5 +85,6 @@ static void PrintHelp(IReadOnlyCollection<IConsoleOperation> operations)
     }
     Console.WriteLine("\nExamples:");
     Console.WriteLine("  dotnet run -- approve --file=workshops.json");
-    Console.WriteLine("  dotnet run -- convert --since=2025-09-10");
+    Console.WriteLine("  dotnet run -- convert --entity=workshops --since=2025-09-10");
+    Console.WriteLine("  dotnet run -- convert --entity=competitions --since=2025-09-10");
 }

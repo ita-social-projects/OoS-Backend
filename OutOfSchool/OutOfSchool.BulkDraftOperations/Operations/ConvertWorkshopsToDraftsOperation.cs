@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.BusinessLogic.Extensions;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common;
@@ -14,8 +15,11 @@ using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 
@@ -24,7 +28,7 @@ namespace OutOfSchool.BulkDraftOperations.Operations;
 public class ConvertWorkshopsToDraftsOperation : IConsoleOperation
 {
     public string Name => "convert";
-    public string Description => "Convert workshops created since a given date into drafts";
+    public string Description => "Convert workshops or competitive events created since a given date into drafts";
 
     public void ConfigureHost(IHostBuilder hostBuilder, string[] args)
     {
@@ -76,8 +80,22 @@ public class ConvertWorkshopsToDraftsOperation : IConsoleOperation
         using var scope = host.Services.CreateScope();
         var logger =  scope.ServiceProvider.GetRequiredService<ILogger<ConvertWorkshopsToDraftsOperation>>();
         
-        logger.LogInformation("Starting workshop to draft conversion...");
+        logger.LogInformation("Starting conversion to drafts...");
         var dbContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
+
+        var entityArg = ArgsParser.GetArgValue(args, "entity")
+                       ?? ArgsParser.GetArgValue(args, "type")
+                       ?? ArgsParser.GetArgValue(args, "target");
+
+        var entityNormalized = entityArg?.Trim().ToLowerInvariant();
+        var isWorkshops = entityNormalized is "workshop" or "workshops" or "ws";
+        var isCompetitions = entityNormalized is "competition" or "competitions" or "ce" or "competitive-events" or "event" or "events";
+
+        if (!isWorkshops && !isCompetitions)
+        {
+            logger.LogError("Missing or invalid --entity. Allowed values: workshops, competitions");
+            return 1;
+        }
 
         var sinceArg = ArgsParser.GetArgValue(args, "since") ?? ArgsParser.GetArgValue(args, "date") ?? ArgsParser.GetArgValue(args, "after");
         DateTime cutoffUtc;
@@ -104,25 +122,50 @@ public class ConvertWorkshopsToDraftsOperation : IConsoleOperation
 
         try
         {
-            logger.LogInformation("Converting workshops to drafts...");
-            
-            var workshops = GetWorkshopsWithRelatedData(dbContext);
+            if (isWorkshops)
+            {
+                logger.LogInformation("Converting workshops to drafts...");
 
-            var workshopDrafts = await workshops
-                .Where(w => !dbContext.WorkshopDrafts.Any(wd => wd.WorkshopId == w.Id) && w.CreatedAt > cutoffUtc)
-                .AsAsyncEnumerable()
-                .Select(ConvertWorkshopToDraft)
-                .ToListAsync(cancellationToken);
+                var workshops = GetWorkshopsWithRelatedData(dbContext);
 
-            logger.LogInformation("Found {WorkshopDraftsCount} workshops to convert", workshopDrafts.Count);
+                var workshopDrafts = await workshops
+                    .Where(w => !dbContext.WorkshopDrafts.Any(wd => wd.WorkshopId == w.Id) && w.CreatedAt > cutoffUtc)
+                    .AsAsyncEnumerable()
+                    .Select(ConvertWorkshopToDraft)
+                    .ToListAsync(cancellationToken);
 
-            await dbContext.WorkshopDrafts.AddRangeAsync(workshopDrafts, cancellationToken);
+                logger.LogInformation("Found {Count} workshops to convert", workshopDrafts.Count);
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.WorkshopDrafts.AddRangeAsync(workshopDrafts, cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("Transaction committed successfully. Converted {WorkshopDraftsCount} workshops to drafts", workshopDrafts.Count);
+                await transaction.CommitAsync(cancellationToken);
+
+                logger.LogInformation("Transaction committed successfully. Converted {Count} workshops to drafts", workshopDrafts.Count);
+            }
+            else if (isCompetitions)
+            {
+                logger.LogInformation("Converting competitive events to drafts...");
+
+                var eventsQuery = GetCompetitiveEventsWithRelatedData(dbContext);
+
+                var competitiveEventDrafts = await eventsQuery
+                    .Where(e => !dbContext.CompetitiveEventDrafts.Any(ced => ced.CompetitiveEventId == e.Id) && e.CreatedAt > cutoffUtc)
+                    .AsAsyncEnumerable()
+                    .Select(ConvertCompetitiveEventToDraft)
+                    .ToListAsync(cancellationToken);
+
+                logger.LogInformation("Found {Count} competitive events to convert", competitiveEventDrafts.Count);
+
+                await dbContext.CompetitiveEventDrafts.AddRangeAsync(competitiveEventDrafts, cancellationToken);
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                logger.LogInformation("Transaction committed successfully. Converted {Count} competitive events to drafts", competitiveEventDrafts.Count);
+            }
         }
         catch (Exception ex)
         {
@@ -177,5 +220,45 @@ public class ConvertWorkshopsToDraftsOperation : IConsoleOperation
         }
 
         return workshopDraft;
+    }
+
+    private static IQueryable<CompetitiveEvent> GetCompetitiveEventsWithRelatedData(OutOfSchoolDbContext dbContext)
+    {
+        return dbContext.CompetitiveEvents
+            .Include(e => e.SubDirections)
+            .ThenInclude(sd => sd.Direction)
+            .Include(e => e.CompetitiveEventDescriptionItems)
+            .Include(e => e.Coverage)
+            .IncludeContactsWithCodeficatorHierarchy()
+            .Include(e => e.Images)
+            .Include(e => e.OrganizerOfTheEvent)
+            .Where(e => !e.IsDeleted);
+    }
+
+    private static CompetitiveEventDraft ConvertCompetitiveEventToDraft(CompetitiveEvent competitiveEvent)
+    {
+        var dto = competitiveEvent.ToV2Dto();
+
+        var draft = dto.ToDraft();
+
+        draft.DraftStatus = CompetitiveEventDraftStatus.PendingModeration;
+        draft.RejectionMessage = null;
+
+        if (competitiveEvent.Images != null && competitiveEvent.Images.Count != 0)
+        {
+            draft.Images = competitiveEvent.Images
+                .Select(originalImage => new Image<CompetitiveEventDraft>
+                {
+                    EntityId = draft.Id,
+                    ExternalStorageId = originalImage.ExternalStorageId
+                })
+                .ToList();
+        }
+        else
+        {
+            draft.Images = [];
+        }
+
+        return draft;
     }
 }

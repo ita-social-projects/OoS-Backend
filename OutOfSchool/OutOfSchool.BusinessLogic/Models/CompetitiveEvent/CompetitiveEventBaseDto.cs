@@ -91,7 +91,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public bool? AreThereBenefits { get; set; }
 
     [MinLength(3)]
-    [MaxLength(Constants.MaxBenefitsLength)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string Benefits { get; set; }

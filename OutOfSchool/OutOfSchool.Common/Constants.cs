@@ -180,17 +180,17 @@ public static class Constants
     /// <summary>
     /// Maximum length of additional description.
     /// </summary>
-    public const int EnrollmentProcedureDescription = 500;
+    public const int EnrollmentProcedureDescription = 2000;
 
     /// <summary>
     /// Maximum length of competitive selection description.
     /// </summary>
-    public const int MaxCompetitiveSelectionDescriptionLength = 500;
+    public const int MaxCompetitiveSelectionDescriptionLength = 2000;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.
     /// </summary>
-    public const int MaxPreferentialTermsOfParticipationLength = 500;
+    public const int MaxPreferentialTermsOfParticipationLength = 2000;
 
     /// <summary>
     /// Maximum length of keywords.
@@ -266,11 +266,6 @@ public static class Constants
     /// Maximum length allowed for the competitive event draft's rejection message.
     /// </summary>
     public const int CompetitiveEventDraftMaxRejectionMessageLength = 500;
-
-    /// <summary>
-    /// The maximum length allowed for the benefits for competitive event.
-    /// </summary>
-    public const int MaxBenefitsLength = 500;
 
     /// <summary>
     /// The maximum length allowed for the description.

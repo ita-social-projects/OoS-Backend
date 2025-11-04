@@ -55,7 +55,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public string CoverImageId { get; set; } = string.Empty;
 
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public Guid OrganizerOfTheEventId { get; set; }
@@ -70,7 +70,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
   
     public bool AreThereBenefits { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string Benefits {  get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]

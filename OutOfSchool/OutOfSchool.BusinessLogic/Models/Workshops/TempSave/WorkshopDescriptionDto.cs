@@ -16,7 +16,7 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string EnrollmentProcedureDescription { get; set; }
 
     [EnumDataType(typeof(Coverage), ErrorMessage = Constants.EnumErrorMessage)]
@@ -30,7 +30,7 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [Required(ErrorMessage = "Property CompetitiveSelection is required")]
     public bool CompetitiveSelection { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
     // This property uses only for storing dto in Redis
