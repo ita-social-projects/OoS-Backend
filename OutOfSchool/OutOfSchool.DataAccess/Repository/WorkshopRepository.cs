@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository.Api;
@@ -54,7 +55,7 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         Func<IQueryable<Workshop>, IQueryable<Workshop>> includeExpression)
     {
         var query = includeExpression?.Invoke(dbSet) ?? dbSet;
-        return await query.Where(w => ids.Contains(w.Id)).ToListAsync();
+        return await query.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
     }
 
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)
