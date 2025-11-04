@@ -279,6 +279,11 @@ public class WorkshopDraftService(
                 }
             }
 
+            if (workshopDraft.DraftStatus == WorkshopDraftStatus.Rejected)
+            {
+                workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
+            }
+
             await workshopDraftRepository.Update(workshopDraft);
             logger.LogDebug("WorkshopDraft was successfully updated. Draft Id = {DraftId}.", workshopDraftUpdateDto.Id);
 
@@ -327,7 +332,7 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
-        if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration || workshopDraft.DraftStatus == WorkshopDraftStatus.Rejected)
         {
             throw new ArgumentException("This WorkshopDraft can`t be sent for moderation.");
         }
