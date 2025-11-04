@@ -125,8 +125,9 @@ public class ESWorkshopService(
 
             return res;
         }
-        catch
+        catch  (Exception ex)
         {
+            logger.LogDebug(ex, "Exception while searching for workshop: {@Filter}", filter);
             return new SearchResultES<WorkshopES>();
         }
     }
