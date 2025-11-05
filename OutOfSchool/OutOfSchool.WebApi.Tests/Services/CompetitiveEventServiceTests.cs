@@ -21,6 +21,7 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common.DbContextTests;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -43,6 +44,7 @@ public class CompetitiveEventServiceTests
     private CompetitiveEventService service;
     private Guid firstId;
     private Guid firstProviderId;
+    private Provider provider;
 
     [SetUp]
     public void SetUp()
@@ -411,8 +413,9 @@ public class CompetitiveEventServiceTests
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
+        provider = ProvidersGenerator.Generate();
         firstId = Guid.NewGuid();
-        firstProviderId = Guid.NewGuid();
+        firstProviderId = provider.Id;
 
         List<CompetitiveEvent> competitiveEvents = CompetitiveEvents();
         context.CompetitiveEvents.AddRange(competitiveEvents);
@@ -446,6 +449,7 @@ public class CompetitiveEventServiceTests
                     }
                 },
                 CoverageId = 1,
+                OrganizerOfTheEvent = provider
             },
             new CompetitiveEvent
                 {
@@ -458,6 +462,7 @@ public class CompetitiveEventServiceTests
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                    OrganizerOfTheEvent = ProvidersGenerator.Generate()
                 },
                 new CompetitiveEvent
                 {
@@ -470,6 +475,7 @@ public class CompetitiveEventServiceTests
                     NumberOfSeats = 10,
                     OrganizerOfTheEventId = Guid.NewGuid(),
                     CompetitiveEventAccountingType = new CompetitiveEventAccountingType(),
+                    OrganizerOfTheEvent = ProvidersGenerator.Generate()
                 },
             };
         return competitiveEvents;
