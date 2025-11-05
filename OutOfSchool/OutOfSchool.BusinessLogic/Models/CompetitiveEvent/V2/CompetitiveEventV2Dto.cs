@@ -28,9 +28,9 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
         bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
 
         if (hasInvalidFiles)
-            yield return new ValidationResult("ImageFiles must not contain empty files.", new[] { nameof(ImageFiles) });
+            yield return new ValidationResult("ImageFiles must not contain empty files.", [nameof(ImageFiles)]);
         if (hasInvalidIds)
-            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", new[] { nameof(ImageIds) });
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", [nameof(ImageIds)]);
 
         if (hasCoverImage == hasCoverImageId)
         {
