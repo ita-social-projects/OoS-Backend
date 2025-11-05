@@ -60,7 +60,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
 
     public bool CompetitiveSelection { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
     [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
@@ -106,12 +106,12 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     
     public Guid? DefaultTeacherId { get; set; }
     
-    [MaxLength(500)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]

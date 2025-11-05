@@ -182,7 +182,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of additional description.
     /// </summary>
-    public const int EnrollmentProcedureDescription = 500;
+    public const int EnrollmentProcedureDescription = 2000;
 
     /// <summary>
     /// Maximum length of description of the enrollment procedure for competitive events.
@@ -207,7 +207,7 @@ public static class Constants
     /// <summary>
     /// Maximum length of preferential terms of participation.
     /// </summary>
-    public const int MaxPreferentialTermsOfParticipationLength = 500;
+    public const int MaxPreferentialTermsOfParticipationLength = 2000;
 
     /// <summary>
     /// Maximum length of keywords.

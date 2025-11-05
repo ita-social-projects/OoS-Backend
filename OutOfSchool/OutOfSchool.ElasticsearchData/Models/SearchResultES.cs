@@ -6,5 +6,5 @@ public class SearchResultES<TEntity>
 {
     public int TotalAmount { get; set; }
 
-    public IReadOnlyCollection<TEntity> Entities { get; set; }
+    public IReadOnlyCollection<TEntity> Entities { get; set; } = [];
 }

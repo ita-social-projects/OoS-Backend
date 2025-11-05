@@ -104,6 +104,7 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                 services.AddTransient<IContextAwareCurrentUser, ContextAwareCurrentUser>();
                 services.AddTransient<IUserService, UserService>();
                 services.AddTransient<TrackableEntityInterceptor>();
+                services.AddTransient<BusinessEntityInterceptor>();
 
                 services
                     .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
@@ -115,6 +116,7 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                                     .EnableStringComparisonTranslations()
                                     .UseMicrosoftJson())
                         .AddInterceptors(
+                            sp.GetRequiredService<BusinessEntityInterceptor>(),
                             sp.GetRequiredService<TrackableEntityInterceptor>()));
 
                 services.AddSignalR();
