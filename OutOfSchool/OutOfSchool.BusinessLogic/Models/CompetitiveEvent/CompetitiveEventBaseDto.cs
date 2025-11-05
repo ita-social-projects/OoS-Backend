@@ -63,8 +63,8 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public int CompetitiveEventAccountingTypeId { get; set; }
 
     [Required(ErrorMessage = "Information about the selection is required")]
-    [MinLength(3)]
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
+    [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
@@ -76,12 +76,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinVenueNameLength)]
     [MaxLength(Constants.MaxVenueNameLength)]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Participation terms must contain at least one letter.")]
@@ -90,7 +90,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public bool? AreThereBenefits { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinBenefitsLength)]
     [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
@@ -104,7 +104,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public int? MaximumAge { get; set; }
 
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
-    public int? Price { get; set; }
+    public decimal? Price { get; set; } = default;
 
     public bool? CompetitiveSelection { get; set; }
 
@@ -138,12 +138,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
         if (NumberOfSeats != uint.MaxValue && (NumberOfSeats < 1 || NumberOfSeats > 100000))
         {
-            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", new[] { nameof(NumberOfSeats) });
+            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", [nameof(NumberOfSeats)]);
         }
 
         if (MinimumAge >= MaximumAge)
         {
-            yield return new ValidationResult("Minimum age should be less than Maximum age", new[] { nameof(MinimumAge), nameof(MaximumAge) });
+            yield return new ValidationResult("Minimum age should be less than Maximum age", [nameof(MinimumAge), nameof(MaximumAge)]);
         }
     }
 }

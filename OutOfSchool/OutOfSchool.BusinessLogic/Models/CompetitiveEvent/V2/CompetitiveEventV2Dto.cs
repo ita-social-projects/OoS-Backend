@@ -19,18 +19,35 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
         foreach (var error in base.Validate(validationContext))
             yield return error;
 
-        if ((CoverImage is null) == string.IsNullOrEmpty(CoverImageId))
+        bool hasCoverImage = CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(CoverImageId);
+        bool hasImageFiles = ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        bool hasInvalidFiles = ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
+        bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasInvalidFiles)
+            yield return new ValidationResult("ImageFiles must not contain empty files.", new[] { nameof(ImageFiles) });
+        if (hasInvalidIds)
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", new[] { nameof(ImageIds) });
+
+        if (hasCoverImage == hasCoverImageId)
         {
-            yield return new ValidationResult(
-                "Either CoverImage or CoverImageId must be filled in, but not both.",
+            yield return new ValidationResult("Either CoverImage or CoverImageId should be provided, not both.",
                 [nameof(CoverImage), nameof(CoverImageId)]);
         }
 
-        if ((ImageFiles ?? []).Count == 0 && (ImageIds ?? []).Count == 0)
+        if (!hasImageFiles && !hasImageIds)
         {
-            yield return new ValidationResult(
-            "At least one of the ImageFiles or ImageIds fields must be filled in.",
-            [nameof(ImageFiles), nameof(ImageIds)]);
+            yield return new ValidationResult("At least one of the ImageFiles or ImageIds fields must be filled in.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+
+        if ((ImageFiles ?? []).Count + (ImageIds ?? []).Count > Constants.MaxCountOfImagesForCompetitiveEvent)
+        {
+            yield return new ValidationResult($"A maximum of {Constants.MaxCountOfImagesForCompetitiveEvent} images are allowed for a competitive event.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
         }
     }
 }

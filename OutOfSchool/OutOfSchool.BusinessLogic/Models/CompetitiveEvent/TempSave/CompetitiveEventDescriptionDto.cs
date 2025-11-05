@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
-using System.ComponentModel.DataAnnotations;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
@@ -34,28 +34,28 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 
     public bool? CompetitiveSelection { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string CompetitiveSelectionDescription { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinVenueNameLength)]
     [MaxLength(Constants.MaxVenueNameLength)]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
-    [MinLength(3)]
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
+    [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
-    public int? Price { get; set; }
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    public decimal? Price { get; set; } = default;
 
     public bool? AreThereBenefits { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinBenefitsLength)]
     [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]

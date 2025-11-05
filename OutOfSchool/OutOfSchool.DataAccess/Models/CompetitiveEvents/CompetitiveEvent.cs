@@ -14,14 +14,14 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 {
     [Required(ErrorMessage = "Title is required")]
     [DataType(DataType.Text)]
-    [MaxLength(250)]
-    [MinLength(1)]
+    [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
+    [MinLength(Constants.MinCompetitiveEventTitleLength)]
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]
     [DataType(DataType.Text)]
-    [MaxLength(100)]
-    [MinLength(1)]
+    [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
+    [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
     public string ShortTitle { get; set; }
 
     [Required]
@@ -54,23 +54,27 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
-
-    [MaxLength(2000)]
+    [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
+    [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public Guid OrganizerOfTheEventId { get; set; }
 
+    [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning PlannedFormatOfClasses { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(Constants.MaxVenueNameLength)]
+    [MinLength(Constants.MinVenueNameLength)]
     public string VenueName { get; set; }
 
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
   
     public bool AreThereBenefits { get; set; }
 
-    [MaxLength(2000)]
+    [MinLength(Constants.MinBenefitsLength)]
+    [MaxLength(Constants.MaxBenefitsLength)]
     public string Benefits {  get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -79,8 +83,9 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaximumAge { get; set; }
 
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public int Price { get; set; } = default;
+    [Column(TypeName = "decimal(18,2)")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
+    public decimal Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }
 

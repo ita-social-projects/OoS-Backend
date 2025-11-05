@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models.CompetitiveEvents;
 
@@ -8,11 +9,13 @@ public class CompetitiveEventDescriptionItem : IKeyedEntity<Guid>
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "Description heading is required")]
-    [MaxLength(200)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [MinLength(Constants.MinLengthForSectionNameOfCompetitiveEventDescriptionItem)]
     public string SectionName { get; set; }
 
     [Required(ErrorMessage = "Description text is required")]
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [MinLength(Constants.MinLengthForDescriptionOfCompetitiveEventDescriptionItem)]
     public string Description { get; set; }
 
     public Guid? CompetitiveEventId { get; set; }

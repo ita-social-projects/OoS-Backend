@@ -1,12 +1,18 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models.ContactInfo;
 
 public class ContactsAddress
 {
+    [Required(ErrorMessage = "Street is required")]
+    [MinLength(Constants.MinStreetNameLength)]
+    [MaxLength(Constants.MaxStreetNameLength)]
     public string Street { get; set; }
 
+    [MinLength(Constants.MinBuildingNumberLength)]
+    [MaxLength(Constants.MaxBuildingNumberLength)]
     public string BuildingNumber { get; set; }
 
     [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90 degrees")]

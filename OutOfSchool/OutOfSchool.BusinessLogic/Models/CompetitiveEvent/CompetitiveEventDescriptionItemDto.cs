@@ -8,11 +8,13 @@ public class CompetitiveEventDescriptionItemDto
     public Guid Id { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [MinLength(Constants.MinLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfCompetitiveEventDescriptionItem)]
     public string SectionName { get; set; }
 
     [Required]
-    [MaxLength(2000)]
+    [MinLength(Constants.MinLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfCompetitiveEventDescriptionItem)]
     public string Description { get; set; }
 
     public Guid CompetitiveEventId { get; set; }

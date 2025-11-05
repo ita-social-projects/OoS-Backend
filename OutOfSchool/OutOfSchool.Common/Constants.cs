@@ -8,6 +8,8 @@ public static class Constants
     /// </summary>
     public const int MaxUnifiedUrlLength = 2048;
 
+    public const int MinEmailTypeLength = 3;
+
     public const int MaxEmailTypeLength = 60;
 
     public const int MaxEmailAddressLength = 254;
@@ -183,9 +185,24 @@ public static class Constants
     public const int EnrollmentProcedureDescription = 500;
 
     /// <summary>
+    /// Maximum length of description of the enrollment procedure for competitive events.
+    /// </summary>
+    public const int MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent = 2000;
+
+    /// <summary>
+    /// Minimum length of description of the enrollment procedure for competitive events.
+    /// </summary>
+    public const int MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent = 3;
+
+    /// <summary>
     /// Maximum length of competitive selection description.
     /// </summary>
-    public const int MaxCompetitiveSelectionDescriptionLength = 500;
+    public const int MaxCompetitiveSelectionDescriptionLength = 2000;
+
+    /// <summary>
+    /// Minimum length of competitive selection description.
+    /// </summary>
+    public const int MinCompetitiveSelectionDescriptionLength = 3;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.
@@ -255,12 +272,12 @@ public static class Constants
     /// <summary>
     /// The maximum length allowed for the competitive event short title.
     /// </summary>
-    public const int MaxCompetitiveEventShortTitleLength = 100;
+    public const int MaxCompetitiveEventShortTitleLength = 120;
 
     /// <summary>
     /// The minimum length required for the competitive event short title.
     /// </summary>
-    public const int MinCompetitiveEventShortTitleLength = 1;
+    public const int MinCompetitiveEventShortTitleLength = 3;
 
     /// <summary>
     /// Maximum length allowed for the competitive event draft's rejection message.
@@ -270,7 +287,12 @@ public static class Constants
     /// <summary>
     /// The maximum length allowed for the benefits for competitive event.
     /// </summary>
-    public const int MaxBenefitsLength = 500;
+    public const int MaxBenefitsLength = 2000;
+
+    /// <summary>
+    /// The minimum length allowed for the benefits for competitive event.
+    /// </summary>
+    public const int MinBenefitsLength = 3;
 
     /// <summary>
     /// The maximum length allowed for the description.
@@ -280,7 +302,32 @@ public static class Constants
     /// <summary>
     /// The maximum length allowed for the venue name.
     /// </summary>
-    public const int MaxVenueNameLength = 500;
+    public const int MaxVenueNameLength = 60;
+
+    /// <summary>
+    /// The minimum length allowed for the venue name.
+    /// </summary>
+    public const int MinVenueNameLength = 3;
+
+    /// <summary>
+    /// The maximum length allowed for the street name.
+    /// </summary>
+    public const int MaxStreetNameLength = 60;
+
+    /// <summary>
+    /// The minimum length allowed for the street name.
+    /// </summary>
+    public const int MinStreetNameLength = 1;
+
+    /// <summary>
+    /// The maximum length allowed for the building number.
+    /// </summary>
+    public const int MaxBuildingNumberLength = 15;
+
+    /// <summary>
+    /// The minimum length allowed for the building number.
+    /// </summary>
+    public const int MinBuildingNumberLength = 1;
 
     /// <summary>
     /// The maximum length allowed for the Judge's description.
@@ -306,6 +353,31 @@ public static class Constants
     /// Maximum allowed length for phone number's type.
     /// </summary>
     public const int PhoneNumberTypeMaxLength = 60;
+
+    /// <summary>
+    /// Maximum count of images for CompetitiveEvent.
+    /// </summary>
+    public const int MaxCountOfImagesForCompetitiveEvent = 10;
+
+    /// <summary>
+    /// The maximum length allowed for the section name of the competitive event description item.
+    /// </summary>
+    public const int MaxLengthForSectionNameOfCompetitiveEventDescriptionItem = 120;
+
+    /// <summary>
+    /// The minimum length allowed for the section name of the competitive event description item.
+    /// </summary>
+    public const int MinLengthForSectionNameOfCompetitiveEventDescriptionItem = 3;
+
+    /// <summary>
+    /// The maximum length allowed for the description of the competitive event description item.
+    /// </summary>
+    public const int MaxLengthForDescriptionOfCompetitiveEventDescriptionItem = 2000;
+
+    /// <summary>
+    /// The minimum length allowed for the description of the competitive event description item.
+    /// </summary>
+    public const int MinLengthForDescriptionOfCompetitiveEventDescriptionItem = 3;
 
     public static class ExternalImages
     {
