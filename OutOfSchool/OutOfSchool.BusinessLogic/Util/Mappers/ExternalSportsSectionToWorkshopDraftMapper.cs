@@ -1,14 +1,11 @@
 ﻿using OutOfSchool.Common.Enums;
-using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.WorkshopDrafts;
-using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.External;
 using System.Diagnostics;
 using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
 
 namespace OutOfSchool.BusinessLogic.Util.Mappers;
 
@@ -36,149 +33,6 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         return draft;
     }
 
-
-    //public static WorkshopDraft ToWorkshopDraft(this ExternalSportsSectionDto externalDto, Guid providerId)
-    //{
-
-    //   // long catottgId = 0;
-
-    //    var phones = new List<PhoneNumber>();
-    //    if (!string.IsNullOrWhiteSpace(externalDto.SectionPhones))
-    //    {
-    //        try
-    //        {
-    //            var parsedPhones = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(externalDto.SectionPhones);
-    //            if (parsedPhones is not null)
-    //            {
-    //                phones = parsedPhones
-    //                    .Select(p => new PhoneNumber
-    //                    {
-    //                        Type = "Основний",
-    //                        Number = p.GetValueOrDefault("phone") ?? string.Empty
-    //                    })
-    //                    .ToList();
-    //            }
-    //        }
-    //        catch
-    //        {
-    //            // if string is not valid JSON, ignore phones
-    //        }
-    //    }
-
-    //    var socialNetworks = new List<SocialNetwork>();
-    //    if (!string.IsNullOrWhiteSpace(externalDto.SectionFacebookUrl))
-    //    {
-    //        socialNetworks.Add(new SocialNetwork
-    //        {
-    //            Type = SocialNetworkContactType.Facebook,
-    //            Url = externalDto.SectionFacebookUrl
-    //        });
-    //    }
-    //    if (!string.IsNullOrWhiteSpace(externalDto.SectionInstagramUrl))
-    //    {
-    //        socialNetworks.Add(new SocialNetwork
-    //        {
-    //            Type = SocialNetworkContactType.Instagram,
-    //            Url = externalDto.SectionInstagramUrl
-    //        });
-    //    }
-    //    if (!string.IsNullOrWhiteSpace(externalDto.SectionUrl))
-    //    {
-    //        socialNetworks.Add(new SocialNetwork
-    //        {
-    //            Type = SocialNetworkContactType.Website,
-    //            Url = externalDto.SectionUrl
-    //        });
-    //    }
-
-    //    //if need to create keywords from sport kind name
-    //    List<string> keywords = string.IsNullOrWhiteSpace(externalDto.SectionSportKindDictName)
-    //    ? new()
-    //    : new() { externalDto.SectionSportKindDictName };
-
-    //    return new WorkshopDraft
-    //    {
-    //        Id = Guid.NewGuid(),
-    //        ProviderId = providerId,
-    //        MinsportSectionId = externalDto.SectionId,
-    //       // CATOTTGId = catottgId,
-
-    //        WorkshopDraftContent = new WorkshopDraftContent
-    //        {
-    //            Title = externalDto.SectionName,
-    //            ShortTitle = externalDto.SectionName,
-    //            EnrollmentProcedureDescription = externalDto.SectionRegistrationFlow ?? string.Empty,
-    //            CompetitiveSelectionDescription = externalDto.SectionSelectionCriteria ?? string.Empty,
-
-    //            FormOfLearning = ToFormLearning(externalDto.SectionPracticeFormat),
-    //            Price = externalDto.SectionPracticeCost,
-    //            AvailableSeats = (uint)Math.Min(externalDto.SectionMaxStudentsAmount, MinSportMaxStudentsLimit),
-
-    //            MinAge = externalDto.SectionAgeFrom,
-    //            MaxAge = externalDto.SectionAgeTo,
-    //            IsChampionPath = externalDto.SectionIsInShlyahProject,
-
-    //            StudyPeriodStartDate = DateOnly.FromDateTime(externalDto.SectionPracticePeriodDateFrom),
-    //            StudyPeriodEndDate = DateOnly.FromDateTime(externalDto.SectionPracticePeriodDateTo),
-
-    //            WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>
-    //            {
-    //                new WorkshopDescriptionItemDraft
-    //                {
-    //                    Description = externalDto.SectionDescription ?? string.Empty
-    //                }
-    //            },
-
-    //            Keywords = keywords,
-
-    //            DateTimeRanges = MapSchedule(externalDto.SectionSchedule),
-
-    //            Contacts = new List<Contacts>
-    //            {
-    //                new Contacts
-    //                {
-    //                    Title = "Контакт секції",
-    //                    IsDefault = true,
-    //                    Address = new ContactsAddress
-    //                    {
-    //                        Street = externalDto.SectionAddressStreet ?? string.Empty,
-    //                        BuildingNumber = externalDto.SectionAddressHouse ?? string.Empty,
-    //                        //CATOTTGId = catottgId // ????
-    //                    },
-    //                    Phones = phones,
-    //                    Emails = new List<Email>
-    //                    {
-    //                        new Email
-    //                        {
-    //                            Type = "Основний",
-    //                            Address = externalDto.SectionEmail ?? string.Empty
-    //                        }
-    //                    },
-    //                    SocialNetworks = socialNetworks
-    //                }
-    //            },
-    //        },
-
-    //        // TO DO: map images
-    //        CoverImageId = externalDto.SectionTitlePhoto?.FirstOrDefault()?.Id.ToString() ?? string.Empty,
-    //        //ImageIds = externalDto.SectionPhotos?.Select(p => p.Id.ToString()).ToList() ?? new List<string>(),
-    //        DraftStatus = WorkshopDraftStatus.PendingModeration
-    //    };
-    //}
-
-    //public static WorkshopDraft MapToExistingDraft(this ExternalSportsSectionDto section, WorkshopDraft draft)
-    //{
-    //    draft.WorkshopDraftContent.Title = section.SectionName;
-    //    draft.WorkshopDraftContent.ShortTitle = section.SectionName;
-    //    draft.WorkshopDraftContent.EnrollmentProcedureDescription = section.SectionRegistrationFlow;
-    //    draft.WorkshopDraftContent.Price = section.SectionPracticeCost;
-    //    draft.WorkshopDraftContent.MinAge = section.SectionAgeFrom;
-    //    draft.WorkshopDraftContent.MaxAge = section.SectionAgeTo;
-
-    //    // TO DO: others fields  Contacts, ...
-    //    return draft;
-    //}
-
     private static WorkshopDraftContent MapContentFromExternal(
     ExternalSportsSectionDto section,
     WorkshopDraftContent? existingContent = null,
@@ -186,7 +40,6 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
     {
         var content = existingContent ?? new WorkshopDraftContent();
 
-        // Загальні поля
         content.Title = section.SectionName;
         content.ShortTitle = section.SectionName;
         content.EnrollmentProcedureDescription = section.SectionRegistrationFlow ?? string.Empty;
@@ -196,25 +49,21 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         content.MaxAge = section.SectionAgeTo;
         content.IsChampionPath = section.SectionIsInShlyahProject;
 
-        // Keywords
         content.Keywords = string.IsNullOrWhiteSpace(section.SectionSportKindDictName)
             ? new List<string>()
             : new List<string> { section.SectionSportKindDictName };
 
-        // Study period
         content.StudyPeriodStartDate = DateOnly.FromDateTime(section.SectionPracticePeriodDateFrom);
         content.StudyPeriodEndDate = DateOnly.FromDateTime(section.SectionPracticePeriodDateTo);
 
-        // WorkshopDescriptionItems
         content.WorkshopDescriptionItems = new List<WorkshopDescriptionItemDraft>
-    {
-        new WorkshopDescriptionItemDraft
         {
-            Description = section.SectionDescription ?? string.Empty
-        }
-    };
+            new WorkshopDescriptionItemDraft
+            {
+                Description = section.SectionDescription ?? string.Empty
+            }
+        };
 
-        // DateTimeRanges
         content.DateTimeRanges = MapSchedule(section.SectionSchedule);
 
         // Contacts
@@ -235,7 +84,7 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
             }
             catch
             {
-                // некоректний JSON – ігноруємо телефони
+                // invalid JSON – ignore phones
             }
         }
 
@@ -286,8 +135,10 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         }
     };
 
-        // Можна додати додаткові поля (Coverage, WorkshopType, FormOfLearning тощо)
         content.FormOfLearning = ToFormLearning(section.SectionPracticeFormat);
+        content.LanguageOfEducationId = 2;
+        content.LanguageOfEducationName = "Українська";
+        content.PayRate = PayRateType.Month;
 
         return content;
     }
@@ -342,27 +193,6 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
             return new List<DateTimeRangeDraft>();
         }
     }
-
-    //private static List<DateTimeRangeDraft> MapSchedule(string? sectionScheduleJson)
-    //{
-    //    if (string.IsNullOrWhiteSpace(sectionScheduleJson))
-    //        return new List<DateTimeRangeDraft>();
-
-    //    try
-    //    {
-    //        var items = JsonSerializer.Deserialize<List<ExternalScheduleItem>>(sectionScheduleJson);
-    //        return items?.Select(i => new DateTimeRangeDraft
-    //        {
-    //            StartTime = TimeOnly.Parse(i.SectionScheduleTimeFrom),
-    //            EndTime = TimeOnly.Parse(i.SectionScheduleTimeTo),
-    //            Workdays = new HashSet<DaysBitMask> { ToDaysBitMask(i.SectionScheduleWeekday) }
-    //        }).ToList() ?? new List<DateTimeRangeDraft>();
-    //    }
-    //    catch
-    //    {
-    //        return new List<DateTimeRangeDraft>();
-    //    }
-    //}
 
     private static DaysBitMask ToDaysBitMask(string weekday) => weekday.ToUpperInvariant() switch
     {

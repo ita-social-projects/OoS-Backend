@@ -805,7 +805,7 @@ public class WorkshopDraftServiceTests
             .Setup(x => x.SyncDraftAsync(It.Is<WorkshopDraft>(d => d.Id == workshopDraft.Id)))
             .Callback<WorkshopDraft>(d =>
             {
-                d.WorkshopDraftContent.MinsportSectionId = Guid.NewGuid();
+                d.MinsportSectionId = Guid.NewGuid();
             })
             .Returns(Task.CompletedTask)
             .Verifiable();
@@ -842,7 +842,7 @@ public class WorkshopDraftServiceTests
             Times.Once);
 
         Assert.AreEqual(createdWorkshopId, resultId);
-        Assert.NotNull(workshopDraft.WorkshopDraftContent.MinsportSectionId);
+        Assert.NotNull(workshopDraft.MinsportSectionId);
     }
 
     [Test]

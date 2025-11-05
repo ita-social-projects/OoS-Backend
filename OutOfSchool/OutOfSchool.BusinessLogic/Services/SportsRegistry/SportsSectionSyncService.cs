@@ -1,11 +1,11 @@
 ﻿//using System.Linq;
+using Microsoft.Extensions.Options;
 using OutOfSchool.BusinessLogic.Util.Mappers;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models.External;
-using static System.Collections.Specialized.BitVector32;
 namespace OutOfSchool.BusinessLogic.Services.SportsRegistry;
 public class SportsSectionSyncService(
     ISportsRegistryWorkshopProvider workshopProvider,
@@ -13,6 +13,8 @@ public class SportsSectionSyncService(
     IWorkshopRepository workshopRepository,
     ICodeficatorRepository codeficatorRepository,
     IProviderRepository providerRepository,
+    IInstitutionHierarchyRepository hierarchyRepository,
+   // IOptions<InstitutionOptions> institutionOptions,
     ILogger<SportsSectionSyncService> logger)
     : ISportsSectionSyncService
 {
@@ -47,6 +49,11 @@ public class SportsSectionSyncService(
         var existingLookup = existingWorkshops.ToDictionary(w => w.MinsportSectionId!.Value);
         var existingDraftLookup = existingWorkshopDrafts.ToDictionary(w => w.MinsportSectionId!.Value);
 
+        var existingHierarchies = await hierarchyRepository
+           .GetByFilter(x => x.SportRegistryIdCode.HasValue)
+           .ConfigureAwait(false);
+        var lookupHierarchy = existingHierarchies.ToDictionary(x => x.SportRegistryIdCode!.Value);
+       
         var toCreate = new List<WorkshopDraft>();
         var toUpdate = new List<WorkshopDraft>();
 
@@ -62,8 +69,19 @@ public class SportsSectionSyncService(
                                   ? new DateTimeOffset(existingWorkshop.UpdatedAt.Value)
                                   : null);
 
+
             if (!lastUpdate.HasValue || section.UpdatedInRegistryAt > lastUpdate.Value)
             {
+                // try to find hierarchy for section's sport kind
+                if (!lookupHierarchy.TryGetValue(section.SectionSportKindDictIdCode, out var hierarchy))
+                {
+                    logger.LogWarning(
+                        "Skipping section {SectionId} because no InstitutionHierarchy found for SportKindIdCode {SportKindIdCode}.",
+                        section.SectionId,
+                        section.SectionSportKindDictIdCode);
+                    continue; // skip sections without valid hierarchy
+                }
+
                 // try to retrieve CATOTTGId before creating/updating draft
                 var catottgId = await TryGetCatottgIdAsync(section).ConfigureAwait(false);
                 if (!catottgId.HasValue)
@@ -78,6 +96,9 @@ public class SportsSectionSyncService(
                     // update existing draft
                     draft = section.MapToExistingDraft(existingDraft, catottgId.Value);
                     draft.DraftStatus = WorkshopDraftStatus.PendingModeration;
+                    draft.WorkshopDraftContent.InstitutionHierarchyId = hierarchy.Id; // ??
+                    draft.WorkshopDraftContent.InstitutionId = hierarchy.InstitutionId; // ??
+
                     toUpdate.Add(draft);
                     logger.LogDebug(
                         "Updating existing draft for section {SectionId}. DraftId={DraftId}, ProviderId={ProviderId}",
@@ -113,7 +134,11 @@ public class SportsSectionSyncService(
                         logger.LogWarning("Skipping section {SectionId} because provider was not found.", section.SectionId);
                         continue; // skip sections without valid provider
                     }
+
                     draft = section.ToWorkshopDraft(providerId.Value, catottgId.Value);
+                    draft.WorkshopDraftContent.InstitutionHierarchyId = hierarchy.Id;
+                    draft.WorkshopDraftContent.InstitutionId = hierarchy.InstitutionId;
+
                     toCreate.Add(draft);
                 }
                
@@ -151,6 +176,7 @@ public class SportsSectionSyncService(
                             draft.MinsportSectionId,
                             draft.WorkshopDraftContent.Title,
                             draft.DraftStatus);
+                        await workshopDraftRepository.Update(draft);
                     }
                     await workshopDraftRepository.SaveChangesAsync().ConfigureAwait(false);
                 }
