@@ -43,7 +43,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 
     public bool AreThereBenefits { get; set; } = default;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
     public string PreferentialTermsOfParticipation { get; set; }
 

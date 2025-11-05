@@ -50,7 +50,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 
     public bool? AreThereBenefits { get; set; }

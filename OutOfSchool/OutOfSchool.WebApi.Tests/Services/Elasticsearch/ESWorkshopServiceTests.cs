@@ -371,7 +371,7 @@ public class ESWorkshopServiceTests
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
         Assert.AreEqual(0, result.TotalAmount);
-        Assert.IsNull(result.Entities);
+        Assert.IsEmpty(result.Entities);
     }
 
     #endregion

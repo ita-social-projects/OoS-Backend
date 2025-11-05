@@ -1,10 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Elastic.Clients.Elasticsearch;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Services.Models.ContactInfo;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
@@ -94,6 +94,8 @@ public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IE
 
 public static class ContactsAddressDtoExtensions
 {
+    private const double Epsilon = 0.1d;
+
     public static AddressES ToES(this ContactsAddressDto contactsAddress)
         => new()
         {
@@ -141,8 +143,8 @@ public static class ContactsAddressDtoExtensions
         {
             Street = contactsAddress.Street,
             BuildingNumber = contactsAddress.BuildingNumber,
-            Latitude = contactsAddress.Latitude,
-            Longitude = contactsAddress.Longitude,
+            Latitude = Math.Abs(contactsAddress.Latitude - 0d) < Epsilon && contactsAddress.CATOTTG != null ? contactsAddress.CATOTTG.Latitude : contactsAddress.Latitude,
+            Longitude = Math.Abs(contactsAddress.Longitude - 0d) < Epsilon && contactsAddress.CATOTTG != null ? contactsAddress.CATOTTG.Longitude : contactsAddress.Longitude,
             CATOTTGId = contactsAddress.CATOTTGId,
             CodeficatorAddress = contactsAddress.CATOTTG?.ToAllAddressPartsDto()
         };

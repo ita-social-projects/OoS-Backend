@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Workshops;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Services.Models.ContactInfo;
-using System.ComponentModel.DataAnnotations;
 using WorkshopDraftModel = OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft;
 
 namespace OutOfSchool.BusinessLogic.Models.WorkshopDraft;
@@ -24,13 +24,13 @@ public class ModeratorWorkshopDraftEditDto
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
     public string ShortTitle { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }
