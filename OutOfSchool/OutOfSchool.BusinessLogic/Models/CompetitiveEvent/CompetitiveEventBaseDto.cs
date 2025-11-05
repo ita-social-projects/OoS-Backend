@@ -108,6 +108,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public bool? CompetitiveSelection { get; set; }
 
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string ProviderTitle { get; set; } = string.Empty;
+
+    [MaxLength(Constants.MaxProviderFullTitleLength)]
+    public string ProviderTitleEn { get; set; } = string.Empty;
+
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     [CollectionNotEmpty(ErrorMessage = "At least one contact is required")]
     public List<ContactsDto> Contacts { get; set; } = [];

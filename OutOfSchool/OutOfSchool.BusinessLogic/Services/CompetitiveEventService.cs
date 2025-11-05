@@ -42,6 +42,7 @@ public class CompetitiveEventService(
         .ThenInclude(sd => sd.Direction)
         .Include(e => e.CompetitiveEventDescriptionItems)
         .Include(e => e.Coverage)
+        .Include(e => e.OrganizerOfTheEvent)
         .IncludeContactsWithCodeficatorHierarchy();
 
     /// <inheritdoc/>

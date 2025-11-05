@@ -86,6 +86,8 @@ public static class CompetitiveEventV2DtoExtensions
         .ToList() ?? [],
         CoverImageId = model.CoverImageId,
         ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
+        ProviderTitle = model.OrganizerOfTheEvent?.FullTitle,
+        ProviderTitleEn = model.OrganizerOfTheEvent?.FullTitleEn
     };
 
     /// <summary>
@@ -137,7 +139,9 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
             SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
                               draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
-            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()
+            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto(),
+            ProviderTitle = draft.Provider?.FullTitle,
+            ProviderTitleEn = draft.Provider?.FullTitleEn
         };
     }
 
@@ -199,7 +203,7 @@ public static class CompetitiveEventV2DtoExtensions
         CompetitiveSelectionDescription = competitiveEventV2Dto.CompetitiveSelectionDescription,
         VenueName = competitiveEventV2Dto.VenueName,
         SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? [],
-        CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
+        CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel()
     };
 
     /// <summary>
