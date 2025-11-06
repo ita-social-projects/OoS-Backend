@@ -46,6 +46,8 @@ public class CompetitiveEventDraftContent : IHasContacts
 
     public int MaximumAge { get; set; }
 
+    public bool IsPaid { get; set; } = false;
+
     public decimal Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }

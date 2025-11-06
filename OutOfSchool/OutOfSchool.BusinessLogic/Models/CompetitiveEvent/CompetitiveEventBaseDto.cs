@@ -103,6 +103,9 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int? MaximumAge { get; set; }
 
+    public bool IsPaid { get; set; } = false;
+
+    [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 
@@ -186,6 +189,7 @@ public static class CompetitiveEventBaseDtoExtensions
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
         MaximumAge = dto.MaximumAge ?? 0,
+        IsPaid = dto.IsPaid,
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),
@@ -224,6 +228,7 @@ public static class CompetitiveEventBaseDtoExtensions
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
+        model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;

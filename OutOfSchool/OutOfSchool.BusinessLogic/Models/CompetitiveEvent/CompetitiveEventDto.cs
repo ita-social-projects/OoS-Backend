@@ -62,6 +62,7 @@ public static class CompetitiveEventDtoExtensions
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,
             MaximumAge = model.MaximumAge,
+            IsPaid = model.IsPaid,
             Price = model.Price,
             CompetitiveSelection = model.CompetitiveSelection,
             Contacts = model.Contacts?.ToDto(),

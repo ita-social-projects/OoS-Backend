@@ -1,8 +1,8 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.ContactInfo;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class CompetitiveEventDraftContentGenerator
@@ -28,7 +28,13 @@ public static class CompetitiveEventDraftContentGenerator
         .RuleFor(x => x.OrganizerOfTheEventId, f => f.Random.Guid())
         .RuleFor(x => x.MinimumAge, f => f.Random.Int(5, 18))
         .RuleFor(x => x.Contacts, f => new List<Contacts> { })
-        .RuleFor(x => x.SubDirectionIds, f => new List<long> { f.Random.Long(1, 100) });
+        .RuleFor(x => x.SubDirectionIds, f => new List<long> { f.Random.Long(1, 100) })
+        .RuleFor(x => x.AreThereBenefits, true)
+        .RuleFor(x => x.Benefits, f => f.Lorem.Sentence(10))
+        .RuleFor(x => x.CompetitiveSelection, true)
+        .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(10))
+        .RuleFor(x => x.IsPaid, true)
+        .RuleFor(x => x.Price, f => f.Random.UInt(1, 100000));
 
     public static CompetitiveEventDraftContent Generate() => Faker.Generate();
 

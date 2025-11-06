@@ -57,6 +57,8 @@ public class CompetitiveEventES
 
     public string Coverage { get; set; } //coverage title
 
+    public bool IsPaid { get; set; }
+
     public decimal Price { get; set; }
 
     public bool CompetitiveSelection { get; set; }

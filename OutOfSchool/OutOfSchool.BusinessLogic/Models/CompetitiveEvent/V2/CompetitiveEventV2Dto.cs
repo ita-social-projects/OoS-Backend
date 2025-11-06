@@ -89,6 +89,7 @@ public static class CompetitiveEventV2DtoExtensions
         Benefits = model.Benefits,
         MinimumAge = model.MinimumAge,
         MaximumAge = model.MaximumAge,
+        IsPaid = model.IsPaid,
         Price = model.Price,
         CompetitiveSelection = model.CompetitiveSelection,
         Contacts = model.Contacts?.ToDto(),
@@ -145,6 +146,7 @@ public static class CompetitiveEventV2DtoExtensions
             Benefits = draft.CompetitiveEventDraftContent?.Benefits,
             MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
             MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
+            IsPaid = draft.CompetitiveEventDraftContent.IsPaid,
             Price = draft.CompetitiveEventDraftContent?.Price,
             CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
             Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? [],
@@ -198,7 +200,7 @@ public static class CompetitiveEventV2DtoExtensions
         AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
         Benefits = competitiveEventV2Dto.Benefits,
         CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
-        Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<Contacts>(),
+        Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? [],
         DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
         MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
         MinimumAge = competitiveEventV2Dto.MinimumAge,
@@ -206,6 +208,7 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
         ParentId = competitiveEventV2Dto.ParentId,
         PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
+        IsPaid = competitiveEventV2Dto.IsPaid,
         Price = competitiveEventV2Dto.Price ?? default,
         RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
         RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
@@ -247,6 +250,7 @@ public static class CompetitiveEventV2DtoExtensions
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
+        model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;
@@ -284,6 +288,7 @@ public static class CompetitiveEventV2DtoExtensions
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
         MaximumAge = dto.MaximumAge ?? 120,
+        IsPaid = dto.IsPaid,
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),

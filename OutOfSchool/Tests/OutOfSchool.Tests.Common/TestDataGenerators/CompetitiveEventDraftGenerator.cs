@@ -1,7 +1,7 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class CompetitiveEventDraftGenerator

@@ -68,10 +68,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-
         async Task<Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>>
         CreateCompetitiveEventDraftWithImages()
         {
+            competitiveEventV2Dto.Price = competitiveEventV2Dto.Price ?? 0;
+
             var createdCompetitiveEventDraft = await CreateCompetitiveEventDraft(competitiveEventV2Dto)
                 .ConfigureAwait(false);
 
@@ -151,6 +152,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
+
+        competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Price = competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Price ?? 0;
 
         var draftImageUpdateResult = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
@@ -403,6 +406,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
+
+        competitiveEventV2Dto.Price = competitiveEventV2Dto.Price ?? 0;
 
         if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {

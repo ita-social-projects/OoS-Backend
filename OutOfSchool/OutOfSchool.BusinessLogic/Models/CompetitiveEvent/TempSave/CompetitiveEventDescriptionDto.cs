@@ -50,6 +50,8 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
+    public bool IsPaid { get; set; } = false;
+
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 
@@ -68,5 +70,14 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
         // Run validations from CompetitiveEventAboutDto
         foreach (var error in base.Validate(validationContext))
             yield return error;
+
+        // validate Price when IsPaid is true
+        if (IsPaid)
+        {
+            if ((Price ?? 0) <= 0.00m)
+            {
+                yield return new ValidationResult("The price must be greater than 0.00 if the workshop is paid.", [nameof(Price)]);
+            }
+        }
     }
 }

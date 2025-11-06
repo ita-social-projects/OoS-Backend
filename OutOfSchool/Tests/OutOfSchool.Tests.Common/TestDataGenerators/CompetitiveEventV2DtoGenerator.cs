@@ -1,9 +1,9 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 public static class CompetitiveEventV2DtoGenerator
@@ -39,7 +39,9 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.AreThereBenefits, true)
         .RuleFor(x => x.Benefits, f => f.Lorem.Sentence(10))
         .RuleFor(x => x.CompetitiveSelection, true)
-        .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(10));
+        .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(10))
+        .RuleFor(x => x.IsPaid, true)
+        .RuleFor(x => x.Price, f => f.Random.UInt(1, 100000));
 
     public static CompetitiveEventV2Dto Generate() => Faker.Generate();
 

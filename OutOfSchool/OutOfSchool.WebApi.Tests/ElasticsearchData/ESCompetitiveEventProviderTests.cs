@@ -110,6 +110,7 @@ public class ESCompetitiveEventProviderTests
             MaxPrice = 1000,
             MaxRegistrationEndTime = DateTime.UtcNow.AddDays(7),
             MaxScheduledStartTime = DateTime.UtcNow.AddDays(7),
+            IsPaid = true
         };
 
         var response = CreateSuccessfulSearchResponse(expectedTotal, expectedEntities);
