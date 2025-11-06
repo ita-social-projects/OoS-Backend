@@ -76,6 +76,8 @@ public static class CompetitiveEventDtoExtensions
             .ToList() ?? [],
             CoverImageId = model.CoverImageId,
             ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList(),
+            ProviderTitle = model.OrganizerOfTheEvent?.FullTitle,
+            ProviderTitleEn = model.OrganizerOfTheEvent?.FullTitleEn
         };
 
     public static List<CompetitiveEventDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)
