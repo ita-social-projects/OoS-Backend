@@ -12,8 +12,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20251101101418_AddIndexesToImages")]
-    partial class AddIndexesToImages
+    [Migration("20251108101458_AddIsPaidToCompetitiveEvent")]
+    partial class AddIsPaidToCompetitiveEvent
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -940,8 +940,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("CompetitiveSelectionDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
@@ -982,6 +982,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("IsSystemProtected")
                         .HasColumnType("tinyint(1)");
 
@@ -1007,8 +1010,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("PlannedFormatOfClasses")
                         .HasColumnType("int");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTimeOffset>("RegistrationEndTime")
                         .HasColumnType("datetime(6)");
@@ -1024,8 +1027,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("ShortTitle")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<int>("State")
                         .HasColumnType("int");
@@ -1039,8 +1042,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("VenueName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.HasKey("Id");
 
@@ -1205,8 +1208,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("SectionName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.HasKey("Id");
 
@@ -3908,8 +3911,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("CompetitiveSelectionDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
@@ -3942,8 +3945,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("EnrollmentProcedureDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<string>("File")
                         .HasColumnType("longtext");
@@ -4004,8 +4007,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("PreferentialTermsOfParticipation")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -4658,6 +4661,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
+                                        .IsRequired()
                                         .HasMaxLength(254)
                                         .HasColumnType("varchar(254)");
 
@@ -4665,6 +4669,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("bigint");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
@@ -4697,6 +4702,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("varchar(16)");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
@@ -5092,6 +5098,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
+                                        .IsRequired()
                                         .HasMaxLength(254)
                                         .HasColumnType("varchar(254)");
 
@@ -5099,6 +5106,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("bigint");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
@@ -5131,6 +5139,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("varchar(16)");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
@@ -5430,6 +5439,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
+                                        .IsRequired()
                                         .HasMaxLength(254)
                                         .HasColumnType("varchar(254)");
 
@@ -5437,6 +5447,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("bigint");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
@@ -5469,6 +5480,7 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                         .HasColumnType("varchar(16)");
 
                                     b2.Property<string>("Type")
+                                        .IsRequired()
                                         .HasMaxLength(60)
                                         .HasColumnType("varchar(60)");
 
