@@ -71,7 +71,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         async Task<Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>>
         CreateCompetitiveEventDraftWithImages()
         {
-            competitiveEventV2Dto.Price = competitiveEventV2Dto.IsPaid ? competitiveEventV2Dto.Price : 0;
+            NormalizePriceForPaymentStatus(competitiveEventV2Dto);
 
             var createdCompetitiveEventDraft = await CreateCompetitiveEventDraft(competitiveEventV2Dto)
                 .ConfigureAwait(false);
@@ -153,7 +153,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
 
-        competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Price = competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.IsPaid ? competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Price : 0;
+        NormalizePriceForPaymentStatus(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto);
 
         var draftImageUpdateResult = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
@@ -407,7 +407,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
 
-        competitiveEventV2Dto.Price = competitiveEventV2Dto.IsPaid ? competitiveEventV2Dto.Price : 0;
+        NormalizePriceForPaymentStatus(competitiveEventV2Dto);
 
         if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {
@@ -1107,5 +1107,10 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return responseDto;
 
         }).ToList();
+    }
+
+    private static void NormalizePriceForPaymentStatus(CompetitiveEventV2Dto dto)
+    {
+        dto.Price = dto.IsPaid ? dto.Price : 0;
     }
 }

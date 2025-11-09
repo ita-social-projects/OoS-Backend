@@ -41,7 +41,7 @@ public static class CompetitiveEventContactsDtoGenerator
         .RuleFor(x => x.VenueName, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.DescriptionOfTheEnrollmentProcedure, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.IsPaid, true)
-        .RuleFor(x => x.Price, f => f.Random.Int(1, 100000))
+        .RuleFor(x => x.Price, f => f.Random.Decimal(1, 100000))
         .RuleFor(x => x.PlannedFormatOfClasses, f => f.PickRandom<FormOfLearning>());
 
     public static CompetitiveEventContactsDto Generate() => Faker.Generate();
