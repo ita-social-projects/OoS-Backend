@@ -20,19 +20,25 @@ public class SportsRegistryTestController : ControllerBase
         this.logger = logger;
     }
 
+
     /// <summary>
-    /// Calls the external Sports Registry API and returns the list of sports sections.
+    /// Calls the external Sports Registry API and returns the list of sports sections fot the last numberDays days.
     /// Use only for testing connectivity and data format.
     /// </summary>
     /// <param name="pageSize">Optional page size (default 10)</param>
+    /// <param name="numberDays"></param>
     /// <returns>List of sections from the external registry or error message</returns>
     [AllowAnonymous]
     [HttpGet("sections")]
-    public async Task<IActionResult> GetSections([FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetSections(
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int numberDays = 1)
     {
         logger.LogInformation("Testing fetch of sports sections from Sports Registry...");
 
-        var result = await workshopProvider.GetAllSportsSectionsAsync(pageSize);
+        var updatedAtFrom = DateTimeOffset.UtcNow.AddDays(-numberDays);
+        var updatedAtTo = DateTimeOffset.UtcNow;
+        var result = await workshopProvider.GetAllSportsSectionsAsync(updatedAtFrom, updatedAtTo,pageSize);
 
         return result.Match<IActionResult>(
             error =>

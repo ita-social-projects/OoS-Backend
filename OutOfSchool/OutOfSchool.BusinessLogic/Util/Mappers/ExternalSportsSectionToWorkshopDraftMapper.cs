@@ -60,6 +60,7 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         {
             new WorkshopDescriptionItemDraft
             {
+                SectionName = "Опис",
                 Description = section.SectionDescription ?? string.Empty
             }
         };

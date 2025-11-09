@@ -1,4 +1,5 @@
 using OutOfSchool.Common.Models;
+using OutOfSchool.SportsRegistryApiClient.Models.External;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
@@ -32,5 +33,5 @@ public interface ISportsRegistryApiService
     /// A paged response containing the sports sections 
     /// or an <see cref="ErrorResponse"/> if the request fails.
     /// </returns>
-    Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(int page = 0, int pageSize = 100);
+    Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(int page = 0, int pageSize = 100, ExternalSportsSectionFilter? filter = null);
 }

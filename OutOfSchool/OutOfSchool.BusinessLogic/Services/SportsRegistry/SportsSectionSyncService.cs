@@ -1,6 +1,4 @@
-﻿//using System.Linq;
-using Microsoft.Extensions.Options;
-using OutOfSchool.BusinessLogic.Util.Mappers;
+﻿using OutOfSchool.BusinessLogic.Util.Mappers;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
@@ -14,7 +12,6 @@ public class SportsSectionSyncService(
     ICodeficatorRepository codeficatorRepository,
     IProviderRepository providerRepository,
     IInstitutionHierarchyRepository hierarchyRepository,
-   // IOptions<InstitutionOptions> institutionOptions,
     ILogger<SportsSectionSyncService> logger)
     : ISportsSectionSyncService
 {
@@ -22,7 +19,18 @@ public class SportsSectionSyncService(
     {
         logger.LogInformation("Starting synchronization of workshops (sports sections) with Sports Registry...");
 
-        var response = await workshopProvider.GetAllSportsSectionsAsync().ConfigureAwait(false);
+        var updatedAtTo = DateTimeOffset.UtcNow;
+        var updatedAtFrom = updatedAtTo.AddMinutes(-30);
+
+        logger.LogInformation("Fetching only updated sections from {From} to {To}", updatedAtFrom, updatedAtTo);
+        
+        var response = await workshopProvider.GetAllSportsSectionsAsync(updatedAtFrom, updatedAtTo).ConfigureAwait(false);
+
+        if (response.TryGetLeft(out var error)) // ????? if filtered fetch failed, fallback to full fetch
+        {
+            logger.LogWarning("Filtered fetch failed, fallback to full fetch");
+            response = await workshopProvider.GetAllSportsSectionsAsync().ConfigureAwait(false);
+        }
 
         var sportsSections = response.Match(
             error => throw new InvalidOperationException($"Failed to fetch sports sections: {error.Message}"),
@@ -96,8 +104,8 @@ public class SportsSectionSyncService(
                     // update existing draft
                     draft = section.MapToExistingDraft(existingDraft, catottgId.Value);
                     draft.DraftStatus = WorkshopDraftStatus.PendingModeration;
-                    draft.WorkshopDraftContent.InstitutionHierarchyId = hierarchy.Id; // ??
-                    draft.WorkshopDraftContent.InstitutionId = hierarchy.InstitutionId; // ??
+                    draft.WorkshopDraftContent.InstitutionHierarchyId = hierarchy.Id;
+                    draft.WorkshopDraftContent.InstitutionId = hierarchy.InstitutionId;
 
                     toUpdate.Add(draft);
                     logger.LogDebug(

@@ -9,6 +9,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.SportsRegistryApiClient.Config;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models;
+using OutOfSchool.SportsRegistryApiClient.Models.External;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
@@ -58,21 +59,67 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             .ConfigureAwait(false);
         return httpResult;
     }
-    public async Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(int page = 0, int pageSize = 100)
+
+    public async Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(
+    int page = 0,
+    int pageSize = 100,
+    ExternalSportsSectionFilter? filter = null)
     {
         var tokenResult = await GetAccessTokenAsync();
+
+        var queryParams = new List<string>()
+        {
+            $"pageNo={page}",
+            $"pageSize={pageSize}"
+        };
+
+        if (filter != null)
+        {
+            if (filter.UpdatedAtFrom.HasValue)
+            {
+                queryParams.Add($"updatedAtFrom={FormatForRegistry(filter.UpdatedAtFrom.Value)}");
+            }
+
+            if (filter.UpdatedAtTo.HasValue)
+            {
+                queryParams.Add($"updatedAtTo={FormatForRegistry(filter.UpdatedAtTo.Value)}");
+            }
+        }
+
+        var queryString = string.Join("&", queryParams);
+        var url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/sections?{queryString}");
 
         var httpResult = await tokenResult
             .Map(accessToken => new Request
             {
-                Url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/sections?pageNo={page}&pageSize={pageSize}"),
+                Url = url,
                 HttpMethodType = HttpMethodType.Get,
                 Token = accessToken
             })
-            .FlatMapAsync(request => communicationService.SendRequest<SportsSectionListResponse, ErrorResponse>(request))
+            .FlatMapAsync(request =>
+                communicationService.SendRequest<SportsSectionListResponse, ErrorResponse>(request))
             .ConfigureAwait(false);
+
         return httpResult;
     }
+    private static string FormatForRegistry(DateTimeOffset dt) =>
+    dt.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
+
+    //public async Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(int page = 0, int pageSize = 100)
+    //{
+    //    var tokenResult = await GetAccessTokenAsync();
+
+    //    var httpResult = await tokenResult
+    //        .Map(accessToken => new Request
+    //        {
+    //            Url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/sections?pageNo={page}&pageSize={pageSize}"),
+    //            HttpMethodType = HttpMethodType.Get,
+    //            Token = accessToken
+    //        })
+    //        .FlatMapAsync(request => communicationService.SendRequest<SportsSectionListResponse, ErrorResponse>(request))
+    //        .ConfigureAwait(false);
+    //    return httpResult;
+    //}
 
     private async Task<Either<ErrorResponse, TResponse>> StartProcessAsync<TRequest, TResponse>(
         TRequest request,
