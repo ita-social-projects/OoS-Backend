@@ -41,7 +41,7 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.CompetitiveSelection, true)
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentence(10))
         .RuleFor(x => x.IsPaid, true)
-        .RuleFor(x => x.Price, f => f.Random.UInt(1, 100000));
+        .RuleFor(x => x.Price, f => f.Random.Decimal(1, 100000));
 
     public static CompetitiveEventV2Dto Generate() => Faker.Generate();
 

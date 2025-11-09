@@ -8,11 +8,11 @@ public class ContactsAddress
 {
     [Required(ErrorMessage = "Street is required")]
     [MinLength(Constants.MinStreetNameLength)]
-    [MaxLength(Constants.MaxStreetNameLength)]
+    // Maximum length of the Street name set in BusinessEntityWithContactsConfiguration
     public string Street { get; set; }
 
     [MinLength(Constants.MinBuildingNumberLength)]
-    [MaxLength(Constants.MaxBuildingNumberLength)]
+    // Maximum length of BuildingNumber set in BusinessEntityWithContactsConfiguration
     public string BuildingNumber { get; set; }
 
     [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90 degrees")]
