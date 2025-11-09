@@ -696,7 +696,7 @@ public class CompetitiveEventDraftServiceTests
 
         // Assert
         Assert.That(result.Succeeded, Is.False);
-        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
         Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, 
             Is.EqualTo($"Competitive event draft with ID = {id} doesn't exist in DB, so it cannot be updated."));
 

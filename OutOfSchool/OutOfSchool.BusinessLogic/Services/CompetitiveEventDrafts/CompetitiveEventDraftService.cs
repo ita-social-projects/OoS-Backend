@@ -887,7 +887,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
                 .Failed(
                 new OperationError
                 {
-                    Code = "400",
+                    Code = "404",
                     Description = $"Competitive event draft with ID = {competitiveEventDraftUpdateDto.Id} doesn't exist in DB, so it cannot be updated."
                 });
         }
