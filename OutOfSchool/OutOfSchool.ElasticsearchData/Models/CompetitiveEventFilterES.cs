@@ -38,4 +38,6 @@ public class CompetitiveEventFilterES
     public int MaxPrice { get; set; } = int.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
+
+    public bool IsPaid { get; set; }
 }

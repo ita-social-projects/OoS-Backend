@@ -91,6 +91,7 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
         AddStatesQuery(query, filter);
         AddPlannedFormatOfClassesQuery(query, filter);
         AddAreThereBenefitsQuery(query, filter);
+        AddIsPaidQuery(query, filter);
         AddCompetitiveSelectionQuery(query, filter);
         if (includePrice)
         {
@@ -164,6 +165,17 @@ public class ESCompetitiveEventProvider(ElasticsearchClient elasticClient) :
             query.Filter.Add(new TermQuery(Infer.Field<CompetitiveEventES>(e => e.AreThereBenefits))
             {
                 Value = filter.AreThereBenefits,
+            });
+        }
+    }
+
+    private void AddIsPaidQuery(BoolQuery query, CompetitiveEventFilterES filter)
+    {
+        if (filter.IsPaid)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<CompetitiveEventES>(e => e.IsPaid))
+            {
+                Value = filter.IsPaid,
             });
         }
     }

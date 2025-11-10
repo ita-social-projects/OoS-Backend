@@ -1,9 +1,9 @@
-﻿using Bogus;
+﻿using System.Collections.Generic;
+using Bogus;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Common.Enums;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
@@ -40,7 +40,8 @@ public static class CompetitiveEventContactsDtoGenerator
         .RuleFor(x => x.CompetitiveSelectionDescription, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.VenueName, f => f.Lorem.Sentences(3))
         .RuleFor(x => x.DescriptionOfTheEnrollmentProcedure, f => f.Lorem.Sentences(3))
-        .RuleFor(x => x.Price, f => f.Random.Int(1, 100))
+        .RuleFor(x => x.IsPaid, true)
+        .RuleFor(x => x.Price, f => f.Random.Decimal(1, 100000))
         .RuleFor(x => x.PlannedFormatOfClasses, f => f.PickRandom<FormOfLearning>());
 
     public static CompetitiveEventContactsDto Generate() => Faker.Generate();

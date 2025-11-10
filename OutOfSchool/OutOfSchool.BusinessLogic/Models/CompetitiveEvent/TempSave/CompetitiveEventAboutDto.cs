@@ -72,12 +72,12 @@ public class CompetitiveEventAboutDto : IValidatableObject
 
         if (NumberOfSeats != uint.MaxValue && (NumberOfSeats < 1 || NumberOfSeats > 100000))
         {
-            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", new[] { nameof(NumberOfSeats) });
+            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", [nameof(NumberOfSeats)]);
         }
 
         if (MinimumAge >= MaximumAge)
         {
-            yield return new ValidationResult("Minimum age should be less than Maximum age", new[] { nameof(MinimumAge), nameof(MaximumAge) });
+            yield return new ValidationResult("Minimum age should be less than Maximum age", [nameof(MinimumAge), nameof(MaximumAge)]);
         }
     }
 }

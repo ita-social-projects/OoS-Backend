@@ -669,6 +669,40 @@ public class CompetitiveEventDraftServiceTests
         Mock.VerifyAll();
     }
 
+    [Test]
+    public async Task Update_ReturnsFailedResult_WhenDraftDoesNotExistInDB()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        var competitiveEventV2Dto = CompetitiveEventV2DtoGenerator.Generate();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = competitiveEventV2Dto
+        };
+        var draft = (CompetitiveEventDraft)null;
+
+        mockCompetitiveEventDraftRepository
+           .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
+           .Returns((Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>> f) => f.Invoke())
+           .Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.GetById(id))
+            .ReturnsAsync(draft)
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await competitiveEventDraftService.Update(id, dto);
+
+        // Assert
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, 
+            Is.EqualTo($"Competitive event draft with ID = {id} doesn't exist in DB, so it cannot be updated."));
+
+        Mock.VerifyAll();
+    }
+
     #endregion
 
     #region Delete

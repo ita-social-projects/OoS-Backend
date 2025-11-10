@@ -63,8 +63,8 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public int CompetitiveEventAccountingTypeId { get; set; }
 
     [Required(ErrorMessage = "Information about the selection is required")]
-    [MinLength(3)]
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
+    [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
@@ -76,12 +76,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinVenueNameLength)]
     [MaxLength(Constants.MaxVenueNameLength)]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
-    [MinLength(3)]
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Participation terms must contain at least one letter.")]
@@ -90,8 +90,8 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public bool? AreThereBenefits { get; set; }
 
-    [MinLength(3)]
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    [MinLength(Constants.MinBenefitsLength)]
+    [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string Benefits { get; set; }
@@ -103,8 +103,11 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int? MaximumAge { get; set; }
 
+    public bool IsPaid { get; set; } = false;
+
+    [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
-    public int? Price { get; set; }
+    public decimal? Price { get; set; } = default;
 
     public bool? CompetitiveSelection { get; set; }
 
@@ -144,12 +147,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
         if (NumberOfSeats != uint.MaxValue && (NumberOfSeats < 1 || NumberOfSeats > 100000))
         {
-            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", new[] { nameof(NumberOfSeats) });
+            yield return new ValidationResult("NumberOfSeats field should be in the range from 1 to 100000.", [nameof(NumberOfSeats)]);
         }
 
         if (MinimumAge >= MaximumAge)
         {
-            yield return new ValidationResult("Minimum age should be less than Maximum age", new[] { nameof(MinimumAge), nameof(MaximumAge) });
+            yield return new ValidationResult("Minimum age should be less than Maximum age", [nameof(MinimumAge), nameof(MaximumAge)]);
         }
     }
 }
@@ -192,6 +195,7 @@ public static class CompetitiveEventBaseDtoExtensions
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
         MaximumAge = dto.MaximumAge ?? 0,
+        IsPaid = dto.IsPaid,
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),
@@ -230,6 +234,7 @@ public static class CompetitiveEventBaseDtoExtensions
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
+        model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;

@@ -25,11 +25,11 @@ public abstract class BusinessEntityWithContactsConfiguration<TBase> : BusinessE
             {
                 a.Property(p => p.Street)
                     .IsRequired()
-                    .HasMaxLength(60);
+                    .HasMaxLength(Constants.MaxStreetNameLength);
 
                 a.Property(p => p.BuildingNumber)
                     .IsRequired()
-                    .HasMaxLength(15);
+                    .HasMaxLength(Constants.MaxBuildingNumberLength);
 
                 a.Property(p => p.CATOTTGId)
                     .IsRequired();

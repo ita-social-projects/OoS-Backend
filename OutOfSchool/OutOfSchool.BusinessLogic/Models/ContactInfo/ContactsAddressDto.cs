@@ -11,15 +11,15 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 public sealed class ContactsAddressDto : IContentComparable<ContactsAddress>, IEquatable<ContactsAddressDto>
 {
     [Required(ErrorMessage = "Street is required")]
-    [MinLength(1)]
-    [MaxLength(60)]
+    [MinLength(Constants.MinStreetNameLength)]
+    [MaxLength(Constants.MaxStreetNameLength)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Street must contain at least one Cyrillic letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}0-9\s\-'’\.]+$", ErrorMessage = "Only Cyrillic letters, numbers, spaces, '-', '.', and apostrophe are allowed.")]
     public string Street { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Building number is required")]
-    [MinLength(1)]
-    [MaxLength(15)]
+    [MinLength(Constants.MinBuildingNumberLength)]
+    [MaxLength(Constants.MaxBuildingNumberLength)]
     [MustContain(RequiredCharacterType.Digit, ErrorMessage = "Building number must contain at least one number.")]
     [RegularExpression(@"^[0-9]+[0-9А-Яа-яЇїІіЄєҐґA-Za-z\-\/]*$", ErrorMessage = "Building number must start with a digit and may only contain Cyrillic or Latin letters, digits, '-' and '/', without spaces.")]
     public string BuildingNumber { get; set; } = string.Empty;

@@ -68,10 +68,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
         }
 
-
         async Task<Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>>
         CreateCompetitiveEventDraftWithImages()
         {
+            NormalizePriceForPaymentStatus(competitiveEventV2Dto);
+
             var createdCompetitiveEventDraft = await CreateCompetitiveEventDraft(competitiveEventV2Dto)
                 .ConfigureAwait(false);
 
@@ -151,6 +152,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
+
+        NormalizePriceForPaymentStatus(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto);
 
         var draftImageUpdateResult = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
@@ -403,6 +406,8 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
+
+        NormalizePriceForPaymentStatus(competitiveEventV2Dto);
 
         if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {
@@ -874,6 +879,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         var competitiveEventDraft = await GetDraftById(competitiveEventDraftUpdateDto.Id).ConfigureAwait(false);
 
+        if (competitiveEventDraft == null)
+        {
+            logger.LogWarning("Competitive event draft with ID = {DraftId} doesn't exist in DB, so it cannot be updated.", competitiveEventDraftUpdateDto.Id);
+
+            return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult, MultipleImageChangingResult imagesResult)>
+                .Failed(
+                new OperationError
+                {
+                    Code = "404",
+                    Description = $"Competitive event draft with ID = {competitiveEventDraftUpdateDto.Id} doesn't exist in DB, so it cannot be updated."
+                });
+        }
+
         await currentUserService.UserHasRights(
             new ProviderRights(competitiveEventDraft.ProviderId),
             new EmployeeRights(competitiveEventDraft.ProviderId),
@@ -899,12 +917,13 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
         {
             logger.LogWarning("Competitive event draft with ID {DraftId} can't be updated.", competitiveEventDraftUpdateDto.Id);
+
             return Result<(CompetitiveEventDraft competitiveEventDraft, ImageChangingResult coverImageResult,
-           MultipleImageChangingResult imagesResult)>.Failed(new OperationError
-           {
-               Code = "400",
-               Description = "Competitive event draft can't be updated when it is in PendingModeration status."
-           });
+                MultipleImageChangingResult imagesResult)>.Failed(new OperationError
+                {
+                    Code = "400",
+                    Description = "Competitive event draft can't be updated when it is in PendingModeration status."
+                });
         }
 
         competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.SetToDraft(competitiveEventDraft);
@@ -1088,5 +1107,10 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return responseDto;
 
         }).ToList();
+    }
+
+    private static void NormalizePriceForPaymentStatus(CompetitiveEventV2Dto dto)
+    {
+        dto.Price = dto.IsPaid ? dto.Price : 0;
     }
 }
