@@ -1,10 +1,10 @@
-﻿using OutOfSchool.BusinessLogic.Models.ContactInfo;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Models.WorkshopDrafts;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -18,6 +18,7 @@ public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        // Run validations from WorkshopDto
         foreach (var error in base.Validate(validationContext))
             yield return error;
 
@@ -30,20 +31,26 @@ public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
         bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
 
         if (hasInvalidFiles)
-            yield return new ValidationResult("ImageFiles must not contain empty files.", new[] { nameof(ImageFiles) });
+            yield return new ValidationResult("ImageFiles must not contain empty files.", [nameof(ImageFiles)]);
         if (hasInvalidIds)
-            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", new[] { nameof(ImageIds) });
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", [nameof(ImageIds)]);
 
         if (hasCoverImage == hasCoverImageId)
         {
             yield return new ValidationResult("Either CoverImage or CoverImageId should be provided, not both.",
-                new[] { nameof(CoverImage), nameof(CoverImageId) });
+                [nameof(CoverImage), nameof(CoverImageId)]);
         }
 
-        if (hasImageFiles == hasImageIds)
+        if (!hasImageFiles && !hasImageIds)
         {
-            yield return new ValidationResult("Either ImageFiles or ImageIds should be provided, not both.",
-                new[] { nameof(ImageFiles), nameof(ImageIds) });
+            yield return new ValidationResult("At least one of the ImageFiles or ImageIds fields must be filled in.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+
+        if ((ImageFiles ?? []).Count + (ImageIds ?? []).Count > Constants.MaxCountOfImagesForWorkshop)
+        {
+            yield return new ValidationResult($"A maximum of {Constants.MaxCountOfImagesForWorkshop} images are allowed for a workshop.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
         }
     }
 }

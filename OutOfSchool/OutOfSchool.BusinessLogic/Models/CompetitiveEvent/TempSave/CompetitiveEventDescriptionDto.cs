@@ -13,7 +13,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 {
     // This property uses only for storing dto in Redis
     [ConditionalMinLength("Images", 1, ErrorMessage = "At least one image is required")]
-    [ConditionalMaxLength("Images", 10, ErrorMessage = "The image collection must contain less than 10 items")]
+    [ConditionalMaxLength("Images", 10, ErrorMessage = "A maximum of 10 images are allowed per competitive event.")]
     public List<string> Base64ImageFiles { get; set; } = [];
 
     [FromForm]
@@ -37,7 +37,8 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
 
     [MinLength(Constants.MinVenueNameLength)]
@@ -45,9 +46,11 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
+    [Required(ErrorMessage = "Information about the selection is required")]
     [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "DescriptionOfTheEnrollmentProcedure field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public bool IsPaid { get; set; } = false;
@@ -61,7 +64,8 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MinLength(Constants.MinBenefitsLength)]
     [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Benefits field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Benefits { get; set; }
 
     public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
@@ -71,5 +75,11 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
         // Run validations from CompetitiveEventAboutDto
         foreach (var error in base.Validate(validationContext))
             yield return error;
+
+        // validate Price when IsPaid is true
+        if (IsPaid && (!Price.HasValue || Price < 0.01M))
+        {
+            yield return new ValidationResult("Price must be specified and must be in the range from 0.01 to 100000.00 when the competitive event is paid.", [nameof(Price)]);
+        }
     }
 }

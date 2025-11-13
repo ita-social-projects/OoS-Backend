@@ -16,7 +16,7 @@ public class ModeratorCompetitiveEventDraftEditDto
     [Required(ErrorMessage = "ShortTitle is required")]    
     public string ShortTitle { get; set; }    
 
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public string AdditionalDescription { get; set; }

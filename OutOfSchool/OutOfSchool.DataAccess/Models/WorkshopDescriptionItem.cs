@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
@@ -10,11 +11,13 @@ public class WorkshopDescriptionItem : IKeyedEntity<Guid>, ISoftDeleted
     public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Description heading is required")]
-    [MaxLength(200)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfWorkshopDescriptionItem)]
+    [MinLength(Constants.MinLengthForSectionNameOfWorkshopDescriptionItem)]
     public string SectionName { get; set; }
 
     [Required(ErrorMessage = "Description text is required")]
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfWorkshopDescriptionItem)]
+    [MinLength(Constants.MinLengthForDescriptionOfWorkshopDescriptionItem)]
     public string Description { get; set; }
 
     public Guid WorkshopId { get; set; }

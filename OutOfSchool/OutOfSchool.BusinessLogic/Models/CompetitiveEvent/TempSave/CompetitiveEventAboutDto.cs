@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Validators;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
@@ -17,12 +19,16 @@ public class CompetitiveEventAboutDto : IValidatableObject
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Short title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
