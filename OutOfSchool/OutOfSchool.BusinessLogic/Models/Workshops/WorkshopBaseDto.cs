@@ -174,6 +174,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        // Note: uint.MaxValue represents unlimited seats and bypasses range validation
         if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
         {
             yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", [nameof(AvailableSeats)]);
