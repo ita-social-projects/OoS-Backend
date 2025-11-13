@@ -237,13 +237,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                         [nameof(Keywords)]);
                 }
 
-                string trimmedKeyword = keyword?.Trim();
-
-                if ((trimmedKeyword ?? string.Empty).Length > 0)
-                {
-                    cleanedKeywords.Add(trimmedKeyword);
-                    totalLength += trimmedKeyword.Length;
-                }
+                string trimmedKeyword = (keyword ?? string.Empty).Trim();
+                cleanedKeywords.Add(trimmedKeyword);
+                totalLength += trimmedKeyword.Length;
 
                 // Check 2: Single keyword max length
                 if (trimmedKeyword.Length > Constants.MaxLengthOfOneKeyword)
