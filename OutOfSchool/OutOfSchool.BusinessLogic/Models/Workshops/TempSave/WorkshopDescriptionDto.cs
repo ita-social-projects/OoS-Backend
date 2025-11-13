@@ -72,8 +72,12 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
                 }
 
                 string trimmedKeyword = keyword?.Trim();
-                cleanedKeywords.Add(trimmedKeyword);
-                totalLength += trimmedKeyword.Length;
+
+                if ((trimmedKeyword ?? string.Empty).Length > 0)
+                {
+                    cleanedKeywords.Add(trimmedKeyword);
+                    totalLength += trimmedKeyword.Length;
+                }
 
                 // Check 2: Single keyword max length
                 if (trimmedKeyword.Length > Constants.MaxLengthOfOneKeyword)
