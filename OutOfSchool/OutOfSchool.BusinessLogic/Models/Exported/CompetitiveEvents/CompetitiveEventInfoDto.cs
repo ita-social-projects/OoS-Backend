@@ -52,7 +52,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public AccountingTypeInfoDto AccountingType { get; set; }
 
-    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; } = string.Empty;
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]

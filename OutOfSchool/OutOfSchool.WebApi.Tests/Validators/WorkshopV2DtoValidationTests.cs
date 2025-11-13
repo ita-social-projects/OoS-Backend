@@ -41,7 +41,7 @@ public class WorkshopV2DtoValidationTests
     }
 
     [Test]
-    public void Validate_WhenAvailableSeatsGreaterThan1000000_ShouldReturnValidationError()
+    public void Validate_WhenAvailableSeatsGreaterThan100000_ShouldReturnValidationError()
     {
         // Arrange
         var dto = validDto;
@@ -307,7 +307,7 @@ public class WorkshopV2DtoValidationTests
     {
         // Arrange
         var dto = validDto;
-        dto.ImageFiles = dto.ImageFiles = [FakeFile("img.jpg", 0)];
+        dto.ImageFiles = [FakeFile("img.jpg", 0)];
         var validationContext = new ValidationContext(dto);
 
         // Act
