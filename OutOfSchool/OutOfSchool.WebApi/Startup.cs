@@ -612,7 +612,7 @@ public static class Startup
             q.AddLicenseApprovalNotificationGenerating(services, quartzConfig);
             q.AddEmailSender(quartzConfig);
             q.AddSportKindSync(quartzConfig);
-            //q.AddSportsSectionSync(quartzConfig); // temporary disabled
+            q.AddSportsSectionSync(quartzConfig);
 
         });
 

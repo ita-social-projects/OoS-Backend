@@ -51,5 +51,6 @@ public static class WorkshopCreateRequestDtoExtensions
 
             LanguageOfEducationId = dto.LanguageOfEducationId,
             IsChampionPath = dto.IsChampionPath,
+            MinsportSectionId = dto.MinsportSectionId,
         };
 }

@@ -179,7 +179,10 @@ public class RegistrySyncService : IRegistrySyncService
             },
             success =>
             {
-                draft.MinsportSectionId = success.ResultVariables.SectionId;
+                if(success.ResultVariables.SectionId is not null)
+                {
+                    draft.MinsportSectionId = success.ResultVariables.SectionId;
+                }
                 var action = isCreate ? "created" : "updated";
                 logger.LogInformation(
                     "Draft was successfully {Action} in Sports Registry. DraftId={DraftId}, SectionId={SectionId}",

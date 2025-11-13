@@ -44,10 +44,17 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         content.ShortTitle = section.SectionName;
         content.EnrollmentProcedureDescription = section.SectionRegistrationFlow ?? string.Empty;
         content.CompetitiveSelectionDescription = section.SectionSelectionCriteria ?? string.Empty;
-        content.Price = section.SectionPracticeCost;
         content.MinAge = section.SectionAgeFrom;
         content.MaxAge = section.SectionAgeTo;
         content.IsChampionPath = section.SectionIsInShlyahProject;
+
+        content.IsPaid = section.SectionPracticeCost > 0;
+        content.Price = content.IsPaid ? section.SectionPracticeCost : 0;
+        content.PayRate = PayRateType.Month;
+        
+        content.AvailableSeats = (uint)(section.SectionMaxStudentsAmount > MinSportMaxStudentsLimit
+            ? MinSportMaxStudentsLimit
+            : section.SectionMaxStudentsAmount);
 
         content.Keywords = string.IsNullOrWhiteSpace(section.SectionSportKindDictName)
             ? new List<string>()
@@ -116,31 +123,30 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         }
 
         content.Contacts = new List<Contacts>
-    {
-        new Contacts
         {
-            Title = "Контакт секції",
-            IsDefault = true,
-            Address = new ContactsAddress
+            new Contacts
             {
-                Street = section.SectionAddressStreet ?? string.Empty,
-                BuildingNumber = section.SectionAddressHouse ?? string.Empty,
-                CATOTTGId = catottgId
-            },
-            Phones = phones,
-            Emails = new List<Email>
-            {
-                new Email { Type = "Основний", Address = section.SectionEmail ?? string.Empty }
-            },
-            SocialNetworks = socialNetworks
-        }
-    };
+                Title = "Контакт секції",
+                IsDefault = true,
+                Address = new ContactsAddress
+                {
+                    Street = section.SectionAddressStreet ?? string.Empty,
+                    BuildingNumber = section.SectionAddressHouse ?? string.Empty,
+                    CATOTTGId = catottgId
+                },
+                Phones = phones,
+                Emails = new List<Email>
+                {
+                    new Email { Type = "Основний", Address = section.SectionEmail ?? string.Empty }
+                },
+                SocialNetworks = socialNetworks
+            }
+        };
 
         content.FormOfLearning = ToFormLearning(section.SectionPracticeFormat);
         content.LanguageOfEducationId = 2;
         content.LanguageOfEducationName = "Українська";
-        content.PayRate = PayRateType.Month;
-
+       
         return content;
     }
 
