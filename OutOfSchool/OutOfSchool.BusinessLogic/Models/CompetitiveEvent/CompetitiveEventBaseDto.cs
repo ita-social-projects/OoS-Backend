@@ -128,7 +128,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (RegistrationStartTime >= RegistrationEndTime)
+        if (RegistrationStartTime > RegistrationEndTime)
         {
             yield return new ValidationResult(
                  "Registration start time must be before registration end time");
@@ -140,7 +140,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
                  "Scheduled start time must be before scheduled end time");
         }
 
-        if (ScheduledStartTime <= RegistrationEndTime)
+        if (ScheduledStartTime < RegistrationEndTime)
         {
             yield return new ValidationResult(
                  "Scheduled start time must be after registration end time");
