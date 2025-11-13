@@ -237,7 +237,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                         [nameof(Keywords)]);
                 }
 
-                string trimmedKeyword = keyword.Trim();
+                string trimmedKeyword = keyword?.Trim();
                 cleanedKeywords.Add(trimmedKeyword);
                 totalLength += trimmedKeyword.Length;
 
