@@ -10,7 +10,7 @@ public class DecimalDotModelBinder : IModelBinder
     {
         if (bindingContext == null)
         {
-            throw new ArgumentException(nameof(bindingContext));
+            throw new ArgumentNullException(nameof(bindingContext));
         }
 
         var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);

@@ -21,14 +21,14 @@ public class DecimalDotModelBinderTests
     }
 
     [Test]
-    public void BindModelAsync_WithNullBindingContext_ThrowsArgumentException()
+    public void BindModelAsync_WithNullBindingContext_ThrowsArgumentNullException()
     {
         // Arrange
         ModelBindingContext bindingContext = null;
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () => await _binder.BindModelAsync(bindingContext));
-        Assert.That(ex.ParamName, Is.EqualTo(null));
+        var ex = Assert.ThrowsAsync<ArgumentNullException>(async () => await _binder.BindModelAsync(bindingContext));
+        Assert.That(ex.ParamName, Is.EqualTo("bindingContext"));
     }
 
     [Test]
