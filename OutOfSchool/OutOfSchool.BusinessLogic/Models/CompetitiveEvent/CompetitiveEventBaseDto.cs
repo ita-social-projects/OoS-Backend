@@ -14,7 +14,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Title is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
@@ -22,7 +22,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
-    [Required(ErrorMessage = "ShortTitle is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
@@ -62,7 +62,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set; }
 
-    [Required(ErrorMessage = "Information about the selection is required")]
+    [Required]
     [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "DescriptionOfTheEnrollmentProcedure field must contain at least one letter.")]
@@ -72,7 +72,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Required]
     public Guid OrganizerOfTheEventId { get; set; }
 
-    [Required(ErrorMessage = "Planned format of classes is required")]
+    [Required]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 

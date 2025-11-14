@@ -16,14 +16,14 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Workshop title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopTitleLength, ErrorMessage = "Title field must contain from 3 to 250 characters.")]
     [MaxLength(Constants.MaxWorkshopTitleLength, ErrorMessage = "Title field must contain from 3 to 250 characters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Workshop short title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopShortTitleLength, ErrorMessage = "This field must contain from 1 to 60 characters.")]
     [MaxLength(Constants.MaxWorkshopShortTitleLength, ErrorMessage = "This field must contain from 1 to 60 characters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "This field must contain at least one letter.")]
@@ -53,15 +53,15 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.None;
 
-    [Required(ErrorMessage = "Form of learning is required")]
+    [Required]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; }
 
+    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    [Required(ErrorMessage = "Study period dates is required")]
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
-    [Required(ErrorMessage = "Available seats are required")]
+    [Required]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
@@ -108,6 +108,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public string ProviderTitleEn { get; set; } = string.Empty;
 
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; } = ProviderLicenseStatus.NotProvided;
 
     public DateOnly ActiveFrom { get; set; }
@@ -143,11 +144,11 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
-    [Required(ErrorMessage = "Language of education is required")]
+    [Required]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
 
-    [Required(ErrorMessage = "Type of age composition is required")]
+    [Required]
     [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
 

@@ -10,14 +10,14 @@ public class WorkshopDescriptionItem : IKeyedEntity<Guid>, ISoftDeleted
 
     public bool IsDeleted { get; set; }
 
-    [Required(ErrorMessage = "Description heading is required")]
-    [MaxLength(Constants.MaxLengthForSectionNameOfWorkshopDescriptionItem)]
+    [Required]
     [MinLength(Constants.MinLengthForSectionNameOfWorkshopDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfWorkshopDescriptionItem)]
     public string SectionName { get; set; }
 
-    [Required(ErrorMessage = "Description text is required")]
-    [MaxLength(Constants.MaxLengthForDescriptionOfWorkshopDescriptionItem)]
+    [Required]
     [MinLength(Constants.MinLengthForDescriptionOfWorkshopDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfWorkshopDescriptionItem)]
     public string Description { get; set; }
 
     public Guid WorkshopId { get; set; }

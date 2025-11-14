@@ -15,7 +15,7 @@ public class CompetitiveEventAboutDto : IValidatableObject
     [ConditionalRequired("Images", ErrorMessage = "The cover image is required")]
     public string Base64CoverImage { get; set; }
 
-    [Required(ErrorMessage = "Title is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
@@ -23,7 +23,7 @@ public class CompetitiveEventAboutDto : IValidatableObject
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
-    [Required(ErrorMessage = "ShortTitle is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]

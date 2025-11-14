@@ -28,7 +28,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> SubDirectionIds { get; set; } = [];
 
-    [Required(ErrorMessage = "Planned format of classes is required")]
+    [Required]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
@@ -46,7 +46,7 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
-    [Required(ErrorMessage = "Information about the selection is required")]
+    [Required]
     [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "DescriptionOfTheEnrollmentProcedure field must contain at least one letter.")]
