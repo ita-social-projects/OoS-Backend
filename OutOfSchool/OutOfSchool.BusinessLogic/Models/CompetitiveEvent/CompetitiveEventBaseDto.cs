@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -7,6 +6,8 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -106,6 +107,8 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     public bool IsPaid { get; set; } = false;
 
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    [JsonConverter(typeof(DecimalDotJsonConverter))]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 

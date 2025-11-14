@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -34,6 +37,8 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public bool IsPaid { get; set; } = false;
 
     [Column(TypeName = "decimal(18,2)")]
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    [JsonConverter(typeof(DecimalDotJsonConverter))]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     public decimal? Price { get; set; } = default;
