@@ -2,6 +2,9 @@
 using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
+/// <summary>
+/// JSON converter for decimal values that uses a dot as the decimal separator.
+/// </summary>
 public class DecimalDotJsonConverter : JsonConverter<decimal?>
 {
     public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

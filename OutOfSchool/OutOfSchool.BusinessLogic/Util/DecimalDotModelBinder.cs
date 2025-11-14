@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace OutOfSchool.BusinessLogic.Util;
+/// <summary>
+/// Model binder for decimal values that uses a dot as the decimal separator.
+/// </summary>
 public class DecimalDotModelBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
