@@ -16,6 +16,7 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [MaxLength(Constants.MaxCountOfKeywordsForWorkshop)]
     public IEnumerable<string> Keywords { get; set; } = default;
 
     [Required]
