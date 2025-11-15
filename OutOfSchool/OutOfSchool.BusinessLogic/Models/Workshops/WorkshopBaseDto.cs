@@ -185,21 +185,19 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         {
             if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
             {
-                yield return new ValidationResult(
-                     "The end date cannot be equal to or earlier than the start date");
+                yield return new ValidationResult("The end date cannot be equal to or earlier than the start date");
             }
 
             if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
             {
-                yield return new ValidationResult(
-                    "Workdays are required");
+                yield return new ValidationResult("Workdays are required");
+                continue;
             }
 
             var daysHs = new HashSet<DaysBitMask>();
             if (!dateTimeRange.Workdays.All(daysHs.Add))
             {
-                yield return new ValidationResult(
-                    "Workdays contain duplications");
+                yield return new ValidationResult("Workdays contain duplications");
             }
         }
 

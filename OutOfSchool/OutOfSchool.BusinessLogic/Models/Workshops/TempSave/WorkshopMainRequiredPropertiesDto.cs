@@ -67,8 +67,8 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Language of education is required")]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
-    
-    [BindNever]  
+
+    [BindNever]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Guid? MinsportSectionId { get; set; }
 
@@ -87,21 +87,19 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
         {
             if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
             {
-                yield return new ValidationResult(
-                     "The end date cannot be equal to or earlier than the start date");
+                yield return new ValidationResult("The end date cannot be equal to or earlier than the start date");
             }
 
             if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
             {
-                yield return new ValidationResult(
-                    "Workdays are required");
+                yield return new ValidationResult("Workdays are required");
+                continue;
             }
 
             var daysHs = new HashSet<DaysBitMask>();
             if (!dateTimeRange.Workdays.All(daysHs.Add))
             {
-                yield return new ValidationResult(
-                    "Workdays contain duplications");
+                yield return new ValidationResult("Workdays contain duplications");
             }
         }
 
