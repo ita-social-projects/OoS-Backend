@@ -67,21 +67,18 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
                 // Check 1: Empty or whitespace
                 if (string.IsNullOrWhiteSpace(keyword))
                 {
-                    yield return new ValidationResult(
-                        "Keyword cannot be empty or whitespace.",
-                        [nameof(Keywords)]);
+                    yield return new ValidationResult("Keyword cannot be empty or whitespace.", [nameof(Keywords)]);
+                    continue;
                 }
 
-                string trimmedKeyword = (keyword ?? string.Empty).Trim();
+                string trimmedKeyword = keyword.Trim();
                 cleanedKeywords.Add(trimmedKeyword);
                 totalLength += trimmedKeyword.Length;
 
                 // Check 2: Single keyword max length
                 if (trimmedKeyword.Length > Constants.MaxLengthOfOneKeyword)
                 {
-                    yield return new ValidationResult(
-                        $"Keyword must be no longer than {Constants.MaxLengthOfOneKeyword} characters.",
-                        [nameof(Keywords)]);
+                    yield return new ValidationResult($"Keyword must be no longer than {Constants.MaxLengthOfOneKeyword} characters.", [nameof(Keywords)]);
                 }
             }
 
