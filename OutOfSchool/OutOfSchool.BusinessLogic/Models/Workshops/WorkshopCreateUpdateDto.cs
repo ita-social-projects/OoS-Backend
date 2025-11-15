@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums.Workshop;
@@ -11,6 +12,13 @@ public class WorkshopCreateUpdateDto : WorkshopBaseDto
     [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from WorkshopBaseDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+    }
 }
 
 public static class WorkshopCreateUpdateDtoExtensions

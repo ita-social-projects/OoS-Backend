@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Validators;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
@@ -13,16 +15,20 @@ public class CompetitiveEventAboutDto : IValidatableObject
     [ConditionalRequired("Images", ErrorMessage = "The cover image is required")]
     public string Base64CoverImage { get; set; }
 
-    [Required(ErrorMessage = "Title is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
-    [Required(ErrorMessage = "ShortTitle is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Short title must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -52,10 +58,10 @@ public class CompetitiveEventAboutDto : IValidatableObject
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (RegistrationStartTime >= RegistrationEndTime)
+        if (RegistrationStartTime > RegistrationEndTime)
         {
             yield return new ValidationResult(
-                 "Registration start time must be before registration end time.");
+                 "Registration start time must be before registration end time");
         }
 
         if (ScheduledStartTime >= ScheduledEndTime)
@@ -64,7 +70,7 @@ public class CompetitiveEventAboutDto : IValidatableObject
                  "Scheduled start time must be before scheduled end time");
         }
 
-        if (ScheduledStartTime <= RegistrationEndTime)
+        if (ScheduledStartTime < RegistrationEndTime)
         {
             yield return new ValidationResult(
                  "Scheduled start time must be after registration end time");

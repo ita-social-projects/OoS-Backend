@@ -71,7 +71,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         async Task<Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>>
         CreateCompetitiveEventDraftWithImages()
         {
-            NormalizePriceForPaymentStatus(competitiveEventV2Dto);
+            NormalizeConditionalFields(competitiveEventV2Dto);
 
             var createdCompetitiveEventDraft = await CreateCompetitiveEventDraft(competitiveEventV2Dto)
                 .ConfigureAwait(false);
@@ -153,7 +153,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         logger.LogDebug("Updating competitive event draft with ID: {DraftId}", competitiveEventDraftUpdateDto.Id);
 
-        NormalizePriceForPaymentStatus(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto);
+        NormalizeConditionalFields(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto);
 
         var draftImageUpdateResult = await competitiveEventDraftRepository
             .RunInTransaction(() => UpdateDraftWithImagesAsync(competitiveEventDraftUpdateDto))
@@ -407,7 +407,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
 
-        NormalizePriceForPaymentStatus(competitiveEventV2Dto);
+        NormalizeConditionalFields(competitiveEventV2Dto);
 
         if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {
@@ -1109,8 +1109,14 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         }).ToList();
     }
 
-    private static void NormalizePriceForPaymentStatus(CompetitiveEventV2Dto dto)
+    /// <summary>
+    /// Sets conditional fields in a DTO to null or default values ​​according to their respective flags.
+    /// </summary>
+    /// <param name="dto">CompetitiveEvent dto.</param>
+    private static void NormalizeConditionalFields(CompetitiveEventV2Dto dto)
     {
+        dto.CompetitiveSelectionDescription = dto.CompetitiveSelection ?? false ? dto.CompetitiveSelectionDescription : null;
+        dto.Benefits = dto.AreThereBenefits ?? false ? dto.Benefits : null;
         dto.Price = dto.IsPaid ? dto.Price : 0;
     }
 }

@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
@@ -21,14 +22,18 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Workshop title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Workshop short title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "This field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; } = string.Empty;
 
     public bool NoAgeRestrictions { get; set; } = false;
@@ -62,8 +67,8 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [Required(ErrorMessage = "Language of education is required")]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
-    
-    [BindNever]  
+
+    [BindNever]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Guid? MinsportSectionId { get; set; }
 
@@ -71,38 +76,36 @@ public class WorkshopMainRequiredPropertiesDto : IValidatableObject
     [ConditionalRequired("Images", ErrorMessage = "The cover image is required")]
     public string Base64CoverImage { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // TODO: Validate DateTimeRanges are not empty when frontend is ready
+        if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
+        {
+            yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", [nameof(AvailableSeats)]);
+        }
+
         foreach (var dateTimeRange in DateTimeRanges)
         {
             if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
             {
-                yield return new ValidationResult(
-                    "The end date cannot be equal to or earlier than the start date");
+                yield return new ValidationResult("The end date cannot be equal to or earlier than the start date");
             }
 
             if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
             {
-                yield return new ValidationResult(
-                    "Workdays are required");
+                yield return new ValidationResult("Workdays are required");
+                continue;
             }
 
             var daysHs = new HashSet<DaysBitMask>();
             if (!dateTimeRange.Workdays.All(daysHs.Add))
             {
-                yield return new ValidationResult(
-                    "Workdays contain duplications");
+                yield return new ValidationResult("Workdays contain duplications");
             }
         }
-        if (NoAgeRestrictions)
+
+        if (!NoAgeRestrictions && MinAge >= MaxAge)
         {
-            MinAge = 0;
-            MaxAge = 120;
-        }
-        else if (MinAge.HasValue && MaxAge.HasValue && MinAge > MaxAge)
-        {
-            yield return new ValidationResult("Min age should be less than or equal to Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+            yield return new ValidationResult("Min age should be less than Max age", [nameof(MinAge), nameof(MaxAge)]);
         }
     }
 }

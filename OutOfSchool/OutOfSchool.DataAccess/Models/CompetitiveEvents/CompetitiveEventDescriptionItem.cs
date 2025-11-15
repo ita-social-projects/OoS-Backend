@@ -8,14 +8,14 @@ public class CompetitiveEventDescriptionItem : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Description heading is required")]
-    [MaxLength(Constants.MaxLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [Required]
     [MinLength(Constants.MinLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfCompetitiveEventDescriptionItem)]
     public string SectionName { get; set; }
 
-    [Required(ErrorMessage = "Description text is required")]
-    [MaxLength(Constants.MaxLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [Required]
     [MinLength(Constants.MinLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfCompetitiveEventDescriptionItem)]
     public string Description { get; set; }
 
     public Guid? CompetitiveEventId { get; set; }
