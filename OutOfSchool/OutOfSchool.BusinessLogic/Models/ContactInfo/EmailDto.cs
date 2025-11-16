@@ -1,19 +1,24 @@
+using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Validators;
 
 namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 
 public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 {
     [Required(ErrorMessage = "Email type is required")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Contact type must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers, and symbols are allowed.")]
     [StringLength(Constants.MaxEmailTypeLength, MinimumLength = 3,ErrorMessage = "Email type must be between 3 and 60 characters")]
     public string Type { get; set; } = null!;
 
     [DataType(DataType.EmailAddress)]
     [Required(ErrorMessage = "Email address is required")]
-    [StringLength(Constants.MaxEmailAddressLength, ErrorMessage = "Email address cannot exceed 256 characters")]
+    [StringLength(Constants.MaxEmailAddressLength, ErrorMessage = "Email address cannot exceed 254 characters")]
     [EmailAddress(ErrorMessage = "Invalid email address format (e.g., name@example.com)")]
+    [RegularExpression(@"^[\u0021-\u007E]+$", ErrorMessage = "Only ASCII characters are allowed in the email address.")]
     public string Address { get; set; } = null!;
 
     public override bool Equals(object obj)

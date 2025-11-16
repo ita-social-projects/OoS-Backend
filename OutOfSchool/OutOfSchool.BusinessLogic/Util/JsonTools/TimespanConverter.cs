@@ -20,6 +20,12 @@ public class TimespanConverter : JsonConverter<TimeSpan>
 
     public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        var str = reader.GetString();
+        if (string.IsNullOrWhiteSpace(str))
+        {
+            throw new ArgumentException("TimeSpan value cannot be empty.");
+        }
+
         TimeSpan.TryParseExact(reader.GetString(), TimeSpanFormatString, null, out var parsedTimeSpan);
         return parsedTimeSpan;
     }

@@ -921,10 +921,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("date")
                         .HasDefaultValue(new DateOnly(9999, 12, 31));
 
-                    b.Property<string>("AdditionalDescription")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<bool>("AreThereBenefits")
                         .HasColumnType("tinyint(1)");
 
@@ -937,6 +933,10 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<bool>("CompetitiveSelection")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("CompetitiveSelectionDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
@@ -1002,10 +1002,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("PlannedFormatOfClasses")
                         .HasColumnType("int");
 
-                    b.Property<string>("PreferentialTermsOfParticipation")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
@@ -1028,10 +1024,6 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<int>("State")
                         .HasColumnType("int");
-
-                    b.Property<string>("TermsOfParticipation")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -2278,6 +2270,11 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(8)
                         .HasColumnType("varchar(8)");
 
+                    b.Property<string>("EdrpouUniqKey")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("varchar(255)")
+                        .HasComputedColumnSql("\r\n                CASE \r\n                    WHEN `IsStructuralUnit` = 1 \r\n                    THEN CONCAT(`Edrpou`, '-', REPLACE(LOWER(`Id`), '-', ''))\r\n                    ELSE `Edrpou`\r\n                END", true);
+
                     b.Property<Guid?>("ExternalId")
                         .HasColumnType("binary(16)");
 
@@ -2355,6 +2352,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Ownership")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("ParentProviderId")
+                        .HasColumnType("UUID(16)");
+
                     b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -2389,14 +2389,17 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Edrpou")
-                        .IsUnique();
+                    b.HasIndex("EdrpouUniqKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Providers_EdrpouUniqKey");
 
                     b.HasIndex("InstitutionId");
 
                     b.HasIndex("InstitutionStatusId");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("ParentProviderId");
 
                     b.HasIndex("TypeId");
 
@@ -3784,6 +3787,9 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Property<bool>("IsRegistered")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<DateTimeOffset>("LastLogin")
                         .HasColumnType("datetime(6)");
 
@@ -4014,8 +4020,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -4633,8 +4639,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
-                                        .HasMaxLength(256)
-                                        .HasColumnType("varchar(256)");
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
 
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -4974,6 +4980,11 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                         .WithMany("Providers")
                         .HasForeignKey("InstitutionStatusId");
 
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "ParentProvider")
+                        .WithMany("Branches")
+                        .HasForeignKey("ParentProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("OutOfSchool.Services.Models.ProviderType", "Type")
                         .WithMany("Providers")
                         .HasForeignKey("TypeId")
@@ -5062,8 +5073,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
-                                        .HasMaxLength(256)
-                                        .HasColumnType("varchar(256)");
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
 
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -5158,6 +5169,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Institution");
 
                     b.Navigation("InstitutionStatus");
+
+                    b.Navigation("ParentProvider");
 
                     b.Navigation("Type");
                 });
@@ -5398,8 +5411,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
                                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
 
                                     b2.Property<string>("Address")
-                                        .HasMaxLength(256)
-                                        .HasColumnType("varchar(256)");
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
 
                                     b2.Property<long>("ContactsId")
                                         .HasColumnType("bigint");
@@ -5629,6 +5642,8 @@ namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
+                    b.Navigation("Branches");
+
                     b.Navigation("CompetitiveEventDrafts");
 
                     b.Navigation("Images");

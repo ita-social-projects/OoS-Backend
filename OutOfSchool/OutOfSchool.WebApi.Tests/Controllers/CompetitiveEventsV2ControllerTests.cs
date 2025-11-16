@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,7 +7,11 @@ using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.CompetitiveEventDrafts;
 using OutOfSchool.WebApi.Controllers.V2;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 public class CompetitiveEventsV2ControllerTests
@@ -18,6 +20,7 @@ public class CompetitiveEventsV2ControllerTests
     private Mock<IUserService> userServiceMock;
     private Mock<ILogger<CompetitiveEventController>> loggerMock;
     private CompetitiveEventController controller;
+    private Mock<ICompetitiveEventDraftService> competitiveEventDraftServiceMock;
 
     [SetUp]
     public void Setup()
@@ -25,11 +28,13 @@ public class CompetitiveEventsV2ControllerTests
         competitiveEventServiceMock = new Mock<ICompetitiveEventServiceV2>();
         userServiceMock = new Mock<IUserService>();
         loggerMock = new Mock<ILogger<CompetitiveEventController>>();
+        competitiveEventDraftServiceMock = new Mock<ICompetitiveEventDraftService>();
 
         controller = new CompetitiveEventController(
             competitiveEventServiceMock.Object,
             userServiceMock.Object,
-            loggerMock.Object);
+            loggerMock.Object,
+            competitiveEventDraftServiceMock.Object);
     }
 
     #region GetById
@@ -96,7 +101,11 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsCreated_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2Dto()
+        {
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
+        };
         var expectedId = Guid.NewGuid();
         var resultDto = new CompetitiveEventResultDto
         {
@@ -129,7 +138,7 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsForbidden_WhenUserIsBlocked()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2Dto();
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(true);
 
         var result = await controller.Create(dto);
@@ -143,7 +152,12 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Create_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        var dto = new CompetitiveEventV2Dto
+        {
+            ImageFiles = [Mock.Of<IFormFile>()],
+            CoverImage = Mock.Of<IFormFile>()
+        };
+
         userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
         competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
 
@@ -155,6 +169,42 @@ public class CompetitiveEventsV2ControllerTests
         Assert.That(badRequest.Value.ToString(), Does.Contain("error"));
     }
 
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenImageFilesIsNullOrEmptyArray()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
+        competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
+
+        // Act
+        var result = await controller.Create(dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("When creating CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."));
+    }
+
+    [Test]
+    public async Task Create_ReturnsBadRequest_WhenImageIdsHasValues()
+    {
+        // Arrange
+        var dto = new CompetitiveEventV2Dto() { ImageIds = ["image"] };
+        userServiceMock.Setup(s => s.IsBlocked(It.IsAny<string>())).ReturnsAsync(false);
+        competitiveEventServiceMock.Setup(s => s.CreateV2(dto)).ThrowsAsync(new InvalidOperationException("error"));
+
+        // Act
+        var result = await controller.Create(dto);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        var badRequest = result as BadRequestObjectResult;
+        Assert.That(badRequest.StatusCode, Is.EqualTo(400));
+        Assert.That(badRequest.Value.ToString(), Does.Contain("When creating CompetitiveEvent, the ImageFiles field must contain a non-empty array of images, and the ImageIds field must be null or an empty array."));
+    }
+
     #endregion
 
     #region Update
@@ -162,35 +212,36 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Update_ReturnsOk_WhenSuccessful()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
         var expectedId = Guid.NewGuid();
-        var resultDto = new CompetitiveEventResultDto
-        {
-            CompetitiveEventV2 = new CompetitiveEventV2Dto { Id = expectedId }
-        };
+        var resultDto = new CompetitiveEventV2Dto { Id = expectedId };
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto)).ReturnsAsync(resultDto);
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto)).ReturnsAsync(resultDto);
-
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<OkObjectResult>(result);
         var okResult = result as OkObjectResult;
         Assert.That(okResult.StatusCode, Is.EqualTo(200));
-        var responseDto = okResult.Value as CompetitiveEventResponseDto;
+        var responseDto = okResult.Value as CompetitiveEventV2Dto;
         Assert.That(responseDto, Is.Not.Null);
-        Assert.That(responseDto.CompetitiveEventV2.Id, Is.EqualTo(expectedId));
+        Assert.That(responseDto.Id, Is.EqualTo(expectedId));
     }
 
     [Test]
     public async Task Update_ReturnsBadRequest_WhenResultIsNull()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        var resultDto = (CompetitiveEventV2Dto)null;
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto)).ReturnsAsync(resultDto);
 
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto))
-            .ReturnsAsync(new CompetitiveEventResultDto { CompetitiveEventV2 = null });
-
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<BadRequestResult>(result);
         var badRequest = result as BadRequestResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));
@@ -199,13 +250,15 @@ public class CompetitiveEventsV2ControllerTests
     [Test]
     public async Task Update_ReturnsBadRequest_WhenServiceThrowsInvalidOperation()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto();
-
-        competitiveEventServiceMock.Setup(s => s.UpdateV2(dto))
+        // Arrange
+        var dto = new CompetitiveEventV2Dto();
+        competitiveEventDraftServiceMock.Setup(s => s.UpdateCompetitiveEvent(dto))
             .ThrowsAsync(new InvalidOperationException("Service error"));
 
+        // Act
         var result = await controller.Update(dto);
 
+        // Assert
         Assert.IsInstanceOf<BadRequestObjectResult>(result);
         var badRequest = result as BadRequestObjectResult;
         Assert.That(badRequest.StatusCode, Is.EqualTo(400));

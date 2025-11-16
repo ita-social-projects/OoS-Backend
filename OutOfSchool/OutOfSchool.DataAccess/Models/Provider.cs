@@ -142,4 +142,12 @@ public class Provider : BusinessEntity, IImageDependentEntity<Provider>, IHasEnt
     public List<Contacts> Contacts { get; set; } = [];
 
     #endregion
+
+    #region Self-referencing navigation properties
+    
+    public Guid? ParentProviderId { get; set; }
+    public virtual Provider ParentProvider { get; set; }
+    public virtual ICollection<Provider> Branches { get; set; } = [];
+
+    #endregion
 }

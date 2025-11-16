@@ -33,5 +33,6 @@ public static class ProviderCreateDtoExtensions
             IsStructuralUnit = dto.IsStructuralUnit,
             IsLocatedInMountainousArea = dto.IsLocatedInMountainousArea,
             Ownership = dto.Ownership,
+            ParentProviderId = dto.ParentProviderId            
         };
 }

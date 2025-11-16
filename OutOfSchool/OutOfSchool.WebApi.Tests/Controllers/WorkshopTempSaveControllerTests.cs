@@ -194,7 +194,7 @@ public class WorkshopTempSaveControllerTests
     }
 
     [Test]
-    public async Task RestoreDrivedDto_WhenDtoValueIsAbsentInCache_ReturnsDefaultDrivedDtoAtActionResult()
+    public async Task RestoreDerivedDto_WhenDtoValueIsAbsentInCache_ReturnsDefaultDerivedDtoAtActionResult()
     {
         // Arrange
         tempSaveService.Setup(ds => ds.RestoreAsync(key))

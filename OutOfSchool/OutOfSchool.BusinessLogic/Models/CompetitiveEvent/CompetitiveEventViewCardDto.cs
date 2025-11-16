@@ -11,6 +11,8 @@ public class CompetitiveEventViewCardDto
     
     [DataType(DataType.Text)]
     public string ShortTitle { get; set; }
+    
+    public string CoverImageId { get; set; }
 }
 
 public static class CompetitiveEventViewCardDtoExtensions
@@ -21,6 +23,7 @@ public static class CompetitiveEventViewCardDtoExtensions
             Id = model.Id,
             Title = model.Title,
             ShortTitle = model.ShortTitle,
+            CoverImageId = model.CoverImageId,
         };
 
     public static List<CompetitiveEventViewCardDto> ToViewCardDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)

@@ -100,4 +100,18 @@ public interface IProviderService
     /// <param name="providerId">The unique identifier of the provider.</param>
     /// <returns>A <see cref="Tuple{T1,T2}"/> containing the provider's license status and ownership type.</returns>
     Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId);
+
+    /// <summary>
+    /// Gets providers branches by given providerId
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<IEnumerable<ProviderDto>> GetBranchesAsync(Guid providerId);
+
+    /// <summary>
+    /// Gets parents by given providerId
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<ProviderDto> GetParentProviderAsync(Guid providerId);
 }

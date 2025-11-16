@@ -10,9 +10,9 @@ using OutOfSchool.Services.Models.BaseEntities;
 namespace OutOfSchool.Services;
 public class TrackableEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly ICurrentUser currentUser;
+    private readonly IContextAwareCurrentUser currentUser;
 
-    public TrackableEntityInterceptor(ICurrentUser currentUser)
+    public TrackableEntityInterceptor(IContextAwareCurrentUser currentUser)
     {
         this.currentUser = currentUser;
     }

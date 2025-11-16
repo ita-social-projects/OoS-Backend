@@ -19,7 +19,9 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
 using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using System.Text;
 using OutOfSchool.BusinessLogic.Services.SportsRegistry;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
@@ -95,6 +97,8 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
+        bool isNewDraft = true;
+
         if (workshopV2Dto.Id != Guid.Empty)
         {
             var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
@@ -110,8 +114,13 @@ public class WorkshopDraftService(
                     throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
                 }
                 await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
+
+                isNewDraft = false;
             }
         }
+
+        if (isNewDraft) ValidateImagesForNewDraft(workshopV2Dto);
+
         await SetLanguageNameOrThrow(workshopV2Dto).ConfigureAwait(false);
         await ValidateAndAdjustInstitutionHierarchyAsync(workshopV2Dto).ConfigureAwait(false);
         NormalizeConditionalFields(workshopV2Dto);
@@ -132,7 +141,7 @@ public class WorkshopDraftService(
         {
             createdDraftWithAssociatedTeachers.Images ??= [];
             createdDraftWithAssociatedTeachers.Images.AddRange(
-                workshopV2Dto.ImageIds.Select(id => new Image<WorkshopDraft> { ExternalStorageId = id }));
+                (workshopV2Dto.ImageIds ?? []).Select(id => new Image<WorkshopDraft> { ExternalStorageId = id }));
         }
 
         await workshopDraftRepository.SaveChangesAsync()
@@ -293,6 +302,9 @@ public class WorkshopDraftService(
         logger.LogDebug("Deleting WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
+
+        if (workshopDraft is null) 
+            return;
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
@@ -530,7 +542,7 @@ public class WorkshopDraftService(
         logger.LogDebug("Workshop Update started. Workshop Id = {Id}.", workshopV2Dto.Id);
 
         var existingWorkshop = await workshopServicesCombinerV2.GetById(workshopV2Dto.Id, true);
-        
+
         if (existingWorkshop == null)
         {
             throw new InvalidOperationException($"There is no Workshop with such Id. Workshop can`t be updated.");
@@ -555,7 +567,7 @@ public class WorkshopDraftService(
         }
         
         workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
-        if (AreModeratedFieldsChanged(workshopV2Dto, existingWorkshop))
+        if (ShouldBeModerate(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
@@ -933,6 +945,7 @@ public class WorkshopDraftService(
         var draft = await workshopDraftRepository.GetByIdWithDetails(
             id,
             includeExpression: q => q
+                .Include(d => d.Images)
                 .Include(d => d.Provider)
                 .ThenInclude(p => p.Institution));
 
@@ -1286,7 +1299,7 @@ public class WorkshopDraftService(
         }).ToList();
     }
 
-    private static bool AreModeratedFieldsChanged(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
+    private static bool ShouldBeModerate(WorkshopV2Dto workshopV2Dto, WorkshopDto existingWorkshop)
     {
         if (workshopV2Dto.CoverImage != null ||
             workshopV2Dto.ImageFiles != null)
@@ -1312,7 +1325,8 @@ public class WorkshopDraftService(
             w => w.EnrollmentProcedureDescription,
             w => w.PreferentialTermsOfParticipation,
             w => w.ShortTitle,
-            w => w.Title
+            w => w.Title,
+            w => string.Join(" | ", (w.Contacts ?? []).Select(c => c?.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>
@@ -1320,7 +1334,7 @@ public class WorkshopDraftService(
             var newValue = field(workshopV2Dto);
             var oldValue = field(existingWorkshop);
 
-            return newValue != oldValue;
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal) && !string.IsNullOrEmpty(newValue);
         });
     }
     private async Task SetLanguageNameOrThrow(WorkshopV2Dto dto)
@@ -1328,9 +1342,10 @@ public class WorkshopDraftService(
         var language = await languageService.GetById(dto.LanguageOfEducationId).ConfigureAwait(false);
         if (language is null)
         {
-            var errorMessage = $"Language with ID = {dto.LanguageOfEducationId} was not found.";
+            var errorMessage  = $"Validation error. Language with ID = {dto.LanguageOfEducationId} was not found.";
             logger.LogWarning(errorMessage);
-            throw new ArgumentException($"Language with ID = {dto.LanguageOfEducationId} does not exist.");
+            throw new ArgumentException(errorMessage);
+
         }
         dto.LanguageOfEducationName = language.Name;
     }
@@ -1438,13 +1453,13 @@ public class WorkshopDraftService(
         var likeMethod = typeof(DbFunctionsExtensions).GetMethods()
             .Single(m => m.Name == nameof(DbFunctionsExtensions.Like)
                 && m.GetParameters().Length == 3);
-        
+
         var jsonUnquoteMethod = typeof(MySqlJsonDbFunctionsExtensions).GetMethods()
             .Single(m => m.Name == nameof(MySqlJsonDbFunctionsExtensions.JsonUnquote)
                 && m.GetParameters().Length == 2);
 
         Expression JsonUnquote(Expression e)
-            => Expression.Call(null, jsonUnquoteMethod, efFunctions, e);    
+            => Expression.Call(null, jsonUnquoteMethod, efFunctions, e);
 
         Expression AddWeighted(Expression cond, int w)
             => Expression.Condition(cond, Expression.Constant(w), Expression.Constant(0));
@@ -1544,5 +1559,28 @@ public class WorkshopDraftService(
     {
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Validates images for a new draft.
+    /// </summary>
+    /// <param name="dto">Dto.</param>
+    /// <exception cref="ValidationException">Throws validation exception that will be handled in middleware.</exception>
+    private static void ValidateImagesForNewDraft(WorkshopV2Dto dto)
+    {
+        var errors = new StringBuilder();
+
+        bool hasCoverImage = dto.CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(dto.CoverImageId);
+        bool hasImageFiles = dto.ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = dto.ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasCoverImageId || hasImageIds)
+            errors.Append("For a new draft you must upload image files, not IDs. ");
+        if (!hasCoverImage || !hasImageFiles)
+            errors.Append("Provide both CoverImage and ImageFiles.");
+
+        if (errors.Length > 0)
+            throw new ValidationException(errors.ToString());
     }
 }

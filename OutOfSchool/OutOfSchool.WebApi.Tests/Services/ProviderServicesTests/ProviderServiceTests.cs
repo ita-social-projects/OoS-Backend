@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -33,6 +26,13 @@ using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services.ProviderServicesTests;
 
@@ -660,6 +660,134 @@ public class ProviderServiceTests
     }
 
     #endregion
+
+    [Test]
+    public async Task GetBranchesAsync_ProviderHasBranches_ReturnsBranchesCollection()
+    {
+        // Arrange
+        var parentProviderId = Guid.NewGuid();
+        var parentProvider = ProvidersGenerator.Generate();
+        parentProvider.Id = parentProviderId;
+
+        var branches = ProvidersGenerator.Generate(3);
+        foreach (var branch in branches)
+        {
+            branch.ParentProviderId = parentProviderId;
+            branch.ParentProvider = parentProvider;
+        }
+
+        var expectedBranchesDto = branches.Select(b => b.ToDto()).ToList();
+
+        providersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(branches);
+
+        // Act
+        var result = await providerService.GetBranchesAsync(parentProviderId).ConfigureAwait(false);
+
+        // Assert
+        var resultList = result.ToList();
+        Assert.That(resultList.Count, Is.EqualTo(expectedBranchesDto.Count));
+
+        for (int i = 0; i < resultList.Count; i++)
+        {
+            TestHelper.AssertDtosAreEqual(expectedBranchesDto[i], resultList[i]);
+        }
+    }
+
+    [Test]
+    public async Task GetBranchesAsync_ProviderHasNoBranches_ReturnsEmptyCollection()
+    {
+        // Arrange
+        var parentProviderId = Guid.NewGuid();
+        var emptyBranches = new List<Provider>();
+
+        providersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(emptyBranches);
+
+        // Act
+        var result = await providerService.GetBranchesAsync(parentProviderId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count(), Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task GetParentProviderAsync_ProviderHasParent_ReturnsParentProviderDto()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var parentProvider = ProvidersGenerator.Generate();
+        var provider = ProvidersGenerator.Generate();
+        provider.Id = providerId;
+        provider.ParentProvider = parentProvider;
+
+        var expectedParentDto = parentProvider.ToDto();
+        var providerList = new List<Provider> { provider };
+
+        providersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(providerList);
+
+        // Act
+        var result = await providerService.GetParentProviderAsync(providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        TestHelper.AssertDtosAreEqual(expectedParentDto, result);
+    }
+
+    [Test]
+    public async Task GetParentProviderAsync_ProviderHasNoParent_ReturnsNull()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var provider = ProvidersGenerator.Generate();
+        provider.Id = providerId;
+        provider.ParentProvider = null;
+
+        var providerList = new List<Provider> { provider };
+
+        providersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(providerList);
+
+        // Act
+        var result = await providerService.GetParentProviderAsync(providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetParentProviderAsync_ProviderNotFound_ReturnsNull()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var emptyProviderList = new List<Provider>();
+
+        providersRepositoryMock.Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<Provider, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Provider>, IQueryable<Provider>>>()))
+            .ReturnsAsync(emptyProviderList);
+
+        // Act
+        var result = await providerService.GetParentProviderAsync(providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }    
 
     #region Delete
 

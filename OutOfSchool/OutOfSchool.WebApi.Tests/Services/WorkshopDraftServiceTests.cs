@@ -23,7 +23,6 @@ using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models;
@@ -31,16 +30,14 @@ using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.SportsRegistryApiClient.Interfaces;
-using OutOfSchool.SportsRegistryApiClient.Models.Requests;
-using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
+
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
@@ -163,6 +160,10 @@ public class WorkshopDraftServiceTests
 
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.CoverImageId = null;
+        workshopV2Dto.ImageIds = null;
+        workshopV2Dto.CoverImage = FakeFile();
+        workshopV2Dto.ImageFiles = new List<IFormFile>() { FakeFile() };
 
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
@@ -206,6 +207,10 @@ public class WorkshopDraftServiceTests
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.LanguageOfEducationId = 123213213; // invalid ID
+        workshopV2Dto.CoverImageId = null;
+        workshopV2Dto.ImageIds = null;
+        workshopV2Dto.CoverImage = FakeFile();
+        workshopV2Dto.ImageFiles = new List<IFormFile>() { FakeFile() };
 
         languageServiceMoq.Setup(x => x.GetById(workshopV2Dto.LanguageOfEducationId))
             .ReturnsAsync((LanguageDto)null);
@@ -232,6 +237,10 @@ public class WorkshopDraftServiceTests
 
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
+        workshopV2Dto.CoverImageId = null;
+        workshopV2Dto.ImageIds = null;
+        workshopV2Dto.CoverImage = FakeFile();
+        workshopV2Dto.ImageFiles = new List<IFormFile>() { FakeFile() };
 
         institutionHierarchyRepositoryMoq.Setup(x => x.GetById(institutionHierarchyId))
             .ReturnsAsync(new InstitutionHierarchy
@@ -307,6 +316,10 @@ public class WorkshopDraftServiceTests
         var workshopV2Dto = workshop.ToV2Dto();
         workshopV2Dto.InstitutionHierarchyId = institutionHierarchyId;
         workshopV2Dto.WorkshopType = WorkshopType.Workshop;
+        workshopV2Dto.CoverImageId = null;
+        workshopV2Dto.ImageIds = null;
+        workshopV2Dto.CoverImage = FakeFile();
+        workshopV2Dto.ImageFiles = new List<IFormFile>() { FakeFile() };
 
         var workshopDraft = workshopV2Dto.ToDraft();
         workshopDraft.WorkshopDraftContent = new WorkshopDraftContent
@@ -1225,6 +1238,7 @@ public class WorkshopDraftServiceTests
         var workshopDto = workshop.ToDto();
         workshopDto.Title = "Changed title";
         var workshopV2Dto = workshop.ToV2Dto();
+        workshopV2Dto.ImageIds = new List<string> { Guid.NewGuid().ToString() };
 
         var workshopDrafts = new List<WorkshopDraft>();
         var workshopDraft = workshopV2Dto.ToDraft();
@@ -1626,4 +1640,10 @@ public class WorkshopDraftServiceTests
         return workshopDraft;
     }
 
+    private static IFormFile FakeFile(string name = "img.jpg", int size = 10)
+    {
+        var bytes = new byte[size];
+        var ms = new MemoryStream(bytes);
+        return new FormFile(ms, 0, bytes.Length, "file", name);
+    }
 }

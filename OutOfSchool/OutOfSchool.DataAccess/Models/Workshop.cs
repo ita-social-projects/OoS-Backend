@@ -72,7 +72,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     #endregion
 
-    [MaxLength(500)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
     public OwnershipType ProviderOwnership { get; set; }

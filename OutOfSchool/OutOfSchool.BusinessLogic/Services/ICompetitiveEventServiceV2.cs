@@ -8,15 +8,16 @@ public interface ICompetitiveEventServiceV2 : ICompetitiveEventService
     /// All operations are executed within a transaction
     /// </summary>
     /// <param name="dto">The DTO containing data for the new competitive event with images</param>
-    Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2CreateRequestDto dto);
+    Task<CompetitiveEventResultDto> CreateV2(CompetitiveEventV2Dto dto);
 
     /// <summary>
     /// Updates an existing version 2 competitive event, including description changes, image updates, and cover image replacement
     /// All operations are executed within a transaction
     /// </summary>
     /// /// <param name="dto">The DTO containing updated data for the competitive event</param>
+    /// <param name="fromDraft">Flag to signal if the updated value is taken from draft.</param>
     /// <returns>A result DTO containing the updated competitive event and results of the image updates</returns>
-    Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2CreateRequestDto dto);
+    Task<CompetitiveEventResultDto> UpdateV2(CompetitiveEventV2Dto dto, bool fromDraft = false);
 
     /// <summary>
     /// Deletes a competitive event and removes any associated images and cover image if present

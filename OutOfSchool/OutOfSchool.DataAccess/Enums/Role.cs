@@ -10,4 +10,5 @@ public enum Role
     AreaAdmin,
     Moderator,
     Employee,
+    System
 }

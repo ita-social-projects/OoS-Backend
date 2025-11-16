@@ -15,11 +15,12 @@ public class WorkshopCreateUpdateDto : WorkshopBaseDto
 
 public static class WorkshopCreateUpdateDtoExtensions
 {
+    private static readonly char[] TrimChars = { ' ', ',', '.',';',':' };
     public static Workshop SetToModel(this WorkshopCreateUpdateDto dto, Workshop model)
     {
         model.Id = dto.Id;
-        model.Title = dto.Title;
-        model.ShortTitle = dto.ShortTitle;
+        model.Title = dto.Title?.Trim(TrimChars);
+        model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
         model.DateTimeRanges = dto.DateTimeRanges?.ToModel()

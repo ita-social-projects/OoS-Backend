@@ -14,10 +14,10 @@ namespace OutOfSchool.Services;
 
 public class BusinessEntityInterceptor : SaveChangesInterceptor
 {
-    private readonly ICurrentUser? currentUser;
+    private readonly IContextAwareCurrentUser? currentUser;
 
 
-    public BusinessEntityInterceptor(ICurrentUser? currentUser)
+    public BusinessEntityInterceptor(IContextAwareCurrentUser? currentUser)
     {
         this.currentUser = currentUser;
     }
@@ -47,7 +47,7 @@ public class BusinessEntityInterceptor : SaveChangesInterceptor
 
     private static void UpdateBusinessEntities(
         DbContext context,
-        ICurrentUser? currentUser)
+        IContextAwareCurrentUser? currentUser)
     {
         var userId = currentUser?.UserId ?? string.Empty;
 

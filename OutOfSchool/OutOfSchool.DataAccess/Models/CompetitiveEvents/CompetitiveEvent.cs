@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Services.Models.ContactInfo;
@@ -24,7 +25,7 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     public string ShortTitle { get; set; }
 
     [Required]
-    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Draft;
+    public CompetitiveEventStates State { get; set; } = CompetitiveEventStates.Published;
 
     public DateTimeOffset RegistrationStartTime { get; set; }
 
@@ -34,9 +35,6 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
 
     [ForeignKey(nameof(ParentId))]
     public virtual CompetitiveEvent Parent { get; set; }
-
-    [MaxLength(2000)]
-    public string AdditionalDescription { get; set; }
 
     [Required]
     public DateTimeOffset ScheduledStartTime { get; set; }
@@ -67,12 +65,9 @@ public class CompetitiveEvent : BusinessEntity, IHasContacts, IImageDependentEnt
     [MaxLength(200)]
     public string VenueName { get; set; }
 
-    [MaxLength(2000)]
-    public string TermsOfParticipation { get; set; }
-
-    [MaxLength(2000)]
-    public string PreferentialTermsOfParticipation { get; set; }
-    
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    public string CompetitiveSelectionDescription { get; set; }
+  
     public bool AreThereBenefits { get; set; }
 
     [MaxLength(2000)]

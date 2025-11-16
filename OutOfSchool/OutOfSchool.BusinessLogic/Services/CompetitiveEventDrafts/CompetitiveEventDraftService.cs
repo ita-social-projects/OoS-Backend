@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.Codeficator;
@@ -7,6 +7,7 @@ using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Enums.CompetitiveEvent;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums.CompetitiveEventStatus;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
@@ -30,7 +31,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 {
 
     // <inheritdoc/>
-    public async Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto)
+    public async Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto, bool fromCompetitiveEvent = false)
     {
         if (competitiveEventV2Dto == null)
         {
@@ -58,27 +59,55 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             }
             else
             {
+                if (existingCompetitiveEvent.State == CompetitiveEventStates.Archived)
+                {
+                    throw new InvalidOperationException("This CompetitiveEvent is archived. It can not be updated.");
+                }
                 await currentUserService.UserHasRights(new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
                     new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId)).ConfigureAwait(false);
             }
         }
 
-        var createdCompetitiveEventDraft = await competitiveEventDraftRepository
-            .RunInTransaction(() => CreateCompetitiveEventDraft(competitiveEventV2Dto))
-            .ConfigureAwait(false);
 
-        var uploadImagesResult = await UploadImages(createdCompetitiveEventDraft, competitiveEventV2Dto)
-            .ConfigureAwait(false);
+        async Task<Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>>
+        CreateCompetitiveEventDraftWithImages()
+        {
+            var createdCompetitiveEventDraft = await CreateCompetitiveEventDraft(competitiveEventV2Dto)
+                .ConfigureAwait(false);
 
-        await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+            var uploadImagesResult = await UploadImages(createdCompetitiveEventDraft, competitiveEventV2Dto)
+                .ConfigureAwait(false);
+
+            if (fromCompetitiveEvent)
+            {
+                createdCompetitiveEventDraft.Images ??= [];
+                createdCompetitiveEventDraft.Images.AddRange((competitiveEventV2Dto.ImageIds ?? [])
+                    .Select(id => new Image<CompetitiveEventDraft> { ExternalStorageId = id }));
+            }
+
+            await competitiveEventDraftRepository.SaveChangesAsync().ConfigureAwait(false);
+
+            return Result<(CompetitiveEventDraft createdCompetitiveEventDraft, UploadCompetitiveEventDraftImagesResult uploadImagesResult)>
+                .Success((createdCompetitiveEventDraft, uploadImagesResult));
+        }
+
+        var draftImageUpdateResult = await competitiveEventDraftRepository
+            .RunInTransaction(CreateCompetitiveEventDraftWithImages).ConfigureAwait(false);
+
+        if (!draftImageUpdateResult.Succeeded)
+        {
+            throw new InvalidOperationException(
+                draftImageUpdateResult.OperationResult?.Errors?.FirstOrDefault()?.Description
+                ?? "Failed to create competitive event draft");
+        }
 
         logger.LogDebug("Competitive event draft created successfully.");
 
         return new CompetitiveEventDraftResultDto
         {
-            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(createdCompetitiveEventDraft),
-            UploadingCoverImagesCompetitiveEventResult = uploadImagesResult.UploadingCoverImageResult,
-            UploadingImagesResults = uploadImagesResult.UploadingImagesResults?.MultipleKeyValueOperationResult
+            CompetitiveEventDraft = await MapCompetitiveEventDraftWithDetails(draftImageUpdateResult.Value.createdCompetitiveEventDraft),
+            UploadingCoverImagesCompetitiveEventResult = draftImageUpdateResult.Value.uploadImagesResult?.UploadingCoverImageResult,
+            UploadingImagesResults = draftImageUpdateResult.Value.uploadImagesResult?.UploadingImagesResults?.MultipleKeyValueOperationResult
         };
     }
 
@@ -99,11 +128,20 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
             {
                 Code = "400",
+                Description = "ID in route can't be empty."
+            });
+        }
+
+        if (competitiveEventDraftUpdateDto.Id == Guid.Empty)
+        {
+            return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
+            {
+                Code = "400",
                 Description = "Dto's id can't be empty."
             });
         }
 
-        if (competitiveEventDraftUpdateDto.Id != Guid.Empty && competitiveEventDraftUpdateDto.Id != id)
+        if (competitiveEventDraftUpdateDto.Id != id)
         {
             return Result<CompetitiveEventDraftResultDto>.Failed(new OperationError()
             {
@@ -298,7 +336,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         logger.LogDebug("Approving CompetitiveEventDraft started. CompetitiveEventDraft Id = {Id}.", id);
 
-        var competitiveEventDraft = await GetDraftById(id);
+        var competitiveEventDraft = await GetDraftById(id) ?? throw new ArgumentException($"There is no CompetitiveEvent draft with such Id.");
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
         {
@@ -307,11 +345,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         if (competitiveEventDraft.CompetitiveEventId == null)
         {
-            await competitiveEventService.Create(competitiveEventDraft.ToV2CreateRequestDto());
+            await competitiveEventService.CreateV2(competitiveEventDraft.ToDto());
         }
         else
         {
-            await competitiveEventService.Update(competitiveEventDraft.ToV2CreateRequestDto());
+            await competitiveEventService.UpdateV2(competitiveEventDraft.ToDto(), true);
         }
 
         await competitiveEventDraftRepository.Delete(competitiveEventDraft);
@@ -324,7 +362,7 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
     {
         logger.LogDebug("Rejecting CompetitiveEventDraft started. CompetitiveEventDraft Id = {id}.", id);
 
-        var competitiveEventDraft = await GetDraftById(id);
+        var competitiveEventDraft = await GetDraftById(id) ?? throw new ArgumentException($"There is no CompetitiveEvent draft with such Id.");
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration && competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)
         {
@@ -350,6 +388,11 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException($"There is no CompetitiveEvent with such Id. CompetitiveEvent can`t be updated.");
         }
 
+        if (existingCompetitiveEvent.State == CompetitiveEventStates.Archived)
+        {
+            throw new InvalidOperationException("This CompetitiveEvent is archived. It can not be updated.");
+        }
+
         var draft = await competitiveEventDraftRepository.Get(whereExpression: ced => ced.CompetitiveEventId == competitiveEventV2Dto.Id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
@@ -361,19 +404,35 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             throw new InvalidOperationException("CompetitiveEvent draft for this CompetitiveEvent exists. CompetitiveEvent can`t be updated.");
         }
 
-        if (AreModeratedFieldsChanged(competitiveEventV2Dto, existingCompetitiveEvent))
+        if (ShouldBeModerate(competitiveEventV2Dto, existingCompetitiveEvent))
         {
             logger.LogDebug("Moderated fields was changed. CompetitiveEvent draft creation initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
-            return (await Create(competitiveEventV2Dto)).CompetitiveEventDraft.CompetitiveEventDetails;
+            return (await Create(competitiveEventV2Dto, true)).CompetitiveEventDraft.CompetitiveEventDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. CompetitiveEvent update initiated. CompetitiveEvent Id = {Id}.", competitiveEventV2Dto.Id);
 
-        var result = await competitiveEventService.UpdateV2(competitiveEventV2Dto.ToDraft().ToV2CreateRequestDto()).ConfigureAwait(false);
+        var result = await competitiveEventService.UpdateV2(competitiveEventV2Dto).ConfigureAwait(false);
+
         return result.CompetitiveEventV2;
     }
 
-    private static bool AreModeratedFieldsChanged(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
+    /// <summary>
+    /// Determines whether any moderated fields differ between an incoming V2 DTO and an existing competitive event.
+    /// Returns false when the new value is null or an empty string.
+    /// </summary>
+    /// <param name="competitiveEventV2Dto">The incoming competitive event data to compare.</param>
+    /// <param name="existingCompetitiveEvent">The existing competitive event to compare against.</param>
+    /// <returns>
+    /// True if any moderated field has changed and the new value is not null or an empty string and therefore requires moderation; false otherwise.
+    /// </returns>
+    /// <remarks>
+    /// The comparison considers:
+    /// - Presence of new images (CoverImage or ImageFiles) on the V2 DTO.
+    /// - Competitive event description items compared by concatenating SectionName and Description in sequence (order-sensitive).
+    /// - The following string fields: ShortTitle, Title, DescriptionOfTheEnrollmentProcedure, CompetitiveSelectionDescription, Benefits, VenueName, and Contacts (contacts are compared by joining each contact's ToString() with " | ").
+    /// If any of the above fields are different and the new value is not null or an empty string, the method returns true; otherwise false.    /// </remarks>
+    private static bool ShouldBeModerate(CompetitiveEventV2Dto competitiveEventV2Dto, CompetitiveEventDto existingCompetitiveEvent)
     {
         if (competitiveEventV2Dto.CoverImage != null || competitiveEventV2Dto.ImageFiles != null)
         {
@@ -388,18 +447,21 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
 
         var stringFieldsToCompare = new List<Func<CompetitiveEventDto, string>>
         {
-            w => w.ShortTitle,
-            w => w.Title,
-            w => w.AdditionalDescription,
-            w => w.DescriptionOfTheEnrollmentProcedure,
-            w => string.Join(" | ", w.Contacts.Select(c => c.ToString()))
+            ce => ce.ShortTitle,
+            ce => ce.Title,
+            ce => ce.DescriptionOfTheEnrollmentProcedure,
+            ce => ce.CompetitiveSelectionDescription,
+            ce => ce.Benefits,
+            ce => ce.VenueName,
+            ce => string.Join(" | ", (ce.Contacts ?? []).Select(c => c?.ToString()))
         };
 
         return stringFieldsToCompare.Any(field =>
         {
             var newValue = field(competitiveEventV2Dto);
             var oldValue = field(existingCompetitiveEvent);
-            return newValue != oldValue;
+
+            return !string.Equals(newValue, oldValue, StringComparison.Ordinal) && !string.IsNullOrEmpty(newValue);
         });
     }
 
@@ -821,22 +883,19 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
             new EmployeeRights(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId))
             .ConfigureAwait(false);
 
-        if (competitiveEventDraftUpdateDto.Id != Guid.Empty)
-        {
-            var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventDraftUpdateDto.Id)
-                .ConfigureAwait(false);
+        var existingCompetitiveEvent = await competitiveEventService.GetById(competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id)
+         .ConfigureAwait(false);
 
-            if (existingCompetitiveEvent == null)
-            {
-                competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id = Guid.Empty;
-            }
-            else
-            {
-                await currentUserService.UserHasRights(
-                    new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
-                    new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId))
-                    .ConfigureAwait(false);
-            }
+        if (existingCompetitiveEvent == null)
+        {
+            competitiveEventDraftUpdateDto.CompetitiveEventV2Dto.Id = Guid.Empty;
+        }
+        else
+        {
+            await currentUserService.UserHasRights(
+                new ProviderRights(existingCompetitiveEvent.OrganizerOfTheEventId),
+                new EmployeeRights(existingCompetitiveEvent.OrganizerOfTheEventId))
+                .ConfigureAwait(false);
         }
 
         if (competitiveEventDraft.DraftStatus == CompetitiveEventDraftStatus.PendingModeration)
@@ -885,6 +944,16 @@ public class CompetitiveEventDraftService(ILogger<CompetitiveEventDraftService> 
         await currentUserService.UserHasRights(new ModeratorRights(), new TechAdminRights()).ConfigureAwait(false);
 
         var competitiveEventDraft = await GetDraftById(draftId);
+
+        if (competitiveEventDraft == null)
+        {
+            logger.LogWarning("CompetitiveEventDraft with Id = {Id} not found.", draftId);
+            return Result<CompetitiveEventDraft>.Failed(new OperationError
+            {
+                Code = "404",
+                Description = "Competitive event draft not found."
+            });
+        }
 
         if (competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.PendingModeration &&
             competitiveEventDraft.DraftStatus != CompetitiveEventDraftStatus.EditedByModerator)

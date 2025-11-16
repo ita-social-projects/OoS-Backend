@@ -9,6 +9,8 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -19,10 +21,42 @@ public class WorkshopV2Dto : WorkshopDto, IHasCoverImage, IHasImages
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+
+        bool hasCoverImage = CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(CoverImageId);
+        bool hasImageFiles = ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        bool hasInvalidFiles = ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
+        bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasInvalidFiles)
+            yield return new ValidationResult("ImageFiles must not contain empty files.", new[] { nameof(ImageFiles) });
+        if (hasInvalidIds)
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", new[] { nameof(ImageIds) });
+
+        if (hasCoverImage == hasCoverImageId)
+        {
+            yield return new ValidationResult("Either CoverImage or CoverImageId should be provided, not both.",
+                new[] { nameof(CoverImage), nameof(CoverImageId) });
+        }
+
+        if (hasImageFiles == hasImageIds)
+        {
+            yield return new ValidationResult("Either ImageFiles or ImageIds should be provided, not both.",
+                new[] { nameof(ImageFiles), nameof(ImageIds) });
+        }
+    }
 }
 
 public static class WorkshopV2DtoExtensions
 {
+    private static readonly char[] TrimChars = { ' ', ',', '.',';',':' };
     public static WorkshopDraftContent ToDraftContent(this WorkshopV2Dto dto)
         => new()
         {
@@ -36,7 +70,7 @@ public static class WorkshopV2DtoExtensions
             ActiveFrom = dto.ActiveFrom,
             ActiveTo = dto.ActiveTo,
             TagIds = (dto.Tags ?? []).Select(x => x.Id).Concat(dto.TagIds ?? []).ToList(),
-            Title = dto.Title,
+            Title = dto.Title.Trim(TrimChars),
             IsPaid = dto.IsPaid,
             StudyPeriodStartDate = dto.StudyPeriodDates.StartDate.ToStudyPeriodDate(),
             StudyPeriodEndDate = dto.StudyPeriodDates.EndDate.ToStudyPeriodDate(),
@@ -44,7 +78,7 @@ public static class WorkshopV2DtoExtensions
             OwnershipType = dto.ProviderOwnership,
             AvailableSeats = dto.AvailableSeats ?? default,
             IncludedStudyGroupsIds = dto.IncludedStudyGroups?.Select(x => x.Id).ToList() ?? [],
-            ShortTitle = dto.ShortTitle,
+            ShortTitle = dto.ShortTitle.Trim(TrimChars),
             CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
             FormOfLearning = dto.FormOfLearning,
             WorkshopStatus = dto.Status,
@@ -151,8 +185,8 @@ public static class WorkshopV2DtoExtensions
     public static Workshop SetToModel(this WorkshopV2Dto dto, Workshop model)
     {
         model.Id = dto.Id;
-        model.Title = dto.Title;
-        model.ShortTitle = dto.ShortTitle;
+        model.Title = dto.Title?.Trim(TrimChars);
+        model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
         model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
@@ -188,7 +222,6 @@ public static class WorkshopV2DtoExtensions
         model.WorkshopType = dto.WorkshopType;
         model.DefaultTeacherId = dto.DefaultTeacherId;
         model.ParentWorkshopId = dto.ParentWorkshopId;
-        model.CoverImageId = dto.CoverImageId;
         model.IsChampionPath = dto.IsChampionPath;
         model.MinsportSectionId = dto.MinsportSectionId;
         return model;

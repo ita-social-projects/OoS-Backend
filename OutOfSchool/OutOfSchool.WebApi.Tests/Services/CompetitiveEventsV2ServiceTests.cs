@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,7 @@ using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
 using OutOfSchool.BusinessLogic.Common;
 using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.Images;
 using OutOfSchool.BusinessLogic.Services;
@@ -21,6 +24,7 @@ using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -34,6 +38,7 @@ public class CompetitiveEventsV2ServiceTests
     private Mock<IContactsService<CompetitiveEvent, IHasContactsDto<CompetitiveEvent>>> contactsServiceMock;
     private Mock<IImageDependentEntityImagesInteractionService<CompetitiveEvent>> imageServiceMock;
     private Mock<IEntityRepository<long, SubDirection>> mockSubDirectionRepository;
+
 
     private CompetitiveEventService service;
 
@@ -60,6 +65,8 @@ public class CompetitiveEventsV2ServiceTests
             imageServiceMock.Object);
     }
 
+    #region CreateV2
+
     [Test]
     public async Task CreateV2_ReturnsMappedDto_WhenSuccessful()
     {
@@ -82,7 +89,7 @@ public class CompetitiveEventsV2ServiceTests
             ]
         };
 
-        var dto = new CompetitiveEventV2CreateRequestDto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
+        var dto = new CompetitiveEventV2Dto() { SubDirectionIds = [1], OrganizerOfTheEventId = Guid.NewGuid(), };
         var expectedDto = new CompetitiveEventV2Dto { Id = createdEntity.Id };
 
         repoMock.Setup(r => r.Create(It.IsAny<CompetitiveEvent>()))
@@ -113,7 +120,7 @@ public class CompetitiveEventsV2ServiceTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var dto = new CompetitiveEventV2CreateRequestDto
+        var dto = new CompetitiveEventV2Dto
         {
             ImageFiles = null,
             CoverImage = null,
@@ -146,10 +153,25 @@ public class CompetitiveEventsV2ServiceTests
         Mock.VerifyAll();
     }
 
+    #endregion
+
+    #region UpdateV2
+
+    [Test]
+    public void UpdateV2_WhenDtoIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        CompetitiveEventV2Dto dto = null;
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await service.UpdateV2(dto).ConfigureAwait(false));
+    }
+
     [Test]
     public void UpdateV2_ThrowsConcurrencyException_WhenEntityDoesNotExist()
     {
-        var dto = new CompetitiveEventV2CreateRequestDto { Id = Guid.NewGuid() };
+        var dto = new CompetitiveEventV2Dto { Id = Guid.NewGuid() };
 
         repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
             .ReturnsAsync((CompetitiveEvent)null);
@@ -160,6 +182,71 @@ public class CompetitiveEventsV2ServiceTests
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () => await service.UpdateV2(dto));
     }
 
+    [Test]
+    public void UpdateV2_ThrowsInvalidOperationException_WhenSubDirectionIdsAreEmpty()
+    {
+        // Arrange
+        var dto = CompetitiveEventV2DtoGenerator.Generate();
+        var competitiveEvent = dto.SetToModel(new CompetitiveEvent());
+        competitiveEvent.Id = dto.Id;
+
+        repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
+            .ReturnsAsync(competitiveEvent);
+        repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>()))
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>(f => f());
+
+        // Act, Assert
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateV2(dto));
+    }
+
+    [Test]
+    public async Task UpdateV2_ReturnResult_WhenEntityExists()
+    {
+        // Arrange
+        var dto = CompetitiveEventV2DtoGenerator.Generate();
+        var competitiveEvent = dto.SetToModel(new CompetitiveEvent());
+        competitiveEvent.Id = dto.Id;
+        competitiveEvent.CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems.ToModel();
+        var subDirections = new List<SubDirection>
+        {
+            new() { Id = 54, DirectionId = 14, Description = "description1", IsDeleted = false, Title = "title1"  },
+            new() { Id = 9, DirectionId = 10, Description = "description2", IsDeleted = true, Title = "title2"  }
+        };
+
+        repoMock.Setup(r => r.GetByIdWithDetails(dto.Id, It.IsAny<string>(), It.IsAny<Func<IQueryable<CompetitiveEvent>, IQueryable<CompetitiveEvent>>>()))
+            .ReturnsAsync(competitiveEvent)
+            .Verifiable(Times.Once);
+        repoMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>()))
+            .Returns<Func<Task<(CompetitiveEvent, MultipleImageChangingResult, ImageChangingResult)>>>(f => f())
+            .Verifiable(Times.Once);
+        mockSubDirectionRepository.Setup(repo => repo.GetByFilter(
+            It.IsAny<Expression<Func<SubDirection, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<SubDirection>, IQueryable<SubDirection>>>()))
+            .ReturnsAsync(subDirections.Where(sd => !sd.IsDeleted))
+            .Verifiable(Times.Once);
+        imageServiceMock.Setup(service => service.ChangeImagesAsync(competitiveEvent, It.IsAny<List<string>>(), It.IsAny<List<IFormFile>>()))
+            .ReturnsAsync(new MultipleImageChangingResult())
+            .Verifiable(Times.Once);
+        imageServiceMock.Setup(service => service.ChangeCoverImageAsync(competitiveEvent, It.IsAny<string>(), It.IsAny<IFormFile>()))
+            .ReturnsAsync(new ImageChangingResult())
+            .Verifiable(Times.Once);
+        repoMock.Setup(w => w.SaveChangesAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(It.IsAny<int>())
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await service.UpdateV2(dto);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(competitiveEvent.Id, result.CompetitiveEventV2.Id);
+        Mock.VerifyAll();
+    }
+
+    #endregion
+
+    #region DeleteV2
     [Test]
     public async Task DeleteV2_CallsRemoveImagesAndDeletesEntity_WhenImagesExist()
     {
@@ -212,4 +299,6 @@ public class CompetitiveEventsV2ServiceTests
         imageServiceMock.Verify(s => s.RemoveCoverImageAsync(It.IsAny<CompetitiveEvent>()), Times.Never);
         repoMock.Verify(r => r.Delete(entity), Times.Once);
     }
+
+    #endregion
 }

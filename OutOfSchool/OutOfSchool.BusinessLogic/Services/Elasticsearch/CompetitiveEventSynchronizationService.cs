@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 
@@ -27,7 +27,14 @@ public class CompetitiveEventSynchronizationService(
 
 public static class CompetitiveEventESExtensions
 {
-    public static CompetitiveEventES ToES(this CompetitiveEvent dto)
+    /// <summary>
+        /// Converts a <see cref="CompetitiveEvent"/> domain object into a <see cref="CompetitiveEventES"/> Elasticsearch entity.
+        /// </summary>
+        /// <param name="dto">The domain DTO to convert.</param>
+        /// <returns>
+        /// A new <see cref="CompetitiveEventES"/> populated from <paramref name="dto"/>. Note: description items are concatenated into a single string using <c>Constants.MappingSeparator</c>, and <c>NumberOfOccupiedSeats</c> is initialized to 0.
+        /// </returns>
+        public static CompetitiveEventES ToES(this CompetitiveEvent dto)
         => new()
         { 
             Id = dto.Id,
@@ -39,7 +46,6 @@ public static class CompetitiveEventESExtensions
             CompetitiveEventDescriptionItems = dto.CompetitiveEventDescriptionItems
                 .Aggregate(string.Empty, (accumulator, di) =>
                     $"{accumulator}{di.SectionName}{Constants.MappingSeparator}{di.Description}{Constants.MappingSeparator}"),
-            AdditionalDescription = dto.AdditionalDescription,
             ScheduledStartTime = dto.ScheduledStartTime,
             ScheduledEndTime = dto.ScheduledEndTime,
             NumberOfSeats = dto.NumberOfSeats,
@@ -49,8 +55,7 @@ public static class CompetitiveEventESExtensions
             OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
             PlannedFormatOfClasses = dto.PlannedFormatOfClasses,
             VenueName = dto.VenueName,
-            TermsOfParticipation = dto.TermsOfParticipation,
-            PreferentialTermsOfParticipation = dto.PreferentialTermsOfParticipation,
+            CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
             AreThereBenefits = dto.AreThereBenefits,
             Benefits = dto.Benefits,
             MinimumAge = dto.MinimumAge,

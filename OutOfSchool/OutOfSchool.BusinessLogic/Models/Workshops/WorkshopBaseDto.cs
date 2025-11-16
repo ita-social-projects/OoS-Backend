@@ -17,15 +17,17 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public Guid Id { get; set; }
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(Constants.MinWorkshopTitleLength)]
-    [MaxLength(Constants.MaxWorkshopTitleLength)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MinLength(Constants.MinWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 250 characters.")]
+    [MaxLength(Constants.MaxWorkshopTitleLength,ErrorMessage = "Title field must contain from 3 to 250 characters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Workshop short title is required")]
-    [MinLength(Constants.MinWorkshopShortTitleLength)]
-    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MinLength(Constants.MinWorkshopShortTitleLength,ErrorMessage = "This field must contain from 1 to 60 characters.")]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength,ErrorMessage = "This field must contain from 1 to 60 characters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "This field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; } = string.Empty;
     public bool NoAgeRestrictions { get; set; } = false;
 
@@ -48,7 +50,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
-    public PayRateType? PayRate { get; set; } = PayRateType.Class;
+    public PayRateType? PayRate { get; set; } = PayRateType.None;
 
     [Required(ErrorMessage = "Form of learning is required")]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
@@ -66,7 +68,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [MinLength(3)]
     [MaxLength(500)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "CompetitiveSelectionDescription field is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "CompetitiveSelectionDescription field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -121,8 +124,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsInclusive { get; set; } = false;
 
     [MinLength(3)]
-    [MaxLength(2000)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MaxLength(500)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "EnrollmentProcedureDescription field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
@@ -167,7 +171,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<ContactsDto> Contacts { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // TODO: Validate DateTimeRanges are not empty when frontend is ready
         foreach (var dateTimeRange in DateTimeRanges)
@@ -227,6 +231,10 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 }
             }
         }
+        else 
+        { 
+            PayRate = PayRateType.None;
+        }
 
         if (!Keywords.IsNullOrEmpty())
         {
@@ -237,16 +245,29 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
                 yield return new ValidationResult("Keywords list should contain no more than 5 words", new[] { nameof(Keywords) });
             }
 
-            foreach (var keyword in keywordsList)
+            if (keywordsList.Any(string.IsNullOrWhiteSpace))
             {
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    yield return new ValidationResult($"Keyword cannot be empty or whitespace.", new[] { nameof(Keywords) });
-                }
-                else if (keyword.Length > 60)
-                {
-                    yield return new ValidationResult($"Keyword \"{keyword}\" must be no longer than 60 characters.", new[] { nameof(Keywords) });
-                }
+                yield return new ValidationResult(
+                    "Keyword cannot be empty or whitespace.",
+                    new[] { nameof(Keywords) });
+            }
+
+            if (keywordsList.Any(k => !string.IsNullOrWhiteSpace(k) && k.Length > 60))
+            {
+                yield return new ValidationResult(
+                    "Keyword must be no longer than 60 characters.",
+                    new[] { nameof(Keywords) });
+            }
+
+            var cleanedKeyWordsList = keywordsList
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .Select(k => k.Trim());
+            
+            HashSet<string> keywordsSet = new(StringComparer.OrdinalIgnoreCase);
+            
+            if (!cleanedKeyWordsList.All(keywordsSet.Add))
+            {
+                yield return new ValidationResult("Keywords list contains duplicates.", new[] { nameof(Keywords) });
             }
         }
 

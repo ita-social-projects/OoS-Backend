@@ -58,7 +58,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CompetitiveEventCreateUpdateDto dto)
+    public async Task<IActionResult> Create([FromBody] CompetitiveEventBaseDto dto)
     {
         if (dto == null)
         {
@@ -87,7 +87,7 @@ public class CompetitiveEventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CompetitiveEventCreateUpdateDto dto)
+    public async Task<IActionResult> Update([FromBody] CompetitiveEventBaseDto dto)
     {
         if (dto == null)
         {

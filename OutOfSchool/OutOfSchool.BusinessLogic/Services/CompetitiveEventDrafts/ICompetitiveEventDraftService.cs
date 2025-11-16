@@ -14,6 +14,9 @@ public interface ICompetitiveEventDraftService
     /// - Uploading associated images (competitive event images, cover image) in the external storage.
     /// </summary>
     /// <param name="competitiveEventV2Dto">
+    /// </param>
+    /// <param name="fromCompetitiveEvent">Flag to signal if the new draft is created from existing competitiveEvent.</param>
+    /// <returns>
     /// Data transfer object containing information required to create the draft, 
     /// including competitive event details, and optional images.
     /// </param>
@@ -21,7 +24,7 @@ public interface ICompetitiveEventDraftService
     /// A <see cref="CompetitiveEventDraftResultDto"/> containing the details of the created draft, 
     /// including any results or status from image processing operations.
     /// </returns>
-    Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto);
+    Task<CompetitiveEventDraftResultDto> Create(CompetitiveEventV2Dto competitiveEventV2Dto, bool fromCompetitiveEvent = false);
 
     /// <summary>
     /// Update existing competitive event draft.

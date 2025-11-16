@@ -2,15 +2,15 @@
 
 public static class Constants
 {
+    public const string MariaDbServerVersion = "MariaDbServerVersion";
     /// <summary>
     /// Maximum length of unified URL.
     /// </summary>
-    // TODO: When we finish transition to unified contacts - change to 2048 (Max length for Chrome, which is minimal between browsers)
-    public const int MaxUnifiedUrlLength = 256;
+    public const int MaxUnifiedUrlLength = 2048;
 
     public const int MaxEmailTypeLength = 60;
 
-    public const int MaxEmailAddressLength = 256;
+    public const int MaxEmailAddressLength = 254;
 
     public const long DefaultCityCodeficatorId = 31737;
 
@@ -135,12 +135,12 @@ public static class Constants
     /// <summary>
     /// Minimum length of workshop title.
     /// </summary>
-    public const int MinWorkshopTitleLength = 1;
+    public const int MinWorkshopTitleLength = 3;
 
     /// <summary>
     /// Maximum length of workshop title.
     /// </summary>
-    public const int MaxWorkshopTitleLength = 60;
+    public const int MaxWorkshopTitleLength = 250;
 
     /// <summary>
     /// Minimum length of workshop short title.
@@ -173,7 +173,7 @@ public static class Constants
     public const int MaxProviderShortTitleLength = 60;
 
     /// <summary>
-    /// Maximum length of position desctiption.
+    /// Maximum length of position description.
     /// </summary>
     public const int MaxPositionDescriptionLength = 500;
 
@@ -181,6 +181,11 @@ public static class Constants
     /// Maximum length of additional description.
     /// </summary>
     public const int EnrollmentProcedureDescription = 500;
+
+    /// <summary>
+    /// Maximum length of competitive selection description.
+    /// </summary>
+    public const int MaxCompetitiveSelectionDescriptionLength = 500;
 
     /// <summary>
     /// Maximum length of preferential terms of participation.
@@ -245,7 +250,7 @@ public static class Constants
     /// <summary>
     /// The minimum length required for the competitive event title.
     /// </summary>
-    public const int MinCompetitiveEventTitleLength = 1;
+    public const int MinCompetitiveEventTitleLength = 3;
 
     /// <summary>
     /// The maximum length allowed for the competitive event short title.
@@ -333,5 +338,13 @@ public static class Constants
     {
         public const string DeputyDirector = "Заступник директора";
         public const string Employee = "Співробітник ЗО";
+    }
+
+    public static class SystemUserConstants
+    {
+        public const string SystemUserId = "00000000-0000-0000-0000-000000000001";
+        public const string SystemUserRole = "system";
+        public const string SystemUserName = "system";
+        public const string SystemUserEmail = "system@outofschool.local";
     }
 }

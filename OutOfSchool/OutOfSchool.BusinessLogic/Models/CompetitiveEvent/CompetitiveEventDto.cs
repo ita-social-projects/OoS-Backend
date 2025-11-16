@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -11,14 +13,30 @@ public class CompetitiveEventDto : CompetitiveEventBaseDto
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
+    [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IList<string> ImageIds { get; set; }
     public CompetitiveEventCoverageDto Coverage { get; set; }
     public IList<DirectionSubDirectionIdsDto> DirectionSubDirectionIds { get; set; } = [];
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from CompetitiveEventBaseDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+    }
 }
 
 public static class CompetitiveEventDtoExtensions
 {
-    public static CompetitiveEventDto ToDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
+    /// <summary>
+        /// Converts an <c>OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent</c> domain model into a <c>CompetitiveEventDto</c>.
+        /// </summary>
+        /// <param name="model">The domain competitive event to convert.</param>
+        /// <returns>
+        /// A new <c>CompetitiveEventDto</c> populated from <paramref name="model"/>. The method maps nested objects via their own <c>ToDto</c> helpers when present.
+        /// Sub-direction collections exclude entries where the source sub-direction is marked deleted. <c>ImageIds</c> will be null if the source has no images.
+        /// </returns>
+        public static CompetitiveEventDto ToDto(this OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent model)
         => new()
         {
             Id = model.Id,
@@ -31,7 +49,6 @@ public static class CompetitiveEventDtoExtensions
             ParentId = model.ParentId,
             CoverageId = model.CoverageId,
             CompetitiveEventDescriptionItems = model.CompetitiveEventDescriptionItems?.ToDto(),
-            AdditionalDescription = model.AdditionalDescription,
             ScheduledStartTime = model.ScheduledStartTime,
             ScheduledEndTime = model.ScheduledEndTime,
             NumberOfSeats = model.NumberOfSeats,
@@ -40,8 +57,7 @@ public static class CompetitiveEventDtoExtensions
             OrganizerOfTheEventId = model.OrganizerOfTheEventId,
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,
             VenueName = model.VenueName,
-            TermsOfParticipation = model.TermsOfParticipation,
-            PreferentialTermsOfParticipation = model.PreferentialTermsOfParticipation,
+            CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
             AreThereBenefits = model.AreThereBenefits,
             Benefits = model.Benefits,
             MinimumAge = model.MinimumAge,
@@ -58,6 +74,8 @@ public static class CompetitiveEventDtoExtensions
                     SubDirectionId = s.Id
                 })
             .ToList() ?? [],
+            CoverImageId = model.CoverImageId,
+            ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList(),
         };
 
     public static List<CompetitiveEventDto> ToDto(this IEnumerable<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent> list)

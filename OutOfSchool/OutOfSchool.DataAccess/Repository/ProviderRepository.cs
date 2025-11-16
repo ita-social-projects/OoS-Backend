@@ -17,11 +17,22 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
     }
 
     /// <summary>
-    /// Checks entity elements for uniqueness.
+    /// Checks entity elements for uniqueness
+    /// Should be used for creation flow.
     /// </summary>
     /// <param name="entity">Entity.</param>
     /// <returns>Bool.</returns>
     public bool SameExists(Provider entity) => dbSet.Any(x => !x.IsDeleted && x.Edrpou == entity.Edrpou);
+
+    /// <summary>
+    /// Checks if another different provider exists with the same EDRPOU.
+    /// Should be used to update flows to avoid self-collision.
+    /// </summary>
+    public bool AnotherWithSameEdrpouExists(Provider entity) =>
+        dbSet.Any(x =>
+            !x.IsDeleted &&
+            x.Edrpou == entity.Edrpou &&
+            x.Id != entity.Id);
 
     /// <summary>
     /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
@@ -40,6 +51,19 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
                     return Task.FromResult(provider.Entity);
                 })
             .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Checks if we can create a branch from given parent provider
+    /// </summary>
+    /// <param name="parentId">Parent id</param>
+    /// <returns>Bool</returns>
+    public async Task<bool> IsValidParentProvider(Guid parentId)
+    {
+        return await dbSet.AnyAsync(x =>
+        x.Id == parentId
+        && !x.IsDeleted
+        && !x.IsStructuralUnit);
     }
 
     /// <summary>

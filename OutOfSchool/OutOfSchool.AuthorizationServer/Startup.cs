@@ -16,6 +16,7 @@ using OutOfSchool.AuthorizationServer.Extensions;
 using OutOfSchool.AuthorizationServer.External;
 using OutOfSchool.AuthorizationServer.KeyManagement;
 using OutOfSchool.AuthorizationServer.Services;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Common.Validators;
 using OutOfSchool.EmailSender.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -35,13 +36,8 @@ public static class Startup
 
         var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mariaDbServerVersion = config["MariaDbServerVersion"];
-        var serverVersion = new MariaDbServerVersion(new Version(mariaDbServerVersion));
-        if (serverVersion.Version.Major < Constants.MariaDbServerMinimalMajorVersion)
-        {
-            throw new InvalidOperationException("MariaDb Server version should be 11 or higher.");
-        }
+        var mariaDbVersion = config.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         var quartzConfig = config.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
         services.AddDefaultQuartz(
@@ -292,8 +288,15 @@ public static class Startup
         services.AddTransient<IProfileService, ProfileService>();
         services.AddScoped<IUserService, UserService>();
         services.AddSingleton<ISendGridAccessibilityService, SendGridAccessibilityService>();
+        services.AddScoped<ISystemUserInitializer, SystemUserInitializer>();
+        services.AddScoped<ContextAwareCurrentUser>();
+        services.AddScoped<IContextAwareCurrentUser>(sp =>
+            sp.GetRequiredService<ContextAwareCurrentUser>());
+        services.AddScoped<ICurrentUser>(sp =>
+            sp.GetRequiredService<ContextAwareCurrentUser>());
 
         services.AddHostedService<IdentityRolesInitializerHostedService>();
+        services.AddHostedService<SystemUserInitializerHostedService>();
 
         services.AddHealthChecks()
             .AddDbContextCheck<OutOfSchoolDbContext>(
