@@ -1,6 +1,6 @@
-using OutOfSchool.Services.Models.ContactInfo;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Validators;
 
@@ -9,9 +9,9 @@ namespace OutOfSchool.BusinessLogic.Models.ContactInfo;
 public sealed class EmailDto : IContentComparable<Email>, IEquatable<EmailDto>
 {
     [Required(ErrorMessage = "Email type is required")]
-    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Contact type must contain at least one letter.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Email type must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers, and symbols are allowed.")]
-    [StringLength(Constants.MaxEmailTypeLength, MinimumLength = 3,ErrorMessage = "Email type must be between 3 and 60 characters")]
+    [StringLength(Constants.MaxEmailTypeLength, MinimumLength = Constants.MinEmailTypeLength, ErrorMessage = "Email type must be between 3 and 60 characters")]
     public string Type { get; set; } = null!;
 
     [DataType(DataType.EmailAddress)]

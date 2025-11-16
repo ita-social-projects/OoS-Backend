@@ -19,14 +19,17 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
     /// Initializes a new instance of the <see cref="ImageDependentEntityImagesInteractionService{TEntity}"/> class.
     /// </summary>
     /// <param name="imageService">Service for interacting with an image storage.</param>
+    /// <param name="imageReferenceService">Service for counting references to images in the image storage.</param>
     /// <param name="limits">Describes limits of images for entities.</param>
     /// <param name="logger">Logger.</param>
     public ImageDependentEntityImagesInteractionService(
         IImageService imageService,
+        IImageReferenceService<TEntity> imageReferenceService,
         IOptions<ImagesLimits<TEntity>> limits,
         ILogger<ImageDependentEntityImagesInteractionService<TEntity>> logger)
     {
         ImageService = imageService;
+        ImageReferenceService = imageReferenceService;
         Limits = limits.Value;
         Logger = logger;
     }
@@ -40,6 +43,12 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
     /// Gets a service for interacting with an image storage..
     /// </summary>
     protected IImageService ImageService { get; }
+
+    /// <summary>
+    /// Gets a service for counting references to images in the image storage.
+    /// </summary>
+    protected IImageReferenceService<TEntity> ImageReferenceService { get; }
+
 
     /// <summary>
     /// Gets limits of images for entity of <c>TEntity</c> type.
@@ -160,12 +169,21 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
             throw new ArgumentException(@"Image id must be a non empty string", nameof(entity));
         }
 
-        Logger.LogTrace("Removing a cover image for the entity was started");
-        await ImageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
+        int refCount = await ImageReferenceService.CountReferencesAsync(entity.CoverImageId);
+
+        if (refCount <= 1)
+        {
+            Logger.LogTrace("Removing a cover image for the entity was started");
+            await ImageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
+            Logger.LogTrace("Removing a cover image for the entity was finished");
+        }
+        else
+        {
+            Logger.LogTrace("Skip external deletion for image {CoverImageId}: referenced by {RefCount} entities", entity.CoverImageId, refCount);
+        }
 
         entity.CoverImageId = null;
 
-        Logger.LogTrace("Removing a cover image for the entity was finished");
         return OperationResult.Success;
     }
 
@@ -263,7 +281,17 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
                 return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
 
-            await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
+            int refCount = await ImageReferenceService.CountReferencesAsync(imageId);
+
+            if (refCount <= 1)
+            {
+                Logger.LogTrace("Deleting image from external storage");
+                await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.LogTrace("Skip external deletion for image {ImageId}: referenced by {RefCount} entities", imageId, refCount);
+            }
 
             RemoveImageFromEntity(entity, imageId);
 
@@ -301,14 +329,14 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
             {
                 Logger.LogTrace("The image limit was reached for the entity");
                 return new MultipleImageUploadingResult
-                    { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.ExceedingCountOfImagesError.GetResourceValue() } };
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.ExceedingCountOfImagesError.GetResourceValue() } };
             }
 
             var imagesUploadingResult = await ImageService.UploadManyImagesAsync<TEntity>(images).ConfigureAwait(false);
             if (imagesUploadingResult.SavedIds == null || imagesUploadingResult.MultipleKeyValueOperationResult == null)
             {
                 return new MultipleImageUploadingResult
-                    { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
             }
 
             if (imagesUploadingResult.SavedIds.Count > 0)
@@ -354,13 +382,21 @@ public class ImageDependentEntityImagesInteractionService<TEntity> : IImageDepen
                 };
             }
 
-            await ImageService.RemoveManyImagesAsync(imageIds).ConfigureAwait(false);
+            List<string> imageIdsToRemove = [.. (await ImageReferenceService.CountReferencesAsync(imageIds))
+                .Where(kvp => kvp.Value <= 1)
+                .Select(kvp => kvp.Key)];
+
+            if (imageIdsToRemove.Count > 0)
+            {
+                await ImageService.RemoveManyImagesAsync(imageIdsToRemove).ConfigureAwait(false);
+            }
 
             var imagesRemovingResult = new MultipleImageRemovingResult
             {
-                RemovedIds = new List<string>(),
+                RemovedIds = [],
                 MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult(),
             };
+
             for (short i = 0; i < imageIds.Count; i++)
             {
                 RemoveImageFromEntity(entity, imageIds[i]);

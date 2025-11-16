@@ -19,8 +19,8 @@ public static class WorkshopRequiredPropertiesDtoGenerator
         .RuleFor(w => w.WorkshopType, f => f.Random.Enum<WorkshopType>())
         .RuleFor(w => w.ParentWorkshopId, f => null)
         .RuleFor(w => w.IsPaid, f => true)
-        .RuleFor(w => w.Price, f => f.Random.Decimal())
-        .RuleFor(w => w.PayRate, f => f.PickRandom<PayRateType>())
+        .RuleFor(w => w.Price, f => f.Random.Decimal(0.01M, 100000M))
+        .RuleFor(w => w.PayRate, f => f.PickRandom(PayRateType.Hour, PayRateType.Day, PayRateType.Month, PayRateType.Year, PayRateType.Course))
         .RuleFor(w => w.PreferentialTermsOfParticipation, f => f.Lorem.Paragraph())
         .CustomInstantiator(f =>
         {

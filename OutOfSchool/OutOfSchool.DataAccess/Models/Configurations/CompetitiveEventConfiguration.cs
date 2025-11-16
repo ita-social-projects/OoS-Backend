@@ -11,6 +11,8 @@ internal class CompetitiveEventConfiguration : BusinessEntityWithContactsConfigu
     {
         base.Configure(builder);
 
+        builder.HasIndex(x => x.CoverImageId);
+
         builder.HasOne(c => c.CompetitiveEventAccountingType)
            .WithMany()
            .HasForeignKey(c => c.CompetitiveEventAccountingTypeId)

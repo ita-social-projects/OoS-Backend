@@ -20,11 +20,14 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
     public string ShortTitle { get; set; }
 
-    [Required] public DateTimeOffset ScheduledStartTime { get; set; }
+    [Required] 
+    public DateTimeOffset ScheduledStartTime { get; set; }
 
-    [Required] public DateTimeOffset ScheduledEndTime { get; set; }
+    [Required] 
+    public DateTimeOffset ScheduledEndTime { get; set; }
 
-    [Required] public uint NumberOfSeats { get; set; } = uint.MaxValue;
+    [Required] 
+    public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     public uint? NumberOfOccupiedSeats { get; set; }
 
@@ -49,7 +52,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public AccountingTypeInfoDto AccountingType { get; set; }
 
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; } = string.Empty;
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
@@ -63,7 +65,7 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public bool AreThereBenefits { get; set; }
 
-    [MaxLength(Constants.MaxBenefitsLength)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string Benefits { get; set; } = string.Empty;
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -72,8 +74,7 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaximumAge { get; set; } = 0;
 
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
-    public int Price { get; set; } = 0;
+    public decimal Price { get; set; } = 0;
 
     public bool CompetitiveSelection { get; set; }
 

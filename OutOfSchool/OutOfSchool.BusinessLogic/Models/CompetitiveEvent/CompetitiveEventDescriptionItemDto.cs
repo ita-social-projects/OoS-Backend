@@ -1,5 +1,7 @@
-﻿using OutOfSchool.Services.Models.CompetitiveEvents;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Validators;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 
@@ -7,12 +9,18 @@ public class CompetitiveEventDescriptionItemDto
 {
     public Guid Id { get; set; }
 
-    [Required]
-    [MaxLength(200)]
+    [Required(ErrorMessage = "Description heading is required")]
+    [MinLength(Constants.MinLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForSectionNameOfCompetitiveEventDescriptionItem)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "SectionName field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string SectionName { get; set; }
 
-    [Required]
-    [MaxLength(2000)]
+    [Required(ErrorMessage = "Description text is required")]
+    [MinLength(Constants.MinLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [MaxLength(Constants.MaxLengthForDescriptionOfCompetitiveEventDescriptionItem)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Description field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Description { get; set; }
 
     public Guid CompetitiveEventId { get; set; }

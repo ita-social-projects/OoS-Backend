@@ -1,10 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Services.Models.ContactInfo;
-using System.ComponentModel.DataAnnotations;
 using CompetitiveEventDraftModel = OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEventDraft;
@@ -14,8 +14,11 @@ public class ModeratorCompetitiveEventDraftEditDto
     public string Title { get; set; }
 
     [Required(ErrorMessage = "ShortTitle is required")]    
-    public string ShortTitle { get; set; }    
+    public string ShortTitle { get; set; }
 
+    [Required(ErrorMessage = "Information about the selection is required")]
+    [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
+    [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     public string AdditionalDescription { get; set; }
@@ -25,6 +28,7 @@ public class ModeratorCompetitiveEventDraftEditDto
     [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
     public string Benefits { get; set; }

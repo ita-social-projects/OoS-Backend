@@ -50,9 +50,12 @@ public class WorkshopRepository : SensitiveEntityRepositorySoftDeleted<Workshop>
         return await query.SingleOrDefaultAsync(ws => ws.Id == id && !ws.IsDeleted);
     }
 
-    public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
+    public async Task<IEnumerable<Workshop>> GetByIds(
+        IEnumerable<Guid> ids,
+        Func<IQueryable<Workshop>, IQueryable<Workshop>> includeExpression)
     {
-        return await dbSet.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
+        var query = includeExpression?.Invoke(dbSet) ?? dbSet;
+        return await query.Where(w => ids.Contains(w.Id) && w.Status != WorkshopStatus.Archived).ToListAsync();
     }
 
     public async Task<IEnumerable<Workshop>> BlockByProvider(Provider provider)

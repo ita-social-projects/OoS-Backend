@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.Tests.Common.TestDataGenerators;
@@ -25,7 +27,7 @@ public class CompetitiveEventV2DtoValidationTests
         date4 = date3.Add(new TimeSpan(30, 0, 0, 0));
     }
 
-        [Test]
+    [Test]
     public void Validate_WhenAllPropertiesAreCorrect_ShouldReturnNoValidationErrors()
     {
         // Arrange
@@ -123,9 +125,93 @@ public class CompetitiveEventV2DtoValidationTests
             result.ErrorMessage.Contains("Minimum age should be less than Maximum age"));
     }
 
+    [Test]
+    public void Validate_WhenCoverImageAndCoverImageIdValuesAreNotNull_ShouldReturnValidationError()
+    {
+        // Arrange
+        var dto = CreateTheCorrectDto();
+        var validationContext = new ValidationContext(dto);
+        dto.CoverImage = FakeFile();
+
+        // Act
+        var results = dto.Validate(validationContext).ToList();
+
+        // Assert
+        results.Should().ContainSingle(result =>
+            result.ErrorMessage.Contains("Either CoverImage or CoverImageId should be provided, not both."));
+    }
+
+    [Test]
+    public void Validate_WhenImageFilesContainEmptyFiles_ShouldReturnValidationError()
+    {
+        // Arrange
+        var dto = CreateTheCorrectDto();
+        var validationContext = new ValidationContext(dto);
+        dto.ImageFiles = dto.ImageFiles = [FakeFile("img.jpg", 0)];
+
+        // Act
+        var results = dto.Validate(validationContext).ToList();
+
+        // Assert
+        results.Should().ContainSingle(result =>
+            result.ErrorMessage.Contains("ImageFiles must not contain empty files."));
+    }
+
+    [Test]
+    public void Validate_WhenImageIdsContainEmptyOrWhitespaceStrings_ShouldReturnValidationError()
+    {
+        // Arrange
+        var dto = CreateTheCorrectDto();
+        var validationContext = new ValidationContext(dto);
+        dto.ImageIds = [Guid.NewGuid().ToString(), string.Empty];
+
+        // Act
+        var results = dto.Validate(validationContext).ToList();
+
+        // Assert
+        results.Should().ContainSingle(result =>
+            result.ErrorMessage.Contains("ImageIds must not contain empty or whitespace strings."));
+    }
+
+    [Test]
+    public void Validate_WhenImageFilesAndImageIdsAreEmpty_ShouldReturnValidationError()
+    {
+        // Arrange
+        var dto = CreateTheCorrectDto();
+        var validationContext = new ValidationContext(dto);
+        dto.ImageFiles = [];
+        dto.ImageIds = [];
+
+        // Act
+        var results = dto.Validate(validationContext).ToList();
+
+        // Assert
+        results.Should().ContainSingle(result =>
+            result.ErrorMessage.Contains("At least one of the ImageFiles or ImageIds fields must be filled in."));
+    }
+
+    [Test]
+    public void Validate_WhenCountOfImageFilesAndImageIdsMoreThanAllowed_ShouldReturnValidationError()
+    {
+        // Arrange
+        var dto = CreateTheCorrectDto();
+        var validationContext = new ValidationContext(dto);
+        dto.ImageIds = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(),
+                        Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(),
+                        Guid.NewGuid().ToString(), Guid.NewGuid().ToString(),];
+        dto.ImageFiles = [FakeFile()];
+
+
+        // Act
+        var results = dto.Validate(validationContext).ToList();
+
+        // Assert
+        results.Should().ContainSingle(result =>
+            result.ErrorMessage.Contains($"A maximum of 10 images are allowed for a competitive event."));
+    }
+
     #region Helpers
 
-    // 
     private CompetitiveEventV2Dto CreateTheCorrectDto()
     {
         var dto = CompetitiveEventV2DtoGenerator.Generate();
@@ -137,7 +223,18 @@ public class CompetitiveEventV2DtoValidationTests
         dto.MaximumAge = 10;
         dto.MinimumAge = 5;
 
+        dto.CoverImageId = Guid.NewGuid().ToString();
+        dto.ImageIds = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
+        dto.ImageFiles = [FakeFile()];
+
         return dto;
+    }
+
+    private static IFormFile FakeFile(string name = "img.jpg", int size = 10)
+    {
+        var bytes = new byte[size];
+        var ms = new MemoryStream(bytes);
+        return new FormFile(ms, 0, bytes.Length, "file", name);
     }
 
     #endregion

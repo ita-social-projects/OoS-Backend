@@ -503,6 +503,7 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(draft.ToResponseDto().CompetitiveEventDraftId));
+        Assert.That(result.Value.CompetitiveEventDraft.DraftStatus, Is.EqualTo(CompetitiveEventDraftStatus.Draft));
         Mock.VerifyAll();
     }
 
@@ -575,6 +576,7 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value.CompetitiveEventDraft.CompetitiveEventDraftId, Is.EqualTo(draft.ToResponseDto().CompetitiveEventDraftId));
+        Assert.That(result.Value.CompetitiveEventDraft.DraftStatus, Is.EqualTo(CompetitiveEventDraftStatus.Draft));
         Mock.VerifyAll();
     }
 
@@ -663,6 +665,40 @@ public class CompetitiveEventDraftServiceTests
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("400"));
         Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, Is.EqualTo("Competitive event draft can't be updated when it is in PendingModeration status."));
+
+        Mock.VerifyAll();
+    }
+
+    [Test]
+    public async Task Update_ReturnsFailedResult_WhenDraftDoesNotExistInDB()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        var competitiveEventV2Dto = CompetitiveEventV2DtoGenerator.Generate();
+        var dto = new CompetitiveEventDraftUpdateDto()
+        {
+            Id = id,
+            CompetitiveEventV2Dto = competitiveEventV2Dto
+        };
+        var draft = (CompetitiveEventDraft)null;
+
+        mockCompetitiveEventDraftRepository
+           .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
+           .Returns((Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>> f) => f.Invoke())
+           .Verifiable(Times.Once);
+        mockCompetitiveEventDraftRepository
+            .Setup(repo => repo.GetById(id))
+            .ReturnsAsync(draft)
+            .Verifiable(Times.Once);
+
+        // Act
+        var result = await competitiveEventDraftService.Update(id, dto);
+
+        // Assert
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Code, Is.EqualTo("404"));
+        Assert.That(result.OperationResult.Errors.FirstOrDefault().Description, 
+            Is.EqualTo($"Competitive event draft with ID = {id} doesn't exist in DB, so it cannot be updated."));
 
         Mock.VerifyAll();
     }
@@ -1336,6 +1372,67 @@ public class CompetitiveEventDraftServiceTests
         Assert.IsNotNull(result);
         Assert.IsInstanceOf<CompetitiveEventV2Dto>(result);
         Assert.AreEqual(result.Title, v2dto.Title);
+        Mock.VerifyAll();
+    }
+
+    #endregion
+
+    #region Update Tests - User Rights Checking
+
+    [Test]
+    public void Update_WhenUserLacksRequiredRights_ShouldThrowException()
+    {
+        // Arrange
+        var providerId = Guid.NewGuid();
+        var organizerId = Guid.NewGuid();
+        var draftId = Guid.NewGuid();
+
+        var existingDraft = new CompetitiveEventDraft
+        {
+            Id = draftId,
+            ProviderId = providerId
+        };
+
+        var updateDto = new CompetitiveEventDraftUpdateDto
+        {
+            Id = draftId,
+            CompetitiveEventV2Dto = new CompetitiveEventV2Dto
+            {
+                Id = Guid.NewGuid(),
+                OrganizerOfTheEventId = organizerId,
+                Contacts = new List<ContactsDto>
+                {
+                    new ContactsDto
+                    {
+                        IsDefault = true,
+                        Address = ContactsAddressDtoGenerator.Generate()
+                    }
+                }
+            }
+        };
+
+        mockCompetitiveEventDraftRepository
+           .Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>>>()))
+           .Returns((Func<Task<Result<(CompetitiveEventDraft, ImageChangingResult, MultipleImageChangingResult)>>> f) => f.Invoke())
+           .Verifiable(Times.Once);
+
+        mockCompetitiveEventDraftRepository
+            .Setup(x => x.GetById(draftId))
+            .ReturnsAsync(existingDraft)
+            .Verifiable(Times.Once);
+
+        mockUserService
+            .Setup(x => x.UserHasRights(
+                new ProviderRights(existingDraft.ProviderId),
+                new EmployeeRights(existingDraft.ProviderId),
+                new ProviderRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId),
+                new EmployeeRights(updateDto.CompetitiveEventV2Dto.OrganizerOfTheEventId)
+                ))
+            .ThrowsAsync(new UnauthorizedAccessException("User does not have rights"))
+            .Verifiable(Times.Once);
+
+        // Act & Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await competitiveEventDraftService.Update(draftId, updateDto));
         Mock.VerifyAll();
     }
 

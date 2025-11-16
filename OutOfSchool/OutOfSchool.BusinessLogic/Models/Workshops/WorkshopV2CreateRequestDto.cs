@@ -19,6 +19,44 @@ public class WorkshopV2CreateRequestDto : WorkshopCreateRequestDto
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<IFormFile> ImageFiles { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from WorkshopCreateRequestDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+
+        bool hasCoverImage = CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(CoverImageId);
+        bool hasImageFiles = ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        bool hasInvalidFiles = ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
+        bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasInvalidFiles)
+            yield return new ValidationResult("ImageFiles must not contain empty files.", [nameof(ImageFiles)]);
+        if (hasInvalidIds)
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", [nameof(ImageIds)]);
+
+        if (hasCoverImage == hasCoverImageId)
+        {
+            yield return new ValidationResult("Either CoverImage or CoverImageId should be provided, not both.",
+                [nameof(CoverImage), nameof(CoverImageId)]);
+        }
+
+        if (!hasImageFiles && !hasImageIds)
+        {
+            yield return new ValidationResult("At least one of the ImageFiles or ImageIds fields must be filled in.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+
+        if ((ImageFiles ?? []).Count + (ImageIds ?? []).Count > Constants.MaxCountOfImagesForWorkshop)
+        {
+            yield return new ValidationResult($"A maximum of {Constants.MaxCountOfImagesForWorkshop} images are allowed for a workshop.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+    }
 }
 
 public static class WorkshopV2CreateRequestDtoExtensions

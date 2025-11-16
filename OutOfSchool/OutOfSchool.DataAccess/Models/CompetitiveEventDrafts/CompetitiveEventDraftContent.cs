@@ -1,8 +1,8 @@
-﻿using OutOfSchool.Common.Enums;
+﻿using System;
+using System.Collections.Generic;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.ContactInfo;
-using System;
-using System.Collections.Generic;
 
 namespace OutOfSchool.Services.Models.CompetitiveEventDrafts;
 
@@ -46,7 +46,9 @@ public class CompetitiveEventDraftContent : IHasContacts
 
     public int MaximumAge { get; set; }
 
-    public int Price { get; set; } = default;
+    public bool IsPaid { get; set; } = false;
+
+    public decimal Price { get; set; } = default;
 
     public bool CompetitiveSelection { get; set; }
 

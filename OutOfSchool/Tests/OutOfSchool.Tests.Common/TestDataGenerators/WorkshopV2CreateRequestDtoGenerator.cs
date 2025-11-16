@@ -13,6 +13,8 @@ public static class WorkshopV2CreateRequestDtoGenerator
 {
     private static readonly Faker<WorkshopV2CreateRequestDto> Faker = new Faker<WorkshopV2CreateRequestDto>()
         .RuleFor(x => x.TagIds, f => f.Make(5, () => f.Random.Long(1, 100)))
+        .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
+        .RuleFor(x => x.ImageIds, f => [f.Image.LoremFlickrUrl()])
         .CustomInstantiator(f =>
         {
             var dto = new WorkshopV2CreateRequestDto();

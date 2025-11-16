@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -13,6 +14,13 @@ public class WorkshopCreateRequestDto : WorkshopContactsDto
     public List<TeacherDTO> Teachers { get; set; }
     
     public Guid? DefaultTeacherId { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from WorkshopContactsDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+    }
 }
 
 public static class WorkshopCreateRequestDtoExtensions

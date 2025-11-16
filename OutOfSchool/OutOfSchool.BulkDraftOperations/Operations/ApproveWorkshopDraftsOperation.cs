@@ -104,6 +104,7 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                 services.AddTransient<IContextAwareCurrentUser, ContextAwareCurrentUser>();
                 services.AddTransient<IUserService, UserService>();
                 services.AddTransient<TrackableEntityInterceptor>();
+                services.AddTransient<BusinessEntityInterceptor>();
 
                 services
                     .AddDbContext<OutOfSchoolDbContext>((sp, options) => options
@@ -115,6 +116,7 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                                     .EnableStringComparisonTranslations()
                                     .UseMicrosoftJson())
                         .AddInterceptors(
+                            sp.GetRequiredService<BusinessEntityInterceptor>(),
                             sp.GetRequiredService<TrackableEntityInterceptor>()));
 
                 services.AddSignalR();
@@ -171,7 +173,11 @@ public class ApproveWorkshopDraftsOperation : IConsoleOperation
                 });
 
                 services.AddTransient<IStringLocalizer<SharedResource>, PassthroughStringLocalizer<SharedResource>>();
-
+                services.AddScoped<IImageReferenceService<Workshop>, ImageReferenceService<Workshop>>();
+                services.AddScoped<IImageReferenceService<WorkshopDraft>, ImageReferenceService<WorkshopDraft>>();
+                services.AddScoped<IImageReferenceService<Provider>, ImageReferenceService<Provider>>();
+                services.AddScoped<IImageReferenceService<Teacher>, ImageReferenceService<Teacher>>();
+                services.AddScoped<IImageReferenceService<TeacherDraft>, ImageReferenceService<TeacherDraft>>();
                 services.AddTransient<ILanguageService, LanguageService>();
                 services.AddTransient<IProviderService, ProviderService>();
                 services.AddTransient<ICurrentUserService, CurrentUserService>();
