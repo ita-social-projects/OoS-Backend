@@ -79,7 +79,7 @@ public static class DateTimeRangeDtoExtensions
         foreach (var model in activeModels)
         {
             var key = DateTimeRangeToString(model);
-            if (dtoListDict.TryGetValue(key, out var dto))
+            if (dtoListDict.ContainsKey(key))
             {
                 result.Add(model);
                 dtoListDict.Remove(key);
