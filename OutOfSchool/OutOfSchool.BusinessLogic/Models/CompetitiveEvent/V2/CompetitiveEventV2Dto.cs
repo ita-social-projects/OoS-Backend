@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.Services.Models.CompetitiveEventDrafts;
 using OutOfSchool.Services.Models.ContactInfo;
@@ -79,7 +80,7 @@ public static class CompetitiveEventV2DtoExtensions
         ScheduledStartTime = model.ScheduledStartTime,
         ScheduledEndTime = model.ScheduledEndTime,
         NumberOfSeats = model.NumberOfSeats,
-        CompetitiveEventAccountingTypeId = model.CompetitiveEventAccountingTypeId,
+        CompetitiveEventAccountingTypeId = (CompetitiveEventAccountingTypes)model.CompetitiveEventAccountingTypeId,
         DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
         OrganizerOfTheEventId = model.OrganizerOfTheEventId,
         PlannedFormatOfClasses = model.PlannedFormatOfClasses,
@@ -155,7 +156,7 @@ public static class CompetitiveEventV2DtoExtensions
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             CoverageId = draft.CoverageId,
-            CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
+            CompetitiveEventAccountingTypeId = (CompetitiveEventAccountingTypes)draft.CompetitiveEventAccountingTypeId,
             SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
                               draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
             CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto(),
@@ -180,7 +181,7 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveEventId = competitiveEventV2Dto.Id == Guid.Empty ? null : competitiveEventV2Dto.Id,
             CoverImageId = competitiveEventV2Dto.CoverImageId,
             CoverageId = competitiveEventV2Dto.CoverageId,
-            CompetitiveEventAccountingTypeId = competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
+            CompetitiveEventAccountingTypeId = (int)competitiveEventV2Dto.CompetitiveEventAccountingTypeId,
             CompetitiveEventDraftContent = competitiveEventV2Dto.ToDraftContent(),
             // This is needed for search
             CATOTTGId = competitiveEventV2Dto.Contacts.SingleOrDefault(c => c.IsDefault)?.Address?.CATOTTGId ?? 0,
@@ -244,7 +245,7 @@ public static class CompetitiveEventV2DtoExtensions
         model.ScheduledStartTime = dto.ScheduledStartTime;
         model.ScheduledEndTime = dto.ScheduledEndTime;
         model.NumberOfSeats = dto.NumberOfSeats;
-        model.CompetitiveEventAccountingTypeId = dto.CompetitiveEventAccountingTypeId;
+        model.CompetitiveEventAccountingTypeId = (int)dto.CompetitiveEventAccountingTypeId;
         model.DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure;
         model.OrganizerOfTheEventId = dto.OrganizerOfTheEventId;
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
@@ -282,7 +283,7 @@ public static class CompetitiveEventV2DtoExtensions
         ScheduledStartTime = dto.ScheduledStartTime,
         ScheduledEndTime = dto.ScheduledEndTime,
         NumberOfSeats = dto.NumberOfSeats,
-        CompetitiveEventAccountingTypeId = dto.CompetitiveEventAccountingTypeId,
+        CompetitiveEventAccountingTypeId = (int)dto.CompetitiveEventAccountingTypeId,
         DescriptionOfTheEnrollmentProcedure = dto.DescriptionOfTheEnrollmentProcedure,
         OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
         PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
