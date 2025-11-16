@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
@@ -17,6 +13,11 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Services.Repository.Base.Api;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -67,7 +68,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var input = new CompetitiveEventBaseDto
         {
             Title = "Test",
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
             SubDirectionIds = [1]
         };
 
@@ -113,7 +114,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var input = new CompetitiveEventBaseDto
         {
             Title = "Test Event",
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
             SubDirectionIds = [1],
             CompetitiveEventDescriptionItems = new List<CompetitiveEventDescriptionItemDto>()
         };
@@ -122,7 +123,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = Guid.NewGuid(),
             Title = input.Title,
-            CompetitiveEventAccountingTypeId = input.CompetitiveEventAccountingTypeId
+            CompetitiveEventAccountingTypeId = (int)input.CompetitiveEventAccountingTypeId
         };
 
         mockSubDirectionRepository
@@ -161,7 +162,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         var input = new CompetitiveEventBaseDto
         {
             Title = "Test Event",
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
             SubDirectionIds = [1],
             CompetitiveEventDescriptionItems =
             [
@@ -174,7 +175,7 @@ class CompetitiveEventServiceUpdateAndCreateTests
         {
             Id = Guid.NewGuid(),
             Title = input.Title,
-            CompetitiveEventAccountingTypeId = input.CompetitiveEventAccountingTypeId,
+            CompetitiveEventAccountingTypeId = (int)input.CompetitiveEventAccountingTypeId,
             CompetitiveEventDescriptionItems =
             [
                 new CompetitiveEventDescriptionItem { Description = "Desc 1", SectionName = "Section 1" },
