@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -21,7 +23,10 @@ public class JsonModelBinder : IModelBinder
 
             try
             {
-                var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType);
+                var serviceProvider = bindingContext.HttpContext.RequestServices;
+                var jsonOptions = serviceProvider.GetRequiredService<IOptions<JsonOptions>>().Value.JsonSerializerOptions;
+
+                var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType, jsonOptions);
                 
                 if (result != null)
                 {
