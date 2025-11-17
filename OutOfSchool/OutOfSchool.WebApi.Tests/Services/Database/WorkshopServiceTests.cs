@@ -1293,14 +1293,13 @@ public class WorkshopServiceTests
             new() { StartTime = TimeSpan.Parse("14:15"), EndTime = TimeSpan.Parse("16:45"), Workdays = [DaysBitMask.Saturday, DaysBitMask.Sunday] },
             ];
 
-
         var workshop = dto.SetToModel(WorkshopGenerator.Generate());
         workshop.Teachers = TeachersGenerator.Generate(2);
         workshop.Applications = [];
         workshop.DateTimeRanges = [
             new() { Id = 1, StartTime = TimeSpan.Parse("18:00"), EndTime = TimeSpan.Parse("19:45"), Workdays = new List<DaysBitMask>{DaysBitMask.Monday, DaysBitMask.Tuesday }.ToDaysBitMask() },
-            new() { Id = 2,StartTime = TimeSpan.Parse("18:30"), EndTime = TimeSpan.Parse("20:30"), Workdays = new List<DaysBitMask>{DaysBitMask.Wednesday, DaysBitMask.Friday}.ToDaysBitMask() },
-            new() { Id = 3,StartTime = TimeSpan.Parse("14:15"), EndTime = TimeSpan.Parse("16:45"), Workdays = new List<DaysBitMask>{DaysBitMask.Saturday}.ToDaysBitMask() }
+            new() { Id = 2, StartTime = TimeSpan.Parse("18:30"), EndTime = TimeSpan.Parse("20:30"), Workdays = new List<DaysBitMask>{DaysBitMask.Wednesday, DaysBitMask.Friday}.ToDaysBitMask() },
+            new() { Id = 3, StartTime = TimeSpan.Parse("14:15"), EndTime = TimeSpan.Parse("16:45"), Workdays = new List<DaysBitMask>{DaysBitMask.Saturday}.ToDaysBitMask() }
             ];
 
         SetupUpdate(workshop);
