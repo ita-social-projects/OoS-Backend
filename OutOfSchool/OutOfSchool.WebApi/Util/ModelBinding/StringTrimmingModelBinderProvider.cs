@@ -11,7 +11,7 @@ public class StringTrimmingModelBinderProvider : IModelBinderProvider
 
         var modelType = context.Metadata.ModelType;
 
-        if (modelType == typeof(string) && context.BindingInfo.BindingSource != BindingSource.Body)
+        if (modelType == typeof(string) && context.BindingInfo?.BindingSource != BindingSource.Body)
         {
             return new StringTrimmingModelBinder();
         }

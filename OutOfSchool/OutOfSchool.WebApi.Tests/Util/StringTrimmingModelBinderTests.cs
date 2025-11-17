@@ -58,6 +58,22 @@ public class StringTrimmingModelBinderTests
     }
 
     [Test]
+    public async Task BindModelAsync_WithEmptyStringValue_ReturnsNullModel()
+    {
+        // Arrange
+        _valueProvider.SetValue("testModel", "");
+
+        // Act
+        await _binder.BindModelAsync(_bindingContext);
+
+        // Assert
+        Assert.That(_bindingContext.Result.IsModelSet, Is.True);
+        var result = _bindingContext.Result.Model as string;
+        Assert.That(result, Is.Null);
+        Assert.That (_modelState.IsValid, Is.True);
+    }
+
+    [Test]
     public async Task BindModelAsync_WithWhitespaceString_TrimsAndReturnsValue()
     {
         // Arrange

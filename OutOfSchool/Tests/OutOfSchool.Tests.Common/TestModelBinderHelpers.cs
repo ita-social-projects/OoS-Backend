@@ -25,6 +25,7 @@ public static class TestModelBinderHelpers
     public class TestModelBinderProviderContext : ModelBinderProviderContext
     {
         private ModelMetadata _metadata;
+        private BindingInfo _bindingInfo = new();
 
         public override ModelMetadata Metadata => _metadata;
 
@@ -33,7 +34,7 @@ public static class TestModelBinderHelpers
             _metadata = metadata;
         }
 
-        public override BindingInfo BindingInfo => new BindingInfo();
+        public override BindingInfo BindingInfo => _bindingInfo;
 
         public override IModelBinder CreateBinder(ModelMetadata metadata)
         {

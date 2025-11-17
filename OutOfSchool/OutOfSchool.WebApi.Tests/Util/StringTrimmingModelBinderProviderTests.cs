@@ -43,6 +43,21 @@ public class StringTrimmingModelBinderProviderTests
     }
 
     [Test]
+    public void GetBinder_WithStringModelTypeAndBodyBindingSource_ReturnsNull()
+    {
+        // Arrange
+        var metadata = CreateModelMetadata(typeof(string));
+        var context = CreateContext(metadata);
+        context.BindingInfo.BindingSource = BindingSource.Body;
+
+        // Act
+        var result = _provider.GetBinder(context);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
     public void GetBinder_WithOtherModelType_ReturnsNull()
     {
         // Arrange
