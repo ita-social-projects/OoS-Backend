@@ -2,6 +2,10 @@
 
 namespace OutOfSchool.WebApi.Util.ModelBinding;
 
+
+/// <summary>
+/// Model binder that trims leading and trailing whitespace from string inputs.
+/// </summary>
 public class StringTrimmingModelBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)

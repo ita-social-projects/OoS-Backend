@@ -2,6 +2,9 @@
 
 namespace OutOfSchool.WebApi.Util.ModelBinding;
 
+/// <summary>
+/// Provider for registration of <see cref="StringTrimmingModelBinder"/>.
+/// </summary>
 public class StringTrimmingModelBinderProvider : IModelBinderProvider
 {
     public IModelBinder GetBinder(ModelBinderProviderContext context)
