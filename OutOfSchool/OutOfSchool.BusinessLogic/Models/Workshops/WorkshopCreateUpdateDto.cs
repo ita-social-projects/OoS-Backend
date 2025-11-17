@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums.Workshop;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
@@ -31,10 +30,7 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
-            .Concat(model.DateTimeRanges ?? [])
-            .Distinct(new DateTimeRangeComparerWithoutFK())
-            .ToList() ?? [];
+        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
         model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? default;
         model.PayRate = dto.PayRate ?? default;

@@ -1041,6 +1041,47 @@ public class WorkshopServiceTests
     }
 
     [Test]
+    public async Task Update_WhenEntityIsValidAndDateTimeRangesAreFilled_ShouldReturnUpdatedEntityWithProperDateTimeRanges()
+    {
+        var dto = WorkshopCreateUpdateDtoGenerator.Generate();
+        dto.InstitutionHierarchyId = Guid.NewGuid();
+        dto.WorkshopType = WorkshopType.CreativeUnion;
+        dto.Teachers = TeachersGenerator.Generate(2).ToDto();
+        dto.DateTimeRanges = [
+            new() { StartTime = TimeSpan.Parse("18:00"), EndTime = TimeSpan.Parse("19:45"), Workdays = [DaysBitMask.Monday, DaysBitMask.Tuesday] },
+            new() { StartTime = TimeSpan.Parse("18:30"), EndTime = TimeSpan.Parse("20:15"), Workdays = [DaysBitMask.Wednesday, DaysBitMask.Thursday] },
+            new() { StartTime = TimeSpan.Parse("19:00"), EndTime = TimeSpan.Parse("20:45"), Workdays = [DaysBitMask.Friday] },
+            new() { StartTime = TimeSpan.Parse("14:15"), EndTime = TimeSpan.Parse("16:45"), Workdays = [DaysBitMask.Saturday, DaysBitMask.Sunday] },
+            ];
+        var workshop = dto.SetToModel(WorkshopGenerator.Generate());
+        workshop.Teachers = TeachersGenerator.Generate(2);
+        workshop.Applications = [];
+        workshop.DateTimeRanges = [
+            new() { Id = 1, StartTime = TimeSpan.Parse("18:00"), EndTime = TimeSpan.Parse("19:45"), Workdays = new List<DaysBitMask>{DaysBitMask.Monday, DaysBitMask.Tuesday }.ToDaysBitMask() },
+            new() { Id = 2, StartTime = TimeSpan.Parse("18:30"), EndTime = TimeSpan.Parse("20:30"), Workdays = new List<DaysBitMask>{DaysBitMask.Wednesday, DaysBitMask.Friday}.ToDaysBitMask() },
+            new() { Id = 3, StartTime = TimeSpan.Parse("14:15"), EndTime = TimeSpan.Parse("16:45"), Workdays = new List<DaysBitMask>{DaysBitMask.Saturday}.ToDaysBitMask() }
+            ];
+
+        applicationRepository.Setup(x => x.CountTakenSeatsForWorkshops(It.IsAny<List<Guid>>())).ReturnsAsync(new List<WorkshopTakenSeats>());
+        workshopRepository.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+            .Returns((Func<Task<Workshop>> f) => f.Invoke());
+
+        workshopRepository.Setup(r => r.GetWithNavigations(It.IsAny<Guid>(), false))
+            .ReturnsAsync(workshop);
+
+        // Act
+        var result = await workshopService.Update(dto).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.DateTimeRanges.Count.Should().Be(4);
+        result.DateTimeRanges[0].Id.Should().Be(1);
+        result.DateTimeRanges[1].Id.Should().Be(0);
+        result.DateTimeRanges[2].Id.Should().Be(0);
+        result.DateTimeRanges[3].Id.Should().Be(0);
+    }
+
+    [Test]
     [TestCase(5U, uint.MaxValue, 5, WorkshopStatus.Closed, WorkshopStatus.Open)]
     [TestCase(5U, 5U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
     [TestCase(5U, 3U, 5, WorkshopStatus.Open, WorkshopStatus.Closed)]
@@ -1279,7 +1320,7 @@ public class WorkshopServiceTests
     }
 
     [Test]
-    public async Task UpdateV2_WhenInstitutionTitleIsMinSportAndDateTimeRangesAreFilled_ShouldSetSectionAndChampionPath()
+    public async Task UpdateV2_WhenDtoIsValidAndDateTimeRangesAreFilled_ShouldReturnUpdatedEntityWithProperDateTimeRanges()
     {
         // Arrange
         var dto = WorkshopV2DtoGenerator.Generate();
