@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 
@@ -52,7 +53,7 @@ public static class CompetitiveEventDtoExtensions
             ScheduledStartTime = model.ScheduledStartTime,
             ScheduledEndTime = model.ScheduledEndTime,
             NumberOfSeats = model.NumberOfSeats,
-            CompetitiveEventAccountingTypeId = model.CompetitiveEventAccountingTypeId,
+            CompetitiveEventAccountingTypeId = (CompetitiveEventAccountingTypes)model.CompetitiveEventAccountingTypeId,
             DescriptionOfTheEnrollmentProcedure = model.DescriptionOfTheEnrollmentProcedure,
             OrganizerOfTheEventId = model.OrganizerOfTheEventId,
             PlannedFormatOfClasses = model.PlannedFormatOfClasses,

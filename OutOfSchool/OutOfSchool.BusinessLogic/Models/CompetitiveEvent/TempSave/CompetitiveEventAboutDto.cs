@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Validators;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
@@ -51,7 +52,17 @@ public class CompetitiveEventAboutDto : IValidatableObject
     public DateTimeOffset? RegistrationEndTime { get; set; }
 
     [Required]
-    public int CompetitiveEventAccountingTypeId { get; set; }
+    [JsonIgnore]
+    [EnumDataType(typeof(CompetitiveEventAccountingTypes), ErrorMessage = Constants.EnumErrorMessage)]
+    public CompetitiveEventAccountingTypes CompetitiveEventAccountingTypeId { get; set; }
+
+    [JsonPropertyName("competitiveEventAccountingTypeId")]
+    [BindNever]
+    public int CompetitiveEventAccountingTypeIdAsInt
+    {
+        get => (int)CompetitiveEventAccountingTypeId;
+        set => CompetitiveEventAccountingTypeId = (CompetitiveEventAccountingTypes)value;
+    }
 
     [Required]
     public uint NumberOfSeats { get; set; } = uint.MaxValue;

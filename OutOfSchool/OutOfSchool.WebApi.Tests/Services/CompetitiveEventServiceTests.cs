@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Services;
@@ -132,7 +133,7 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
         };
         // Act
         var countBeforeCreating = await repo.Count().ConfigureAwait(false);
@@ -175,7 +176,7 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
         };
 
         // Act and Assert
@@ -198,7 +199,7 @@ public class CompetitiveEventServiceTests
             ScheduledEndTime = DateTime.UtcNow,
             NumberOfSeats = 10,
             OrganizerOfTheEventId = Guid.NewGuid(),
-            CompetitiveEventAccountingTypeId = 1,
+            CompetitiveEventAccountingTypeId = CompetitiveEventAccountingTypes.EducationalProject,
         };
 
         // Act

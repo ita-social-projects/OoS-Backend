@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bogus;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
 using OutOfSchool.BusinessLogic.Models.CompetitiveEvent.V2;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
@@ -29,7 +30,7 @@ public static class CompetitiveEventV2DtoGenerator
         .RuleFor(x => x.ScheduledStartTime, f => f.Date.FutureOffset(1))
         .RuleFor(x => x.ScheduledEndTime, f => f.Date.FutureOffset(2))
         .RuleFor(x => x.NumberOfSeats, f => f.Random.UInt(1, 100))
-        .RuleFor(x => x.CompetitiveEventAccountingTypeId, f => f.Random.Int(1, 10))
+        .RuleFor(x => x.CompetitiveEventAccountingTypeId, f => (CompetitiveEventAccountingTypes)f.Random.Int(1, 4))
         .RuleFor(x => x.OrganizerOfTheEventId, f => f.Random.Guid())
         .RuleFor(x => x.MinimumAge, f => f.Random.Int(5, 18))
         .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
