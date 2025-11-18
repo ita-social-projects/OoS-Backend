@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
@@ -34,7 +33,7 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Required(ErrorMessage = "Property IsPaid is required")]
     public bool IsPaid { get; set; } = false;
 
-    [Column(TypeName = "decimal(18,2)")]
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     public decimal? Price { get; set; } = default;
