@@ -106,6 +106,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public bool IsPaid { get; set; } = false;
 
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
