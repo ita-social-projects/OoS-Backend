@@ -3,6 +3,7 @@ using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -43,9 +44,9 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 
     public bool AreThereBenefits { get; set; } = default;
 
-    [MinLength(Constants.MinPreferentialTermsOfParticipationLength)]
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "PreferentialTermsOfParticipation field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string PreferentialTermsOfParticipation { get; set; }

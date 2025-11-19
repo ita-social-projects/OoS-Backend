@@ -8,6 +8,7 @@ using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -65,9 +66,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool CompetitiveSelection { get; set; }
 
-    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
-    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
+    [RequiredIfMinLength(nameof(CompetitiveSelection), true, Constants.MinCompetitiveSelectionDescriptionLength, ErrorMessage = "CompetitiveSelectionDescription must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(CompetitiveSelection), true, Constants.MaxCompetitiveSelectionDescriptionLength, ErrorMessage = "CompetitiveSelectionDescription must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
@@ -132,9 +133,9 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsChampionPath { get; set; } = false;
 
-    [MinLength(Constants.MinPreferentialTermsOfParticipationLength)]
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "PreferentialTermsOfParticipation field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string PreferentialTermsOfParticipation { get; set; }

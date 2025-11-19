@@ -6,6 +6,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums.Workshop;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
 
@@ -34,12 +35,12 @@ public class WorkshopDescriptionDto : WorkshopRequiredPropertiesDto
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
 
-    [Required(ErrorMessage = "Property CompetitiveSelection is required")]
+    [Required]
     public bool CompetitiveSelection { get; set; }
 
-    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
-    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
+    [RequiredIfMinLength(nameof(CompetitiveSelection), true, Constants.MinCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(CompetitiveSelection), true, Constants.MaxCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
