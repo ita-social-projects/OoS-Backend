@@ -270,7 +270,7 @@ public class RequiredIfMinAndMaxLengthAttributesTests
         var boolPropertyValue = true;
         string dependentPropertyValue = string.Empty;
         var maxLength = 5;
-        var attribute = new RequiredIfMinLengthAttribute("IncorrectBoolPropertyName", boolPropertyValue, maxLength);
+        var attribute = new RequiredIfMaxLengthAttribute("IncorrectBoolPropertyName", boolPropertyValue, maxLength);
         var model = new TestModel { BoolProperty = boolPropertyValue, DependentProperty = dependentPropertyValue };
         var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
 
