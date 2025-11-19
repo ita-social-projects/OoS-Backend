@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using NUnit.Framework;
 using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
@@ -124,6 +125,44 @@ public class RequiredIfMinAndMaxLengthAttributesTests
         Assert.AreEqual("Property IncorrectBoolPropertyName not found.", result.ErrorMessage);
     }
 
+    [Test]
+    public void RequiredIfMinLengthAttribute_WhenBoolPropertyIsTrueAndCollectionIsTooShort_ReturnsValidationError()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        var dependentPropertyValue = new List<string> { "Some Value1", "Some Value2", "Some Value3" };
+        var minLength = 15;
+        var attribute = new RequiredIfMinLengthAttribute("BoolProperty", boolPropertyValue, minLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, CollectionDependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual($"The collection must contain at least {minLength} items when BoolProperty = {boolPropertyValue}.", result.ErrorMessage);
+    }
+
+    [Test]
+    public void RequiredIfMinLengthAttribute_WhenBoolPropertyIsTrueAndCollectionIsValid_ReturnsSuccess()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        var dependentPropertyValue = new List<string> { "Some Value1", "Some Value2", "Some Value3" };
+        var minLength = 2;
+        var attribute = new RequiredIfMinLengthAttribute("BoolProperty", boolPropertyValue, minLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, CollectionDependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
     #endregion
 
     #region RequiredIfMaxLengthAttribute
@@ -244,11 +283,50 @@ public class RequiredIfMinAndMaxLengthAttributesTests
         Assert.AreEqual("Property IncorrectBoolPropertyName not found.", result.ErrorMessage);
     }
 
+    [Test]
+    public void RequiredIfMaxLengthAttribute_WhenBoolPropertyIsTrueAndCollectionIsTooLarge_ReturnsValidationError()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        var dependentPropertyValue = new List<string> { "Some Value1", "Some Value2", "Some Value3" };
+        var maxLength = 2;
+        var attribute = new RequiredIfMaxLengthAttribute("BoolProperty", boolPropertyValue, maxLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, CollectionDependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual($"The collection must not contain greater than {maxLength} items when BoolProperty = {boolPropertyValue}.", result.ErrorMessage);
+    }
+
+    [Test]
+    public void RequiredIfMaxLengthAttribute_WhenBoolPropertyIsTrueAndCollectionIsValid_ReturnsSuccess()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        var dependentPropertyValue = new List<string> { "Some Value1", "Some Value2", "Some Value3" };
+        var maxLength = 5;
+        var attribute = new RequiredIfMaxLengthAttribute("BoolProperty", boolPropertyValue, maxLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, CollectionDependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.AreEqual(ValidationResult.Success, result);
+    }
+
     #endregion
 
     public class TestModel
     {
         public bool BoolProperty { get; set; }
         public string DependentProperty { get; set; }
+        public List<string> CollectionDependentProperty { get; set; }
     }
 }
