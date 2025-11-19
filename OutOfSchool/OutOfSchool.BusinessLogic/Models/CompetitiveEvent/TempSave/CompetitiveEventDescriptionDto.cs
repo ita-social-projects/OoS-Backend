@@ -6,6 +6,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent.TempSave;
 
@@ -34,9 +35,9 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 
     public bool? CompetitiveSelection { get; set; }
 
-    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
-    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
+    [RequiredIfMinLength(nameof(CompetitiveSelection), true, Constants.MinCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(CompetitiveSelection), true, Constants.MaxCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
@@ -62,9 +63,9 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 
     public bool? AreThereBenefits { get; set; }
 
-    [MinLength(Constants.MinBenefitsLength)]
-    [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinBenefitsLength, ErrorMessage = "Benefits must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxBenefitsLength, ErrorMessage = "Benefits must not contain greater than 2000 letters.")]
     [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Benefits field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Benefits { get; set; }
