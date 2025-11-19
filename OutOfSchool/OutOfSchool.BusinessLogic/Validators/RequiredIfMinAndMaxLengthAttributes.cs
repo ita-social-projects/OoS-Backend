@@ -72,7 +72,7 @@ public class RequiredIfMinAndMaxLengthAttributes
                     null => new ValidationResult(ErrorMessage ?? $"This field is required when {otherProperty} = {requiredValue}."),
                     string str when string.IsNullOrWhiteSpace(str) => new ValidationResult(ErrorMessage ?? $"This field is required when {otherProperty} = {requiredValue}."),
                     string str when str.Length > maxLength => new ValidationResult(ErrorMessage ?? $"The field must not be greater than {maxLength} characters long when {otherProperty} = {requiredValue}."),
-                    ICollection collection when collection.Count < maxLength => new ValidationResult(ErrorMessage ?? $"The collection must not contain greater than {maxLength} items when {otherProperty} = {requiredValue}."),
+                    ICollection collection when collection.Count > maxLength => new ValidationResult(ErrorMessage ?? $"The collection must not contain greater than {maxLength} items when {otherProperty} = {requiredValue}."),
                     _ => ValidationResult.Success
                 };
 

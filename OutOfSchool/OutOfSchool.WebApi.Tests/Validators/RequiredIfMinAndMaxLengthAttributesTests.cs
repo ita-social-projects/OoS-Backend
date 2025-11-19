@@ -104,6 +104,26 @@ public class RequiredIfMinAndMaxLengthAttributesTests
         Assert.AreEqual(ValidationResult.Success, result);
     }
 
+    [Test]
+    public void RequiredIfMinLengthAttribute_WhenPropertyIsNotFound_ReturnsValidationError()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        string dependentPropertyValue = string.Empty;
+        var minLength = 5;
+        var attribute = new RequiredIfMinLengthAttribute("IncorrectBoolPropertyName", boolPropertyValue, minLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, DependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual("Property IncorrectBoolPropertyName not found.", result.ErrorMessage);
+    }
+
     #endregion
 
     #region RequiredIfMaxLengthAttribute
@@ -202,6 +222,26 @@ public class RequiredIfMinAndMaxLengthAttributesTests
 
         // Assert
         Assert.AreEqual(ValidationResult.Success, result);
+    }
+
+    [Test]
+    public void RequiredIfMaxLengthAttribute_WhenPropertyIsNotFound_ReturnsValidationError()
+    {
+        // Arrange
+        var boolPropertyValue = true;
+        string dependentPropertyValue = string.Empty;
+        var maxLength = 5;
+        var attribute = new RequiredIfMinLengthAttribute("IncorrectBoolPropertyName", boolPropertyValue, maxLength);
+        var model = new TestModel { BoolProperty = boolPropertyValue, DependentProperty = dependentPropertyValue };
+        var validationContext = new ValidationContext(model, serviceProvider: null, items: null);
+
+        // Act
+        var result = attribute.GetValidationResult(dependentPropertyValue, validationContext);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<ValidationResult>(result);
+        Assert.AreEqual("Property IncorrectBoolPropertyName not found.", result.ErrorMessage);
     }
 
     #endregion
