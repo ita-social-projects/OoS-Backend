@@ -651,6 +651,7 @@ public class WorkshopDraftServiceTests
         var workshop = WorkshopGenerator.Generate().WithProvider().WithTeachers();
         var workshopV2Dto = workshop.ToV2Dto();
         var workshopDraft = workshopV2Dto.ToDraft();
+        workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
 
         workshopDraftRepoMoq.Setup(x => x.GetById(It.IsAny<Guid>()))
             .ReturnsAsync(workshopDraft).Verifiable(Times.Once);
