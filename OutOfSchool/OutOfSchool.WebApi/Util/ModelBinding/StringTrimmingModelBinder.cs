@@ -29,7 +29,6 @@ public class StringTrimmingModelBinder : IModelBinder
         }
         
         bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
-        bindingContext.ModelState.MarkFieldValid(bindingContext.ModelName);
         bindingContext.Result = ModelBindingResult.Success(value.Trim());
         return Task.CompletedTask;
     }

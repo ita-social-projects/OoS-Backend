@@ -68,7 +68,7 @@ public class StringTrimmingModelBinderTests
         // Assert
         Assert.That(_bindingContext.Result.IsModelSet, Is.True);
         Assert.That(_bindingContext.Result.Model, Is.EqualTo(""));
-        Assert.That(_modelState.IsValid, Is.True);
+        Assert.That(_modelState.ValidationState, Is.EqualTo(ModelValidationState.Unvalidated));
     }
 
     [Test]
@@ -96,7 +96,7 @@ public class StringTrimmingModelBinderTests
         // Assert
         Assert.That(_bindingContext.Result.IsModelSet, Is.True);
         Assert.That(_bindingContext.Result.Model, Is.EqualTo(""));
-        Assert.That(_modelState.IsValid, Is.True);
+        Assert.That(_modelState.ValidationState, Is.EqualTo(ModelValidationState.Unvalidated));
     }
 
     [Test]
@@ -115,7 +115,7 @@ public class StringTrimmingModelBinderTests
         var result = _bindingContext.Result.Model as string;
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Is.EqualTo(expectedValue));
-        Assert.That(_modelState.IsValid, Is.True);
+        Assert.That(_modelState.ValidationState, Is.EqualTo(ModelValidationState.Unvalidated));
     }
 
     private class SimpleValueProvider : IValueProvider
