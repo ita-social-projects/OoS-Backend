@@ -7,6 +7,8 @@ namespace OutOfSchool.WebApi.Util.ModelBinding;
 /// </summary>
 public class StringTrimmingModelBinderProvider : IModelBinderProvider
 {
+    private static readonly StringTrimmingModelBinder Binder = new();
+
     public IModelBinder GetBinder(ModelBinderProviderContext context)
     {
         if (context?.Metadata?.ModelType == null)
@@ -16,7 +18,7 @@ public class StringTrimmingModelBinderProvider : IModelBinderProvider
 
         if (modelType == typeof(string) && context.BindingInfo?.BindingSource != BindingSource.Body)
         {
-            return new StringTrimmingModelBinder();
+            return Binder;
         }
 
         return null;

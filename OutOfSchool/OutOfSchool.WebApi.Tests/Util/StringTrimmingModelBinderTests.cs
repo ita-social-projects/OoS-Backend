@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using NUnit.Framework;
-using OutOfSchool.WebApi.Util.ModelBinding;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Primitives;
+using NUnit.Framework;
+using OutOfSchool.WebApi.Util.ModelBinding;
 
 namespace OutOfSchool.WebApi.Tests.Util;
 
@@ -42,7 +43,7 @@ public class StringTrimmingModelBinderTests
     }
 
     [Test]
-    public async Task BindModelAsync_WithNullValue_ReturnsNullModel()
+    public async Task BindModelAsync_WithNullValue_PreservesDefaultValue()
     {
         // Arrange
         _valueProvider.SetValue("testModel", null);
@@ -51,14 +52,12 @@ public class StringTrimmingModelBinderTests
         await _binder.BindModelAsync(_bindingContext);
 
         // Assert
-        Assert.That(_bindingContext.Result.IsModelSet, Is.True);
-        var result = _bindingContext.Result.Model as string;
-        Assert.That(result, Is.Null);
+        Assert.That(_bindingContext.Result.IsModelSet, Is.False);
         Assert.That(_modelState.IsValid, Is.True);
     }
 
     [Test]
-    public async Task BindModelAsync_WithEmptyStringValue_ReturnsNullModel()
+    public async Task BindModelAsync_WithEmptyStringValue_BindsEmptyString()
     {
         // Arrange
         _valueProvider.SetValue("testModel", "");
@@ -68,9 +67,36 @@ public class StringTrimmingModelBinderTests
 
         // Assert
         Assert.That(_bindingContext.Result.IsModelSet, Is.True);
-        var result = _bindingContext.Result.Model as string;
-        Assert.That(result, Is.Null);
-        Assert.That (_modelState.IsValid, Is.True);
+        Assert.That(_bindingContext.Result.Model, Is.EqualTo(""));
+        Assert.That(_modelState.IsValid, Is.True);
+    }
+
+    [Test]
+    public async Task BindModelAsync_WithNoValue_PreservesDefaultValue()
+    {
+        // Arrange - no value set in provider
+
+        // Act
+        await _binder.BindModelAsync(_bindingContext);
+
+        // Assert
+        Assert.That(_bindingContext.Result.IsModelSet, Is.False);
+        Assert.That(_modelState.IsValid, Is.True);
+    }
+
+    [Test]
+    public async Task BindModelAsync_WithWhitespaceOnlyString_BindsEmptyString()
+    {
+        // Arrange
+        _valueProvider.SetValue("testModel", "   ");
+
+        // Act
+        await _binder.BindModelAsync(_bindingContext);
+
+        // Assert
+        Assert.That(_bindingContext.Result.IsModelSet, Is.True);
+        Assert.That(_bindingContext.Result.Model, Is.EqualTo(""));
+        Assert.That(_modelState.IsValid, Is.True);
     }
 
     [Test]
@@ -110,7 +136,7 @@ public class StringTrimmingModelBinderTests
         {
             if (_values.TryGetValue(key, out var value))
             {
-                return new ValueProviderResult(value);
+                return new ValueProviderResult(value != null ? new StringValues([value]) : StringValues.Empty);
             }
 
             return ValueProviderResult.None;

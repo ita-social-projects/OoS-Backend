@@ -16,17 +16,20 @@ public class StringTrimmingModelBinder : IModelBinder
         
         if (valueProviderResult == ValueProviderResult.None)
         {
-            bindingContext.Result = ModelBindingResult.Success(null);
+            // No value was provided -> keep existing/default property values.
             return Task.CompletedTask;
         }
 
         var value = valueProviderResult.FirstValue;
-        if (string.IsNullOrEmpty(value))
+
+        if (value is null)
         {
-            bindingContext.Result = ModelBindingResult.Success(null);
+            // Value is null -> keep existing/default property values.
             return Task.CompletedTask;
         }
-
+        
+        bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
+        bindingContext.ModelState.MarkFieldValid(bindingContext.ModelName);
         bindingContext.Result = ModelBindingResult.Success(value.Trim());
         return Task.CompletedTask;
     }

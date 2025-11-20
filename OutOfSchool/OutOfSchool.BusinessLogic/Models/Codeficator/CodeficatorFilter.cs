@@ -11,7 +11,7 @@ public class CodeficatorFilter
     public long ParentId { get; set; } = 0;
 
     /// <summary>
-    /// Gets or sets сategories. By default - 'MTCXK'".
+    /// Gets or sets сategories. By default - 'MTCXKB'".
     /// </summary>
     public string Categories { get; set; } = CodeficatorCategory.SearchableCategories.Name;
 }
