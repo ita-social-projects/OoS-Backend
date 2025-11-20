@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OutOfSchool.WebApi.Util.ModelBinding;
 using System;
 using System.Collections.Generic;
+using static OutOfSchool.Tests.Common.TestModelBinderHelpers;
 
 namespace OutOfSchool.WebApi.Tests.Util;
 
@@ -225,44 +225,5 @@ public class EnumCollectionModelBinderProviderTests
         Assert.That(result1, Is.Not.SameAs(result2));
         Assert.That(result1, Is.InstanceOf<EnumCollectionModelBinder<TestEnum>>());
         Assert.That(result2, Is.InstanceOf<EnumCollectionModelBinder<TestEnum>>());
-    }
-
-    // Helper methods
-    private static ModelMetadata CreateModelMetadata(Type modelType)
-    {
-        if (modelType == null)
-            return null;
-
-        var metadataProvider = new EmptyModelMetadataProvider();
-        return metadataProvider.GetMetadataForType(modelType);
-    }
-
-    private static ModelBinderProviderContext CreateContext(ModelMetadata metadata)
-    {
-        var context = new TestModelBinderProviderContext();
-        context.SetMetadata(metadata);
-        return context;
-    }
-
-    // Custom implementation of ModelBinderProviderContext for testing
-    private class TestModelBinderProviderContext : ModelBinderProviderContext
-    {
-        private ModelMetadata _metadata;
-
-        public override ModelMetadata Metadata => _metadata;
-
-        public void SetMetadata(ModelMetadata metadata)
-        {
-            _metadata = metadata;
-        }
-
-        public override BindingInfo BindingInfo => null;
-
-        public override IModelBinder CreateBinder(ModelMetadata metadata)
-        {
-            throw new NotImplementedException("Not needed for these tests");
-        }
-
-        public override IModelMetadataProvider MetadataProvider => null;
     }
 }

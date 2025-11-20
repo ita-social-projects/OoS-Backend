@@ -50,6 +50,7 @@ using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.SportsRegistryApiClient.Extensions;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Util.JsonTools;
 using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
 
@@ -243,9 +244,13 @@ public static class Startup
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
                 options.ModelBinderProviders.Insert(0, new EnumCollectionModelBinderProvider());
+                options.ModelBinderProviders.Insert(1, new StringTrimmingModelBinderProvider());
             })
             .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.Converters.Add(new StringTrimmingJsonConverter());
+            });
 
         services.AddHttpClient(configuration["Communication:ClientName"])
             .ConfigurePrimaryHttpMessageHandler(handler =>

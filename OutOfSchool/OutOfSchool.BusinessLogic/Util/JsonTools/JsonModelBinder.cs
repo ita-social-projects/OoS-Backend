@@ -1,10 +1,19 @@
 ﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.BusinessLogic.Util.JsonTools;
 
 public class JsonModelBinder : IModelBinder
 {
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public JsonModelBinder(IOptions<JsonOptions> jsonOptions)
+    {
+        _jsonOptions = jsonOptions.Value.JsonSerializerOptions;
+    }
+
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         if (bindingContext == null)
@@ -21,7 +30,7 @@ public class JsonModelBinder : IModelBinder
 
             try
             {
-                var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType);
+                var result = JsonSerializerHelper.Deserialize(valueAsString, bindingContext.ModelType, _jsonOptions);
                 
                 if (result != null)
                 {
