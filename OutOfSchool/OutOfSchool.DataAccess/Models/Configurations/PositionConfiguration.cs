@@ -45,5 +45,15 @@ public class PositionConfiguration: BusinessEntityConfiguration<Position>
 
         builder.Property(p => p.PositionType)
             .HasDefaultValue(PositionType.Employee);
+
+        builder.Property(p => p.IsPedagogicalPosition).IsRequired();
+
+        builder.Property(p => p.PositionOpenedByOrganization).IsRequired();
+
+        builder.Property(p => p.TotalRatesForPosition).IsRequired();
+
+        builder.Property(p => p.IsOffStaffPosition).IsRequired();
+
+        builder.ToTable(t => t.HasCheckConstraint("CK_Positions_SeatsAmount_NonNegative", "SeatsAmount >= 0"));
     }
 }

@@ -25,6 +25,7 @@ public class Position : BusinessEntity
     public Guid ContactId { get; set; }
 
     [Required(ErrorMessage = "SeatsAmount is required.")]
+    [Range(0, int.MaxValue, ErrorMessage = "SeatsAmount must be non-negative.")]
     public int SeatsAmount { get; set; }
 
     [Required(ErrorMessage = "FullName is required.")]
@@ -52,6 +53,18 @@ public class Position : BusinessEntity
     
     [Required]
     public PositionType PositionType { get; set; } = PositionType.Employee;
+
+    [Required(ErrorMessage = "IsPedagogicalPosition is required.")]
+    public bool IsPedagogicalPosition { get; set; }
+
+    [Required(ErrorMessage = "PositionOpenedByOrganization is required.")]
+    public Guid PositionOpenedByOrganization { get; set; }
+
+    [Required(ErrorMessage = "TotalRatesForPosition is required.")]
+    public float TotalRatesForPosition { get; set; }
+
+    [Required(ErrorMessage = "IsOffStaffPosition is required.")]
+    public bool IsOffStaffPosition { get; set; }
 
     public virtual ICollection<Official> Officials { get; set; }
 }

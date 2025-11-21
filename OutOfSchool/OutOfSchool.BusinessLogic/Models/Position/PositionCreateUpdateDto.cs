@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.BusinessLogic.Models.Position;
@@ -17,6 +19,8 @@ public class PositionCreateUpdateDto
     public string Department { get; set; }
 
     [Required]
+    [Range(0, int.MaxValue, ErrorMessage = "SeatsAmount must be non-negative.")]
+    [DefaultValue(0)]
     public int SeatsAmount { get; set; }
 
     [Required]
@@ -46,6 +50,18 @@ public class PositionCreateUpdateDto
 
     [EnumDataType(typeof(PositionType), ErrorMessage = Constants.EnumErrorMessage)]
     public PositionType PositionType { get; set; } = PositionType.Employee;
+
+    [Required]
+    public bool? IsPedagogicalPosition { get; set; }
+
+    [Required]
+    public Guid PositionOpenedByOrganization { get; set; }
+
+    [Required]
+    public float TotalRatesForPosition { get; set; }
+
+    [Required]
+    public bool? IsOffStaffPosition { get; set; }
 }
 
 public static class PermissionsForRoleDTOExtensions
@@ -66,6 +82,10 @@ public static class PermissionsForRoleDTOExtensions
             Tariff = dto.Tariff,
             ClassifierType = dto.ClassifierType,
             PositionType = dto.PositionType,
+            IsPedagogicalPosition = dto.IsPedagogicalPosition ?? false,
+            PositionOpenedByOrganization = dto.PositionOpenedByOrganization,
+            TotalRatesForPosition = dto.TotalRatesForPosition,
+            IsOffStaffPosition = dto.IsOffStaffPosition ?? false,
         };
 
     public static OutOfSchool.Services.Models.Position SetToModel(this PositionCreateUpdateDto dto, OutOfSchool.Services.Models.Position model)
@@ -83,6 +103,10 @@ public static class PermissionsForRoleDTOExtensions
         model.Tariff = dto.Tariff;
         model.ClassifierType = dto.ClassifierType;
         model.PositionType = dto.PositionType;
+        model.IsPedagogicalPosition = dto.IsPedagogicalPosition ?? false;
+        model.PositionOpenedByOrganization = dto.PositionOpenedByOrganization;
+        model.TotalRatesForPosition = dto.TotalRatesForPosition;
+        model.IsOffStaffPosition = dto.IsOffStaffPosition ?? false;
         
         return model;
     }
@@ -108,7 +132,11 @@ public static class PermissionsForRoleDTOExtensions
             IsForRuralAreas = position.IsForRuralAreas,
             IsTeachingPosition = false,
             PositionType = PositionType.Director,
-            Description = position.Description
+            Description = position.Description,
+            IsPedagogicalPosition = position.IsPedagogicalPosition,
+            PositionOpenedByOrganization = position.PositionOpenedByOrganization,
+            TotalRatesForPosition = position.TotalRatesForPosition,
+            IsOffStaffPosition = position.IsOffStaffPosition
         };
     }
 }

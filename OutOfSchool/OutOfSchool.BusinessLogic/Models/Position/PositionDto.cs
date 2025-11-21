@@ -43,6 +43,14 @@ public class PositionDto // for get method
     
     public PositionType PositionType { get; set; } = PositionType.Employee;
 
+    public bool IsPedagogicalPosition { get; set; }
+
+    public Guid PositionOpenedByOrganization { get; set; }
+
+    public float TotalRatesForPosition { get; set; }
+
+    public bool IsOffStaffPosition { get; set; }
+
     public bool IsDeleted { get; set; }
 }
 
@@ -73,6 +81,10 @@ public static class PositionDtoExtensions
             ActiveFrom = model.ActiveFrom,
             ActiveTo = model.ActiveTo,
             PositionType = model.PositionType,
+            IsPedagogicalPosition = model.IsPedagogicalPosition,
+            PositionOpenedByOrganization = model.PositionOpenedByOrganization,
+            TotalRatesForPosition = model.TotalRatesForPosition,
+            IsOffStaffPosition = model.IsOffStaffPosition,
             IsDeleted = model.IsDeleted,
         };
 
