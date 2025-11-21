@@ -19,6 +19,9 @@ public class Position : BusinessEntity
     [MaxLength(60)]
     public string Department { get; set; }
 
+    public Guid? DepartmentId { get; set; }
+    public virtual Department DepartmentNavigation { get; set; }
+
     public Guid ProviderId { get; set; }
     public virtual Provider Provider { get; set; }
 

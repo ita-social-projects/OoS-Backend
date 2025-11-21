@@ -10,6 +10,7 @@ namespace OutOfSchool.BusinessLogic.Services;
 
 public class PositionService(
     IPositionRepository positionRepository,
+    IOfficialRepository officialRepository,
     ICurrentUserService currentUserService,
     ILogger<PositionService> logger
 ) : IPositionService
@@ -17,6 +18,12 @@ public class PositionService(
     public async Task<PositionDto> CreateAsync(PositionCreateUpdateDto createDto, Guid providerId)
     {
         await currentUserService.UserHasRights(new ProviderRights(providerId), new DeputyDirectorRights(providerId));
+
+        // Validate uniqueness if DepartmentId is not null
+        if (createDto.DepartmentId.HasValue)
+        {
+            await ValidatePositionUniquenessAsync(createDto, createDto.DepartmentId.Value, null).ConfigureAwait(false);
+        }
 
         var position = createDto.ToModel();
         position.ProviderId = providerId;
@@ -95,6 +102,15 @@ public class PositionService(
             throw new KeyNotFoundException($"Position with id {positionId} not found");
         }
 
+        // Validate uniqueness if DepartmentId is not null
+        // Use the DepartmentId from updateDto if provided (for updating department), otherwise use existing
+        // This ensures we validate against the correct department (new department if changed, existing if not)
+        var departmentId = updateDto.DepartmentId ?? existingPosition.DepartmentId;
+        if (departmentId.HasValue)
+        {
+            await ValidatePositionUniquenessAsync(updateDto, departmentId.Value, positionId).ConfigureAwait(false);
+        }
+
         var updatedPosition = await positionRepository.Update(updateDto.SetToModel(existingPosition));
 
         return updatedPosition.ToDto();
@@ -113,6 +129,17 @@ public class PositionService(
         if (position.PositionType == PositionType.Director)
         {
             throw new InvalidOperationException("Cannot delete a director");
+        }
+
+        // Check for officials that reference this position
+        var hasOfficials = await officialRepository.Get(
+            whereExpression: o => o.PositionId == positionId && !o.IsDeleted)
+            .AnyAsync()
+            .ConfigureAwait(false);
+
+        if (hasOfficials)
+        {
+            throw new InvalidOperationException("Cannot delete position. There are officials assigned to this position.");
         }
 
         logger.LogInformation("Deleting position {PositionId} for provider {ProviderId}", positionId, providerId);
@@ -156,5 +183,51 @@ public class PositionService(
         }
 
         return sortExpression;
+    }
+
+    private async Task ValidatePositionUniquenessAsync(PositionCreateUpdateDto dto, Guid departmentId, Guid? excludePositionId)
+    {
+        // Build predicate to find positions with the same DepartmentId
+        var predicate = PredicateBuilder.True<Position>()
+            .And(p => p.DepartmentId == departmentId)
+            .And(p => !p.IsDeleted);
+
+        // Exclude current position if updating
+        if (excludePositionId.HasValue)
+        {
+            predicate = predicate.And(p => p.Id != excludePositionId.Value);
+        }
+
+        // Get all existing positions with the same department
+        var existingPositions = await positionRepository
+            .Get(whereExpression: predicate)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        // Check FullName uniqueness
+        if (!string.IsNullOrWhiteSpace(dto.FullName))
+        {
+            var duplicateFullName = existingPositions
+                .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.FullName) &&
+                    p.FullName.Equals(dto.FullName, StringComparison.OrdinalIgnoreCase));
+            if (duplicateFullName != null)
+            {
+                throw new InvalidOperationException(
+                    $"Position with FullName '{dto.FullName}' already exists in the same department.");
+            }
+        }
+
+        // Check ShortName uniqueness
+        if (!string.IsNullOrWhiteSpace(dto.ShortName))
+        {
+            var duplicateShortName = existingPositions
+                .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ShortName) &&
+                    p.ShortName.Equals(dto.ShortName, StringComparison.OrdinalIgnoreCase));
+            if (duplicateShortName != null)
+            {
+                throw new InvalidOperationException(
+                    $"Position with ShortName '{dto.ShortName}' already exists in the same department.");
+            }
+        }
     }
 }

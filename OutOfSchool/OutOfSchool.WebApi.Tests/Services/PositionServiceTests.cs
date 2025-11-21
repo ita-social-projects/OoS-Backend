@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class PositionServiceTests
 {
     private Mock<IPositionRepository> _mockRepository;
+    private Mock<IOfficialRepository> _mockOfficialRepository;
     private Mock<ICurrentUserService> _mockCurrentUserService;
     private Mock<ILogger<PositionService>> _mockLogger;
     private PositionService _service;
@@ -32,11 +33,13 @@ public class PositionServiceTests
     public void SetUp()
     {
         _mockRepository = new Mock<IPositionRepository>();
+        _mockOfficialRepository = new Mock<IOfficialRepository>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
         _mockLogger = new Mock<ILogger<PositionService>>();
        
         _service = new PositionService(
             _mockRepository.Object,
+            _mockOfficialRepository.Object,
             _mockCurrentUserService.Object,
             _mockLogger.Object);
     }
@@ -367,6 +370,14 @@ public class PositionServiceTests
             return mockData.AsQueryable().Where(predicate.Compile()).ToList();
         });
 
+        // Mock official repository to return no officials (allowing deletion)
+        _mockOfficialRepository.Setup(r => r.Get(
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Expression<Func<Official, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<Official, object>>, SortDirection>>()))
+            .Returns(new List<Official>().AsQueryable().BuildMock());
+
         _mockRepository.Setup(r => r.Delete(It.IsAny<Position>())).Returns(Task.CompletedTask);
 
         // Act
@@ -409,6 +420,95 @@ public class PositionServiceTests
         Assert.AreEqual($"Position with positionId {existingPosition.Id} not found or it was deleted.", exception.Message);
 
         // Verify that the Delete method was not called because the position was not found
+        _mockRepository.Verify(r => r.Delete(It.IsAny<Position>()), Times.Never);
+    }
+
+    [Test]
+    public async Task DeletePosition_WhenOfficialsExist_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var data = Positions().AsQueryable().BuildMock();
+        var existingPosition = data.First();
+
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
+        {
+            var mockData = data;
+            return mockData.AsQueryable().Where(predicate.Compile()).ToList();
+        });
+
+        // Mock official repository to return officials (preventing deletion)
+        var officials = new List<Official>
+        {
+            new Official
+            {
+                Id = Guid.NewGuid(),
+                PositionId = existingPosition.Id,
+                IndividualId = Guid.NewGuid(),
+                IsDeleted = false
+            }
+        };
+        _mockOfficialRepository.Setup(r => r.Get(
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Expression<Func<Official, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<Official, object>>, SortDirection>>()))
+            .Returns(officials.AsQueryable().BuildMock());
+
+        // Act
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await _service.DeleteAsync(existingPosition.Id, providerId);
+        });
+
+        // Assert
+        Assert.IsNotNull(exception);
+        Assert.AreEqual("Cannot delete position. There are officials assigned to this position.", exception.Message);
+
+        // Verify that the Delete method was not called because officials exist
+        _mockRepository.Verify(r => r.Delete(It.IsAny<Position>()), Times.Never);
+    }
+
+    [Test]
+    public async Task DeletePosition_WhenPositionIsDirector_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var data = Positions().AsQueryable().BuildMock();
+        var existingPosition = data.First();
+        existingPosition.PositionType = PositionType.Director;
+
+        _mockRepository.Setup(r => r.GetByFilter(
+            It.IsAny<Expression<Func<Position, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Position>, IQueryable<Position>>>()))
+        .ReturnsAsync((Expression<Func<Position, bool>> predicate, string includeProperties, Func<IQueryable<Position>, IQueryable<Position>> includeExpression) =>
+        {
+            var mockData = data;
+            return mockData.AsQueryable().Where(predicate.Compile()).ToList();
+        });
+
+        // Mock official repository to return no officials (this check happens after director check)
+        _mockOfficialRepository.Setup(r => r.Get(
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Expression<Func<Official, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<Official, object>>, SortDirection>>()))
+            .Returns(new List<Official>().AsQueryable().BuildMock());
+
+        // Act
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await _service.DeleteAsync(existingPosition.Id, providerId);
+        });
+
+        // Assert
+        Assert.IsNotNull(exception);
+        Assert.AreEqual("Cannot delete a director", exception.Message);
+
+        // Verify that the Delete method was not called because it's a director
         _mockRepository.Verify(r => r.Delete(It.IsAny<Position>()), Times.Never);
     }
     #endregion

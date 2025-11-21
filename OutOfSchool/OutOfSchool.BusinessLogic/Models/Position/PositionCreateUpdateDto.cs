@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common.Enums;
 
@@ -17,6 +16,8 @@ public class PositionCreateUpdateDto
     [Required]
     [MaxLength(60)]
     public string Department { get; set; }
+
+    public Guid? DepartmentId { get; set; }
 
     [Required]
     [Range(0, int.MaxValue, ErrorMessage = "SeatsAmount must be non-negative.")]
@@ -71,6 +72,7 @@ public static class PermissionsForRoleDTOExtensions
             Language = dto.Language,
             Description = dto.Description,
             Department = dto.Department,
+            DepartmentId = dto.DepartmentId,
             SeatsAmount = dto.SeatsAmount,
             FullName = dto.FullName,
             ShortName = dto.ShortName,
@@ -92,6 +94,7 @@ public static class PermissionsForRoleDTOExtensions
         model.Language = dto.Language;
         model.Description = dto.Description;
         model.Department = dto.Department;
+        model.DepartmentId = dto.DepartmentId;
         model.SeatsAmount = dto.SeatsAmount;
         model.FullName = dto.FullName;
         model.ShortName = dto.ShortName;
@@ -128,6 +131,7 @@ public static class PermissionsForRoleDTOExtensions
             Tariff = position.Tariff,
             PositionClassificationType = position.PositionClassificationType,
             Department = position.Department,
+            DepartmentId = position.DepartmentId,
             IsForRuralAreas = position.IsForRuralAreas,
             IsTeachingPosition = false,
             PositionType = PositionType.Director,

@@ -50,6 +50,11 @@ public class PositionController : ControllerBase
             createdPosition
             );
         }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Validation error occurred while creating position.");
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex) 
         {
             logger.LogError(ex, "Error occured while adding new position");
@@ -108,6 +113,11 @@ public class PositionController : ControllerBase
             logger.LogError(ex, "Error occured while updating position");
             return NotFound();
         }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Validation error occurred while updating position.");
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occured while updating position");
@@ -129,6 +139,11 @@ public class PositionController : ControllerBase
         {
             await positionService.DeleteAsync(positionId, providerId);
             return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Validation error occurred while deleting position.");
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {

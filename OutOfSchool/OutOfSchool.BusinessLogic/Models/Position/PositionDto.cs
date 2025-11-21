@@ -13,6 +13,8 @@ public class PositionDto // for get method
 
     public string Department { get; set; }
 
+    public Guid? DepartmentId { get; set; }
+
     public int SeatsAmount { get; set; }
 
     public string FullName { get; set; }
@@ -64,6 +66,7 @@ public static class PositionDtoExtensions
             Description = model.Description,
             IsForRuralAreas = model.IsForRuralAreas,
             Department = model.Department,
+            DepartmentId = model.DepartmentId,
             SeatsAmount = model.SeatsAmount,
             FullName = model.FullName,
             ShortName = model.ShortName,

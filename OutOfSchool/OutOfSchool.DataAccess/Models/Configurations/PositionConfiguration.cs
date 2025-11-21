@@ -15,6 +15,13 @@ public class PositionConfiguration: BusinessEntityConfiguration<Position>
         builder.HasOne(p => p.Provider)
             .WithMany(pr => pr.Positions)
             .HasForeignKey(p => p.ProviderId);
+
+        builder.HasOne(p => p.DepartmentNavigation)
+            .WithMany()
+            .HasForeignKey(p => p.DepartmentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Property(p => p.DepartmentId).HasColumnType("UUID");
         
         builder.Property(p => p.Language).HasMaxLength(30);
         
@@ -39,14 +46,18 @@ public class PositionConfiguration: BusinessEntityConfiguration<Position>
         
         builder.Property(p => p.Tariff).IsRequired();
         
-        builder.Property(p => p.PositionClassificationType).IsRequired();
+        builder.Property(p => p.PositionClassificationType)
+            .IsRequired()
+            .HasColumnType("UUID");
 
         builder.Property(p => p.PositionType)
             .HasDefaultValue(PositionType.Employee);
 
         builder.Property(p => p.IsPedagogicalPosition).IsRequired();
 
-        builder.Property(p => p.PositionOpenedByOrganization).IsRequired();
+        builder.Property(p => p.PositionOpenedByOrganization)
+            .IsRequired()
+            .HasColumnType("UUID");
 
         builder.Property(p => p.TotalRatesForPosition).IsRequired();
 
