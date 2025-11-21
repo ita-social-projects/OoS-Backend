@@ -35,13 +35,11 @@ public class PositionConfiguration: BusinessEntityConfiguration<Position>
             .IsRequired()
             .HasMaxLength(Constants.NameMaxLength);
         
-        builder.Property(p => p.Rate).IsRequired();
+        builder.Property(p => p.PositionRate).IsRequired();
         
         builder.Property(p => p.Tariff).IsRequired();
         
-        builder.Property(p => p.ClassifierType)
-            .IsRequired()
-            .HasMaxLength(60);
+        builder.Property(p => p.PositionClassificationType).IsRequired();
 
         builder.Property(p => p.PositionType)
             .HasDefaultValue(PositionType.Employee);

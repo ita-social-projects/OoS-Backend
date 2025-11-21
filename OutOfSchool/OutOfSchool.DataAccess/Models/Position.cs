@@ -41,15 +41,14 @@ public class Position : BusinessEntity
 
     public bool IsTeachingPosition { get; set; }
 
-    [Required(ErrorMessage = "Rate is required.")]
-    public float Rate { get; set; }
+    [Required(ErrorMessage = "PositionRate is required.")]
+    public float PositionRate { get; set; }
 
     [Required(ErrorMessage = "Tariff is required.")]
     public float Tariff { get; set; }
 
-    [Required(ErrorMessage = "ClassifierType is required.")]
-    [MaxLength(60)]
-    public string ClassifierType { get; set; } = string.Empty;
+    [Required(ErrorMessage = "PositionClassificationType is required.")]
+    public Guid PositionClassificationType { get; set; }
     
     [Required]
     public PositionType PositionType { get; set; } = PositionType.Employee;

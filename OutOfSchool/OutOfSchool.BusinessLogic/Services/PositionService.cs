@@ -139,8 +139,8 @@ public class PositionService(
             case string property when property.Equals(nameof(Position.FullName).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.FullName, filter.Order? SortDirection.Ascending : SortDirection.Descending); break;
 
-            case string property when property.Equals(nameof(Position.Rate).ToLower(), StringComparison.OrdinalIgnoreCase):
-                sortExpression.Add(a => a.Rate, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
+            case string property when property.Equals(nameof(Position.PositionRate).ToLower(), StringComparison.OrdinalIgnoreCase):
+                sortExpression.Add(a => a.PositionRate, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;
 
             case string property when property.Equals(nameof(Position.SeatsAmount).ToLower(), StringComparison.OrdinalIgnoreCase):
                 sortExpression.Add(a => a.SeatsAmount, filter.Order ? SortDirection.Ascending : SortDirection.Descending); break;

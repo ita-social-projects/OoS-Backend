@@ -39,14 +39,13 @@ public class PositionCreateUpdateDto
     public bool IsForRuralAreas { get; set; }
 
     [Required]
-    public float Rate { get; set; }
+    public float PositionRate { get; set; }
 
     [Required]
     public float Tariff { get; set; }
 
     [Required]
-    [MaxLength(60)]
-    public string ClassifierType { get; set; }
+    public Guid PositionClassificationType { get; set; }
 
     [EnumDataType(typeof(PositionType), ErrorMessage = Constants.EnumErrorMessage)]
     public PositionType PositionType { get; set; } = PositionType.Employee;
@@ -78,9 +77,9 @@ public static class PermissionsForRoleDTOExtensions
             GenitiveName = dto.GenitiveName,
             IsTeachingPosition = dto.IsTeachingPosition,
             IsForRuralAreas = dto.IsForRuralAreas,
-            Rate = dto.Rate,
+            PositionRate = dto.PositionRate,
             Tariff = dto.Tariff,
-            ClassifierType = dto.ClassifierType,
+            PositionClassificationType = dto.PositionClassificationType,
             PositionType = dto.PositionType,
             IsPedagogicalPosition = dto.IsPedagogicalPosition ?? false,
             PositionOpenedByOrganization = dto.PositionOpenedByOrganization,
@@ -99,9 +98,9 @@ public static class PermissionsForRoleDTOExtensions
         model.GenitiveName = dto.GenitiveName;
         model.IsTeachingPosition = dto.IsTeachingPosition;
         model.IsForRuralAreas = dto.IsForRuralAreas;
-        model.Rate = dto.Rate;
+        model.PositionRate = dto.PositionRate;
         model.Tariff = dto.Tariff;
-        model.ClassifierType = dto.ClassifierType;
+        model.PositionClassificationType = dto.PositionClassificationType;
         model.PositionType = dto.PositionType;
         model.IsPedagogicalPosition = dto.IsPedagogicalPosition ?? false;
         model.PositionOpenedByOrganization = dto.PositionOpenedByOrganization;
@@ -125,9 +124,9 @@ public static class PermissionsForRoleDTOExtensions
             GenitiveName = "Директору",
             SeatsAmount = position.SeatsAmount,
             Language = position.Language,
-            Rate = position.Rate,
+            PositionRate = position.PositionRate,
             Tariff = position.Tariff,
-            ClassifierType = position.ClassifierType,
+            PositionClassificationType = position.PositionClassificationType,
             Department = position.Department,
             IsForRuralAreas = position.IsForRuralAreas,
             IsTeachingPosition = false,

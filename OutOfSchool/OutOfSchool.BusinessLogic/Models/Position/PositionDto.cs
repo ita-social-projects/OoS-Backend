@@ -23,11 +23,11 @@ public class PositionDto // for get method
 
     public bool IsTeachingPosition { get; set; }
 
-    public float Rate { get; set; }
+    public float PositionRate { get; set; }
 
     public float Tariff { get; set; }
 
-    public string ClassifierType { get; set; }
+    public Guid PositionClassificationType { get; set; }
 
     public Guid ProviderId { get; set; }
 
@@ -69,9 +69,9 @@ public static class PositionDtoExtensions
             ShortName = model.ShortName,
             GenitiveName = model.GenitiveName,
             IsTeachingPosition = model.IsTeachingPosition,
-            Rate = model.Rate,
+            PositionRate = model.PositionRate,
             Tariff = model.Tariff,
-            ClassifierType = model.ClassifierType,
+            PositionClassificationType = model.PositionClassificationType,
             ProviderId = model.ProviderId,
             ContactId = model.ContactId,
             CreatedAt = new DateTimeOffset(DateTime.SpecifyKind(model.CreatedAt, DateTimeKind.Utc)),

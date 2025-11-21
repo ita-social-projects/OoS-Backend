@@ -213,7 +213,7 @@ public class PositionServiceTests
     }
 
     [TestCase(nameof(Position.FullName))]
-    [TestCase(nameof(Position.Rate))]
+    [TestCase(nameof(Position.PositionRate))]
     [TestCase(nameof(Position.SeatsAmount))]
     [TestCase(nameof(Position.Tariff))]
     [TestCase(nameof(Position.CreatedAt))]
@@ -444,9 +444,9 @@ public class PositionServiceTests
         Assert.AreEqual(updateDto.SeatsAmount, updatedPositionDto.SeatsAmount);
         Assert.AreEqual(updateDto.GenitiveName, updatedPositionDto.GenitiveName);
         Assert.AreEqual(updateDto.IsTeachingPosition, updatedPositionDto.IsTeachingPosition);
-        Assert.AreEqual(updateDto.Rate, updatedPositionDto.Rate);
+        Assert.AreEqual(updateDto.PositionRate, updatedPositionDto.PositionRate);
         Assert.AreEqual(updateDto.Tariff, updatedPositionDto.Tariff);
-        Assert.AreEqual(updateDto.ClassifierType, updatedPositionDto.ClassifierType);
+        Assert.AreEqual(updateDto.PositionClassificationType, updatedPositionDto.PositionClassificationType);
         Assert.AreEqual(updateDto.IsForRuralAreas, updatedPositionDto.IsForRuralAreas);
 
         // Verify that the Update method was called on the repository with the correct position
@@ -521,13 +521,17 @@ public class PositionServiceTests
                 Description = "uuu",
                 IsForRuralAreas = true,
                 SeatsAmount = 20,
-                Rate = 42,
+                PositionRate = 42,
                 Tariff = 500,
-                ClassifierType = "type",
+                PositionClassificationType = Guid.NewGuid(),
                 ContactId = Guid.Empty,
                 IsDeleted = false,
                 IsTeachingPosition = true,
-                PositionType = PositionType.Employee
+                PositionType = PositionType.Employee,
+                IsPedagogicalPosition = false,
+                PositionOpenedByOrganization = Guid.NewGuid(),
+                TotalRatesForPosition = 1.0f,
+                IsOffStaffPosition = false
             },
 
             new Position ()
@@ -542,13 +546,17 @@ public class PositionServiceTests
                 Description = "uuu",
                 IsForRuralAreas = true,
                 SeatsAmount = 10,
-                Rate = 42,
+                PositionRate = 42,
                 Tariff = 600,
-                ClassifierType = "type",
+                PositionClassificationType = Guid.NewGuid(),
                 ContactId = Guid.Empty,
                 IsDeleted = false,
                 IsTeachingPosition = true,
-                PositionType = PositionType.Employee
+                PositionType = PositionType.Employee,
+                IsPedagogicalPosition = false,
+                PositionOpenedByOrganization = Guid.NewGuid(),
+                TotalRatesForPosition = 1.0f,
+                IsOffStaffPosition = false
             }
         };
     }
@@ -564,11 +572,15 @@ public class PositionServiceTests
             SeatsAmount = 20,
             GenitiveName = "ffff",
             IsTeachingPosition = true,
-            Rate = 20,
+            PositionRate = 20,
             Tariff = 10,
-            ClassifierType = "ffff",
+            PositionClassificationType = Guid.NewGuid(),
             IsForRuralAreas = false,
-            PositionType = PositionType.Employee
+            PositionType = PositionType.Employee,
+            IsPedagogicalPosition = false,
+            PositionOpenedByOrganization = Guid.NewGuid(),
+            TotalRatesForPosition = 1.0f,
+            IsOffStaffPosition = false
         };
     }
 }

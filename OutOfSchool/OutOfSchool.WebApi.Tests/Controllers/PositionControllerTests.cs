@@ -268,11 +268,15 @@ public class PositionControllerTests
             SeatsAmount = oldPosition.SeatsAmount,
             GenitiveName = oldPosition.GenitiveName,
             IsTeachingPosition = oldPosition.IsTeachingPosition,
-            Rate = oldPosition.Rate,
+            PositionRate = oldPosition.PositionRate,
             Tariff = oldPosition.Tariff,
-            ClassifierType = oldPosition.ClassifierType,
+            PositionClassificationType = oldPosition.PositionClassificationType,
             IsForRuralAreas = oldPosition.IsForRuralAreas,
             PositionType = PositionType.Employee,
+            IsPedagogicalPosition = oldPosition.IsPedagogicalPosition,
+            PositionOpenedByOrganization = oldPosition.PositionOpenedByOrganization,
+            TotalRatesForPosition = oldPosition.TotalRatesForPosition,
+            IsOffStaffPosition = oldPosition.IsOffStaffPosition,
         };
     }
 
@@ -288,15 +292,20 @@ public class PositionControllerTests
             SeatsAmount = positionCreateDto.SeatsAmount,
             GenitiveName = positionCreateDto.GenitiveName,
             IsTeachingPosition = positionCreateDto.IsTeachingPosition,
-            Rate = positionCreateDto.Rate,
+            PositionRate = positionCreateDto.PositionRate,
             Tariff = positionCreateDto.Tariff,
-            ClassifierType = positionCreateDto.ClassifierType,
+            PositionClassificationType = positionCreateDto.PositionClassificationType,
             IsForRuralAreas = positionCreateDto.IsForRuralAreas,
             ProviderId = providerId,
             ContactId = Guid.NewGuid(),
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = null,
-            IsDeleted = false
+            IsDeleted = false,
+            IsPedagogicalPosition = positionCreateDto.IsPedagogicalPosition ?? false,
+            PositionOpenedByOrganization = positionCreateDto.PositionOpenedByOrganization,
+            TotalRatesForPosition = positionCreateDto.TotalRatesForPosition,
+            IsOffStaffPosition = positionCreateDto.IsOffStaffPosition ?? false,
+            PositionType = positionCreateDto.PositionType
         };
     }
 
@@ -313,9 +322,13 @@ public class PositionControllerTests
             GenitiveName = "Name",
             IsTeachingPosition = true,
             IsForRuralAreas = true,
-            Rate = 2.0f,
+            PositionRate = 2.0f,
             Tariff = 2.0f,
-            ClassifierType = "type",            
+            PositionClassificationType = Guid.NewGuid(),
+            IsPedagogicalPosition = false,
+            PositionOpenedByOrganization = Guid.NewGuid(),
+            TotalRatesForPosition = 1.0f,
+            IsOffStaffPosition = false
         };
     }    
 }
