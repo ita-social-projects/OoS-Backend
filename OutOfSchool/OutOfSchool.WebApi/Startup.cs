@@ -540,6 +540,8 @@ public static class Startup
 
         services.AddScoped<INestedObjectChangeLogger, NestedObjectChangeLogger>();
         services.AddScoped<ICollectionChangeLogger, CollectionChangeLogger>();
+        services.AddTransient<IDepartmentService, DepartmentService>();
+        services.AddTransient<IDepartmentRepository, DepartmentRepository>();
 
         // Register the Permission policy handlers
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

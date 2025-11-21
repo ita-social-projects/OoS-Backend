@@ -210,4 +210,15 @@ public enum Permissions : short
     [Display(GroupName = "Position", Name = "Remove", Description = "Can remove Position data")]
     PositionRemove = 163,
     #endregion
+
+    #region Department control permissions #17
+    [Display(GroupName = "Department", Name = "Read", Description = "Can read Department")]
+    DepartmentRead = 164,
+    [Display(GroupName = "Department", Name = "Edit", Description = "Can edit Department item")]
+    DepartmentEdit = 165,
+    [Display(GroupName = "Department", Name = "Add new", Description = "Can add a new Department item")]
+    DepartmentAddNew = 166,
+    [Display(GroupName = "Department", Name = "Remove", Description = "Can remove Department data")]
+    DepartmentRemove = 167,
+    #endregion
 }

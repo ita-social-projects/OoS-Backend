@@ -44,6 +44,7 @@ public static class PermissionsSeeder
         Permissions.PersonalInfo,
         Permissions.CompetitiveEventRead, Permissions.CompetitiveEventAddNew, Permissions.CompetitiveEventEdit, Permissions.CompetitiveEventRemove,
         Permissions.PositionRead, Permissions.PositionEdit, Permissions.PositionRemove, Permissions.PositionAddNew,
+        Permissions.DepartmentRead, Permissions.DepartmentEdit, Permissions.DepartmentAddNew, Permissions.DepartmentRemove,
     };
 
     private static readonly IEnumerable<Permissions> SeedEmployeePermissions = new List<Permissions>

@@ -154,6 +154,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
     public DbSet<CompetitiveEventDraft> CompetitiveEventDrafts { get; set; }
 
     public DbSet<Image<CompetitiveEventDraft>> CompetitiveEventDraftImages { get; set; }
+    public DbSet<Department> Departments { get; set; }
 
     /// <summary>
     /// Asynchronously saves all changes made in this context to the database.
@@ -237,6 +238,7 @@ public int Complete() => this.SaveChanges();
         builder.ApplyConfiguration(new ModeratorConfiguration());
         builder.ApplyConfiguration(new TechAdminConfiguration());
         builder.ApplyConfiguration(new CompetitiveEventDraftConfiguration());
+        builder.ApplyConfiguration(new DepartmentConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();
