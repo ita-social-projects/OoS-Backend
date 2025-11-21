@@ -1,6 +1,4 @@
-﻿using System;
-using global::OutOfSchool.Common.QuartzConstants;
-using OutOfSchool.BackgroundJobs.Config;
+﻿using OutOfSchool.BackgroundJobs.Config;
 using OutOfSchool.BackgroundJobs.Jobs;
 using OutOfSchool.Common.QuartzConstants;
 using Quartz;

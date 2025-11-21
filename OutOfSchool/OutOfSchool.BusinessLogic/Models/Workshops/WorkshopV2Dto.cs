@@ -11,7 +11,6 @@ using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.SportsRegistryApiClient.Models.Enums;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -106,8 +105,7 @@ public static class WorkshopV2DtoExtensions
             ParentWorkshopId = dto.ParentWorkshopId,
             Contacts = dto.Contacts?.ToModel() ?? [],
             IsChampionPath = dto.IsChampionPath,
-            NoAgeRestrictions = dto.NoAgeRestrictions
-            //MinsportSectionId = dto.MinsportSectionId
+            NoAgeRestrictions = dto.NoAgeRestrictions,
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
@@ -184,7 +182,7 @@ public static class WorkshopV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             Status = draft.WorkshopDraftContent?.WorkshopStatus ?? default,
             ProviderOwnership = draft.WorkshopDraftContent?.OwnershipType ?? default,
-            MinsportSectionId = draft.MinsportSectionId ?? default,
+            MinsportSectionId = draft.MinsportSectionId,
         };
 
     public static List<WorkshopV2Dto> ToDto(this IEnumerable<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> list)

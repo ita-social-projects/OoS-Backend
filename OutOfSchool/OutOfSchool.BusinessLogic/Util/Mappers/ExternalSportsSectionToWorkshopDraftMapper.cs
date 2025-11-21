@@ -52,9 +52,8 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         content.Price = content.IsPaid ? section.SectionPracticeCost : 0;
         content.PayRate = PayRateType.Month;
         
-        content.AvailableSeats = (uint)(section.SectionMaxStudentsAmount > MinSportMaxStudentsLimit
-            ? MinSportMaxStudentsLimit
-            : section.SectionMaxStudentsAmount);
+        var seats = Math.Clamp(section.SectionMaxStudentsAmount, 0, MinSportMaxStudentsLimit);
+        content.AvailableSeats = (uint)seats;
 
         content.Keywords = string.IsNullOrWhiteSpace(section.SectionSportKindDictName)
             ? new List<string>()

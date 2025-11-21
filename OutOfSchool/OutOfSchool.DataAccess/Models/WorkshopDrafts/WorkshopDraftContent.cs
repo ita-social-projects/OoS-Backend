@@ -93,8 +93,6 @@ public class WorkshopDraftContent :
     public Guid? ParentWorkshopId { get; set; }
 
     public List<Contacts> Contacts { get; set; }
-    
-    public bool IsChampionPath { get;set; }
-    
-   // public Guid? MinsportSectionId { get; set; }
+
+    public bool IsChampionPath { get; set; }
 }

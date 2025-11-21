@@ -7,7 +7,7 @@ using OutOfSchool.SportsRegistryApiClient.Validators;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
-public class SportsSectionBaseDto
+public class SportsSectionBaseDto: IValidatableObject
 {
     [Required(ErrorMessage = "sectionName is required.")]
     public string SectionName { get; set; } = null!;
@@ -25,7 +25,7 @@ public class SportsSectionBaseDto
     public int SectionAgeTo { get; set; }
     public bool SectionIsInShlyahProject { get; set; }
 
-    [Required(ErrorMessage = "sectionAddressRegionDictIdCode is required.")]
+    [Required(ErrorMessage = "sectionAddressLocalityDictIdCode is required.")]
     public string SectionAddressLocalityDictIdCode { get; set; } = null!;
 
     [Required(ErrorMessage = "sectionAddressStreet is required.")]

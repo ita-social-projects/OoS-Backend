@@ -298,6 +298,8 @@ public class SportSectionSyncServiceTests
         var section = BuildSection(sectionId, sportKindIdCode);
         
         SetupSectionsProviderWithSections(new List<ExternalSportsSectionDto> { section });
+        SetUpEmptyWorkshops();
+        SetUpEmptyDrafts();
 
         var sportHierarchy = BuildHierarchy(sportKindIdCode);
         hierarchyRepositoryMock

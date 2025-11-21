@@ -354,23 +354,19 @@ public class WorkshopDraftService(
 
         // TODO: Add image loading later
 
+        if (IsMinistryOfSport(institutionId))
+        {
+            await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
+        }
+
         if (workshopDraft.WorkshopId == null)
         {
-            if (IsMinistryOfSport(institutionId))
-            {
-                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
-            }
 
             var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
             createdWorkshopId = result.Workshop.Id;
         }
         else
         {
-            if (IsMinistryOfSport(institutionId))
-            {
-                await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
-            }
-
             await workshopServicesCombinerV2.Update(workshopDraft.ToDto(), true);
             createdWorkshopId = workshopDraft.WorkshopId.Value;
         }
@@ -908,8 +904,8 @@ public class WorkshopDraftService(
         if (workshopDraft == null)
         {
             throw new ArgumentException(
-                nameof(id),
-                paramName: $"There are no records in workshopDrafts table with such id - {id}.");
+                paramName: nameof(id),
+                message: $"There are no records in workshopDrafts table with such id - {id}.");
         }
 
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);

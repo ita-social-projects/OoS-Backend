@@ -1309,6 +1309,10 @@ public class WorkshopDraftServiceTests
                 It.IsAny<Dictionary<Expression<Func<WorkshopDraft, object>>, SortDirection>>()))
             .Returns(new List<WorkshopDraft>().AsQueryable().BuildMock());
 
+        transactionManagerServiceMoq
+           .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task<WorkshopV2Dto>>>()))
+           .Returns<Func<Task<WorkshopV2Dto>>>(f => f());
+
         // Act
         await service.UpdateWorkshop(workshopDto);
         registrySyncServiceMock.Verify(x => x.SyncWorkshopAsync(It.IsAny<WorkshopV2Dto>()), Times.Never);

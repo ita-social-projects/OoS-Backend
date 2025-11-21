@@ -74,7 +74,7 @@ public static class WorkshopDraftToSportSectionExtensions
 
         target.SectionPhones = phones;
         target.SectionEmail = email;
-        target.SectionRegistrationFormUrl = "https://forms.example.com/football-registration";
+        target.SectionRegistrationFormUrl = "https://forms.example.com";
         target.SectionUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url;
         target.SectionFacebookUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url;
         target.SectionInstagramUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url;
