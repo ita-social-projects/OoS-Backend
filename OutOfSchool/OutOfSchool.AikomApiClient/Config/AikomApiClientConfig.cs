@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.AikomApiClient.Config;
+namespace OutOfSchool.AikomApiClient.Config;
 
 public class AikomApiClientConfig
 {
@@ -11,6 +11,8 @@ public class AikomApiClientConfig
     public required string ClientId { get; set; }
 
     public required string ClientSecret { get; set; }
+
+    public required string GrantType { get; set; }
 
     public required string TokenEndpoint { get; set; }
 }

@@ -1,4 +1,9 @@
+using System.Net.Http.Headers;
+using System.Net.Mime;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OutOfSchool.AikomApiClient.Config;
+using OutOfSchool.AikomApiClient.Models;
 using OutOfSchool.AikomApiClient.Models.Data;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
@@ -13,6 +18,8 @@ internal class AikomProviderService : IAikomProviderService
     private readonly IAikomApiService aikomApiService;
     private readonly IReadWriteCacheService cacheService;
     private readonly ILogger<AikomProviderService> logger;
+    private readonly IHttpClientFactory httpClientFactory;
+    private readonly AikomApiClientConfig config;
 
     private const string DefaultCacheKeyPrefix = "aikom:provider:";
     private const string EdrpouKeyPart = "edrpou";
@@ -22,11 +29,15 @@ internal class AikomProviderService : IAikomProviderService
     public AikomProviderService(
         IAikomApiService aikomApiService,
         IReadWriteCacheService cacheService,
-        ILogger<AikomProviderService> logger)
+        ILogger<AikomProviderService> logger,
+        IHttpClientFactory httpClientFactory,
+        IOptions<AikomApiClientConfig> configOptions)
     {
         this.aikomApiService = aikomApiService;
         this.cacheService = cacheService;
         this.logger = logger;
+        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        config = configOptions?.Value ?? throw new ArgumentNullException(nameof(configOptions));
     }
 
     /// <inheritdoc />
@@ -201,6 +212,55 @@ internal class AikomProviderService : IAikomProviderService
         {
             logger.LogError(ex, "Error verifying director access for Provider: {ExternalProviderId}",
                 externalRegistryProviderId);
+            throw;
+        }
+    }
+
+    private async Task<string> GetAccessTokenAsync()
+    {
+        try
+        {
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
+
+            var requestBody = new List<KeyValuePair<string, string>>
+            {
+                new("client_id", config.ClientId),
+                new("client_secret", config.ClientSecret),
+                new("grant_type", config.GrantType)
+            };
+
+            using var content = new FormUrlEncodedContent(requestBody);
+            content.Headers.ContentType = new MediaTypeHeaderValue(MediaTypeNames.Application.FormUrlEncoded);
+
+            using var response = await httpClient.PostAsync(config.TokenEndpoint, content).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                logger.LogError(
+                    "Failed to get access token. Status: {StatusCode}, Response: {Response}",
+                    response.StatusCode,
+                    errorBody);
+                throw new HttpRequestException(
+                    $"Failed to get access token. Status: {response.StatusCode}, Response: {errorBody}");
+            }
+
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var tokenResponse = JsonSerializerHelper.Deserialize<TokenResponse>(responseBody);
+
+            if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
+            {
+                logger.LogError("Token response is null or access token is empty. Response: {Response}", responseBody);
+                throw new InvalidOperationException("Token response is null or access token is empty.");
+            }
+
+            return tokenResponse.AccessToken;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting access token from endpoint: {TokenEndpoint}", config.TokenEndpoint);
             throw;
         }
     }

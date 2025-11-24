@@ -25,10 +25,6 @@ public static class AikomApiClientServiceExtensions
             services.AddTransient<IAikomApiService, AikomApiService>();
             services.AddTransient<IAikomProviderService, AikomProviderService>();
         }
-        else if (environment.IsDevelopment())
-        {
-            services.AddTransient<IAikomProviderService, FakeAikomProviderService>();
-        }
         else
         {
             throw new InvalidOperationException(
