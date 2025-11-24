@@ -4,4 +4,5 @@ public class BusinessProcessKeys
 {
     public const string SearchUniversity = "searchUniversity";
     public const string GetUniversity = "getUniversity";
+    public const string GetUser = "getUser";
 }
