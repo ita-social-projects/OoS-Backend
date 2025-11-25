@@ -15,6 +15,7 @@ public class WorkshopDraftContent :
     IHasContacts, IHasHiddenFields
 {
     public bool NoAgeRestrictions { get; set; } = false;
+
     public int MinAge { get; set; }
 
     public int MaxAge { get; set; }

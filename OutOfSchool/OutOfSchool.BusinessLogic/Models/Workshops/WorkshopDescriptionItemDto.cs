@@ -1,23 +1,25 @@
-﻿using OutOfSchool.BusinessLogic.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Services.Models.WorkshopDrafts;
-using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
 public class WorkshopDescriptionItemDto
 {
-    [Required]
-    [MinLength(3)]
-    [MaxLength(100)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [Required(ErrorMessage = "Description heading is required")]
+    [MaxLength(Constants.MaxLengthForSectionNameOfWorkshopDescriptionItem)]
+    [MinLength(Constants.MinLengthForSectionNameOfWorkshopDescriptionItem)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "SectionName field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string SectionName { get; set; }
 
-    [Required]
-    [MinLength(3)]
-    [MaxLength(2000)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [Required(ErrorMessage = "Description text is required")]
+    [MaxLength(Constants.MaxLengthForDescriptionOfWorkshopDescriptionItem)]
+    [MinLength(Constants.MinLengthForDescriptionOfWorkshopDescriptionItem)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Description field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Description { get; set; }
 
     public Guid WorkshopId { get; set; }

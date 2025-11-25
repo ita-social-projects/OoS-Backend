@@ -1,9 +1,9 @@
-﻿using Microsoft.FeatureManagement;
-using Moq;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.FeatureManagement;
+using Moq;
+using NUnit.Framework;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 
 namespace OutOfSchool.WebApi.Tests.Validators;
@@ -188,7 +188,7 @@ public class ConditionalValidationAttributesTests
     }
 
     [Test]
-    public void ConditionalMinLengthAttributeIsValid_WhenEnabledFeatureAndCollecctionValueIsTooSmall_ReturnsFalse()
+    public void ConditionalMinLengthAttributeIsValid_WhenEnabledFeatureAndCollectionValueIsTooSmall_ReturnsFalse()
     {
         // Arrange
         var featureFlagName = "TestFeature";

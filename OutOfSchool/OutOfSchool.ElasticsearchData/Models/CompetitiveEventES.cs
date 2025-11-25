@@ -43,7 +43,7 @@ public class CompetitiveEventES
 
     public string VenueName { get; set; }
 
-    public string TermsOfParticipation { get; set; }
+    public string CompetitiveSelectionDescription { get; set; }
 
     public string PreferentialTermsOfParticipation { get; set; }
 
@@ -57,7 +57,9 @@ public class CompetitiveEventES
 
     public string Coverage { get; set; } //coverage title
 
-    public int Price { get; set; }
+    public bool IsPaid { get; set; }
+
+    public decimal Price { get; set; }
 
     public bool CompetitiveSelection { get; set; }
 

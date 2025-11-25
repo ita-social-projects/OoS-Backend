@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Services.Enums;
@@ -108,23 +109,21 @@ public static class DateTimeRangeDtoExtensions
     {
         var activeModels = modelList.Where(dtr => dtr.IsDeleted == false).ToList();
         var result = new List<DateTimeRange>();
+        var dtoListDict = dtoList.ToDictionary(DateTimeRangeDtoToString);
 
-        var existingDtos = dtoList.Where(dto => dto.Id > 0).ToList();
-        var newDtos = dtoList.Where(dto => dto.Id <= 0).ToList();
-
-        var existingDtoDict = existingDtos.ToDictionary(dto => dto.Id);
-
-        // Update existing models that have matching DTOs
+        // Add active models that have matching DTOs to the result
         foreach (var model in activeModels)
         {
-            if (existingDtoDict.TryGetValue(model.Id, out var dto))
+            var key = DateTimeRangeToString(model);
+            if (dtoListDict.ContainsKey(key))
             {
-                result.Add(dto.SetToModel(model));
+                result.Add(model);
+                dtoListDict.Remove(key);
             }
         }
 
-        // Add new models for all new DTOs (those with ID = 0)
-        result.AddRange(newDtos.Select(newDto => newDto.ToModel()));
+        // Add new models for all new DTOs to the result
+        result.AddRange(dtoListDict.Values.Select(dto => dto.ToModel()));
 
         return result;
     }
@@ -154,4 +153,22 @@ public static class DateTimeRangeDtoExtensions
 
     public static List<DateTimeRangeDto> ToNotDeletedDto(this IEnumerable<DateTimeRange> list)
         => list.MapNonDeletedToList(ToDto);
+
+    private static string DateTimeRangeDtoToString(DateTimeRangeDto dto)
+    {
+        var builder = new StringBuilder(dto.StartTime.ToString());
+        builder.Append(dto.EndTime.ToString());
+        builder.Append(dto.Workdays?.ToDaysBitMask().GetHashCode());
+
+        return builder.ToString();
+    }
+
+    private static string DateTimeRangeToString(DateTimeRange model)
+    {
+        var builder = new StringBuilder(model.StartTime.ToString());
+        builder.Append(model.EndTime.ToString());
+        builder.Append(model.Workdays.GetHashCode());
+
+        return builder.ToString();
+    }
 }

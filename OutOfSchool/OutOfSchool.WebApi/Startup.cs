@@ -50,6 +50,7 @@ using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.Services.Repository.WorkshopDraftRepository;
 using OutOfSchool.SportsRegistryApiClient.Extensions;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Util.JsonTools;
 using OutOfSchool.WebApi.Util.ModelBinding;
 using StackExchange.Redis;
 
@@ -243,9 +244,13 @@ public static class Startup
                         Duration = cacheProfilesConfig.PublicDurationInSeconds,
                     });
                 options.ModelBinderProviders.Insert(0, new EnumCollectionModelBinderProvider());
+                options.ModelBinderProviders.Insert(1, new StringTrimmingModelBinderProvider());
             })
             .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.Converters.Add(new StringTrimmingJsonConverter());
+            });
 
         services.AddHttpClient(configuration["Communication:ClientName"])
             .ConfigurePrimaryHttpMessageHandler(handler =>
@@ -293,7 +298,7 @@ public static class Startup
         var mariaDbVersion = configuration.GetAndValidateMariaDbVersion();
         var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
-        // registartion of thumbnail generation 
+        // registration of thumbnail generation 
         builder.Services.Configure<ThumbnailGenerationOptions>(builder.Configuration.GetSection("ThumbnailGeneration:Thumbnails"));
         builder.Services.AddTransient<IThumbnailProcessingService, ThumbnailProcessingService>();
 
@@ -426,6 +431,15 @@ public static class Startup
         
         // competitive event draft images in the external storage
         services.AddScoped<IImageDependentEntityImagesInteractionService<CompetitiveEventDraft>, ImageDependentEntityImagesInteractionService<CompetitiveEventDraft>>();
+
+        // counting references to images in external storage
+        services.AddScoped<IImageReferenceService<Workshop>, ImageReferenceService<Workshop>>();
+        services.AddScoped<IImageReferenceService<WorkshopDraft>, ImageReferenceService<WorkshopDraft>>();
+        services.AddScoped<IImageReferenceService<CompetitiveEvent>, ImageReferenceService<CompetitiveEvent>>();
+        services.AddScoped<IImageReferenceService<CompetitiveEventDraft>, ImageReferenceService<CompetitiveEventDraft>>();
+        services.AddScoped<IImageReferenceService<Provider>, ImageReferenceService<Provider>>();
+        services.AddScoped<IImageReferenceService<Teacher>, ImageReferenceService<Teacher>>();
+        services.AddScoped<IImageReferenceService<TeacherDraft>, ImageReferenceService<TeacherDraft>>();
 
         services.AddTransient<INotificationService, NotificationService>();
         services.AddTransient<IStatisticReportService, StatisticReportService>();

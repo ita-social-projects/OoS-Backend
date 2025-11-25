@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -6,6 +7,8 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Services.Enums;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,17 +18,20 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Workshop title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopTitleLength)]
     [MaxLength(Constants.MaxWorkshopTitleLength)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Title field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Workshop short title is required")]
+    [Required]
     [MinLength(Constants.MinWorkshopShortTitleLength)]
     [MaxLength(Constants.MaxWorkshopShortTitleLength)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "This field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string ShortTitle { get; set; } = string.Empty;
+
     public bool NoAgeRestrictions { get; set; } = false;
 
     [RequiredIf("NoAgeRestrictions", false, ErrorMessage = "Min age is required when there are age restrictions")]
@@ -42,30 +48,31 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsPaid { get; set; } = false;
 
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 
     [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType? PayRate { get; set; } = PayRateType.None;
 
-    [Required(ErrorMessage = "Form of learning is required")]
+    [Required]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning FormOfLearning { get; set; }
 
+    [Required]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
-    [Required(ErrorMessage = "Study period dates is required")]
     public StudyPeriodDatesDto StudyPeriodDates { get; set; }
 
-    [Required(ErrorMessage = "Available seats are required")]
+    [Required]
     public uint? AvailableSeats { get; set; } = uint.MaxValue;
 
     public bool CompetitiveSelection { get; set; }
 
-    [MinLength(3)]
-    [MaxLength(500)]
-    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "CompetitiveSelectionDescription field is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
+    [RequiredIfMinLength(nameof(CompetitiveSelection), true, Constants.MinCompetitiveSelectionDescriptionLength, ErrorMessage = "CompetitiveSelectionDescription must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(CompetitiveSelection), true, Constants.MaxCompetitiveSelectionDescriptionLength, ErrorMessage = "CompetitiveSelectionDescription must not contain greater than 2000 letters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -90,6 +97,7 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public List<long> SubDirectionIds { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [MaxLength(Constants.MaxCountOfKeywordsForWorkshop)]
     public IEnumerable<string> Keywords { get; set; } = default;
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
@@ -98,11 +106,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     [Required]
     public Guid ProviderId { get; set; }
 
-    [Required]
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
     public string ProviderTitle { get; set; } = string.Empty;
 
-    [MaxLength(Constants.MaxProviderFullTitleLength)]
     public string ProviderTitleEn { get; set; } = string.Empty;
 
     [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
@@ -119,30 +124,33 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     public bool IsInclusive { get; set; } = false;
 
-    [MinLength(3)]
-    [MaxLength(2000)]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [Required]
+    [MinLength(Constants.MinLengthOfEnrollmentProcedureDescriptionForWorkshop)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "EnrollmentProcedureDescription field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;
 
     public bool IsChampionPath { get; set; } = false;
 
-    [MinLength(3)]
-    [MaxLength(500)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must not contain greater than 2000 letters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "PreferentialTermsOfParticipation field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string PreferentialTermsOfParticipation { get; set; }
 
     [Required]
     [EnumDataType(typeof(EducationalShift), ErrorMessage = Constants.EnumErrorMessage)]
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
 
-    [Required(ErrorMessage = "Language of education is required")]
+    [Required]
     [Range(1, long.MaxValue, ErrorMessage = "LanguageOfEducationId must be a positive number")]
     public long LanguageOfEducationId { get; set; }
 
-    [Required(ErrorMessage = "Type of age composition is required")]
+    [Required]
     [EnumDataType(typeof(AgeComposition), ErrorMessage = Constants.EnumErrorMessage)]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
 
@@ -162,20 +170,42 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public virtual ICollection<WorkshopBaseDto> IncludedStudyGroups { get; set; } // Navigation property to included study groups
-    
+
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
+    [CollectionNotEmpty(ErrorMessage = "At least one contact is required")]
     public List<ContactsDto> Contacts { get; set; }
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (NoAgeRestrictions)
+        // Note: uint.MaxValue represents unlimited seats and bypasses range validation
+        if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
         {
-            MinAge = 0;
-            MaxAge = 120;
+            yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", [nameof(AvailableSeats)]);
         }
-        else if (MinAge.HasValue && MaxAge.HasValue && MinAge >= MaxAge)
+
+        foreach (var dateTimeRange in DateTimeRanges)
         {
-            yield return new ValidationResult("Min age should be less than Max age", new[] { nameof(MinAge), nameof(MaxAge) });
+            if (dateTimeRange.StartTime >= dateTimeRange.EndTime)
+            {
+                yield return new ValidationResult("The end date cannot be equal to or earlier than the start date");
+            }
+
+            if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
+            {
+                yield return new ValidationResult("Workdays are required");
+                continue;
+            }
+
+            var daysHs = new HashSet<DaysBitMask>();
+            if (!dateTimeRange.Workdays.All(daysHs.Add))
+            {
+                yield return new ValidationResult("Workdays contain duplications");
+            }
+        }
+
+        if (!NoAgeRestrictions && MinAge >= MaxAge)
+        {
+            yield return new ValidationResult("Min age should be less than Max age", [nameof(MinAge), nameof(MaxAge)]);
         }
 
         // validate Price and PayRate when IsPaid is true
@@ -183,69 +213,55 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
         {
             if (PayRate == null || PayRate == PayRateType.None)
             {
-                yield return new ValidationResult("Pay rate must be specified when the workshop is paid.", new[] { nameof(PayRate) });
+                yield return new ValidationResult("Pay rate must be specified when the workshop is paid.", [nameof(PayRate)]);
             }
 
-            if (!Price.HasValue)
+            if (!Price.HasValue || Price < 0.01M)
             {
-                yield return new ValidationResult("Price must be specified when the workshop is paid.", new[] { nameof(Price) });
+                yield return new ValidationResult("Price must be specified and must be in the range from 0.01 to 100000.00 when the workshop is paid.", [nameof(Price)]);
             }
-            else
-            {
-                if (Price < 1.00m)
-                {
-                    yield return new ValidationResult("Price must be at least 1.00 if the workshop is paid.", new[] { nameof(Price) });
-                }
-
-                if (Price > 100000.00m)
-                {
-                    yield return new ValidationResult("Price must be less than or equal to 100000.00.", new[] { nameof(Price) });
-                }
-            }
-        }
-        else 
-        { 
-            PayRate = PayRateType.None;
         }
 
         if (!Keywords.IsNullOrEmpty())
         {
             var keywordsList = Keywords.ToList();
+            var cleanedKeywords = new List<string>(keywordsList.Count);
+            int totalLength = 0;
 
-            if (keywordsList.Count > 5)
+            // Check for null/whitespace, trim, check single length, and calculate total length
+            foreach (var keyword in keywordsList)
             {
-                yield return new ValidationResult("Keywords list should contain no more than 5 words", new[] { nameof(Keywords) });
+                // Check 1: Empty or whitespace
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    yield return new ValidationResult("Keyword cannot be empty or whitespace.", [nameof(Keywords)]);
+                    continue;
+                }
+
+                string trimmedKeyword = keyword.Trim();
+                cleanedKeywords.Add(trimmedKeyword);
+                totalLength += trimmedKeyword.Length;
+
+                // Check 2: Single keyword max length
+                if (trimmedKeyword.Length > Constants.MaxLengthOfOneKeyword)
+                {
+                    yield return new ValidationResult($"Keyword must be no longer than {Constants.MaxLengthOfOneKeyword} characters.", [nameof(Keywords)]);
+                }
             }
 
-            if (keywordsList.Any(string.IsNullOrWhiteSpace))
+            // Check 3: Total length of all keywords
+            if (totalLength > Constants.MaxKeywordsLength)
             {
-                yield return new ValidationResult(
-                    "Keyword cannot be empty or whitespace.",
-                    new[] { nameof(Keywords) });
+                yield return new ValidationResult($"The length of all keywords must not exceed {Constants.MaxKeywordsLength} characters.", [nameof(Keywords)]);
             }
 
-            if (keywordsList.Any(k => !string.IsNullOrWhiteSpace(k) && k.Length > 60))
-            {
-                yield return new ValidationResult(
-                    "Keyword must be no longer than 60 characters.",
-                    new[] { nameof(Keywords) });
-            }
-
-            var cleanedKeyWordsList = keywordsList
-                .Where(k => !string.IsNullOrWhiteSpace(k))
-                .Select(k => k.Trim());
-            
+            // Check 4: Duplicates (case-insensitive)
             HashSet<string> keywordsSet = new(StringComparer.OrdinalIgnoreCase);
-            
-            if (!cleanedKeyWordsList.All(keywordsSet.Add))
-            {
-                yield return new ValidationResult("Keywords list contains duplicates.", new[] { nameof(Keywords) });
-            }
-        }
 
-        if (AvailableSeats != uint.MaxValue && (AvailableSeats < 1 || AvailableSeats > 100000))
-        {
-            yield return new ValidationResult("AvailableSeats field should be in the range from 1 to 100000.", new[] { nameof(AvailableSeats) });
+            if (!cleanedKeywords.All(keywordsSet.Add))
+            {
+                yield return new ValidationResult("Keywords list contains duplicates.", [nameof(Keywords)]);
+            }
         }
     }
 }

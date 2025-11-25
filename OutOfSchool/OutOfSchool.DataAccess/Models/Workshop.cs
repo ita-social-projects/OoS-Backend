@@ -43,18 +43,18 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     [Required(ErrorMessage = "Property CompetitiveSelection is required")]
     public bool CompetitiveSelection { get; set; } = default;
-    
+
     public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
-    
+
     [Required(ErrorMessage = "Type of age composition is required")]
     public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
-    
+
     [Required(ErrorMessage = "Educational shift is required")]
     public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
-    
+
     [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
     public bool IsSelfFinanced { get; set; } = false;
-    
+
     [Required(ErrorMessage = "Form of learning is required")]
     public FormOfLearning FormOfLearning { get; set; }
 
@@ -72,7 +72,8 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     #endregion
 
-    [MaxLength(500)]
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     public string CompetitiveSelectionDescription { get; set; }
 
     public OwnershipType ProviderOwnership { get; set; }
@@ -83,21 +84,24 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public WorkshopStatus Status { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal Price { get; set; } = default;
 
     [Required(ErrorMessage = "Type of pay rate is required")]
     public PayRateType PayRate { get; set; }
+
     public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
     [Required(ErrorMessage = "Property IsInclusive is required")]
     public bool IsInclusive { get; set; } = false;
 
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MinLength(Constants.MinLengthOfEnrollmentProcedureDescriptionForWorkshop)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = false;
 
+    [MinLength(Constants.MinPreferentialTermsOfParticipationLength)]
     [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
@@ -129,8 +133,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
 
     public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
 
-    public virtual ICollection<Workshop>
-        IncludedStudyGroups { get; set; } // Navigation property to included study groups
+    public virtual ICollection<Workshop> IncludedStudyGroups { get; set; } // Navigation property to included study groups
 
     public virtual List<Teacher> Teachers { get; set; }
 
@@ -145,8 +148,9 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public virtual List<Tag> Tags { get; set; }
 
     public virtual List<StudySubject> StudySubjects { get; set; }
-    
+
     public virtual Language LanguageOfEducation { get; set; }
+
     #endregion
 
     #region Owned entities
@@ -154,7 +158,7 @@ public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEnt
     public List<Contacts> Contacts { get; set; } = [];
 
     #endregion
-    
+
     #region Minsport external API integration
 
     /// <summary>

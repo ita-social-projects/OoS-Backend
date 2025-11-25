@@ -40,7 +40,7 @@ public class ElasticsearchCompetitiveEventConfiguration : IElasticsearchEntityTy
                    .Keyword(n => n.OrganizerOfTheEventId)
                    .Keyword(n => n.PlannedFormatOfClasses)
                    .Text(n => n.VenueName)
-                   .Text(n => n.TermsOfParticipation)
+                   .Text(n => n.CompetitiveSelectionDescription)
                    .Text(n => n.PreferentialTermsOfParticipation)
                    .Boolean(n => n.AreThereBenefits)
                    .Text(n => n.Benefits)

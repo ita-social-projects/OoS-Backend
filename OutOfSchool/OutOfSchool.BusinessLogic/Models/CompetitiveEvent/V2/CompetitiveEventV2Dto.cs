@@ -19,18 +19,35 @@ public class CompetitiveEventV2Dto : CompetitiveEventDto, IHasCoverImage, IHasIm
         foreach (var error in base.Validate(validationContext))
             yield return error;
 
-        if ((CoverImage is null) == string.IsNullOrEmpty(CoverImageId))
+        bool hasCoverImage = CoverImage is { Length: > 0 };
+        bool hasCoverImageId = !string.IsNullOrWhiteSpace(CoverImageId);
+        bool hasImageFiles = ImageFiles?.Any(f => f is { Length: > 0 }) ?? false;
+        bool hasImageIds = ImageIds?.Any(id => !string.IsNullOrWhiteSpace(id)) ?? false;
+
+        bool hasInvalidFiles = ImageFiles?.Any(f => f is null || f.Length == 0) ?? false;
+        bool hasInvalidIds = ImageIds?.Any(id => string.IsNullOrWhiteSpace(id)) ?? false;
+
+        if (hasInvalidFiles)
+            yield return new ValidationResult("ImageFiles must not contain empty files.", [nameof(ImageFiles)]);
+        if (hasInvalidIds)
+            yield return new ValidationResult("ImageIds must not contain empty or whitespace strings.", [nameof(ImageIds)]);
+
+        if (hasCoverImage == hasCoverImageId)
         {
-            yield return new ValidationResult(
-                "Either CoverImage or CoverImageId must be filled in, but not both.",
+            yield return new ValidationResult("Either CoverImage or CoverImageId should be provided, not both.",
                 [nameof(CoverImage), nameof(CoverImageId)]);
         }
 
-        if ((ImageFiles ?? []).Count == 0 && (ImageIds ?? []).Count == 0)
+        if (!hasImageFiles && !hasImageIds)
         {
-            yield return new ValidationResult(
-            "At least one of the ImageFiles or ImageIds fields must be filled in.",
-            [nameof(ImageFiles), nameof(ImageIds)]);
+            yield return new ValidationResult("At least one of the ImageFiles or ImageIds fields must be filled in.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
+        }
+
+        if ((ImageFiles ?? []).Count + (ImageIds ?? []).Count > Constants.MaxCountOfImagesForCompetitiveEvent)
+        {
+            yield return new ValidationResult($"A maximum of {Constants.MaxCountOfImagesForCompetitiveEvent} images are allowed for a competitive event.",
+                [nameof(ImageFiles), nameof(ImageIds)]);
         }
     }
 }
@@ -67,11 +84,12 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = model.OrganizerOfTheEventId,
         PlannedFormatOfClasses = model.PlannedFormatOfClasses,
         VenueName = model.VenueName,
-        TermsOfParticipation = model.TermsOfParticipation,
+        CompetitiveSelectionDescription = model.CompetitiveSelectionDescription,
         AreThereBenefits = model.AreThereBenefits,
         Benefits = model.Benefits,
         MinimumAge = model.MinimumAge,
         MaximumAge = model.MaximumAge,
+        IsPaid = model.IsPaid,
         Price = model.Price,
         CompetitiveSelection = model.CompetitiveSelection,
         Contacts = model.Contacts?.ToDto(),
@@ -86,6 +104,8 @@ public static class CompetitiveEventV2DtoExtensions
         .ToList() ?? [],
         CoverImageId = model.CoverImageId,
         ImageIds = model.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
+        ProviderTitle = model.OrganizerOfTheEvent?.FullTitle,
+        ProviderTitleEn = model.OrganizerOfTheEvent?.FullTitleEn
     };
 
     /// <summary>
@@ -123,11 +143,12 @@ public static class CompetitiveEventV2DtoExtensions
             OrganizerOfTheEventId = draft.CompetitiveEventDraftContent.OrganizerOfTheEventId,
             PlannedFormatOfClasses = draft.CompetitiveEventDraftContent?.PlannedFormatOfClasses,
             VenueName = draft.CompetitiveEventDraftContent?.VenueName,
-            TermsOfParticipation = draft.CompetitiveEventDraftContent?.TermsOfParticipation,
+            CompetitiveSelectionDescription = draft.CompetitiveEventDraftContent?.CompetitiveSelectionDescription,
             AreThereBenefits = draft.CompetitiveEventDraftContent?.AreThereBenefits,
             Benefits = draft.CompetitiveEventDraftContent?.Benefits,
             MinimumAge = draft.CompetitiveEventDraftContent?.MinimumAge ?? 0,
             MaximumAge = draft.CompetitiveEventDraftContent?.MaximumAge,
+            IsPaid = draft.CompetitiveEventDraftContent.IsPaid,
             Price = draft.CompetitiveEventDraftContent?.Price,
             CompetitiveSelection = draft.CompetitiveEventDraftContent?.CompetitiveSelection,
             Contacts = draft.CompetitiveEventDraftContent?.Contacts?.ToDto() ?? [],
@@ -137,7 +158,9 @@ public static class CompetitiveEventV2DtoExtensions
             CompetitiveEventAccountingTypeId = draft.CompetitiveEventAccountingTypeId,
             SubDirectionIds = draft.CompetitiveEventDraftContent?.SubDirectionIds ??
                               draft.CompetitiveEvent?.SubDirections?.Select(s => s.Id).ToList() ?? [],
-            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto()
+            CompetitiveEventDescriptionItems = draft.CompetitiveEventDraftContent?.CompetitiveEventDescriptionItems?.ToDto(),
+            ProviderTitle = draft.Provider?.FullTitle,
+            ProviderTitleEn = draft.Provider?.FullTitleEn
         };
     }
 
@@ -171,7 +194,7 @@ public static class CompetitiveEventV2DtoExtensions
     /// </summary>
     /// <param name="competitiveEventV2Dto">Source DTO to convert; its nullable fields are mapped with sensible defaults.</param>
     /// <returns>
-    /// A new CompetitiveEventDraftContent populated from the DTO. Nullable booleans and numeric fields are replaced with their default values when null;
+    /// A new CompetitiveEventDraftContent populated from the DTO. Nullable boolean and numeric fields are replaced with their default values when null;
     /// <see cref="Contacts"/> is an empty list if DTO contacts are null; <see cref="SubDirectionIds"/> is an empty list if null; 
     /// <see cref="CompetitiveEventDescriptionItems"/> is mapped using the DTO's ToModel() when present.
     /// </returns>
@@ -181,7 +204,7 @@ public static class CompetitiveEventV2DtoExtensions
         AreThereBenefits = competitiveEventV2Dto.AreThereBenefits ?? default,
         Benefits = competitiveEventV2Dto.Benefits,
         CompetitiveSelection = competitiveEventV2Dto.CompetitiveSelection ?? default,
-        Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? new List<Contacts>(),
+        Contacts = competitiveEventV2Dto.Contacts?.ToModel() ?? [],
         DescriptionOfTheEnrollmentProcedure = competitiveEventV2Dto.DescriptionOfTheEnrollmentProcedure,
         MaximumAge = competitiveEventV2Dto.MaximumAge ?? default,
         MinimumAge = competitiveEventV2Dto.MinimumAge,
@@ -189,6 +212,7 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = competitiveEventV2Dto.OrganizerOfTheEventId,
         ParentId = competitiveEventV2Dto.ParentId,
         PlannedFormatOfClasses = competitiveEventV2Dto.PlannedFormatOfClasses ?? default,
+        IsPaid = competitiveEventV2Dto.IsPaid,
         Price = competitiveEventV2Dto.Price ?? default,
         RegistrationEndTime = competitiveEventV2Dto.RegistrationEndTime ?? default,
         RegistrationStartTime = competitiveEventV2Dto.RegistrationStartTime ?? default,
@@ -196,10 +220,10 @@ public static class CompetitiveEventV2DtoExtensions
         ScheduledStartTime = competitiveEventV2Dto.ScheduledStartTime,
         ShortTitle = competitiveEventV2Dto.ShortTitle,
         Title = competitiveEventV2Dto.Title,
-        TermsOfParticipation = competitiveEventV2Dto.TermsOfParticipation,
+        CompetitiveSelectionDescription = competitiveEventV2Dto.CompetitiveSelectionDescription,
         VenueName = competitiveEventV2Dto.VenueName,
         SubDirectionIds = competitiveEventV2Dto.SubDirectionIds ?? [],
-        CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel(),
+        CompetitiveEventDescriptionItems = competitiveEventV2Dto.CompetitiveEventDescriptionItems?.ToModel()
     };
 
     /// <summary>
@@ -225,11 +249,12 @@ public static class CompetitiveEventV2DtoExtensions
         model.OrganizerOfTheEventId = dto.OrganizerOfTheEventId;
         model.PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? model.PlannedFormatOfClasses;
         model.VenueName = dto.VenueName;
-        model.TermsOfParticipation = dto.TermsOfParticipation;
+        model.CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription;
         model.AreThereBenefits = dto.AreThereBenefits ?? model.AreThereBenefits;
         model.Benefits = dto.Benefits;
         model.MinimumAge = dto.MinimumAge;
         model.MaximumAge = dto.MaximumAge ?? model.MaximumAge;
+        model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? model.Price;
         model.CompetitiveSelection = dto.CompetitiveSelection ?? model.CompetitiveSelection;
         model.Contacts = dto.Contacts?.ToModel() ?? model.Contacts;
@@ -262,11 +287,12 @@ public static class CompetitiveEventV2DtoExtensions
         OrganizerOfTheEventId = dto.OrganizerOfTheEventId,
         PlannedFormatOfClasses = dto.PlannedFormatOfClasses ?? default,
         VenueName = dto.VenueName,
-        TermsOfParticipation = dto.TermsOfParticipation,
+        CompetitiveSelectionDescription = dto.CompetitiveSelectionDescription,
         AreThereBenefits = dto.AreThereBenefits ?? false,
         Benefits = dto.Benefits,
         MinimumAge = dto.MinimumAge,
         MaximumAge = dto.MaximumAge ?? 120,
+        IsPaid = dto.IsPaid,
         Price = dto.Price ?? 0,
         CompetitiveSelection = dto.CompetitiveSelection ?? false,
         Contacts = dto.Contacts?.ToModel(),
