@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.BusinessLogic.Util.CustomComparers;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums.Workshop;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
@@ -11,6 +11,13 @@ public class WorkshopCreateUpdateDto : WorkshopBaseDto
     [ConditionalMinLength("EnableWorkshopTags", 3, ErrorMessage = "At least three tags are required")]
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public List<long> TagIds { get; set; } = [];
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from WorkshopBaseDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+    }
 }
 
 public static class WorkshopCreateUpdateDtoExtensions
@@ -23,10 +30,7 @@ public static class WorkshopCreateUpdateDtoExtensions
         model.ShortTitle = dto.ShortTitle?.Trim(TrimChars);
         model.MinAge = dto.MinAge ?? default;
         model.MaxAge = dto.MaxAge ?? default;
-        model.DateTimeRanges = dto.DateTimeRanges?.ToModel()
-            .Concat(model.DateTimeRanges ?? [])
-            .Distinct(new DateTimeRangeComparerWithoutFK())
-            .ToList() ?? [];
+        model.DateTimeRanges = dto.DateTimeRanges?.SetToModel(model.DateTimeRanges);
         model.IsPaid = dto.IsPaid;
         model.Price = dto.Price ?? default;
         model.PayRate = dto.PayRate ?? default;

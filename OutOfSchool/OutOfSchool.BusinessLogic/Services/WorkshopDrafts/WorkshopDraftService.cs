@@ -245,8 +245,10 @@ public class WorkshopDraftService(
             {
                 throw new ArgumentException("This WorkshopDraft can`t be updated.");
             }
+
             await SetLanguageNameOrThrow(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
             await ValidateAndAdjustInstitutionHierarchyAsync(workshopDraftUpdateDto.WorkshopV2Dto).ConfigureAwait(false);
+            NormalizeConditionalFields(workshopDraftUpdateDto.WorkshopV2Dto);
 
             workshopDraftUpdateDto.WorkshopV2Dto.SetToDraft(workshopDraft);
 
@@ -279,6 +281,7 @@ public class WorkshopDraftService(
                 }
             }
 
+            workshopDraft.DraftStatus = WorkshopDraftStatus.Draft;
             await workshopDraftRepository.Update(workshopDraft);
             logger.LogDebug("WorkshopDraft was successfully updated. Draft Id = {DraftId}.", workshopDraftUpdateDto.Id);
 
@@ -304,7 +307,7 @@ public class WorkshopDraftService(
 
         var workshopDraft = await this.GetWorkshopDraftByIdWithImages(id);
 
-        if (workshopDraft is null) 
+        if (workshopDraft is null)
             return;
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
@@ -327,9 +330,9 @@ public class WorkshopDraftService(
 
         await currentUserService.UserHasRights(new ProviderRights(workshopDraft.ProviderId), new EmployeeRights(workshopDraft.ProviderId)).ConfigureAwait(false);
 
-        if (workshopDraft.DraftStatus == WorkshopDraftStatus.PendingModeration)
+        if (workshopDraft.DraftStatus != WorkshopDraftStatus.Draft)
         {
-            throw new ArgumentException("This WorkshopDraft can`t be sent for moderation.");
+            throw new ArgumentException("WorkshopDraft draft can only be sent for moderation when it is in Draft status.");
         }
 
         workshopDraft.DraftStatus = WorkshopDraftStatus.PendingModeration;
@@ -547,6 +550,7 @@ public class WorkshopDraftService(
         {
             throw new InvalidOperationException("This Workshop is archived. It can not be updated.");
         }
+
         await currentUserService.UserHasRights(new ProviderRights(existingWorkshop.ProviderId), new EmployeeRights(existingWorkshop.ProviderId)).ConfigureAwait(false);
         await currentUserService.UserHasRights(new ProviderRights(workshopV2Dto.ProviderId), new EmployeeRights(workshopV2Dto.ProviderId)).ConfigureAwait(false);
 
@@ -569,6 +573,8 @@ public class WorkshopDraftService(
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
+
+        NormalizeConditionalFields(workshopV2Dto);
 
         return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
     }
@@ -1319,7 +1325,7 @@ public class WorkshopDraftService(
         var language = await languageService.GetById(dto.LanguageOfEducationId).ConfigureAwait(false);
         if (language is null)
         {
-            var errorMessage  = $"Validation error. Language with ID = {dto.LanguageOfEducationId} was not found.";
+            var errorMessage = $"Validation error. Language with ID = {dto.LanguageOfEducationId} was not found.";
             logger.LogWarning(errorMessage);
             throw new ArgumentException(errorMessage);
 
@@ -1392,7 +1398,7 @@ public class WorkshopDraftService(
     }
 
     /// <summary>
-    /// Sets conditional fields in the DTO to null if their corresponding flags are false.
+    /// Sets conditional fields in a DTO to null or default values ​​according to their respective flags.
     /// </summary>
     /// <param name="dto">Workshop dto.</param>
     private static void NormalizeConditionalFields(WorkshopV2Dto dto)
@@ -1405,6 +1411,18 @@ public class WorkshopDraftService(
         if (!dto.AreThereBenefits)
         {
             dto.PreferentialTermsOfParticipation = null;
+        }
+
+        if (dto.NoAgeRestrictions)
+        {
+            dto.MinAge = 0;
+            dto.MaxAge = 120;
+        }
+
+        if (!dto.IsPaid)
+        {
+            dto.Price = 0;
+            dto.PayRate = PayRateType.None;
         }
     }
 

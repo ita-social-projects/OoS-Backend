@@ -106,7 +106,7 @@ public class WorkshopInfoDto : WorkshopInfoBaseDto, IExternalRatingInfo
     
     public Guid? DefaultTeacherId { get; set; }
     
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public bool AreThereBenefits { get; set; } = default;

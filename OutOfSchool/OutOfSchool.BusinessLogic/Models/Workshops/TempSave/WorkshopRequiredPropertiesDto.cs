@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.BusinessLogic.Enums;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
@@ -36,10 +38,10 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     [Required(ErrorMessage = "Property IsPaid is required")]
     public bool IsPaid { get; set; } = false;
 
-    [Column(TypeName = "decimal(18,2)")]
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
     [JsonConverter(typeof(DecimalDotJsonConverter))]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     public decimal? Price { get; set; } = default;
 
@@ -48,8 +50,11 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
 
     public bool AreThereBenefits { get; set; } = default;
 
-    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "PreferentialTermsOfParticipation is required")]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxPreferentialTermsOfParticipationLength, ErrorMessage = "PreferentialTermsOfParticipation must not contain greater than 2000 letters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "PreferentialTermsOfParticipation field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string PreferentialTermsOfParticipation { get; set; }
 
     public Guid? InstitutionId { get; set; }
@@ -57,4 +62,25 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public Guid? InstitutionHierarchyId { get; set; }
 
     public bool IsChampionPath { get; set; } = false;
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Run validations from WorkshopMainRequiredPropertiesDto
+        foreach (var error in base.Validate(validationContext))
+            yield return error;
+
+        // validate Price and PayRate when IsPaid is true
+        if (IsPaid)
+        {
+            if (PayRate == null || PayRate == PayRateType.None)
+            {
+                yield return new ValidationResult("Pay rate must be specified when the workshop is paid.", [nameof(PayRate)]);
+            }
+
+            if (!Price.HasValue || Price < 0.01M)
+            {
+                yield return new ValidationResult("Price must be specified and must be in the range from 0.01 to 100000.00 when the workshop is paid.", [nameof(Price)]);
+            }
+        }
+    }
 }

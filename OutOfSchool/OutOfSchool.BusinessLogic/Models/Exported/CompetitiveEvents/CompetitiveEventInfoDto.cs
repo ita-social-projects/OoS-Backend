@@ -20,11 +20,14 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
     public string ShortTitle { get; set; }
 
-    [Required] public DateTimeOffset ScheduledStartTime { get; set; }
+    [Required] 
+    public DateTimeOffset ScheduledStartTime { get; set; }
 
-    [Required] public DateTimeOffset ScheduledEndTime { get; set; }
+    [Required] 
+    public DateTimeOffset ScheduledEndTime { get; set; }
 
-    [Required] public uint NumberOfSeats { get; set; } = uint.MaxValue;
+    [Required] 
+    public uint NumberOfSeats { get; set; } = uint.MaxValue;
 
     public uint? NumberOfOccupiedSeats { get; set; }
 
@@ -49,7 +52,6 @@ public class CompetitiveEventInfoDto : CompetitiveEventInfoBaseDto, IExternalRat
 
     public AccountingTypeInfoDto AccountingType { get; set; }
 
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
     public string DescriptionOfTheEnrollmentProcedure { get; set; } = string.Empty;
 
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]

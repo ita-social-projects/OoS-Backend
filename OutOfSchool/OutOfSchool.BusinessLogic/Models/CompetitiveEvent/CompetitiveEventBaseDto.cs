@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -6,7 +7,7 @@ using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.CompetitiveEvent;
-using System.ComponentModel.DataAnnotations;
+using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.CompetitiveEvent;
@@ -15,7 +16,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 {
     public Guid Id { get; set; }
 
-    [Required(ErrorMessage = "Title is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventTitleLength)]
     [MinLength(Constants.MinCompetitiveEventTitleLength)]
@@ -23,7 +24,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Title { get; set; }
 
-    [Required(ErrorMessage = "ShortTitle is required")]
+    [Required]
     [DataType(DataType.Text)]
     [MaxLength(Constants.MaxCompetitiveEventShortTitleLength)]
     [MinLength(Constants.MinCompetitiveEventShortTitleLength)]
@@ -63,17 +64,17 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [Required]
     public int CompetitiveEventAccountingTypeId { get; set; }
 
-    [Required(ErrorMessage = "Information about the selection is required")]
+    [Required]
     [MinLength(Constants.MinLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
     [MaxLength(Constants.MaxLengthOfDescriptionOfTheEnrollmentProcedureForCompetitiveEvent)]
-    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Field must contain at least one letter.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "DescriptionOfTheEnrollmentProcedure field must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string DescriptionOfTheEnrollmentProcedure { get; set; }
 
     [Required]
     public Guid OrganizerOfTheEventId { get; set; }
 
-    [Required(ErrorMessage = "Planned format of classes is required")]
+    [Required]
     [EnumDataType(typeof(FormOfLearning), ErrorMessage = Constants.EnumErrorMessage)]
     public FormOfLearning? PlannedFormatOfClasses { get; set; }
 
@@ -82,19 +83,20 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
     [MustContain(RequiredCharacterType.AnyLetter)]
     public string VenueName { get; set; }
 
-    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
-    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
     [RequiredIf(nameof(CompetitiveSelection), true, ErrorMessage = "Competitive selection description is required")]
-    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Participation terms must contain at least one letter.")]
+    [RequiredIfMinLength(nameof(CompetitiveSelection), true, Constants.MinCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(CompetitiveSelection), true, Constants.MaxCompetitiveSelectionDescriptionLength, ErrorMessage = "Competitive selection description must not contain greater than 2000 letters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Competitive selection description must contain at least one letter.")]
     [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string CompetitiveSelectionDescription { get; set; }
 
     public bool? AreThereBenefits { get; set; }
 
-    [MinLength(Constants.MinBenefitsLength)]
-    [MaxLength(Constants.MaxBenefitsLength)]
     [RequiredIf(nameof(AreThereBenefits), true, ErrorMessage = "Benefits is required")]
-    [MustContain(RequiredCharacterType.AnyLetter)]
+    [RequiredIfMinLength(nameof(AreThereBenefits), true, Constants.MinBenefitsLength, ErrorMessage = "Benefits must contain at least 3 letters.")]
+    [RequiredIfMaxLength(nameof(AreThereBenefits), true, Constants.MaxBenefitsLength, ErrorMessage = "Benefits must not contain greater than 2000 letters.")]
+    [MustContain(RequiredCharacterType.AnyLetter, ErrorMessage = "Benefits field must contain at least one letter.")]
+    [RegularExpression(@"^[\p{IsCyrillic}\p{IsBasicLatin}0-9\s\p{P}\p{S}]+$", ErrorMessage = "Only Cyrillic, Latin, numbers and symbols are allowed.")]
     public string Benefits { get; set; }
 
     [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
@@ -106,6 +108,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public bool IsPaid { get; set; } = false;
 
+    [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
     [JsonConverter(typeof(DecimalDotJsonConverter))]
@@ -130,7 +133,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (RegistrationStartTime >= RegistrationEndTime)
+        if (RegistrationStartTime > RegistrationEndTime)
         {
             yield return new ValidationResult(
                  "Registration start time must be before registration end time");
@@ -142,7 +145,7 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
                  "Scheduled start time must be before scheduled end time");
         }
 
-        if (ScheduledStartTime <= RegistrationEndTime)
+        if (ScheduledStartTime < RegistrationEndTime)
         {
             yield return new ValidationResult(
                  "Scheduled start time must be after registration end time");
@@ -156,6 +159,12 @@ public class CompetitiveEventBaseDto : IValidatableObject, IHasContactsDto<OutOf
         if (MinimumAge >= MaximumAge)
         {
             yield return new ValidationResult("Minimum age should be less than Maximum age", [nameof(MinimumAge), nameof(MaximumAge)]);
+        }
+
+        // validate Price when IsPaid is true
+        if (IsPaid && (!Price.HasValue || Price < 0.01M))
+        {
+            yield return new ValidationResult("Price must be specified and must be in the range from 0.01 to 100000.00 when the competitive event is paid.", [nameof(Price)]);
         }
     }
 }

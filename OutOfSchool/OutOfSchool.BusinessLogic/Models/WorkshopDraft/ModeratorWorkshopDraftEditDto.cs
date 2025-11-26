@@ -30,7 +30,7 @@ public class ModeratorWorkshopDraftEditDto
     [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
     public string PreferentialTermsOfParticipation { get; set; }
 
-    [MaxLength(Constants.EnrollmentProcedureDescription)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
     public string EnrollmentProcedureDescription { get; set; }
 
     public Guid? InstitutionHierarchyId { get; set; }
