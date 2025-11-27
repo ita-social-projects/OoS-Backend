@@ -293,8 +293,8 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
         {
             query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.Price))
             {
-                Gte = filter.MinPrice,
-                Lte = filter.MaxPrice,
+                Gte = (double)filter.MinPrice,
+                Lte = (double)filter.MaxPrice,
             });
         }
         else
@@ -305,8 +305,8 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
                 [
                     new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.Price))
                     {
-                        Gte = filter.MinPrice,
-                        Lte = filter.MaxPrice,
+                        Gte = (double) filter.MinPrice,
+                        Lte = (double)filter.MaxPrice,
                     },
                     new TermQuery(Infer.Field<WorkshopES>(w => w.Price))
                     {
