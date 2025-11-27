@@ -77,12 +77,12 @@ public class RegistrySyncService : IRegistrySyncService
     }
 
     /// <inheritdoc/>
-    public async Task SyncWorkshopAsync(WorkshopV2Dto dto)
+    public async Task SyncWorkshopAsync(WorkshopV2Dto workshopDto)
     {
-        var institutionHierarchyId = dto.InstitutionHierarchyId
+        var institutionHierarchyId = workshopDto.InstitutionHierarchyId
             ?? throw new ArgumentException("InstitutionHierarchyId cannot be null.");
 
-        var request = dto.ToSportSectionUpdateRequest(baseImageUrl);
+        var request = workshopDto.ToSportSectionUpdateRequest(baseImageUrl);
         await NormalizeRequestAsync(request, institutionHierarchyId);
 
         var response = await sportsRegistrySectionApi.UpdateSectionAsync(request).ConfigureAwait(false);
@@ -100,7 +100,7 @@ public class RegistrySyncService : IRegistrySyncService
             {
                 logger.LogInformation(
                     "Workshop was successfully synced with Sports Registry. WorkshopId={WorkshopId}, SectionId={SectionId}",
-                    dto.Id, dto.MinsportSectionId);
+                    workshopDto.Id, workshopDto.MinsportSectionId);
 
                 return true;
             }

@@ -13,10 +13,10 @@ sealed class DisabledSportsRegistryStub : ISportsRegistrySectionProvider, ISport
         Message = $"Sports Registry integration is disabled. Operation: {op}"
     };
 
-    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest r)
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(SportsSectionPostRequest request)
         => Task.FromResult<Either<ErrorResponse, SectionCreateUpdateResponse>>(Disabled("CreateSection"));
 
-    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest r)
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request)
         => Task.FromResult<Either<ErrorResponse, SectionCreateUpdateResponse>>(Disabled("UpdateSection"));
     
     public Task<Either<ErrorResponse, List<SportKindDto>>> GetAllSportKindsAsync(int pageSize = 50)

@@ -163,6 +163,9 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
         if (string.IsNullOrWhiteSpace(sectionScheduleJson))
             return new List<DateTimeRangeDraft>();
 
+        var format = "HH:mm";
+        var provider = CultureInfo.InvariantCulture;
+
         try
         {
             var items = JsonSerializer.Deserialize<List<ExternalScheduleItem>>(sectionScheduleJson);
@@ -170,11 +173,11 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
                 return new List<DateTimeRangeDraft>();
 
             var result = new List<DateTimeRangeDraft>();
-
+            
             foreach (var item in items)
             {
-                if (!TimeOnly.TryParse(item.SectionScheduleTimeFrom, out var startTime) ||
-                    !TimeOnly.TryParse(item.SectionScheduleTimeTo, out var endTime))
+                if (!TimeOnly.TryParseExact(item.SectionScheduleTimeFrom, format, provider, DateTimeStyles.None, out var startTime) ||
+                    !TimeOnly.TryParseExact(item.SectionScheduleTimeTo, format, provider, DateTimeStyles.None, out var endTime))
                 {
                     Debug.WriteLine($"Invalid time format in schedule item: From '{item.SectionScheduleTimeFrom}' To '{item.SectionScheduleTimeTo}'");
                     continue; // skip invalid time formats

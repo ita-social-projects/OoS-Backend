@@ -7,7 +7,7 @@ using OutOfSchool.SportsRegistryApiClient.Validators;
 
 namespace OutOfSchool.SportsRegistryApiClient.Models.Requests;
 
-public class SportsSectionBaseDto: IValidatableObject
+public class SportsSectionBaseDto : IValidatableObject
 {
     [Required(ErrorMessage = "sectionName is required.")]
     public string SectionName { get; set; } = null!;
@@ -145,14 +145,11 @@ public class SportsSectionBaseDto: IValidatableObject
             DateTimeStyles.None,
             out var dateTo);
 
-        if (isValidStart && isValidEnd)
+        if (isValidStart && isValidEnd && dateFrom > dateTo)
         {
-            if (dateFrom > dateTo)
-            {
-                yield return new ValidationResult(
-                    "Practice period start date cannot be after end date.",
-                    new[] { nameof(SectionPracticePeriodDateFrom), nameof(SectionPracticePeriodDateTo) });
-            }
+            yield return new ValidationResult(
+                "Practice period start date cannot be after end date.",
+                new[] { nameof(SectionPracticePeriodDateFrom), nameof(SectionPracticePeriodDateTo) });
         }
     }
 }

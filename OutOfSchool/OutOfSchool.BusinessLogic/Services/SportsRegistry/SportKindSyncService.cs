@@ -89,7 +89,8 @@ public class SportKindSyncService(
                 var createdEntitiesCount = toCreateEntities.Count;
                 changedEntitiesCount = updatedEntitiesCount + createdEntitiesCount;
                 logger.LogInformation(
-                    $"Sport kinds sync finished. {updatedEntitiesCount} updated and {createdEntitiesCount} created");
+                    "Sport kinds sync finished. {UpdatedEntitiesCount} updated and {CreatedEntitiesCount} created",
+                    updatedEntitiesCount, createdEntitiesCount);
             });
         }
         return changedEntitiesCount;

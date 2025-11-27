@@ -102,7 +102,7 @@ public class SportSectionSyncServiceTests
            x => x.Log(
            It.Is<LogLevel>(l => l == LogLevel.Warning),
            It.IsAny<EventId>(),
-           It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("fallback to full fetch")),
+           It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Falling back to full fetch")),
            It.IsAny<Exception>(),
            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
        Times.Once);
@@ -332,7 +332,7 @@ public class SportSectionSyncServiceTests
         result.Should().Be(0);
         createdDrafts.Should().BeEmpty();
         
-        VerifyLog(LogLevel.Warning, "provider was not found", Times.Once());
+        VerifyLog(LogLevel.Warning, "provider not found", Times.Once());
     }
 
     [Test]

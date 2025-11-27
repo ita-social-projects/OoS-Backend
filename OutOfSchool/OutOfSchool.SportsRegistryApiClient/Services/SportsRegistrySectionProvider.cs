@@ -24,7 +24,7 @@ public class SportsRegistrySectionProvider : ISportsRegistrySectionProvider
     public async Task<Either<ErrorResponse, SectionCreateUpdateResponse>> RegisterSectionAsync(
         SportsSectionPostRequest request)
     {
-        logger.LogInformation($"Registering section in Sports Registry. With organization code: {request.OrganizationCode}");
+        logger.LogInformation("Registering section in Sports Registry. With organization code: {OrganizationCode}", request.OrganizationCode);
         
         var result = await apiService.CreateSectionAsync(request).ConfigureAwait(false);
 
@@ -34,7 +34,7 @@ public class SportsRegistrySectionProvider : ISportsRegistrySectionProvider
         SportsSectionUpdateRequest request)
     {
         logger.LogInformation(
-            "Updating section with {sectionId} in Sports Registry.",request.SectionId.ToString());
+            "Updating section with {SectionId} in Sports Registry.", request.SectionId.ToString());
         
         var result = await apiService.UpdateSectionAsync(request).ConfigureAwait(false);
         return HandleResult(result,  RegistryConstants.UpdateAction,  request.SectionId );
@@ -62,7 +62,7 @@ public class SportsRegistrySectionProvider : ISportsRegistrySectionProvider
             success =>
             {
                 logger.LogInformation(
-                    "Sports Registry {Action} succeeded. SectionId={SectionId}",
+                    "Sports Registry {Action} succeeded. SectionId = {SectionId}",
                     actionDescription,success.ResultVariables.SectionId?.ToString());
                 
                 return success;
