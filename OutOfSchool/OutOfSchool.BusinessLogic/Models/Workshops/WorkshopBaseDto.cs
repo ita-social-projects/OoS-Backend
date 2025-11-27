@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
@@ -8,6 +7,8 @@ using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
@@ -47,6 +48,8 @@ public class WorkshopBaseDto : IValidatableObject, IHasContactsDto<Workshop>
     public bool IsPaid { get; set; } = false;
 
     [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    [JsonConverter(typeof(DecimalDotJsonConverter))]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 

@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
+﻿using OutOfSchool.BusinessLogic.Models.Exported.Contacts;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Exported.Workshops;
 

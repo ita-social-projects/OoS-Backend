@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.CustomValidation;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using static OutOfSchool.BusinessLogic.Validators.ConditionalValidationAttributes;
 using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
@@ -58,6 +59,8 @@ public class CompetitiveEventDescriptionDto : CompetitiveEventAboutDto
 
     [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    [JsonConverter(typeof(DecimalDotJsonConverter))]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal? Price { get; set; } = default;
 

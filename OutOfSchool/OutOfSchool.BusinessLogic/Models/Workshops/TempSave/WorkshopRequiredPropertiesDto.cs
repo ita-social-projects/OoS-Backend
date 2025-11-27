@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.BusinessLogic.Validators;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops.TempSave;
@@ -35,6 +38,8 @@ public class WorkshopRequiredPropertiesDto : WorkshopMainRequiredPropertiesDto
     public bool IsPaid { get; set; } = false;
 
     [MaxDecimalPlaces(2, ErrorMessage = "Price field must have maximum two decimal places.")]
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    [JsonConverter(typeof(DecimalDotJsonConverter))]
     [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     [RequiredIf(nameof(IsPaid), true, ErrorMessage = "Price is required")]
     public decimal? Price { get; set; } = default;
