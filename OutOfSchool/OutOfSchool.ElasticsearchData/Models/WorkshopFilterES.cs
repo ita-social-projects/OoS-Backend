@@ -23,9 +23,9 @@ public class WorkshopFilterES
 
     public bool IsFree { get; set; } = false;
 
-    public int MinPrice { get; set; } = 0;
+    public decimal MinPrice { get; set; } = 0;
 
-    public int MaxPrice { get; set; } = int.MaxValue;
+    public decimal MaxPrice { get; set; } = int.MaxValue;
 
     public List<long> SubDirectionIds { get; set; } = new List<long>();
 

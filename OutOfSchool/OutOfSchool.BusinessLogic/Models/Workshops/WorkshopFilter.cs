@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.BusinessLogic.Enums;
 using OutOfSchool.BusinessLogic.Util.JsonTools;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.Services.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -26,10 +27,12 @@ public class WorkshopFilter : OffsetFilter
     public bool IsFree { get; set; } = false;
 
     [Range(0, int.MaxValue, ErrorMessage = "Field value should be in a range from 0 to 2 147 483 647")]
-    public int MinPrice { get; set; } = 0;
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    public decimal MinPrice { get; set; } = 0;
 
     [Range(0, int.MaxValue, ErrorMessage = "Field value should be in a range from 0 to 2 147 483 647")]
-    public int MaxPrice { get; set; } = int.MaxValue;
+    [ModelBinder(BinderType = typeof(DecimalDotModelBinder))]
+    public decimal MaxPrice { get; set; } = int.MaxValue;
 
     public List<long> SubDirectionIds { get; set; } = new List<long>();
 
