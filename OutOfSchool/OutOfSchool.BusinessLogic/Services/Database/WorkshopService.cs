@@ -1066,9 +1066,23 @@ public class WorkshopService(
 
         if (filter.MinAge != 0 || filter.MaxAge != 100)
         {
-            predicate = filter.IsAppropriateAge
-                ? predicate.And(x => x.MinAge >= filter.MinAge && x.MaxAge <= filter.MaxAge)
-                : predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
+            if (filter.IsAppropriateAge)
+            {
+                if (filter.MinAge != 0)
+                {
+                    predicate = predicate.And(x => x.MinAge == filter.MinAge);
+                }
+
+                if (filter.MaxAge != 100)
+                {
+                    predicate = predicate.And(x => x.MaxAge == filter.MaxAge);
+                }
+            }
+            else
+            {
+                predicate = predicate.And(x =>
+                    (x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge));
+            }
         }
 
         if (filter.Workdays.Any())
