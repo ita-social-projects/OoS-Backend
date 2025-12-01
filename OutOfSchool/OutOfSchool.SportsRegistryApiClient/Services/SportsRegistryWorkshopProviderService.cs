@@ -24,18 +24,30 @@ public class SportsRegistryWorkshopProviderService : ISportsRegistryWorkshopProv
         DateTimeOffset? updatedAtTo = null,
         int pageSize = 50)
     {
+        if (pageSize <= 0)
+        {
+            return new ErrorResponse
+            {
+                HttpStatusCode = HttpStatusCode.BadRequest,
+                Message = "Page size must be greater than zero."
+            }
+;
+        }
+
+        var filter = (updatedAtFrom.HasValue && updatedAtTo.HasValue)
+            ? new ExternalSportsSectionFilter
+            {
+                UpdatedAtFrom = updatedAtFrom,
+                UpdatedAtTo = updatedAtTo
+            } 
+            : null;
+
         var all = new List<ExternalSportsSectionDto>();
         int currentPage = 0;
         int totalPages = 1;
 
         while (currentPage < totalPages)
         {
-            var filter = new ExternalSportsSectionFilter
-            {
-                UpdatedAtFrom = updatedAtFrom,
-                UpdatedAtTo = updatedAtTo
-            };
-
             var pageResult = await apiService.GetSectionsAsync(currentPage, pageSize, filter)
                 .ConfigureAwait(false);
 

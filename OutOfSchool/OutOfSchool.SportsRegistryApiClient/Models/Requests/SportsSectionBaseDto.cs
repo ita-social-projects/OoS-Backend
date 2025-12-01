@@ -13,7 +13,7 @@ public class SportsSectionBaseDto : IValidatableObject
     public string SectionName { get; set; } = null!;
 
     [Required(ErrorMessage = "sectionSportKindDictIdCode is required.")]
-    [Range(typeof(long), "1", "9223372036854775807", ErrorMessage = "sectionSportKindDictIdCode must be a non-negative integer.")]
+    [Range(typeof(long), "1", "9223372036854775807", ErrorMessage = "sectionSportKindDictIdCode must be a positive integer.")]
     public long SectionSportKindDictIdCode { get; set; }
 
     [Required(ErrorMessage = "sectionAgeFrom is required.")]
@@ -99,13 +99,6 @@ public class SportsSectionBaseDto : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // section age validation
-        if (SectionAgeFrom < 0 || SectionAgeTo < 0)
-        {
-            yield return new ValidationResult(
-                "Age values cannot be negative.",
-                new[] { nameof(SectionAgeFrom) });
-        }
-
         if (SectionAgeFrom > SectionAgeTo)
         {
             yield return new ValidationResult(
@@ -145,11 +138,18 @@ public class SportsSectionBaseDto : IValidatableObject
             DateTimeStyles.None,
             out var dateTo);
 
-        if (isValidStart && isValidEnd && dateFrom > dateTo)
+        if (!isValidStart)
         {
             yield return new ValidationResult(
-                "Practice period start date cannot be after end date.",
-                new[] { nameof(SectionPracticePeriodDateFrom), nameof(SectionPracticePeriodDateTo) });
+                $"Invalid date format for SectionPracticePeriodDateFrom '{SectionPracticePeriodDateFrom}'. Expected valid date in dd:MM format.",
+                new[] { nameof(SectionPracticePeriodDateFrom) });
+        }
+
+        if (!isValidEnd)
+        {
+            yield return new ValidationResult(
+            $"Invalid date format for SectionPracticePeriodDateTo '{SectionPracticePeriodDateTo}'. Expected valid date in dd:MM format.",
+            new[] { nameof(SectionPracticePeriodDateTo) });
         }
     }
 }

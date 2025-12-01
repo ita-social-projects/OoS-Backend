@@ -92,7 +92,7 @@ public class SportsSectionSyncService(
         }
         if (existingWorkshop != null)
         {
-            var draft = ProcessExistingWorkshop(section, existingWorkshop, catottgId.Value);
+            var draft = ProcessExistingWorkshop(section, existingWorkshop, hierarchy!, catottgId.Value);
             if (draft != null)
                 toCreate.Add(draft);
             
@@ -129,6 +129,7 @@ public class SportsSectionSyncService(
     private WorkshopDraft? ProcessExistingWorkshop(
     ExternalSportsSectionDto section,
     Workshop existingWorkshop,
+    InstitutionHierarchy hierarchy,
     long catottgId)
     {
         if (existingWorkshop.MinsportSectionId != section.SectionId)
@@ -145,6 +146,8 @@ public class SportsSectionSyncService(
         var draft = section.ToWorkshopDraft(existingWorkshop.ProviderId, catottgId);
         draft.WorkshopId = existingWorkshop.Id;
         draft.MinsportSectionId = existingWorkshop.MinsportSectionId;
+        draft.WorkshopDraftContent.InstitutionHierarchyId = hierarchy.Id;
+        draft.WorkshopDraftContent.InstitutionId = hierarchy.InstitutionId;
 
         logger.LogInformation(
             "Creating new draft for existing workshop {WorkshopId} from section {SectionId}.",

@@ -4,7 +4,6 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.SportsRegistryApiClient.Models.External;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace OutOfSchool.BusinessLogic.Util.Mappers;
@@ -179,7 +178,7 @@ public static class ExternalSportsSectionToWorkshopDraftMapper
                 if (!TimeOnly.TryParseExact(item.SectionScheduleTimeFrom, format, provider, DateTimeStyles.None, out var startTime) ||
                     !TimeOnly.TryParseExact(item.SectionScheduleTimeTo, format, provider, DateTimeStyles.None, out var endTime))
                 {
-                    Debug.WriteLine($"Invalid time format in schedule item: From '{item.SectionScheduleTimeFrom}' To '{item.SectionScheduleTimeTo}'");
+                    Log.Warning($"Invalid time format in schedule item: From '{item.SectionScheduleTimeFrom}' To '{item.SectionScheduleTimeTo}'");
                     continue; // skip invalid time formats
                 }
 

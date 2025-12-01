@@ -24,17 +24,6 @@ public class SportsSectionPostRequestValidationTests
     }
 
     [Test]
-    public void NegativeAge_ShouldFailValidation()
-    {
-        model.SectionAgeFrom = -1;
-
-        var context = new ValidationContext(model);
-        var results = model.Validate(context).ToList();
-
-        Assert.That(HasError(results, "Age values cannot be negative"));
-    }
-
-    [Test]
     public void AgeFromGreaterThanAgeTo_ShouldFailValidation()
     {
         model.SectionAgeFrom = 20;
@@ -131,18 +120,6 @@ public class SportsSectionPostRequestValidationTests
         var results = new List<ValidationResult>();
         Validator.TryValidateObject(model, context, results, true);
         Assert.IsTrue(results.Any(r => r.MemberNames.Contains(nameof(model.SectionInstagramUrl))));
-    }
-
-    [Test]
-    public void PracticePeriodFromAfterTo_ShouldFailValidation()
-    {
-        model.SectionPracticePeriodDateFrom = "30:09";
-        model.SectionPracticePeriodDateTo = "01:09";
-
-        var context = new ValidationContext(model);
-        var results = model.Validate(context).ToList();
-
-        Assert.That(HasError(results, "Practice period start date cannot be after end date"));
     }
 
     [Test]
