@@ -318,20 +318,36 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
     {
         if (filter.MinAge != 0 || filter.MaxAge != 100)
         {
-            query.Must.Add(
-                new NumberRangeQuery(filter.IsAppropriateAge ?
-                    Infer.Field<WorkshopES>(w => w.MinAge) :
-                    Infer.Field<WorkshopES>(w => w.MaxAge))
+            if (filter.IsAppropriateAge)
+            {
+                if (filter.MinAge != 0)
                 {
-                    Gte = filter.MinAge,
-                });
-            query.Must.Add(
-                new NumberRangeQuery(filter.IsAppropriateAge ?
-                        Infer.Field<WorkshopES>(w => w.MaxAge) :
-                        Infer.Field<WorkshopES>(w => w.MinAge))
+                    query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.MinAge))
+                    {
+                        Value = filter.MinAge
+                    });
+                }
+
+                if (filter.MaxAge != 100)
                 {
-                    Lte = filter.MaxAge,
+                    query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.MaxAge))
+                    {
+                        Value = filter.MaxAge
+                    });
+                }
+            }
+            else
+            {
+                query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.MinAge))
+                {
+                    Lte = filter.MaxAge
                 });
+
+                query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.MaxAge))
+                {
+                    Gte = filter.MinAge
+                });
+            }
         }
     }
 
