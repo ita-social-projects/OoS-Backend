@@ -20,6 +20,7 @@ using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.BusinessLogic.Services.Images;
 using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SportsRegistry;
 using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
 using OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 using OutOfSchool.Common.Config;
@@ -41,8 +42,9 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class SensitiveWorkshopDraftServiceTests
 {
     private ISensitiveWorkshopDraftService service;
+    private Mock<ITransactionManagerService> transactionManagerServiceMock;
     private Mock<IWorkshopDraftRepository> workshopDraftRepoMock;
-    private Mock<ISportsRegistryProviderService> sportRegistryProviderServiceMock;
+    private Mock<IRegistrySyncService> registrySyncServiceMock;
     private Mock<IProviderService> providerServiceMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IWorkshopServicesCombinerV2> workshopServiceCombinerV2Mock;
@@ -66,9 +68,10 @@ public class SensitiveWorkshopDraftServiceTests
     [SetUp]
     public void SetUp()
     {
+        transactionManagerServiceMock = new Mock<ITransactionManagerService>();
         workshopDraftRepoMock = new Mock<IWorkshopDraftRepository>();
         institutionHierarchyServiceMock = new Mock<IInstitutionHierarchyService>();
-        sportRegistryProviderServiceMock = new Mock<ISportsRegistryProviderService>();
+        registrySyncServiceMock = new Mock<IRegistrySyncService>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         providerServiceMock = new Mock<IProviderService>();
         workshopServiceCombinerV2Mock = new Mock<IWorkshopServicesCombinerV2>();
@@ -90,12 +93,16 @@ public class SensitiveWorkshopDraftServiceTests
         var teacherDraftImagesService = new Mock<IEntityCoverImageInteractionService<TeacherDraft>>();
         var institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
         var imageStorageOptionsMock = new Mock<IOptions<ImageStorageOptions>>();
-
+        imageStorageOptionsMock.Setup(o => o.Value).Returns(new ImageStorageOptions
+        {
+            BaseImageUrl = "http://test"
+        });
         userId = "someUserId";
 
         service = new WorkshopDraftService(
             logger.Object,
-            sportRegistryProviderServiceMock.Object,
+            registrySyncServiceMock.Object,
+            transactionManagerServiceMock.Object,
             languageServiceMock.Object,
             workshopDraftRepoMock.Object,
             workshopDraftImagesServiceMock.Object,
@@ -111,7 +118,6 @@ public class SensitiveWorkshopDraftServiceTests
             institutionHierarchyRepositoryMock.Object,
             codeficatorRepository.Object,
             changesLogServiceMock.Object,
-            institutionHierarchyServiceMock.Object,
             institutionOptionsMock.Object,
             imageStorageOptionsMock.Object);
 

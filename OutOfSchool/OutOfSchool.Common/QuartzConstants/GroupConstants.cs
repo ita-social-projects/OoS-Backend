@@ -9,4 +9,6 @@ public static class GroupConstants
     public const string ApplicationStatusChange = "applicationstatuschange";
     public const string AverageRating = "averagerating";
     public const string Emails = "emails";
+    public const string SportKinds = "sportkinds"; 
+    public const string SportsSections = "sportsections"; 
 }

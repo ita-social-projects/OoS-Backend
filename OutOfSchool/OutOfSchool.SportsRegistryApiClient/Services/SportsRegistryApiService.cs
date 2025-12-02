@@ -9,6 +9,7 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.SportsRegistryApiClient.Config;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using OutOfSchool.SportsRegistryApiClient.Models;
+using OutOfSchool.SportsRegistryApiClient.Models.External;
 using OutOfSchool.SportsRegistryApiClient.Models.Requests;
 using OutOfSchool.SportsRegistryApiClient.Models.Responses;
 
@@ -33,27 +34,105 @@ public class SportsRegistryApiService : ISportsRegistryApiService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Either<ErrorResponse, SectionCreateResponse>> CreateSectionAsync(SportsSectionPostRequest request)
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> CreateSectionAsync(SportsSectionPostRequest request)
+        => StartProcessAsync<SportsSectionPostRequest, SectionCreateUpdateResponse>(
+            request,
+            RegistryConstants.SectionCreateProcessKey);
+
+    public Task<Either<ErrorResponse, SectionCreateUpdateResponse>> UpdateSectionAsync(SportsSectionUpdateRequest request)
+        => StartProcessAsync<SportsSectionUpdateRequest, SectionCreateUpdateResponse>(
+            request,
+            RegistryConstants.SectionUpdateProcessKey);
+    
+    public async Task<Either<ErrorResponse, SportKindListResponse>> GetSportKindsAsync(int page = 0, int pageSize = 100)
     {
         var tokenResult = await GetAccessTokenAsync();
 
-        var httpResult =  await tokenResult
-            .Map(accessToken => BuildRequest(request, accessToken))
+        var httpResult = await tokenResult
+            .Map(accessToken => new Request
+            {
+                Url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/dict-sport-kinds?pageNo={page}&pageSize={pageSize}"),
+                HttpMethodType = HttpMethodType.Get,
+                Token = accessToken
+            })
+            .FlatMapAsync(request => communicationService.SendRequest<SportKindListResponse, ErrorResponse>(request))
+            .ConfigureAwait(false);
+        return httpResult;
+    }
+
+    public async Task<Either<ErrorResponse, SportsSectionListResponse>> GetSectionsAsync(
+    int page = 0,
+    int pageSize = 100,
+    ExternalSportsSectionFilter? filter = null)
+    {
+        var tokenResult = await GetAccessTokenAsync();
+
+        var queryParams = new List<string>()
+        {
+            $"pageNo={page}",
+            $"pageSize={pageSize}"
+        };
+
+        if (filter != null)
+        {
+            if (filter.UpdatedAtFrom.HasValue)
+            {
+                queryParams.Add($"updatedAtFrom={FormatForRegistry(filter.UpdatedAtFrom.Value)}");
+            }
+
+            if (filter.UpdatedAtTo.HasValue)
+            {
+                queryParams.Add($"updatedAtTo={FormatForRegistry(filter.UpdatedAtTo.Value)}");
+            }
+        }
+
+        var queryString = string.Join("&", queryParams);
+        var url = new Uri($"{config.PlatformApiUrl}/api/public/data-factory/sections?{queryString}");
+
+        var httpResult = await tokenResult
+            .Map(accessToken => new Request
+            {
+                Url = url,
+                HttpMethodType = HttpMethodType.Get,
+                Token = accessToken
+            })
+            .FlatMapAsync(request =>
+                communicationService.SendRequest<SportsSectionListResponse, ErrorResponse>(request))
+            .ConfigureAwait(false);
+
+        return httpResult;
+    }
+    private static string FormatForRegistry(DateTimeOffset dt) =>
+    dt.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
+
+    private async Task<Either<ErrorResponse, TResponse>> StartProcessAsync<TRequest, TResponse>(
+        TRequest request,
+        string processKey)
+        where TResponse : ISectionResponse
+    {
+        var tokenResult = await GetAccessTokenAsync();
+
+        var httpResult = await tokenResult
+            .Map(accessToken => BuildRequest(request, accessToken, processKey))
             .FlatMapAsync(registryRequest =>
-                communicationService.SendRequest<SectionCreateResponse, ErrorResponse>(registryRequest)).ConfigureAwait(false);
+                communicationService.SendRequest<TResponse, ErrorResponse>(registryRequest))
+            .ConfigureAwait(false);
 
         return httpResult.FlatMap(resp =>
             isRegistrySuccess(resp)
-                ? (Either<ErrorResponse, SectionCreateResponse>)resp
+                ? (Either<ErrorResponse, TResponse>)resp
                 : ToRegistryError(resp));
     }
 
-    private Request BuildRequest(SportsSectionPostRequest request, string accessToken)
+    private Request BuildRequest<TRequest>(
+        TRequest request,
+        string accessToken,
+        string processKey)
     {
         var payload = new
         {
             
-            businessProcessDefinitionKey = RegistryConstants.BusinessProcessDefinitionKey,
+            businessProcessDefinitionKey = processKey,
             startVariables = new
             {
                 data = request
@@ -97,7 +176,9 @@ public class SportsRegistryApiService : ISportsRegistryApiService
     }
     #region ApiResponseInterpretation
 
-    private static bool isRegistrySuccess(SectionCreateResponse response)
+    private static bool isRegistrySuccess<TResponse> (
+        TResponse response)
+        where TResponse : ISectionResponse
     {
         var codeStr = response?.ResultVariables?.Code;
         var errorRaw = response?.ResultVariables?.Errors;
@@ -109,7 +190,9 @@ public class SportsRegistryApiService : ISportsRegistryApiService
         && !hasErrors;
     }
 
-    private static ErrorResponse ToRegistryError(SectionCreateResponse response)
+    private static ErrorResponse ToRegistryError<TResponse> (
+        TResponse response) 
+        where TResponse : ISectionResponse
     {
         var codeStr = response?.ResultVariables?.Code;
         var errorsRaw = response?.ResultVariables?.Errors;
@@ -127,7 +210,8 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             ? (HttpStatusCode)code
             : HttpStatusCode.BadRequest;
     
-    private static string? NormalizeErrorsContent(string? errorsRaw)
+    private static string? NormalizeErrorsContent(
+        string? errorsRaw)
     {
         if (string.IsNullOrWhiteSpace(errorsRaw))
             return null;
@@ -145,5 +229,6 @@ public class SportsRegistryApiService : ISportsRegistryApiService
             return errorsRaw;
         }
     }
+
     #endregion
 }

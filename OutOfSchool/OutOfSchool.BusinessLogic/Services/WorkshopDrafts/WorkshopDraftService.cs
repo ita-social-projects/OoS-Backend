@@ -18,11 +18,11 @@ using OutOfSchool.Services.Enums.WorkshopStatus;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
 using OutOfSchool.Services.Repository.Api;
-using OutOfSchool.SportsRegistryApiClient.Interfaces;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Text;
+using OutOfSchool.BusinessLogic.Services.SportsRegistry;
 using static OutOfSchool.BusinessLogic.Util.OperationResultHelper;
 
 namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
@@ -51,7 +51,8 @@ namespace OutOfSchool.BusinessLogic.Services.WorkshopDrafts;
 /// <param name="changesLogService">Service for changes log.</param>
 public class WorkshopDraftService(
     ILogger<WorkshopDraftService> logger,
-    ISportsRegistryProviderService sportsRegistryApiService,
+    IRegistrySyncService registrySyncService,
+    ITransactionManagerService transactionManagerService,
     ILanguageService languageService,
     IWorkshopDraftRepository workshopDraftRepository,
     IImageDependentEntityImagesInteractionService<WorkshopDraft> workshopDraftImagesService,
@@ -67,13 +68,11 @@ public class WorkshopDraftService(
     IInstitutionHierarchyRepository institutionHierarchyRepository,
     ICodeficatorRepository codeficatorRepository,
     IChangesLogService changesLogService,
-    IInstitutionHierarchyService institutionHierarchyService,
     IOptions<InstitutionOptions> institutionSettings,
     IOptions<ImageStorageOptions> imageStorageOptions
 ) : IWorkshopDraftService, ISensitiveWorkshopDraftService
 {
     private readonly int maxParallelUploads = options.Value.MaxParallelImageUploads;
-
     /// <summary>
     /// Create a delegate to include other entities in InstitutionHierarchy entity
     /// </summary>
@@ -344,23 +343,26 @@ public class WorkshopDraftService(
     // <inheritdoc/>
     public async Task<Guid> Approve(Guid id)
     {
-        //TODO: Check if we can add RunInTransaction later
-
+        // TODO: Check if we can add RunInTransaction later
         Guid createdWorkshopId;
+
         logger.LogDebug("Approving WorkshopDraft started. WorkshopDraft Id = {Id}.", id);
 
         var workshopDraft = await GetByIdWithProviderAndWorkshop(id);
+        var institutionId = workshopDraft?.Provider?.Institution?.Id.ToString();
 
         EnsureDraftIsApprovable(workshopDraft);
 
-        //TODO: Add image loading later
+        // TODO: Add image loading later
+
+        if (IsMinistryOfSport(institutionId))
+        {
+            await registrySyncService.SyncDraftAsync(workshopDraft).ConfigureAwait(false);
+        }
 
         if (workshopDraft.WorkshopId == null)
         {
-            if (IsMinistryOfSport(workshopDraft))
-            {
-                await SyncSectionWithRegistryAsync(workshopDraft);
-            }
+
             var result = await workshopServicesCombinerV2.Create(workshopDraft.ToV2CreateRequestDto());
             createdWorkshopId = result.Workshop.Id;
         }
@@ -376,7 +378,6 @@ public class WorkshopDraftService(
 
         return createdWorkshopId;
     }
-
     // <inheritdoc/>
     public async Task Reject(Guid id, string rejectionMessage)
     {
@@ -564,19 +565,28 @@ public class WorkshopDraftService(
 
             throw new InvalidOperationException("WorkshopDraft for this Workshop exists. Workshop can`t be updated.");
         }
-
+        
+        workshopV2Dto.MinsportSectionId = existingWorkshop.MinsportSectionId;
         if (ShouldBeModerate(workshopV2Dto, existingWorkshop))
         {
             logger.LogDebug("Moderated fields was changed. WorkshopDraft creation initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
-
             return (await Create(workshopV2Dto, true)).WorkshopDraft.WorkshopDetails;
         }
 
         logger.LogDebug("Moderated fields was not changed. Workshop update initiated. Workshop Id = {Id}.", workshopV2Dto.Id);
+        return await transactionManagerService.ExecuteInTransactionAsync(async () =>
+        {
+            // 1. Firstly try to update our database
+            var updateResult = (await workshopServicesCombinerV2.Update(workshopV2Dto,fromDraft:false,runInTransaction:false)).Value.Workshop;
 
-        NormalizeConditionalFields(workshopV2Dto);
-
-        return (await workshopServicesCombinerV2.Update(workshopV2Dto)).Value.Workshop;
+            // 2. If minsport  - sync with external registry
+            var institutionId = existingWorkshop.InstitutionId.ToString();
+            if (IsMinistryOfSport(institutionId))
+            {
+                await registrySyncService.SyncWorkshopAsync(workshopV2Dto);
+            }
+            return updateResult; 
+        });
     }
 
     // <inheritdoc/> 
@@ -891,6 +901,13 @@ public class WorkshopDraftService(
 
         var workshopDraft = await workshopDraftRepository.GetByIdWithDetails(id, includeExpression: query =>
             query.Include(wd => wd.Images));
+
+        if (workshopDraft == null)
+        {
+            throw new ArgumentException(
+                paramName: nameof(id),
+                message: $"There are no records in workshopDrafts table with such id - {id}.");
+        }
 
         logger.LogDebug("Got a WorkshopDraft with Id = {Id}", id);
 
@@ -1528,92 +1545,6 @@ public class WorkshopDraftService(
 
         return orderBy;
     }
-    /// <summary>
-    /// Asynchronously retrieves the sport kind dictionary ID code associated with the specified workshop draft.
-    /// </summary>
-    /// <param name="workshopDraft">The workshop draft containing the necessary data to determine the sport kind dictionary ID code.</param>
-    /// <returns>The sport kind dictionary ID code as an integer.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the <paramref name="workshopDraft"/> is missing a valid InstitutionHierarchyId, if the corresponding
-    /// institution hierarchy cannot be found, or if the SportRegistryIdCode is not set.</exception>
-    private async Task<long> GetSectionSportKindDictIdCodeAsync(WorkshopDraft workshopDraft)
-    {
-        if (workshopDraft.WorkshopDraftContent?.InstitutionHierarchyId is not Guid institutionHierarchyId ||
-            institutionHierarchyId == Guid.Empty)
-        {
-            throw new InvalidOperationException("InstitutionHierarchyId is missing in WorkshopDraftContent.");
-        }
-
-        var institutionHierarchyDto = await institutionHierarchyService.GetById(institutionHierarchyId);
-
-        if (institutionHierarchyDto is null)
-        {
-            throw new InvalidOperationException($"InstitutionHierarchy with Id {institutionHierarchyId} not found.");
-        }
-
-        if (institutionHierarchyDto.SportRegistryIdCode is null)
-        {
-            throw new InvalidOperationException(
-                $"SportRegistryIdCode is missing for InstitutionHierarchy with Id {institutionHierarchyId}.");
-        }
-
-        return (long)institutionHierarchyDto.SportRegistryIdCode;
-    }
-
-    /// <summary>
-    /// Synchronizes the workshop draft section with the external Sports Registry.
-    /// Builds a request from the draft, validates identifiers, 
-    /// sends the request to the registry API, and updates the draft with the created registry ID.
-    /// </summary>
-    /// <param name="draft">The workshop draft to be synchronized.</param>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when the draft contains invalid data or the registry synchronization fails.
-    /// </exception>
-    private async Task SyncSectionWithRegistryAsync(WorkshopDraft draft)
-    {
-        // Build a request
-        var request = draft.ToSportSectionPostRequest(imageStorageOptions.Value.BaseImageUrl);
-
-        if (!long.TryParse(request.SectionAddressLocalityDictIdCode, out var catottgId))
-        {
-            throw new InvalidOperationException(
-                $"Invalid CATOTTG Id: {request.SectionAddressLocalityDictIdCode}");
-        }
-
-        request.SectionAddressLocalityDictIdCode = await codeficatorService.GetCodeById(catottgId).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(request.SectionAddressLocalityDictIdCode))
-        {
-            logger.LogError("Codeficator code not found for CATOTTG Id {CatottgId}.", catottgId);
-            throw new InvalidOperationException($"Codeficator code not found for CATOTTG Id {catottgId}.");
-        }
-
-        request.SectionSportKindDictIdCode = await GetSectionSportKindDictIdCodeAsync(draft);
-
-        // 2) try to check api 
-        var apiCreationResponse = await sportsRegistryApiService.RegisterSectionAsync(request);
-
-        // 3) Processing of a result 
-        apiCreationResponse.Match(
-            error =>
-            {
-                var details = error.Content ?? error.Message ?? "Unknown";
-                logger.LogError("Failed to sync section to Sports Registry. Code={Code}, Message={Message}",
-                    (int)error.HttpStatusCode, details);
-
-                // NOTE: Maybe create a specific type of exception in future (TODO) 
-                throw new InvalidOperationException($"Registry sync failed: {details}");
-            },
-            success =>
-            {
-                var createdRegistryId = success.ResultVariables.SectionId;
-                draft.WorkshopDraftContent.MinsportSectionId = createdRegistryId;
-                logger.LogInformation(
-                    "Workshop draft was successfully synced to Sports Registry. DraftId={DraftId}, CreatedSectionId={SectionId}",
-                    draft.Id,
-                    createdRegistryId);
-                return true;
-            }
-        );
-    }
 
     /// <summary>
     /// Ensures that the workshop draft can be approved.
@@ -1634,11 +1565,10 @@ public class WorkshopDraftService(
     /// <summary>
     /// Determines whether the draft belongs to the Ministry of Sport.
     /// </summary>
-    /// <param name="draft">The workshop draft.</param>
+    /// <param name="institutionId">institutionId.</param>
     /// <returns><c>true</c> if the provider is associated with the Ministry of Sport; otherwise, <c>false</c>.</returns>
-    private bool IsMinistryOfSport(WorkshopDraft draft)
+    private bool IsMinistryOfSport(string institutionId)
     {
-        var institutionId = draft?.Provider?.Institution?.Id.ToString();
         var expected = institutionSettings.Value.MinistryOfSportId;
         return string.Equals(institutionId, expected, StringComparison.OrdinalIgnoreCase);
     }

@@ -147,6 +147,6 @@ public static class WorkshopV2CreateRequestDtoExtensions
             CoverImageId = draft.CoverImageId,
             ImageIds = draft.Images?.Select(i => i.ExternalStorageId).ToList() ?? [],
             IsChampionPath = draft.WorkshopDraftContent?.IsChampionPath ?? default,
-            MinsportSectionId = draft.WorkshopDraftContent?.MinsportSectionId,
+            MinsportSectionId = draft.MinsportSectionId,
         };
 }

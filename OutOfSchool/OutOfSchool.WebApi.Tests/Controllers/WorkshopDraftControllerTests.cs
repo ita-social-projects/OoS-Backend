@@ -230,7 +230,12 @@ public class WorkshopDraftControllerTests
         Assert.NotNull(result);
         Assert.AreEqual(StatusCodes.Status200OK, result.StatusCode);
 
-        Assert.NotNull(result.Value);
+        var workshopId = (Guid)result.Value
+            .GetType()
+            .GetProperty("WorkshopId")!
+            .GetValue(result.Value)!;
+
+        Assert.AreEqual(expectedId, workshopId);
     }
     #endregion 
 

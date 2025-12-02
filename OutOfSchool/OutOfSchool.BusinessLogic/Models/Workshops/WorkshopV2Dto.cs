@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.BusinessLogic.Models.ContactInfo;
 using OutOfSchool.BusinessLogic.Models.Tag;
 using OutOfSchool.BusinessLogic.Util.CustomComparers;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.WorkshopDrafts;
+using OutOfSchool.SportsRegistryApiClient.Models.Enums;
+using OutOfSchool.SportsRegistryApiClient.Models.Requests;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 
@@ -100,7 +106,6 @@ public static class WorkshopV2DtoExtensions
             Contacts = dto.Contacts?.ToModel() ?? [],
             IsChampionPath = dto.IsChampionPath,
             NoAgeRestrictions = dto.NoAgeRestrictions,
-            MinsportSectionId = dto.MinsportSectionId
         };
 
     public static void SetToDraft(this WorkshopV2Dto dto, OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft model)
@@ -177,6 +182,7 @@ public static class WorkshopV2DtoExtensions
             ImageIds = draft.Images?.Select(x => x.ExternalStorageId).ToList() ?? [],
             Status = draft.WorkshopDraftContent?.WorkshopStatus ?? default,
             ProviderOwnership = draft.WorkshopDraftContent?.OwnershipType ?? default,
+            MinsportSectionId = draft.MinsportSectionId,
         };
 
     public static List<WorkshopV2Dto> ToDto(this IEnumerable<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft> list)
@@ -223,7 +229,7 @@ public static class WorkshopV2DtoExtensions
         model.DefaultTeacherId = dto.DefaultTeacherId;
         model.ParentWorkshopId = dto.ParentWorkshopId;
         model.IsChampionPath = dto.IsChampionPath;
-
+        model.MinsportSectionId = dto.MinsportSectionId;
         return model;
     }
 
@@ -288,9 +294,110 @@ public static class WorkshopV2DtoExtensions
             IsBlocked = model.Provider?.IsBlocked ?? default,
             ProviderOwnership = model.ProviderOwnership,
             ProviderStatus = model.Provider?.Status ?? default,
+            MinsportSectionId = model.MinsportSectionId,
         };
     }
 
     public static List<WorkshopV2Dto> ToV2Dto(this IEnumerable<Workshop> list)
         => list.MapToList(ToV2Dto);
+    public static SportsSectionUpdateRequest ToSportSectionUpdateRequest(
+        this WorkshopV2Dto dto, string baseImageUrl)
+    {
+        var sectionId = dto.MinsportSectionId
+            ?? throw new ArgumentException("SectionId is required for update.", nameof(dto));
+
+        var defaultContact = dto.Contacts?.FirstOrDefault(c => c.IsDefault)
+            ?? throw new ArgumentException("Default contact is required.", nameof(dto));
+
+        var phones = defaultContact.Phones?
+            .Select(p => new string(p.Number.Where(char.IsDigit).ToArray()))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Distinct()
+            .ToList() ?? new();
+
+        if (phones.Count == 0)
+            throw new ArgumentException("At least one phone number is required.", nameof(dto));
+
+        var email = defaultContact.Emails?.FirstOrDefault()?.Address
+            ?? throw new ArgumentException("Default contact email is required.", nameof(dto));
+
+        var registrationFlow = dto.EnrollmentProcedureDescription
+            ?? throw new ArgumentException("EnrollmentProcedureDescription is required.", nameof(dto));
+
+        return new SportsSectionUpdateRequest
+        {
+            SectionId = sectionId,
+
+            SectionName = dto.Title,
+            SectionAgeFrom = dto.MinAge ?? 0,
+            SectionAgeTo = dto.MaxAge ?? 0,
+            SectionIsInShlyahProject = dto.IsChampionPath,
+            SectionPozashkillyaModerationStatus = ModerationStatus.ACTIVE,
+
+            SectionAddressLocalityDictIdCode = defaultContact.Address?.CATOTTGId.ToString(),
+            SectionAddressStreet = defaultContact.Address?.Street ?? string.Empty,
+            SectionAddressHouse = defaultContact.Address?.BuildingNumber ?? string.Empty,
+
+            SectionDescription = string.Join("\n", dto.WorkshopDescriptionItems.Select(x => x.Description)),
+            SectionRegistrationFlow = registrationFlow,
+            
+            SectionPhones = phones,
+            SectionEmail = email,
+            SectionRegistrationFormUrl = "https://forms.example.com",
+            SectionUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Website)?.Url,
+            SectionFacebookUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Facebook)?.Url,
+            SectionInstagramUrl = defaultContact.SocialNetworks.FirstOrDefault(s => s.Type == SocialNetworkContactType.Instagram)?.Url,
+
+            SectionPracticeFormat = dto.FormOfLearning.ToSectionPracticeFormat(),
+            SectionSelectionCriteria = dto.CompetitiveSelectionDescription,
+            SectionPracticeCost = dto.Price ?? 0,
+            SectionMaxStudentsAmount = dto.AvailableSeats == uint.MaxValue
+                ? 1000
+                : Math.Min((int)dto.AvailableSeats.Value, 1000),
+
+            SectionTitlePhoto = string.IsNullOrEmpty(dto.CoverImageId) ? null
+                : CombineImageUrl(baseImageUrl, dto.CoverImageId),
+            SectionPhotos = dto.ImageIds?
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => CombineImageUrl(baseImageUrl, id))
+                .ToList() ?? new(),
+            
+            //TODO: We need to manage this property later, after the Ministry of Sport finishes their trainers logic.
+            SectionTrainers = new List<Guid>(),
+           
+            SectionPracticePeriodDateFrom = $"{dto.StudyPeriodDates.StartDate.Day:D2}:{dto.StudyPeriodDates.StartDate.Month:D2}",
+            SectionPracticePeriodDateTo   = $"{dto.StudyPeriodDates.EndDate.Day:D2}:{dto.StudyPeriodDates.EndDate.Month:D2}",
+
+            SectionSchedule = dto.DateTimeRanges?
+                .SelectMany(r => (r.Workdays ?? Enumerable.Empty<DaysBitMask>())
+                    .SelectMany(flags => DecomposeFlags(flags)
+                        .Select(day => new SectionScheduleRequest
+                        {
+                            SectionScheduleWeekday = Enum.Parse<Weekday>(day.ToString(), ignoreCase: true),
+                            SectionScheduleTimeFrom = r.StartTime.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture),
+                            SectionScheduleTimeTo   = r.EndTime.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture),
+                        })))
+                .ToList() ?? new()
+
+        };
+    }
+
+    private static SectionPracticeFormat ToSectionPracticeFormat(this FormOfLearning formOfLearning)
+        => formOfLearning switch
+        {
+            FormOfLearning.Online => SectionPracticeFormat.ONLINE,
+            FormOfLearning.Offline => SectionPracticeFormat.OFFLINE,
+            FormOfLearning.Mixed => SectionPracticeFormat.HYBRID,
+            _ => throw new ArgumentOutOfRangeException(nameof(formOfLearning), formOfLearning, null)
+        };
+
+    private static IEnumerable<DaysBitMask> DecomposeFlags(DaysBitMask flags)
+        => Enum.GetValues<DaysBitMask>().Where(d => d != DaysBitMask.None && flags.HasFlag(d));
+
+    private static string CombineImageUrl(string baseUrl, string imageId)
+    {
+        var safeBase = (baseUrl ?? string.Empty).Trim().TrimEnd('/');
+        var safeId = (imageId ?? string.Empty).Trim().TrimStart('/');
+        return string.IsNullOrEmpty(safeBase) ? safeId : $"{safeBase}/{safeId}";
+    }
 }

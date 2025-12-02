@@ -185,7 +185,7 @@ public class ProviderServiceV2Tests
         //var randomProvider = mapper.Map<ProviderCreateDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
 
         //// Act & Assert
-        //Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
+        //Assert.ThrowsAsync<InvalidOperationException>(async () => await sectionProvider.Create(randomProvider));
     }
 
     [Test]

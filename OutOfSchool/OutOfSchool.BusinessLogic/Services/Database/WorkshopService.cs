@@ -497,7 +497,7 @@ public class WorkshopService(
 
     /// <inheritdoc/>
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto, bool fromDraft = false)
+    public async Task<WorkshopResultDto> UpdateV2(WorkshopV2Dto dto, bool fromDraft = false, bool runInTransaction = true)
     {
         _ = dto ?? throw new ArgumentNullException(nameof(dto));
         logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -558,15 +558,21 @@ public class WorkshopService(
 
             return (currentWorkshop, multipleImageChangingResult, changingCoverImageResult);
         }
-
-        var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository
-            .RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
+        (Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangeResult, ImageChangingResult changeCoverImageResult) result;
+        if (runInTransaction)
+        {
+            result = await workshopRepository.RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
+        }
+        else
+        {
+            result = await UpdateWorkshopWithDependencies().ConfigureAwait(false);
+        }
 
         return new WorkshopResultDto
         {
-            Workshop = updatedWorkshop.ToV2Dto(),
-            UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
-            UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
+            Workshop = result.updatedWorkshop.ToV2Dto(),
+            UploadingCoverImageResult = result.changeCoverImageResult?.UploadingResult?.OperationResult,
+            UploadingImagesResults = result.multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
         };
     }
 

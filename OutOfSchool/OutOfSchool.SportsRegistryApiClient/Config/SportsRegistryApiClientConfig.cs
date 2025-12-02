@@ -11,6 +11,11 @@ public class SportsRegistryApiClientConfig
     public required string ApiUrl { get; init; }
 
     /// <summary>
+    /// Url for platfrom-gateway api endpoints 
+    /// </summary>
+    public required string PlatformApiUrl { get; init; }
+    
+    /// <summary>
     /// URL for obtaining an access token (Keycloak token endpoint)
     /// </summary>
     public required string TokenEndpoint { get; init; }

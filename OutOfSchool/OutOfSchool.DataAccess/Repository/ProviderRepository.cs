@@ -106,4 +106,15 @@ public class ProviderRepository : SensitiveEntityRepositorySoftDeleted<Provider>
 
         return edrpous.Where(x => existingEdrpouIpn.Contains(x.Value)).Select(x => x.Key).ToList();
     }
+
+    public async Task<Guid?> GetIdByEdrpouAsync(string edrpou)
+    {
+        var providerId = await dbSet
+            .Where(p => !p.IsDeleted && p.Edrpou == edrpou)
+            .Select(p => p.Id)
+            .SingleOrDefaultAsync();
+
+        return providerId == Guid.Empty ? null : providerId;
+    }
+
 }

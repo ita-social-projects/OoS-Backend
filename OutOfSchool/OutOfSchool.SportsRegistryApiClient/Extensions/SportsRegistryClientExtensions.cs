@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -5,6 +6,7 @@ using OutOfSchool.Common.Communication;
 using OutOfSchool.Common.Communication.ICommunication;
 using OutOfSchool.SportsRegistryApiClient.Config;
 using OutOfSchool.SportsRegistryApiClient.Interfaces;
+
 using OutOfSchool.SportsRegistryApiClient.Services;
 
 namespace OutOfSchool.SportsRegistryApiClient.Extensions;
@@ -30,11 +32,13 @@ public static class SportsRegistryClientExtensions
         {
             services.TryAddTransient<ICommunicationService, CommunicationService>();
             services.TryAddTransient<ISportsRegistryApiService, SportsRegistryApiService>();
-            services.TryAddTransient<ISportsRegistryProviderService, SportsRegistryProviderService>();
+            services.TryAddTransient<ISportsRegistrySectionProvider, SportsRegistrySectionProvider>();
+            services.TryAddTransient<ISportsRegistryDictionaryProvider, SportsRegistryDictionaryProvider>();
+            services.TryAddTransient<ISportsRegistryWorkshopProvider, SportsRegistryWorkshopProviderService>();
         }
         else
         {
-            services.TryAddSingleton<ISportsRegistryProviderService, DisabledSportsRegistryProviderService>();
+            services.TryAddSingleton<ISportsRegistrySectionProvider, DisabledSportsRegistryStub>();
         }
         
         return sportConfiguration;

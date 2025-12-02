@@ -50,7 +50,7 @@ public class WorkshopServicesCombinerV2(
         return creationResult;
     }
 
-    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto, bool fromDraft = false)
+    public async Task<Result<WorkshopResultDto>> Update(WorkshopV2Dto dto, bool fromDraft = false, bool runInTransaction = true)
     {
         var currentWorkshop = await GetById(dto.Id, true).ConfigureAwait(false);
         if (currentWorkshop is null)
@@ -80,7 +80,7 @@ public class WorkshopServicesCombinerV2(
             });
         }
 
-        var updatedWorkshop = await workshopService.UpdateV2(dto, fromDraft).ConfigureAwait(false);
+        var updatedWorkshop = await workshopService.UpdateV2(dto, fromDraft,runInTransaction).ConfigureAwait(false);
 
         await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                 ElasticsearchSyncEntity.Workshop,

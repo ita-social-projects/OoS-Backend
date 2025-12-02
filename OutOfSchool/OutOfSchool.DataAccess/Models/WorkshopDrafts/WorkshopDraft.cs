@@ -42,6 +42,11 @@ public class WorkshopDraft :
     /// </summary>
     public long CATOTTGId { get; set; }
 
+    /// <summary>
+    /// ID of the section in the Ministry of Sport Registry (UUID).
+    /// </summary>
+    public Guid? MinsportSectionId { get; set; }
+
     public virtual Provider Provider { get; set; }
 
     public virtual Workshop Workshop { get; set; }
