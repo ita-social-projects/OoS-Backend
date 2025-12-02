@@ -25,7 +25,8 @@ public static class StudySubjectDtoExtensions
             LanguageId = model.LanguageId,
             Language = model.Language?.ToDto(),
             ProviderId = model.ProviderId,
-            Workshops = model.Workshops?.ToShortEntityDto()
+            Workshops = model.Workshops?.ToShortEntityDto(),
+            ActiveFrom = model.ActiveFrom
         };
 
     public static List<StudySubjectDto> ToDto(this IEnumerable<StudySubject> list)
