@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Elastic.Clients.Elasticsearch;
+﻿using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.ElasticsearchData;
 
@@ -219,6 +219,7 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
 
         return sorts;
     }
+
     private void AddSearchTextQuery(BoolQuery query, WorkshopFilterES filter)
     {
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
@@ -227,16 +228,12 @@ public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
             {
                 Fields = new[]
                 {
-                    Infer.Field<WorkshopES>(w => w.Title.Suffix(WorkshopES.TextSuffix)),
-                    Infer.Field<WorkshopES>(w => w.ShortTitle),
-                    Infer.Field<WorkshopES>(w => w.ProviderTitle),
-                    Infer.Field<WorkshopES>(w => w.Keywords),
-                    Infer.Field<WorkshopES>(w => w.Description),
-                    Infer.Field<WorkshopES>(w => w.CompetitiveSelectionDescription),
-                    Infer.Field<WorkshopES>(w => w.EnrollmentProcedureDescription),
-                    Infer.Field<WorkshopES>(w => w.PreferentialTermsOfParticipation),
-                    Infer.Field<WorkshopES>(w => w.Tags),
-                },
+                Infer.Field<WorkshopES>(w => w.Title.Suffix(WorkshopES.TextSuffix), boost: 3.0),
+                Infer.Field<WorkshopES>(w => w.ShortTitle, boost: 2.0),
+                Infer.Field<WorkshopES>(w => w.Keywords, boost: 1.5),
+                Infer.Field<WorkshopES>(w => w.ProviderTitle),
+                Infer.Field<WorkshopES>(w => w.Description)
+            },
 
                 // Query allows results where up to 2 chars may differ from the search keyword
                 Query = $"{filter.SearchText}* OR {filter.SearchText}~",

@@ -1035,7 +1035,12 @@ public class WorkshopService(
             // Fix Rider ambiguous method with either char or string args
             foreach (var word in filter.SearchText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             {
-                tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
+                var term = $"%{word}%";
+
+                tempPredicate = tempPredicate.Or(x =>
+                    EF.Functions.Like(x.Title, term) ||
+                    EF.Functions.Like(x.ShortTitle, term) ||
+                    EF.Functions.Like(x.Keywords, term));
             }
 
             predicate = predicate.And(tempPredicate);
