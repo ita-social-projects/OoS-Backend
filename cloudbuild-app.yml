@@ -1,14 +1,19 @@
+# Trigger extracts the commit timestamp as _COMMIT_DATE_RAW from $(commit.commit.committer.date) event payload
+# and uses bash variable expansion to convert it to _COMMIT_DATE as ${_COMMIT_DATE_RAW//:/-}
 steps:
 # Build the container image
-- name: 'gcr.io/k8s-skaffold/pack'
+- name: 'buildpacksio/pack'
   entrypoint: 'pack'
+  env:
+    - 'DOCKER_API_VERSION=1.41'
   args:
     - build
     - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-api:$SHORT_SHA
+    - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-api:$SHORT_SHA-${_COMMIT_DATE}
     - --cache-image=${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-cache:api
-    - --builder=paketobuildpacks/builder:base
-    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
-    - --buildpack=gcr.io/paketo-buildpacks/environment-variables
+    - --builder=paketobuildpacks/builder-jammy-base:latest
+    - --buildpack=docker.io/paketobuildpacks/dotnet-core
+    - --buildpack=docker.io/paketobuildpacks/environment-variables
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --env=BPE_AppDefaults__Version=$SHORT_SHA
     - --publish
@@ -82,3 +87,6 @@ availableSecrets:
   secretManager:
   - versionName: $_GITHUB_DEPLOY
     env: 'SSH'
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true

@@ -1,11 +1,6 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MySqlConnector;
 
 namespace OutOfSchool.WebApi.Extensions;
 
@@ -45,9 +40,8 @@ public class ExceptionMiddlewareExtension
         catch (ArgumentException ex)
         {
             logger.LogError($"Exception information: {ex}");
-
-            var messageForUser = "Validation error. Please check your input data and try again. If you are sure of input data please contact support.";
-
+            var baseMessageForUser = "Validation error. Please check your input data and try again. If you are sure of input data please contact support.";
+            var messageForUser = string.IsNullOrWhiteSpace(ex.Message) ? baseMessageForUser : ex.Message;
             await HandleExceptionAsync(context, messageForUser, StatusCodes.Status400BadRequest).ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException ex)
@@ -81,6 +75,10 @@ public class ExceptionMiddlewareExtension
             var messageForUser = "Server error, options validation error. Please contact support.";
 
             await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
+        }
+        catch (ValidationException ex)
+        {
+            await HandleExceptionAsync(context, ex.Message, StatusCodes.Status400BadRequest).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

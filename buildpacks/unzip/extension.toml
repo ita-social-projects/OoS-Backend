@@ -1,0 +1,7 @@
+api = "0.10"
+
+[extension]
+id = "outofschool/unzip"
+version = "0.0.1"
+name = "Unzip Extension"
+description = "A simple extension that installs unzip on the builder image"

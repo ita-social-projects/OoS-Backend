@@ -1,14 +1,14 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using H3Lib;
-using H3Lib.Extensions;
-using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models;
 
-public class Address : IKeyedEntity<long>
+// TODO: This entity will stay until we fully move everything to unified contacts
+public class Address : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required(ErrorMessage = "Street is required")]
     [MaxLength(60)]

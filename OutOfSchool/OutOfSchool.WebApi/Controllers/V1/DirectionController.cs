@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -18,8 +12,8 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for Direction entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]/[action]")]
+[AspApiVersion(1)]
+[Route("api/v{version:apiVersion}/directions/")]
 [HasPermission(Permissions.SystemManagement)]
 public class DirectionController : ControllerBase
 {
@@ -46,7 +40,7 @@ public class DirectionController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [Obsolete("Use paged method")]
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("Get")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -62,22 +56,23 @@ public class DirectionController : ControllerBase
         return Ok(directions);
     }
 
+    /// <summary>
+    /// To get filtered directions from DB.
+    /// </summary>
+    /// <param name="filter">Filter for directions.</param>
+    /// <param name="isAdmins">To filter directions by admin role.</param>
+    /// <returns>List of filtered directions, or no content.</returns>
+    /// <response code="200">One or more directions were found.</response>
+    /// <response code="204">No direction was found.</response>
+    /// <response code="500">If any server error occures.</response>
     [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false)
-    {
-        var directions = await service.GetByFilter(filter, isAdmins).ConfigureAwait(false);
-
-        if (directions.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(directions);
-    }
+    public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter, bool isAdmins = false) =>
+        await service.GetByFilter(filter, isAdmins)
+            .ProtectAndMap(this.SearchResultToOkOrNoContent);
 
     /// <summary>
     /// To recieve the direction with the defined id.
@@ -85,16 +80,25 @@ public class DirectionController : ControllerBase
     /// <param name="id">Key of the direction in the table.</param>
     /// <returns><see cref="DirectionDto"/>.</returns>
     /// <response code="200">The entity was found by given Id.</response>
+    /// <response code="404">If the entity was not found by given Id.</response>
     /// <response code="500">If any server error occures. For example: Id was wrong.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetById(long id)
     {
         this.ValidateId(id, localizer);
 
-        return Ok(await service.GetById(id).ConfigureAwait(false));
+        var direction = await service.GetById(id).ConfigureAwait(false);
+
+        if (direction == null)
+        {
+            return NotFound("Direction with such Id does not exist in the database.");
+        }
+
+        return Ok(direction);
     }
 
     /// <summary>
@@ -114,7 +118,8 @@ public class DirectionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(DirectionDto directionDto)
+    [FeatureGate(nameof(Feature.DirectionManagement))]
+    public async Task<IActionResult> Create([FromBody] DirectionDto directionDto)
     {
         if (!ModelState.IsValid)
         {
@@ -125,71 +130,43 @@ public class DirectionController : ControllerBase
         {
             directionDto.Id = default;
 
-            var direction = await service.Create(directionDto).ConfigureAwait(false);
+            var response = await service.Create(directionDto).ConfigureAwait(false);
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = direction.Id, },
-                direction);
+            if (response != null)
+            {
+                if (response.Succeeded)
+                {
+
+                    return CreatedAtAction(
+                        nameof(GetById),
+                        new { id = response.Value.Id, },
+                        response.Value);
+                }
+                else
+                {
+                    var error = response.OperationResult.Errors.FirstOrDefault();
+
+                    if (error != null)
+                    {
+                        return error.Code switch
+                        {
+                            "400" => BadRequest(error.Description),
+                            _ => StatusCode(500, "An unexpected error occurred.")
+                        };
+                    }
+
+                    return StatusCode(500, "An unexpected error occurred.");
+                }
+            }
+            return StatusCode(500, "An unexpected error occurred.");
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
-    }
-
-    /// <summary>
-    /// To update Direction entity that already exists.
-    /// </summary>
-    /// <param name="directionDto">DirectionDto object with new properties.</param>
-    /// <returns>Direction that was updated.</returns>
-    /// <response code="200">Direction was successfully updated.</response>
-    /// <response code="400">Model is invalid.</response>
-    /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method.</response>
-    /// <response code="500">If any server error occures.</response>
-    [HttpPut]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Update(DirectionDto directionDto)
-    {
-        if (!ModelState.IsValid)
+        catch (Exception ex)
         {
-            return BadRequest(ModelState);
+            return BadRequest(ex.Message);
         }
-
-        return Ok(await service.Update(directionDto).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    /// Delete the Direction entity from DB.
-    /// </summary>
-    /// <param name="id">The key of the Direction in table.</param>
-    /// <returns>Status Code.</returns>
-    /// <response code="204">Direction was successfully deleted.</response>
-    /// <response code="400">If some workshops assosiated with this direction.</response>
-    /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method.</response>
-    /// <response code="500">If any server error occures.</response>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> Delete(long id)
-    {
-        this.ValidateId(id, localizer);
-
-        var result = await service.Delete(id).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.OperationResult);
-        }
-
-        return NoContent();
     }
 }

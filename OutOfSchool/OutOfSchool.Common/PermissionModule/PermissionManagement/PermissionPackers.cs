@@ -8,20 +8,21 @@ public static class PermissionPackers
 {
     public static string PackPermissionsIntoString(this IEnumerable<Permissions> permissions)
     {
-        return permissions.Aggregate(string.Empty, (s, permission) => s + (char)permission);
+        var bytes = permissions.Select(p => (byte)p).ToArray();
+
+        return Convert.ToBase64String(bytes);
     }
 
     public static IEnumerable<Permissions> UnpackPermissionsFromString(this string packedPermissions)
     {
-        if (packedPermissions == null)
+        if (string.IsNullOrEmpty(packedPermissions))
         {
             throw new ArgumentNullException(nameof(packedPermissions));
         }
 
-        foreach (var character in packedPermissions)
-        {
-            yield return (Permissions)character;
-        }
+        var bytes = Convert.FromBase64String(packedPermissions);
+
+        return bytes.Select(b => (Permissions)b);
     }
 
     public static Permissions? FindPermissionViaName(this string permissionName)

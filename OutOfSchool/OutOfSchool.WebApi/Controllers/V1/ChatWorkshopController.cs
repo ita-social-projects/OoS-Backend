@@ -1,10 +1,13 @@
 ﻿using System.Security.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -12,10 +15,10 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller for chat operations between Parent and Provider.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(AuthenticationSchemes = "Bearer")]
-[Authorize(Roles = "provider,parent,ministryadmin")]
+[Authorize(Roles = "provider,parent")]
+[FeatureGate(nameof(Feature.MessagingFeature))]
 public class ChatWorkshopController : ControllerBase
 {
     // TODO: define the algorithm of logging information and warnings  in the solution
@@ -25,8 +28,8 @@ public class ChatWorkshopController : ControllerBase
     private readonly IValidationService validationService;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly ILogger<ChatWorkshopController> logger;
-    private readonly IProviderAdminService providerAdminService;
-    private readonly IMinistryAdminService ministryAdminService;
+    private readonly IApplicationService applicationService;
+    private readonly ICurrentUserService currentUserService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -36,24 +39,23 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="validationService">Service for validation parameters.</param>
     /// <param name="localizer">Localizer.</param>
     /// <param name="logger">Logger.</param>
-    /// <param name="providerAdminService">Service for Provider's admins.</param>
-    /// <param name="ministryAdminService">Service for Ministry admins.</param>
+    /// <param name="applicationService">Service for Applications.</param>
     public ChatWorkshopController(
         IChatMessageWorkshopService messageService,
         IChatRoomWorkshopService roomService,
         IValidationService validationService,
         IStringLocalizer<SharedResource> localizer,
         ILogger<ChatWorkshopController> logger,
-        IProviderAdminService providerAdminService,
-        IMinistryAdminService ministryAdminService)
+        IApplicationService applicationService,
+        ICurrentUserService currentUserService)
     {
         this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
         this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
-        this.ministryAdminService = ministryAdminService ?? throw new ArgumentNullException(nameof(ministryAdminService));
+        this.applicationService = applicationService ?? throw new ArgumentNullException(nameof(applicationService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     /// <summary>
@@ -70,6 +72,21 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<IActionResult> GetRoomForParentByRoomIdAsync(Guid id)
         => this.GetRoomByIdAsync(id, this.IsParentAChatRoomParticipantAsync);
+
+    /// <summary>
+    /// Get existing or create new chat room.
+    /// </summary>
+    /// <param name="applicationId">Application Id.</param>
+    /// <returns>Existiong or new chat room.</returns>
+    [HttpGet("chatrooms/applications/{applicationId}")]
+    [Authorize(Roles = "parent,provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetRoomByApplicationIdAsync(Guid applicationId)
+        => this.GetOrCreateRoomByApplicationIdAsync(applicationId);
 
     /// <summary>
     /// Get provider's chat room with information about Parent and Workshop.
@@ -93,6 +110,7 @@ public class ChatWorkshopController : ControllerBase
     /// <param name="id">Workshop's Id.</param>
     /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
     /// <returns>User's chat room's messages that were found.</returns>
+    [Obsolete("Become unused")]
     [HttpGet("parent/workshops/{id}/messages")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
@@ -161,22 +179,6 @@ public class ChatWorkshopController : ControllerBase
         => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
 
     /// <summary>
-    /// Gets a portion of chat messages for Ministry Admin if it has related provider participants by specified chat room id.
-    /// </summary>
-    /// <param name="id">ChatRoom's Id.</param>
-    /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
-    /// <returns>User's chat room's messages that were found.</returns>
-    [HttpGet("ministryadmin/chatrooms/{id}/messages")]
-    [Authorize(Roles = "ministryadmin")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetMessagesForMinistryAdminByRoomIdAsync(Guid id, [FromQuery] OffsetFilter offsetFilter)
-        => this.GetMessagesByRoomIdAsync(id, offsetFilter, IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync);
-
-    /// <summary>
     /// Get a list of chat rooms for current parent.
     /// </summary>
     /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
@@ -187,7 +189,7 @@ public class ChatWorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Task<IActionResult> GetParentsRoomsAsync([FromQuery]ChatWorkshopFilter filter = null)
+    public Task<IActionResult> GetParentsRoomsAsync([FromQuery] ChatWorkshopFilter filter = null)
         => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId), filter);
 
     /// <summary>
@@ -205,10 +207,45 @@ public class ChatWorkshopController : ControllerBase
         => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId), filter);
 
     /// <summary>
+    /// Get amount of unread messages for current user.
+    /// </summary>
+    /// <returns>Number of unread messages.</returns>
+    [HttpGet("user/unreadMessagesCount")]
+    [Authorize(Roles = "parent, provider")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetCurrentUserUnreadMessagesCountAsync()
+    {
+        var userId = GettingUserProperties.GetUserId(HttpContext);
+        var userRole = GettingUserProperties.GetUserRole(HttpContext);
+        var parentOrProviderId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+        var unreadMessagesCount = await roomService.GetCurrentUserUnreadMessagesCountAsync(parentOrProviderId, userRole);
+        return Ok(unreadMessagesCount);
+    }
+
+    /// <summary>
     /// Get a chat room for current parent and workshopId.
     /// </summary>
     /// <param name="workshopId">WorkShop's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [HttpGet("parent/chatrooms/workshop/{workshopId}")]
+    [Authorize(Roles = "parent")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<IActionResult> GetParentsRoomByWorkshopIdAsync(Guid workshopId)
+        => GetParentRoomByWorkshopIdAsync(workshopId);
+
+    /// <summary>
+    /// Get a chat room for current parent and workshopId.
+    /// </summary>
+    /// <param name="workshopId">WorkShop's Id.</param>
+    /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("parent/chatroomforworkshop/{workshopId}")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
@@ -224,6 +261,7 @@ public class ChatWorkshopController : ControllerBase
     /// </summary>
     /// <param name="workshopId">WorkShop's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("parent/chatroomwithmessagesforworkshop/{workshopId}")]
     [Authorize(Roles = "parent")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDtoWithLastMessage))]
@@ -237,8 +275,9 @@ public class ChatWorkshopController : ControllerBase
     /// <summary>
     /// Get chat rooms for current provider and parentId.
     /// </summary>
-    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("provider/chatroomsforparent/{parentId}")]
     [Authorize(Roles = "provider")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDto>))]
@@ -252,8 +291,9 @@ public class ChatWorkshopController : ControllerBase
     /// <summary>
     /// Get chat rooms with messages for current provider and parentId.
     /// </summary>
-    /// <param name="parentId">ChatRoom's Id.</param>
+    /// <param name="parentId">Parent's Id.</param>
     /// <returns>ChatRoom that was found.</returns>
+    [Obsolete("Was not used")]
     [HttpGet("provider/chatroomswithmessagesforparent/{parentId}")]
     [Authorize(Roles = "provider")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
@@ -264,32 +304,29 @@ public class ChatWorkshopController : ControllerBase
     public Task<IActionResult> GetProvidersRoomsWithMessagesByParentAsync(Guid parentId)
         => GetProvidersRoomsByParentIdAsync(parentId, true);
 
-    /// <summary>
-    /// Get a list of chat rooms for the ministry admin by specific provider id.
-    /// </summary>
-    /// <param name="providerId">Provider Id.</param>
-    /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
-    [HttpGet("ministryadmin/chatrooms")]
-    [Authorize(Roles = "ministryadmin")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetRoomsForMinistryAdminByProviderIdAsync([FromQuery] Guid providerId)
+    private async Task<IActionResult> GetOrCreateRoomByApplicationIdAsync(Guid applicationId)
     {
         async Task<IActionResult> Operation()
         {
-            var userId = GettingUserProperties.GetUserId(HttpContext);
+            logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId}");
+            var application = await applicationService.GetById(applicationId);
 
-            var isProviderSubordinate = await ministryAdminService.IsProviderSubordinateAsync(userId, providerId);
-            if (!isProviderSubordinate)
+            if (application is null)
             {
-                return Forbid();
+                return NoContent();
+            }
+            
+            await currentUserService.UserHasRights(new ParentRights(application.ParentId), new EmployeeWorkshopRights(application.WorkshopId)).ConfigureAwait(false);
+
+            var chatroom = await roomService.CreateOrReturnExistingAsync(application.WorkshopId, application.ParentId);
+
+            if (chatroom is null)
+            {
+                logger.LogWarning($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(applicationId)} = {applicationId} but get null");
+                return BadRequest();
             }
 
-            var chatRooms = await roomService.GetByProviderIdAsync(providerId);
-            return chatRooms.Any() ? Ok(chatRooms) : NoContent();
+            return Ok(chatroom);
         }
 
         return await HandleOperationAsync(Operation);
@@ -311,26 +348,24 @@ public class ChatWorkshopController : ControllerBase
 
     private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
     {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
-        var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+        bool result;
 
-        var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
+        try
+        {
+            await currentUserService.UserHasRights(new EmployeeWorkshopRights(chatRoom.WorkshopId)).ConfigureAwait(false);
+            result = true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            result = false;
+        }
 
         if (!result)
         {
-            this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, currentUserService.UserId);
         }
 
         return result;
-    }
-
-    private async Task<bool> IsMinistryAdminAbleToBeSeeChatRoomMessagesAsync(ChatRoomWorkshopDto chatRoom)
-    {
-        var userId = GettingUserProperties.GetUserId(HttpContext);
-
-        return await ministryAdminService.IsProviderSubordinateAsync(
-            userId,
-            chatRoom.Workshop?.ProviderId ?? throw new InvalidOperationException($"Unable to retrieve workshop data from chatRoom with id = {chatRoom.Id}"));
     }
 
     private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
@@ -395,6 +430,37 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
+    private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId)
+    {
+        async Task<IActionResult> Operation()
+        {
+            logger.LogInformation($"User {GettingUserProperties.GetUserId(HttpContext)} is trying to get chat room by {nameof(workshopId)} = {workshopId}");
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userRole = Role.Parent;
+
+            var parentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            if (parentId != Guid.Empty)
+            {
+                logger.LogWarning($"User {userId} is trying to get chat room but has no rights");
+
+                var chatRoom = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
+
+                if (chatRoom is not null)
+                {
+                    return Ok(chatRoom);
+                }
+            }
+
+            logger.LogWarning($"User {userId} is trying to get chat room by {nameof(workshopId)} = {workshopId} but get null");
+
+            return BadRequest();
+        }
+
+        return await HandleOperationAsync(Operation);
+    }
+
+    [Obsolete("Was not used")]
     private async Task<IActionResult> GetParentRoomByWorkshopIdAsync(Guid workshopId, bool withMessages)
     {
         async Task<IActionResult> Operation()
@@ -422,6 +488,7 @@ public class ChatWorkshopController : ControllerBase
         return await HandleOperationAsync(Operation);
     }
 
+    [Obsolete("Was not used")]
     private async Task<IActionResult> GetProvidersRoomsByParentIdAsync(Guid parentId, bool withMessages)
     {
         async Task<IActionResult> Operation()
@@ -455,20 +522,10 @@ public class ChatWorkshopController : ControllerBase
         {
             var userId = GettingUserProperties.GetUserId(HttpContext);
             var userRole = GettingUserProperties.GetUserRole(HttpContext);
-            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
-
-            if (userSubrole == Subrole.ProviderAdmin)
-            {
-                var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
-                filter.WorkshopIds = workshopIds;
-                var chatRooms = await roomService.GetChatRoomByFilter(filter, default).ConfigureAwait(false);
-
-                return chatRooms.Entities.Any() ? Ok(chatRooms) : NoContent();
-            }
 
             var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
-            if (providerOrParentId != default)
+            if (providerOrParentId != Guid.Empty)
             {
                 IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms = null;
                 if (IsFilterEmpty(filter))
@@ -481,7 +538,8 @@ public class ChatWorkshopController : ControllerBase
                 }
                 else
                 {
-                    var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId).ConfigureAwait(false);
+                    bool searchForProvider = userRole is Role.Provider or Role.Employee;
+                    var chatroomFiltration = await roomService.GetChatRoomByFilter(filter, providerOrParentId, searchForProvider).ConfigureAwait(false);
                     chatRooms = chatroomFiltration.Entities;
                     if (chatRooms.Any())
                     {
@@ -500,7 +558,7 @@ public class ChatWorkshopController : ControllerBase
     {
         filter ??= new ChatWorkshopFilter();
         filter.WorkshopIds ??= new List<Guid>();
-        return filter.WorkshopIds.Count() == 0 && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0 && filter.Size == 0;
+        return !filter.WorkshopIds.Any() && string.IsNullOrEmpty(filter.SearchText) && filter.From == 0 && filter.Size == 0;
     }
 
     private async Task<IActionResult> HandleOperationAsync(Func<Task<IActionResult>> operation)

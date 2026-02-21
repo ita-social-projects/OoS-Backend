@@ -7,7 +7,6 @@ public static class DataProtectionExtensions
 {
     public static IDataProtectionBuilder AddCustomDataProtection(this IServiceCollection services, string applicationName)
     {
-        return services.AddDataProtection().SetApplicationName(applicationName).PersistKeysToDbContext<OutOfSchoolDbContext>()
-            ;
+        return services.AddDataProtection().SetApplicationName(applicationName).PersistKeysToDbContext<OutOfSchoolDbContext>();
     }
 }

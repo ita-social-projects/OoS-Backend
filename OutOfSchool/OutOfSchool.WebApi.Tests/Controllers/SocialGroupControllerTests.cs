@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -187,7 +188,7 @@ public class SocialGroupControllerTests
     public async Task CreateSocialGroup_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.Create(socialGroupLocalized)).ReturnsAsync(socialGroupLocalized);
+        service.Setup(x => x.Create(socialGroupLocalized)).ReturnsAsync(socialGroup);
 
         // Act
         var result = await controller.Create(socialGroupLocalized).ConfigureAwait(false) as CreatedAtActionResult;

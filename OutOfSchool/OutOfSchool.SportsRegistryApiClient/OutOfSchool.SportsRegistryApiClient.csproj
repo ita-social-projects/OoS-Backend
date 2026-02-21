@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="OpenIddict.Client.AspNetCore" />
+        <PackageReference Include="OpenIddict.Client.SystemNetHttp" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+    </ItemGroup>
+
+</Project>

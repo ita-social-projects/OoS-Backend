@@ -9,17 +9,26 @@ public static class PermissionsSeeder
     {
         Permissions.SystemManagement, Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
-        Permissions.ApplicationRead, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
+        Permissions.ApplicationRead, Permissions.ApplicationEdit, Permissions.ApplicationRemove,
+        Permissions.ApplicationAddNew,
         Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
-        Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove,
-        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
+        Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove, Permissions.ParentBlock,
+        Permissions.ChildRemove,
+        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
+        Permissions.ProviderApprove, Permissions.ProviderBlock, Permissions.ProviderDataRead, 
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
-        Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
-        Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
-        Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove, Permissions.RegionAdminEdit, Permissions.RegionAdminRead, Permissions.RegionAdminBlock,
+        Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew, Permissions.WorkshopApprove,
+        Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove,
+        Permissions.MinistryAdminEdit, Permissions.MinistryAdminRead,
+        Permissions.RegionAdmins, Permissions.RegionAdminAddNew, Permissions.RegionAdminRemove,
+        Permissions.RegionAdminEdit, Permissions.RegionAdminRead, Permissions.RegionAdminBlock,
+        Permissions.AreaAdmins, Permissions.AreaAdminAddNew, Permissions.AreaAdminRemove,
+        Permissions.AreaAdminEdit, Permissions.AreaAdminRead, Permissions.AreaAdminBlock,
         Permissions.PersonalInfo,
+        Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventApprove,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
@@ -27,24 +36,28 @@ public static class PermissionsSeeder
         Permissions.ImpersonalDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead, Permissions.ApplicationEdit,
-        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderAdmins,
+        Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
+        Permissions.Employees,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventAddNew, Permissions.CompetitiveEventEdit, Permissions.CompetitiveEventRemove,
+        Permissions.PositionRead, Permissions.PositionEdit, Permissions.PositionRemove, Permissions.PositionAddNew,
     };
 
-    private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
+    private static readonly IEnumerable<Permissions> SeedEmployeePermissions = new List<Permissions>
     {
         Permissions.ImpersonalDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead, Permissions.ApplicationEdit,
         Permissions.ProviderRead,
-        Permissions.ProviderAdmins,
+        Permissions.Employees,
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventAddNew, Permissions.CompetitiveEventEdit, Permissions.CompetitiveEventRemove,
     };
 
     private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
@@ -52,15 +65,20 @@ public static class PermissionsSeeder
         Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead,
-        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
-        Permissions.ParentRead,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove, Permissions.ProviderBlock,
+        Permissions.ParentRead, Permissions.ParentBlock, Permissions.ProviderDataRead,
         Permissions.ChildRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
         Permissions.MinistryAdminRead,
-        Permissions.WorkshopEdit,
-        Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit, Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
+        Permissions.RegionAdminAddNew, Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
+        Permissions.RegionAdminRemove, Permissions.RegionAdminBlock,
+        Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
+        Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
+        Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventApprove,
     };
 
     private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -74,6 +92,7 @@ public static class PermissionsSeeder
         Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead,
     };
 
     private static readonly IEnumerable<Permissions> SeedRegionAdminPermissions = new List<Permissions>
@@ -81,14 +100,45 @@ public static class PermissionsSeeder
         Permissions.ImpersonalDataRead, Permissions.LogDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
         Permissions.ApplicationRead,
-        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove, Permissions.ProviderBlock, Permissions.ProviderDataRead,
         Permissions.ParentRead,
         Permissions.ChildRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.TeacherRead,
         Permissions.PersonalInfo,
         Permissions.RegionAdminRead, Permissions.RegionAdminEdit,
-        Permissions.WorkshopEdit,
+        Permissions.AreaAdminAddNew, Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
+        Permissions.AreaAdminRemove, Permissions.AreaAdminBlock,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
+        Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventApprove,
+    };
+
+    private static readonly IEnumerable<Permissions> SeedAreaAdminPermissions = new List<Permissions>
+    {
+        Permissions.ImpersonalDataRead, Permissions.LogDataRead,
+        Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
+        Permissions.ApplicationRead,
+        Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderApprove, Permissions.ProviderBlock, Permissions.ProviderDataRead,
+        Permissions.ParentRead,
+        Permissions.ChildRead,
+        Permissions.UserRead, Permissions.UserEdit,
+        Permissions.TeacherRead,
+        Permissions.PersonalInfo,
+        Permissions.AreaAdminRead, Permissions.AreaAdminEdit,
+        Permissions.WorkshopEdit, Permissions.WorkshopApprove,
+        Permissions.AdminDataRead,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventApprove,
+    };
+
+    private static readonly IEnumerable<Permissions> SeedModeratorPermissions = new List<Permissions>
+    {
+        Permissions.ImpersonalDataRead,
+        Permissions.ProviderRead, Permissions.ProviderApprove, Permissions.ProviderDataRead,
+        Permissions.WorkshopRead, Permissions.WorkshopEdit, Permissions.WorkshopApprove,
+        Permissions.LogDataRead,
+        Permissions.PersonalInfo,
+        Permissions.CompetitiveEventRead, Permissions.CompetitiveEventApprove,
     };
 
     public static string SeedPermissions(string role)
@@ -101,8 +151,8 @@ public static class PermissionsSeeder
             case "provider":
                 return SeedProviderPermissions.PackPermissionsIntoString();
 
-            case "provideradmin":
-                return SeedProviderAdminPermissions.PackPermissionsIntoString();
+            case "employee":
+                return SeedEmployeePermissions.PackPermissionsIntoString();
 
             case "ministryadmin":
                 return SeedMinistryAdminPermissions.PackPermissionsIntoString();
@@ -113,6 +163,11 @@ public static class PermissionsSeeder
             case "regionadmin":
                 return SeedRegionAdminPermissions.PackPermissionsIntoString();
 
+            case "areaadmin":
+                return SeedAreaAdminPermissions.PackPermissionsIntoString();
+
+            case "moderator":
+                return SeedModeratorPermissions.PackPermissionsIntoString();
             default:
                 break;
         }

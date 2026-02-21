@@ -13,4 +13,6 @@ public interface IMySqlConnectionOptions
     public string UserId { get; set; }
 
     public string Password { get; set; }
+    
+    public string SslMode { get; set; }
 }

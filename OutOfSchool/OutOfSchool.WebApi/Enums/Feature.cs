@@ -1,17 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using System.Text.Json.Serialization;
 
 namespace OutOfSchool.WebApi.Enums;
 
-[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Feature
 {
     Release1,
     Release2,
     Release3,
     Images,
+    ShowForProduction,
+    TechAdminImport,
+    TechAdminExport,
+    EnableWorkshopGroupTypeField,
+    DirectionManagement,
+    AchievementManagement,
+    AdminsChildrenParentsManagement,
+    MessagingFeature,
+    PasswordLogin,
+    PasswordRegistration,
+    EmailConfirmation,
+    EmailManagement,
+    PasswordManagement,
+    OnlyUkrainianLanguage,
+    EnableWorkshopTags
 }

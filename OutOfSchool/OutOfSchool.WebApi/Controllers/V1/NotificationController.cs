@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models.Notifications;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models.Notifications;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class NotificationController : ControllerBase
 {
@@ -33,11 +34,12 @@ public class NotificationController : ControllerBase
     /// <response code="500">If any server error occures.</response>
     [Authorize]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create(NotificationDto notificationDto)
+    public async Task<IActionResult> Create([FromBody] NotificationDto notificationDto)
     {
         var notification = await notificationService.Create(notificationDto).ConfigureAwait(false);
 
@@ -87,6 +89,26 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult> Read(Guid id)
     {
         return Ok(await notificationService.Read(id).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Update ReadDateTime field in all unreaded notifications.
+    /// </summary>
+    /// <returns>Status Code.</returns>
+    /// <response code="200">Notification was successfully updated.</response>
+    /// <response code="400">Id was wrong.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="500">If any server error occures.</response>
+    [Authorize]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> ReadAll()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+        await notificationService.ReadAll(userId).ConfigureAwait(false);
+        return Ok();
     }
 
     /// <summary>

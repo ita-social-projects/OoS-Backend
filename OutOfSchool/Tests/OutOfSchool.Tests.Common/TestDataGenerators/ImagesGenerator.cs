@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 
@@ -20,7 +21,7 @@ public static class ImagesGenerator
             .ToList();
     }
 
-    public static List<DateTime> CreateRandomImageDateTimes(int count, DateTime minDateTime, DateTime maxDateTime)
+    public static List<DateTimeOffset> CreateRandomImageDateTimes(int count, DateTimeOffset minDateTime, DateTimeOffset maxDateTime)
     {
         if (count <= 0)
         {
@@ -41,17 +42,17 @@ public static class ImagesGenerator
             .ToList();
     }
 
-    public static List<Google.Apis.Storage.v1.Data.Object> CreateGcpEmptyObjects(int count)
+    public static List<StorageObject> CreateGcpEmptyObjects(int count)
     {
         if (count <= 0)
         {
             throw new ArgumentException($"{nameof(count)} cannot be less or equal 0.");
         }
 
-        var objects = new List<Google.Apis.Storage.v1.Data.Object>();
+        var objects = new List<StorageObject>();
         for (var i = 0; i < count; i++)
         {
-            objects.Add(new Google.Apis.Storage.v1.Data.Object());
+            objects.Add(new StorageObject());
         }
 
         return objects;

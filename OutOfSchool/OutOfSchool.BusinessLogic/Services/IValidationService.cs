@@ -1,0 +1,26 @@
+﻿using OutOfSchool.Services.Enums;
+
+namespace OutOfSchool.BusinessLogic.Services;
+
+public interface IValidationService
+{
+    /// <summary>
+    /// Check if Parent with specified parentId has the same userId.
+    /// </summary>
+    /// <param name="userId">Id of User.</param>
+    /// <param name="parentId">Id of Parent.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains a <see cref="bool"/>: true if the User is owner of the specified parentId, false if not or Parent with specified parentId was not found.</returns>
+    /// <exception cref="InvalidOperationException">If the logic of creating providers was compromised.</exception>
+    Task<bool> UserIsParentOwnerAsync(string userId, Guid parentId);
+
+    /// <summary>
+    /// Get the provider's or parent's Id according to the user role.
+    /// </summary>
+    /// <param name="userId">Id of User.</param>
+    /// <param name="userRole">The role of the user.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+    /// The task result contains the Id (type of <see cref="Guid"/>). If Provider or Parent with specified userId was not found, the result will be zero.</returns>
+    /// <exception cref="InvalidOperationException">If the logic of creating providers was compromised.</exception>
+    Task<Guid> GetParentOrProviderIdByUserRoleAsync(string userId, Role userRole);
+}

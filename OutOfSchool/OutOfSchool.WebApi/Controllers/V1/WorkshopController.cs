@@ -1,10 +1,12 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Workshop;
+using Microsoft.FeatureManagement.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -12,49 +14,53 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for Workshop entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopServicesCombiner combinedWorkshopService;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
-    private readonly IStringLocalizer<SharedResource> localizer;
-    private readonly AppDefaultsConfig options;
+    private readonly IUserService userService;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IFeatureManager featureManager;
+    private readonly ILogger<WorkshopController> logger;
+    private const int DefaultPageSize = 9;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkshopController"/> class.
     /// </summary>
     /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
-    /// <param name="localizer">Localizer.</param>
-    /// <param name="options">Application default values.</param>
+    /// <param name="userService">Service for operations with users.</param>
+    /// <param name="featureManager">Feature manager for feature flags.</param>
+    /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     public WorkshopController(
         IWorkshopServicesCombiner combinedWorkshopService,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
-        IStringLocalizer<SharedResource> localizer,
-        IOptions<AppDefaultsConfig> options)
+        IUserService userService,
+        ICurrentUserService currentUserService,
+        IFeatureManager featureManager,
+        ILogger<WorkshopController> logger)
     {
-        this.localizer = localizer;
         this.combinedWorkshopService = combinedWorkshopService;
-        this.providerAdminService = providerAdminService;
         this.providerService = providerService;
-        this.options = options.Value;
+        this.userService = userService;
+        this.currentUserService = currentUserService;
+        this.featureManager = featureManager;
+        this.logger = logger;
     }
 
     /// <summary>
     /// Get workshop by it's id.
     /// </summary>
     /// <param name="id">Workshop's id.</param>
-    /// <returns><see cref="WorkshopDTO"/>, or no content.</returns>
+    /// <returns><see cref="WorkshopDto"/>, or no content.</returns>
     /// <response code="200">The entity was found by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDto))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetById(Guid id)
@@ -100,68 +106,75 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Get all workshops (Id, Title) from the database by provider admin's id sorted by Title.
+    /// Retrieves a paginated list of workshops along with their attachment status
+    /// for a given provider and study subject.
     /// </summary>
-    /// <param name="providerAdminId">Id of the provider admin.</param>
-    /// <returns>The result is a <see cref="List{ShortEntityDto}"/> that contains a sorted by Title list of workshops that were received.</returns>
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ShortEntityDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    /// <param name="studySubjectId">The unique identifier of the study subject.</param>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a 
+    /// <see cref="PaginatedResult{WorkshopAttachmentStatusDto}"/> with the workshops and pagination metadata.
+    /// </returns>
+    [Authorize]
+    [ValidatePagination]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedResult<WorkshopAttachmentStatusDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("{providerAdminId}")]
-    public async Task<IActionResult> GetWorkshopListByProviderAdminId(string providerAdminId)
+    [HttpGet("providers/{providerId}/studysubjects/{studySubjectId}/workshops/attached")]
+    public async Task<IActionResult> GetAttachedWorkshops(
+    Guid studySubjectId,
+    Guid providerId,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = DefaultPageSize)
     {
-        if (providerAdminId == string.Empty)
+        if (studySubjectId == Guid.Empty)
         {
-            return BadRequest("Provider admin id is empty.");
+            return BadRequest("Study subject id is empty.");
         }
 
-        var workshops = await combinedWorkshopService.GetWorkshopListByProviderAdminId(providerAdminId);
-
-        if (!workshops.Any())
+        if (providerId == Guid.Empty)
         {
-            return NoContent();
+            return BadRequest("Provider id is empty.");
         }
 
-        return Ok(workshops);
+        var result = await combinedWorkshopService
+            .GetAttachedWorkshops(studySubjectId, providerId, page, pageSize);
+
+        return Ok(result);
     }
 
+    // TODO: Check what these two methods do
     /// <summary>
     /// Get workshop cards by Provider's Id.
     /// </summary>
     /// <param name="id">Provider's id.</param>
     /// <param name="filter">Filter to get specified portion of workshop view cards for specified provider.
     /// Id of the excluded workshop could be specified.</param>
-    /// <returns><see cref="SearchResult{WorkshopBaseCard}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{WorkshopProviderViewCard}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given Id.</response>
     /// <response code="204">No entity with given Id was found.</response>
     /// <response code="400">Provider id is empty.</response>
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [AllowAnonymous]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopBaseCard>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopProviderViewCard>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    public async Task<IActionResult> GetByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
     {
         if (id == Guid.Empty)
         {
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopCards = await combinedWorkshopService.GetByProviderId<WorkshopBaseCard>(id, filter)
+        var workshopCards = await combinedWorkshopService.GetByProviderId(id, filter)
             .ConfigureAwait(false);
 
-        if (workshopCards.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(workshopCards);
+        return this.SearchResultToOkOrNoContent(workshopCards);
     }
 
     /// <summary>
@@ -176,21 +189,45 @@ public class WorkshopController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] ExcludeIdFilter filter)
+    public async Task<IActionResult> GetWorkshopProviderViewCardsByProviderId(Guid id, [FromQuery] WorkshopFilterTitle filter)
     {
         if (id == Guid.Empty)
         {
             return BadRequest("Provider id is empty.");
         }
 
-        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId<WorkshopProviderViewCard>(id, filter).ConfigureAwait(false);
+        var workshopProviderViewCards = await combinedWorkshopService.GetByProviderId(id, filter).ConfigureAwait(false);
 
-        if (workshopProviderViewCards.TotalAmount == 0)
+        return this.SearchResultToOkOrNoContent(workshopProviderViewCards);
+    }
+
+    /// <summary>
+    /// Gets the competitive selection description of the specified workshop.
+    /// </summary>
+    /// <param name="id">Id of the workshop to get the competitive selection description for.</param>
+    /// <returns>A string description of the competitive selection for the workshop specified by id.</returns>
+    [AllowAnonymous]
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+    public async Task<IActionResult> GetCompetitiveSelectionDescription(Guid id)
+    {
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Workshop id is empty.");
+        }
+
+        var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
+
+        if (workshop is null || string.IsNullOrEmpty(workshop.CompetitiveSelectionDescription))
         {
             return NoContent();
         }
 
-        return Ok(workshopProviderViewCards);
+        return Ok(workshop.CompetitiveSelectionDescription);
     }
 
     /// <summary>
@@ -220,110 +257,162 @@ public class WorkshopController : ControllerBase
             result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
         }
 
-        if (result.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(result);
+        return this.SearchResultToOkOrNoContent(result);
     }
 
     /// <summary>
     /// Add new workshop to the database.
     /// </summary>
     /// <param name="dto">Entity to add.</param>
-    /// <returns>Created <see cref="WorkshopDTO"/>.</returns>
+    /// <returns>Created <see cref="WorkshopDto"/>.</returns>
     /// <response code="201">Entity was created and returned with Id.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopAddNew)]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreateUpdateDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(WorkshopDTO dto)
+    public async Task<IActionResult> Create([FromBody] WorkshopCreateRequestDto dto)
     {
+        if (await featureManager.IsEnabledAsync("Release2"))
+        {
+           return StatusCode(StatusCodes.Status410Gone, "Workshop API v1 is deprecated. Please use API v2 via draft creation.");
+        }
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the workshop by the blocked provider.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
+        await currentUserService.UserHasRights(new ProviderRights(dto.ProviderId), new EmployeeRights(dto.ProviderId));
+
+        try
         {
-            return StatusCode(403, "Forbidden to create workshops for another providers.");
+            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = workshop.Id, },
+                workshop);
         }
-
-        dto.Id = default;
-        dto.Address.Id = default;
-
-        if (dto.Teachers != null)
+        catch (InvalidOperationException ex)
         {
-            foreach (var teacher in dto.Teachers)
-            {
-                teacher.Id = default;
-            }
+            var errorMessage = $"Unable to create a new workshop: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+
+            return BadRequest(errorMessage);
         }
-
-        foreach (var dateTimeRangeDto in dto.DateTimeRanges)
-        {
-            dateTimeRangeDto.Id = default;
-        }
-
-        var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-        // here we will get "false" if workshop was created by assistant provider admin
-        // because user is not currently associated with new workshop
-        // so we can update information to allow assistant manage created workshop
-
-        if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
-        }
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = workshop.Id, },
-            workshop);
     }
 
     /// <summary>
     /// Update info about workshop entity.
     /// </summary>
     /// <param name="dto">Workshop to update.</param>
-    /// <returns>Updated <see cref="WorkshopDTO"/>.</returns>
+    /// <returns>Updated <see cref="WorkshopDto"/>.</returns>
     /// <response code="200">Entity was updated and returned.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreateUpdateDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(WorkshopDTO dto)
+    public async Task<IActionResult> Update([FromBody] WorkshopCreateUpdateDto dto)
     {
+        if (await featureManager.IsEnabledAsync("Release2"))
+        {
+            return StatusCode(StatusCodes.Status410Gone, "Workshop API v1 is deprecated. Please use API v2 via draft creation.");
+        }
+        if (dto == null)
+        {
+            return BadRequest("Workshop is null.");
+        }
+
+        if (await IsProviderBlocked(dto.ProviderId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update workshops at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
+        await currentUserService.UserHasRights(new EmployeeWorkshopRights(dto.Id));
 
-        if (!userHasRights)
+        var result = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+
+        if (!result.Succeeded)
         {
-            return StatusCode(403, "Forbidden to update workshops, which are not related to you");
+            return BadRequest(result.OperationResult.Errors.FirstOrDefault()?.Description
+                ?? Constants.UnknownErrorDuringUpdateMessage);
         }
 
-        return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Update the Tags for Workshop entity.
+    /// </summary>
+    /// <param name="dto">Dto containing the Workshop Id and the Tag Ids to update.</param>
+    /// <returns>Updated <see cref="Workshop"/>.</returns>
+    /// <response code="200">Entity was updated and returned.</response>
+    /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+    /// <response code="500">If any server error occures.</response>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Workshop))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [FeatureGate(nameof(Feature.EnableWorkshopTags))]
+    [HttpPut]
+    public async Task<IActionResult> UpdateTags([FromBody] WorkshopTagsUpdateDto dto)
+    {
+        if (dto == null)
+        {
+            return BadRequest("Invalid workshop data.");
+        }
+
+        var updatedWorkshop = await combinedWorkshopService.UpdateTags(dto);
+
+        if (updatedWorkshop == null)
+        {
+            return NotFound($"Workshop with ID = {dto.WorkshopId} not found.");
+        }
+
+        return Ok(updatedWorkshop);
     }
 
     /// <summary>
@@ -337,6 +426,7 @@ public class WorkshopController : ControllerBase
     /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopStatusDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -345,6 +435,21 @@ public class WorkshopController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
     {
+        if (request == null)
+        {
+            return BadRequest("WorkshopStatus is null.");
+        }
+
+        if (await IsProviderBlocked(Guid.Empty, request.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update workshops statuses at blocked providers");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the workshop by the blocked provider.");
+        }
+
         var workshop = await combinedWorkshopService.GetById(request.WorkshopId).ConfigureAwait(false);
 
         if (workshop is null)
@@ -352,11 +457,7 @@ public class WorkshopController : ControllerBase
             return NotFound($"There is no Workshop in DB with Id - {request.WorkshopId}");
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
-        if (!userHasRights)
-        {
-            return StatusCode(403, "Forbidden to update workshops, which are not related to you");
-        }
+        await currentUserService.UserHasRights(new EmployeeWorkshopRights(workshop.Id));
 
         try
         {
@@ -369,20 +470,21 @@ public class WorkshopController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a specific workshop from the database.
+    /// Marks a specific workshop as archived. This operation is irreversible.
     /// </summary>
     /// <param name="id">Workshop's id.</param>
     /// <returns>StatusCode representing the task completion.</returns>
-    /// <response code="204">If the entity was successfully deleted, or if the entity was not found by given Id.</response>
+    /// <response code="204">If the entity was successfully archived, or if the entity was not found by given Id.</response>
     /// <response code="401">If the user is not authorized.</response>
-    /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
+    /// <response code="403">If the user has no rights to use this method, or archives not own workshop.</response>
     /// <response code="500">If any server error occures.</response>
     [HasPermission(Permissions.WorkshopRemove)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpDelete("{id}")]
+    [HttpDelete]
+    [Route("~/api/v{version:apiVersion}/[controller]/{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
@@ -392,46 +494,73 @@ public class WorkshopController : ControllerBase
             return NoContent();
         }
 
-        var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId).ConfigureAwait(false);
-        if (!userHasRights)
+        if (await IsProviderBlocked(workshop.ProviderId).ConfigureAwait(false))
         {
-            return StatusCode(403, "Forbidden to delete workshops of another providers.");
+            return StatusCode(403, "Forbidden to delete workshops at blocked providers");
         }
 
-        await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to delete the workshop by the blocked provider.");
+        }
 
-        return NoContent();
+        await currentUserService.UserHasRights(new ProviderRights(workshop.ProviderId), new EmployeeRights(workshop.ProviderId));
+
+        var result = await combinedWorkshopService.Archive(id).ConfigureAwait(false);
+
+        if (result.Succeeded)
+        {
+            return NoContent();
+        }
+        else
+        {
+            switch(result.Errors.FirstOrDefault()?.Code) {
+                case "400":
+                    return BadRequest(result.Errors.FirstOrDefault()?.Description);
+                case "404":
+                    return NotFound(result.Errors.FirstOrDefault()?.Description);
+                default:
+                    return StatusCode(500, result.Errors.FirstOrDefault()?.Description);
+            }
+        }
     }
 
-    private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
+    /// <summary>
+    /// Gets price range of filtered workshops.
+    /// </summary>
+    /// <param name="filter">Filter for workshop entities.</param>
+    /// <returns><see cref="PriceRange"/></returns>
+    /// <response code="200">If the price range was returned.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+    /// <response code="500">If any server error occures.</response>
+    [ResponseCache(CacheProfileName = Constants.CacheProfilePublic)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PriceRange))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    [ActionName("price-range")]
+    public async Task<IActionResult> GetPriceRange([FromQuery] WorkshopFilter filter = null)
     {
-        if (User.IsInRole(nameof(Role.Provider).ToLower()))
-        {
-            var userId = GettingUserProperties.GetUserId(User);
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+        var priceRange = await combinedWorkshopService.GetPriceRangeAsync(filter).ConfigureAwait(false);
 
-            if (provider != null)
-            {
-                if (provider.Id != providerId)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                var isUserRelatedAdmin = await providerAdminService
-                    .CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId)
-                    .ConfigureAwait(false);
+        return Ok(priceRange);
+    }
 
-                if (!isUserRelatedAdmin)
-                {
-                    return false;
-                }
-            }
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
 
-            return true;
-        }
+        return await userService.IsBlocked(userId);
+    }
 
-        return false;
+    private async Task<bool> IsProviderBlocked(Guid providerId, Guid workshopId = default)
+    {
+        providerId = providerId == Guid.Empty ?
+            await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false) :
+            providerId;
+
+        return await providerService.IsBlocked(providerId).ConfigureAwait(false) ?? false;
     }
 }

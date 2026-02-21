@@ -1,28 +1,34 @@
 using System;
 using System.Collections.Generic;
-using Nest;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
-// TODO: check Nested attribute
-public class WorkshopES
+ public class WorkshopES : IHasRating, IHasHiddenFields
 {
-    public const string TitleKeyword = "title.keyword";
+    public const string KeywordSuffix = "keyword";
+    public const string SortSuffix = "sort";
+    public const string TextSuffix = "text";
 
-    [Keyword]
     public Guid Id { get; set; }
 
     public string Title { get; set; }
+
+    public string ShortTitle { get; set; }
 
     public string CoverImageId { get; set; }
 
     public float Rating { get; set; }
 
-    [Keyword]
+    public int NumberOfRatings { get; set; }
+
     public Guid ProviderId { get; set; }
 
     public string ProviderTitle { get; set; }
+
+    public string ProviderTitleEn { get; set; }
 
     public ProviderStatus ProviderStatus { get; set; }
 
@@ -34,33 +40,39 @@ public class WorkshopES
 
     public int MaxAge { get; set; }
 
+    public long LanguageOfEducationId { get; set; }
+    public string LanguageOfEducationName { get; set; } = string.Empty;
     public bool CompetitiveSelection { get; set; }
+
     public decimal Price { get; set; }
 
     public PayRateType PayRate { get; set; }
 
-    public long AddressId { get; set; }
-
     public AddressES Address { get; set; }
 
-    [Keyword]
     public Guid? InstitutionHierarchyId { get; set; }
 
     public string InstitutionHierarchy { get; set; }
 
-    [Keyword]
     public Guid? InstitutionId { get; set; }
 
     public string Institution { get; set; }
-
-    public bool WithDisabilityOptions { get; set; }
 
     public string Keywords { get; set; }
 
     public List<long> DirectionIds { get; set; }
 
-    [Nested]
+    public List<long> SubDirectionIds { get; set; }
+
     public List<DateTimeRangeES> DateTimeRanges { get; set; }
+
+    public int? StudyPeriodStartDay { get; set; }
+
+    public int? StudyPeriodEndDay { get; set; }
+
+    public int? StudyPeriodEndMonth { get; set; }
+
+    public int? StudyPeriodStartMonth { get; set; }
 
     public WorkshopStatus Status { get; set; }
 
@@ -71,4 +83,32 @@ public class WorkshopES
     public uint TakenSeats { get; set; }
 
     public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
+
+    public AgeComposition AgeComposition { get; set; }
+
+    public EducationalShift EducationalShift { get; set; }
+
+    public bool IsSelfFinanced { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    public string CompetitiveSelectionDescription { get; set; }
+
+    public SpecialNeedsType SpecialNeedsType { get; set; }
+
+    public bool IsInclusive { get; set; }
+
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public bool AreThereBenefits { get; set; }
+
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    public Coverage Coverage { get; set; }
+
+    public List<string> Tags { get; set; }
+
+    public bool IsChampionPath { get; set; } 
 }

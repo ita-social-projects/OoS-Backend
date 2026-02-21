@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure;
 
-public class InstitutionHierarchy : IKeyedEntity<Guid>
+public class InstitutionHierarchy : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
 
@@ -13,6 +13,12 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>
     public string Title { get; set; }
 
     public int HierarchyLevel { get; set; }
+
+    public bool IsDeleted { get; set; }
+    
+    public DateTime? UpdatedAt { get; set; }
+    
+    public DateTime? RegistrySyncDate { get; set; }
 
     public Guid? ParentId { get; set; }
 
@@ -23,5 +29,14 @@ public class InstitutionHierarchy : IKeyedEntity<Guid>
 
     public virtual Institution Institution { get; set; }
 
-    public virtual List<Direction> Directions { get; set; }
+    public virtual List<SubDirection> SubDirections { get; set; }
+
+    #region Sports Registry Fields
+
+    public long? SportRegistryIdCode { get; set; }
+
+    [MaxLength(10)]
+    public string? SportsSectionNumeral { get; set; }
+
+    #endregion
 }

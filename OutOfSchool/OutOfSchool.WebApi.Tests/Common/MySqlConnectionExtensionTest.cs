@@ -5,10 +5,10 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using NUnit.Framework;
+using OutOfSchool.BackgroundJobs.Config;
+using OutOfSchool.BusinessLogic.Config;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Quartz;
 
 namespace OutOfSchool.WebApi.Tests.Common;
 
@@ -16,10 +16,10 @@ namespace OutOfSchool.WebApi.Tests.Common;
 public class MySqlConnectionExtensionTest
 {
     private readonly string connectionStringNoGuidFormat = @"{""ConnectionStrings"": {
-        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school""}}";
+        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;sslmode=None""}}";
 
     private readonly string connectionString = @"{""ConnectionStrings"": {
-        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
+        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16;sslmode=None""}}";
 
     private readonly string overrides = @"{""ConnectionStringsOverride"": {
         ""Test"": {
@@ -29,7 +29,8 @@ public class MySqlConnectionExtensionTest
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""GuidFormat"": ""Binary16""
+            ""GuidFormat"": ""Binary16"",
+            ""SslMode"": ""None""
         }
         }}";
 
@@ -40,7 +41,8 @@ public class MySqlConnectionExtensionTest
             ""Port"": 3306,
             ""Database"": ""test"",
             ""UserId"": ""root"",
-            ""Password"": ""rootPassword""
+            ""Password"": ""rootPassword"",
+            ""SslMode"": ""None""
         }
         }}";
 
@@ -52,11 +54,12 @@ public class MySqlConnectionExtensionTest
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""GuidFormat"": ""Binary16""
+            ""GuidFormat"": ""Binary16"",
+            ""SslMode"": ""None""
         }
         },
         ""ConnectionStrings"": {
-        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
+        ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16;sslmode=None""}}";
 
     [Test]
     public void IfNoOverrides_UseConnectionString()
@@ -112,6 +115,7 @@ public class MySqlConnectionExtensionTest
                 Password = options.Password,
                 Database = options.Database,
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                SslMode = options.SslMode.ToEnum(MySqlSslMode.None),
             });
         var builder = new DbConnectionStringBuilder()
         {
@@ -129,7 +133,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(overridesNoGuidFormat);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
                 "Test",
                 options => new MySqlConnectionStringBuilder
@@ -153,7 +157,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(connectionString);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Something"));
         Assert.AreEqual(ex?.Message, "Provide a valid connection string or options");
     }
@@ -165,7 +169,7 @@ public class MySqlConnectionExtensionTest
         var configuration = Setup(connectionStringNoGuidFormat);
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<ArgumentException>(() =>
             configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
         Assert.AreEqual(
             ex?.Message,

@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace OutOfSchool.Services.Models.Configurations;
@@ -8,6 +7,14 @@ internal class AverageRatingConfiguration : IEntityTypeConfiguration<AverageRati
 {
     public void Configure(EntityTypeBuilder<AverageRating> builder)
     {
+        builder.Property(x => x.EntityId).HasColumnType("UUID");
         builder.HasIndex(x => x.EntityId);
+
+        builder.Property(x => x.Rate)
+            .HasPrecision(2, 1);
+
+        builder.HasIndex(x => x.IsDeleted);
+
+        builder.Property(x => x.IsDeleted).HasDefaultValue(false);
     }
 }

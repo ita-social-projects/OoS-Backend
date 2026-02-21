@@ -1,75 +1,35 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Individual;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ProviderController : ControllerBase
 {
     private readonly IProviderService providerService;
-    private readonly IStringLocalizer<SharedResource> localizer;
+    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<ProviderController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderController"/> class.
     /// </summary>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="localizer">Localizer.</param>
+    /// <param name="currentUserService">Service for current user operations.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
     public ProviderController(
         IProviderService providerService,
-        IStringLocalizer<SharedResource> localizer,
+        ICurrentUserService currentUserService,
         ILogger<ProviderController> logger)
     {
-        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
-    }
-
-    /// <summary>
-    /// Get all Providers from the database.
-    /// </summary>
-    /// <param name="filter">Filter to get a part of all providers that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
-    [HasPermission(Permissions.ProviderRead)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        return Ok(providers);
     }
 
     /// <summary>
@@ -102,16 +62,9 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProfile()
     {
-        // TODO: localize messages from the conrollers.
-        var userId = GettingUserProperties.GetUserId(User);
-        var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
-                              GettingUserProperties.GetUserSubrole(User) != "None";
-        if (userId == null)
-        {
-            BadRequest("Invalid user information.");
-        }
+        var providerId = currentUserService.ProviderId;
 
-        var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
+        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
         if (provider == null)
         {
             return NoContent();
@@ -121,16 +74,19 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Method for creating new Provider.
+    /// Method for creating new Provider. For now, it is impossible to create providers until requirements change
     /// </summary>
     /// <param name="providerModel">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.ProviderAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
-    public async Task<IActionResult> Create(ProviderDto providerModel)
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
+    public async Task<IActionResult> Create([FromBody] ProviderCreateDto providerModel)
     {
         if (providerModel == null)
         {
@@ -143,15 +99,6 @@ public class ProviderController : ControllerBase
         }
 
         providerModel.Id = default;
-        providerModel.LegalAddress.Id = default;
-
-        if (providerModel.ActualAddress != null)
-        {
-            providerModel.ActualAddress.Id = default;
-        }
-
-        // TODO: find out if we need this field in the model
-        providerModel.UserId = GettingUserProperties.GetUserId(User);
 
         try
         {
@@ -178,12 +125,13 @@ public class ProviderController : ControllerBase
     /// <param name="providerModel">Entity to update.</param>
     /// <returns>Updated Provider.</returns>
     [HasPermission(Permissions.ProviderEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ProviderUpdateDto providerModel)
+    public async Task<IActionResult> Update([FromBody] ProviderUpdateDto providerModel)
     {
         if (!ModelState.IsValid)
         {
@@ -192,7 +140,7 @@ public class ProviderController : ControllerBase
 
         try
         {
-            var userId = GettingUserProperties.GetUserId(User);
+            var userId = currentUserService.UserId;            
             var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
             if (provider == null)
@@ -210,31 +158,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Block/unblock Provider.
-    /// </summary>
-    /// <param name="providerBlockDto">Entity to update.</param>
-    /// <returns>Block Provider.</returns>
-    [HasPermission(Permissions.ProviderEdit)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderBlockDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPut]
-    public async Task<ActionResult> Block([FromBody] ProviderBlockDto providerBlockDto)
-    {
-        var result = await providerService.Block(providerBlockDto);
-
-        if (result is null)
-        {
-            return NotFound($"There is no Provider in DB with Id - {providerBlockDto.Id}");
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Delete a specific Provider from the database.
+    /// Delete a specific Provider from the database. For now, it is impossible to delete providers until requirements change.
     /// </summary>
     /// <param name="uid">Provider's key.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -243,87 +167,27 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{uid:guid}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
-        {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            if (ex is ArgumentException || ex is ArgumentNullException)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            throw;
-        }
-
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Update Provider status.
-    /// </summary>
-    /// <param name="request">Provider ID and status to update.</param>
-    /// <returns><see cref="ProviderStatusDto"/>.</returns>
-    [HttpPut]
-    [HasPermission(Permissions.ProviderApprove)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderStatusDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> StatusUpdate([FromBody] ProviderStatusDto request)
-    {
-        var result = await providerService.UpdateStatus(request, GettingUserProperties.GetUserId(User))
+        var result = await providerService.Delete(
+            uid)
             .ConfigureAwait(false);
 
-        if (result is null)
-        {
-            return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Update Provider license status.
-    /// </summary>
-    /// <param name="request">Provider ID and license status to update.</param>
-    /// <returns><see cref="ProviderLicenseStatusDto"/>.</returns>
-    [HttpPut]
-    [HasPermission(Permissions.ProviderApprove)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderLicenseStatusDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> LicenseStatusUpdate([FromBody] ProviderLicenseStatusDto request)
-    {
-        try
-        {
-            var result = await providerService.UpdateLicenseStatus(request, GettingUserProperties.GetUserId(User))
-                .ConfigureAwait(false);
-
-            if (result is null)
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            _ =>
             {
-                return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
-            }
-
-            return Ok(result);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return NoContent();
+            });
     }
+
     /// <summary>
-    /// Get Providers that match filter's parameters.
+    /// Get Provider status by providerId.
     /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
+    /// <param name="providerId">Id of provider.</param>
     /// <returns><see cref="SearchResult{ProviderStatusDto}"/>, or no content.</returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderStatusDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -339,5 +203,86 @@ public class ProviderController : ControllerBase
         }
 
         return Ok(provider);
+    }
+
+    /// <summary>
+    /// Upload the list of employees for Provider .
+    /// </summary>
+    /// <param name="id">id of Provider.</param>
+    /// <param name="uploadEployees">Array with employees to upload.</param>
+    /// <returns>A <see cref="UploadEmployeeResponse"/> representing the result of the upload employees operation.</returns>
+    [HasPermission(Permissions.ProviderEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}/employees/upload")]
+    public async Task<IActionResult> Upload(Guid id, [FromBody] UploadEmployeesRequestDto uploadEployees)
+    {
+        ArgumentNullException.ThrowIfNull(uploadEployees);
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            _ = await providerService.UploadEmployeesForProvider(id, uploadEployees.Employees).ConfigureAwait(false);
+
+            return Ok($"Success! Employees has been uploaded into the DB.");
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
+        }
+        catch (InvalidOperationException ex)
+        {
+            var errorMessage = $"Unable to upload a list of employees for provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
+        }
+    }
+
+    /// <summary>
+    /// Gets branches for given provider
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>Branches of given provider.</returns>
+    [HasPermission(Permissions.ProviderRead)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerId}/branches")]
+    public async Task<ActionResult<IEnumerable<ProviderDto>>> GetBranches(Guid providerId)
+    {
+        var branches = await providerService.GetBranchesAsync(providerId);
+        if (branches == null || branches.Count() == 0)
+        {
+            return Ok("There in no branches for given provider");
+        }
+        return Ok(branches);
+    }
+
+    /// <summary>
+    /// Gets parents for given provider
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>Parents of given provider.</returns>
+    [HasPermission(Permissions.ProviderRead)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{providerId}/parent")]
+    public async Task<ActionResult<IEnumerable<ProviderDto>>> GetParentProvider(Guid providerId)
+    { 
+        var parents = await providerService.GetParentProviderAsync(providerId);
+        if (parents == null)
+        {
+            return Ok("There in no parents for given provider");
+        }
+        return Ok(parents);
     }
 }

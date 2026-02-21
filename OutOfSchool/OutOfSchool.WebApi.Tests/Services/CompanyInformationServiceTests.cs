@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -21,11 +22,10 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CompanyInformationServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private ISensitiveEntityRepository<CompanyInformation> repository;
     private ICompanyInformationService service;
     private Mock<ILogger<CompanyInformationService>> logger;
-    private Mock<IMapper> mapper;
 
     [SetUp]
     public void SetUp()
@@ -35,12 +35,11 @@ public class CompanyInformationServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
         logger = new Mock<ILogger<CompanyInformationService>>();
-        mapper = new Mock<IMapper>();
         repository = new SensitiveEntityRepository<CompanyInformation>(context);
-        service = new CompanyInformationService(repository, logger.Object, mapper.Object);
+        service = new CompanyInformationService(repository, logger.Object);
 
         SeedDatabase();
     }
@@ -53,8 +52,6 @@ public class CompanyInformationServiceTests
         // Arrange
         Expression<Func<CompanyInformation, bool>> filter = p => p.Type == type;
         var expected = await repository.GetByFilter(filter, "CompanyInformationItems").ConfigureAwait(false);
-
-        mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(GetEntityDto(expected.FirstOrDefault()));
 
         // Act
         var result = await service.GetByType(type).ConfigureAwait(false);
@@ -70,8 +67,6 @@ public class CompanyInformationServiceTests
         // Arrange
         Expression<Func<CompanyInformation, bool>> filter = p => p.Type == type;
         var expected = await repository.GetByFilter(filter, "CompanyInformationItems").ConfigureAwait(false);
-
-        mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(GetEntityDto(expected.FirstOrDefault()));
 
         // Act
         var result = await service.GetByType(type).ConfigureAwait(false);
@@ -90,9 +85,6 @@ public class CompanyInformationServiceTests
         var changedEntity = GetEntity(type);
 
         // Act
-        mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.CompanyInformationItems);
-        mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntityDto);
-
         var result = await service.Update(changedEntityDto, type);
 
         // Assert
@@ -112,10 +104,6 @@ public class CompanyInformationServiceTests
         var changedEntity = GetEntity(type);
 
         // Act
-        mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.CompanyInformationItems);
-        mapper.Setup(m => m.Map<CompanyInformation>(It.IsAny<CompanyInformationDto>())).Returns(changedEntity);
-        mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntityDto);
-
         var result = await service.Update(changedEntityDto, type);
 
         // Assert
@@ -191,7 +179,7 @@ public class CompanyInformationServiceTests
 
     private void SeedDatabase()
     {
-        using var dbContext = new OutOfSchoolDbContext(options);
+        using var dbContext = new TestOutOfSchoolDbContext(options);
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
@@ -202,7 +190,7 @@ public class CompanyInformationServiceTests
             {
                 Id = Guid.NewGuid(),
                 Title = "About Portal",
-                Type = OutOfSchool.Services.Enums.CompanyInformationType.AboutPortal,
+                Type = CompanyInformationType.AboutPortal,
                 CompanyInformationItems = new List<CompanyInformationItem>
                 {
                     new CompanyInformationItem()
@@ -216,7 +204,7 @@ public class CompanyInformationServiceTests
             {
                 Id = Guid.NewGuid(),
                 Title = "Support Information",
-                Type = OutOfSchool.Services.Enums.CompanyInformationType.SupportInformation,
+                Type = CompanyInformationType.SupportInformation,
                 CompanyInformationItems = new List<CompanyInformationItem>
                 {
                     new CompanyInformationItem()

@@ -1,0 +1,29 @@
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Providers;
+
+namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
+
+public interface ISensitiveProviderService
+{
+    /// <summary>
+    /// Get entities from the database that match filter's parameters.
+    /// </summary>
+    /// <param name="filter">Filter with specified searching parameters.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains the <see cref="SearchResult{TEntity}"/> that contains found elements.</returns>
+    Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter = null);
+
+    /// <summary>
+    /// Set block/unblock state.
+    /// </summary>
+    /// <param name="providerBlockDto">Provider to block/unblock.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<ResponseDto> Block(ProviderBlockDto providerBlockDto, string token = default);
+
+    /// <summary>
+    /// Check providers for existing entities by data.
+    /// </summary>
+    /// <param name="data">Values for checking.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<ImportDataValidateResponse> ValidateImportData(ImportDataValidateRequest data);
+}

@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
-using Google;
-using Google.Apis.Storage.v1.Data;
-using Google.Cloud.Storage.V1;
-using OutOfSchool.Services.Common.Exceptions;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.ExternalFileStore;
+using OutOfSchool.ExternalFileStore.Exceptions;
+using OutOfSchool.ExternalFileStore.Models;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api.Files;
 
 namespace OutOfSchool.Services.Repository.Files;
 
+[Obsolete("This class is obsolete. Use FileStorage classes for the specific storage instead.", false)]
 public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
     where TFile : FileModel, new()
 {
@@ -34,11 +33,6 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
         }
     }
 
-    public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
     {
         _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
@@ -58,7 +52,13 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
         }
     }
 
-    public async Task<string> UploadAsync(TFile file, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    /// <remarks>
+    /// Note: The main_subfolder, cacheControl and metadata parameters are not used in the database storage 
+    /// implementation as they are primarily intended for cloud storage scenarios.
+    /// </remarks>
+    public async Task<string> UploadAsync(TFile file, string? main_subfolder = null, string cacheControl = "",
+        IDictionary<string, string> metadata = null, CancellationToken cancellationToken = default)
     {
         _ = file ?? throw new ArgumentNullException(nameof(file));
 
@@ -74,8 +74,14 @@ public abstract class FileInDbStorageBase<TFile> : IFilesStorage<TFile, string>
         return fileInDb.Id;
     }
 
-    protected virtual string GenerateFileId()
+    /// <inheritdoc/>
+    public string GenerateFileId()
     {
         return Guid.NewGuid().ToString();
+    }
+
+    public async Task<bool> ExistsAsync(string imageId, CancellationToken cancellationToken = default)
+    {
+        return false;
     }
 }

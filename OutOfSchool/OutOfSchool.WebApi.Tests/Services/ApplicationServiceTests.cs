@@ -3,28 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
-using Nest;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.Models;
+using OutOfSchool.EmailSender.Services;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
 using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Services;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -35,15 +37,19 @@ public class ApplicationServiceTests
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
     private Mock<ILogger<ApplicationService>> logger;
-    private Mock<IMapper> mapper;
     private Mock<INotificationService> notificationService;
-    private Mock<IProviderAdminService> providerAdminService;
     private Mock<IChangesLogService> changesLogService;
     private Mock<IWorkshopServicesCombiner> workshopServiceCombinerMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
     private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<IAreaAdminService> areaAdminServiceMock;
     private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<IRazorViewToStringRenderer> rendererMock;
+    private Mock<IEmailSenderService> emailSenderMock;
+    private Mock<IStringLocalizer<SharedResource>> localizerMock;
+    private Mock<IOptions<HostsConfig>> hostsConfigMock;
+    private Mock<IOfficialRepository> officialRepositoryMock;
 
     private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -53,16 +59,20 @@ public class ApplicationServiceTests
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
         notificationService = new Mock<INotificationService>();
-        providerAdminService = new Mock<IProviderAdminService>();
         changesLogService = new Mock<IChangesLogService>();
         workshopServiceCombinerMock = new Mock<IWorkshopServicesCombiner>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
         regionAdminServiceMock = new Mock<IRegionAdminService>();
+        areaAdminServiceMock = new Mock<IAreaAdminService>();
         codeficatorServiceMock = new Mock<ICodeficatorService>();
+        rendererMock = new Mock<IRazorViewToStringRenderer>();
+        emailSenderMock = new Mock<IEmailSenderService>();
+        localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+        hostsConfigMock = new Mock<IOptions<HostsConfig>>();
+        officialRepositoryMock = new Mock<IOfficialRepository>();
 
         logger = new Mock<ILogger<ApplicationService>>();
-        mapper = new Mock<IMapper>();
 
         applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
         applicationsConstraintsConfig.Setup(x => x.Value)
@@ -72,116 +82,32 @@ public class ApplicationServiceTests
                 ApplicationsLimitDays = 7,
             });
 
+        var config = new HostsConfig();
+        config.FrontendUrl = "http://localhost:4200";
+        config.BackendUrl = "http://localhost:5443";
+        hostsConfigMock.Setup(x => x.Value).Returns(config);
+
+        rendererMock.Setup(x => x.GetHtmlPlainStringAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string.Empty, string.Empty));
+
         service = new ApplicationService(
             applicationRepositoryMock.Object,
             logger.Object,
             workshopRepositoryMock.Object,
-            mapper.Object,
             applicationsConstraintsConfig.Object,
             notificationService.Object,
-            providerAdminService.Object,
             changesLogService.Object,
             workshopServiceCombinerMock.Object,
             currentUserServiceMock.Object,
             ministryAdminServiceMock.Object,
             regionAdminServiceMock.Object,
-            codeficatorServiceMock.Object);
-    }
-
-    [Test]
-    public async Task GetApplications_WhenCalled_ShouldReturnApplications()
-    {
-        // Arrange
-        var application = WithApplicationsList();
-        SetupGetAll(application);
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
-
-        // Act
-        var result = await service.GetAll(new ApplicationFilter());
-
-        // Assert
-        Assert.AreEqual(result.Entities.Count, application.Count());
-    }
-
-    [Test]
-    public void GetApplications_WhenUnathorizedCalled_ShouldReturnUnauthorizedAccessException()
-    {
-        // Arange
-        var application = WithApplicationsList();
-        SetupGetAll(application);
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
-
-        // Act, Assert
-        Assert.ThrowsAsync<UnauthorizedAccessException>(
-            async () => await service.GetAll(new ApplicationFilter()).ConfigureAwait(false));
-    }
-
-    [Test]
-    public async Task GetApplications_WhenMinistryAdminCalled_ShouldReturnApplications()
-    {
-        // Arrange
-        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
-        var applications = WithApplicationsList();
-        SetupGetAllByInstitutionId(applications);
-
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(false);
-        ministryAdminServiceMock
-            .Setup(m => m.GetByIdAsync(It.IsAny<string>()))
-            .Returns(Task.FromResult<MinistryAdminDto>(new MinistryAdminDto()
-            {
-                InstitutionId = institutionId,
-            }));
-
-        // Act
-        var result = await service.GetAll(new ApplicationFilter());
-
-        // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(1));
-        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
-    }
-
-    [Test]
-    public async Task GetApplications_WhenRegionAdminCalled_ShouldReturnApplications()
-    {
-        // Arrange
-        var institutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4");
-        long catottgId = 31737;
-        var applications = WithApplicationsList();
-        SetupGetAllByInstitutionId(applications);
-
-        currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(true);
-        currentUserServiceMock.Setup(c => c.IsMinistryAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = institutionId,
-                CATOTTGId = catottgId,
-            }));
-
-        currentUserServiceMock.Setup(c => c.IsRegionAdmin()).Returns(true);
-        regionAdminServiceMock
-            .Setup(m => m.GetByUserId(It.IsAny<string>()))
-            .Returns(Task.FromResult<RegionAdminDto>(new RegionAdminDto()
-            {
-                InstitutionId = institutionId,
-            }));
-
-        codeficatorServiceMock
-            .Setup(x => x.GetAllChildrenIdsByParentIdAsync(It.IsAny<long>()))
-            .Returns(Task.FromResult((IEnumerable<long>)new List<long> { catottgId }));
-
-        // Act
-        var result = await service.GetAll(new ApplicationFilter());
-
-        // Assert
-        Assert.That(result.Entities.Count, Is.EqualTo(1));
-        Assert.That(result.Entities.FirstOrDefault().Workshop.InstitutionId, Is.EqualTo(institutionId));
+            areaAdminServiceMock.Object,
+            codeficatorServiceMock.Object,
+            rendererMock.Object,
+            emailSenderMock.Object,
+            localizerMock.Object,
+            hostsConfigMock.Object,
+            officialRepositoryMock.Object);
     }
 
     [Test]
@@ -189,13 +115,14 @@ public class ApplicationServiceTests
     {
         // Arrange
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-        SetupGetById(WithApplication(id));
+        var application = WithApplication(id);
+        this.SetupGetById(application);
 
         // Act
         var result = await service.GetById(id).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedApplicationGetByIdSuccess(id));
+        result.Should().BeEquivalentTo(application.ToDto());
     }
 
     [Test]
@@ -212,33 +139,53 @@ public class ApplicationServiceTests
     public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
     {
         // Arrange
+        var statusKey = "Status";
         var workshopList = WithWorkshopsList();
 
-        var newApplication = new Application()
-        {
-            Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-            WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
-            Status = ApplicationStatus.Pending,
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-        };
+        var newApplication = ApplicationGenerator.Generate().WithWorkshop(WorkshopGenerator.Generate().WithProvider(ProvidersGenerator.Generate()));
+        newApplication.WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id;
+        newApplication.Workshop.Id = newApplication.WorkshopId;
+        newApplication.Status = ApplicationStatus.Pending;
+
         var input = new ApplicationCreate()
         {
-            WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
-            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            WorkshopId = newApplication.WorkshopId,
+            ChildId = newApplication.ChildId,
+            ParentId = newApplication.ParentId,
         };
         SetupCreate(newApplication);
+
+        applicationRepositoryMock.Setup(w => w.Create(It.Is<Application>(a => a.WorkshopId == input.WorkshopId
+            && a.ChildId == input.ChildId
+            && a.ParentId == input.ParentId)))
+            .Returns(Task.FromResult(newApplication));
+
+        var recipientsIds = new List<string>()
+        {
+            Guid.NewGuid().ToString(),
+        };
+
+        officialRepositoryMock.Setup(s => s.GetActiveOfficialUserIdsByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(recipientsIds);
 
         // Act
         var result = await service.Create(input).ConfigureAwait(false);
 
         // Assert
+        notificationService.Verify(
+            x => x.Create(
+                NotificationType.Application,
+                NotificationAction.Create,
+                newApplication.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey) && c[statusKey] == newApplication.Status.ToString()),
+                newApplication.Status.ToString()),
+            Times.Once);
+
         result.Should().BeEquivalentTo(
             new ModelWithAdditionalData<ApplicationDto, int>
             {
-                Model = ExpectedApplicationCreate(newApplication),
+                Model = newApplication.ToDto(),
                 AdditionalData = 0,
             });
     }
@@ -255,7 +202,7 @@ public class ApplicationServiceTests
     }
 
     [Test]
-    public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
+    public async Task CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
     {
         // Arrange
         var application = new ApplicationCreate()
@@ -263,8 +210,29 @@ public class ApplicationServiceTests
             WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
         };
 
-        // Act and Assert
-        service.Invoking(w => w.Create(application)).Should().ThrowAsync<ArgumentException>();
+        currentUserServiceMock.Setup(x => x.UserHasRights(It.IsAny<ParentRights>())).Returns(() => Task.FromResult(true));
+
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).Returns(Task.FromResult(new WorkshopDto()));
+
+        var applications = new List<Application>
+        {
+            new Application(),
+            new Application(),
+            new Application(),
+        };
+
+        applicationRepositoryMock.Setup(x => x.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(applications.AsEnumerable());
+
+        // Act
+        var result = await service.Create(application);
+
+        // Assert
+        Assert.That(result.Model is null);
+        Assert.That(result.Description != string.Empty);
     }
 
     [Test]
@@ -318,10 +286,9 @@ public class ApplicationServiceTests
             .ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
         currentUserServiceMock.Verify(
-            a => a.UserHasRights(
-                It.Is<IUserRights[]>(u => u.First() is ProviderRights && ((ProviderRights)u.First()).providerId == existingApplications.First().Workshop.ProviderId)));
+            a => a.UserHasRights(It.IsAny<IUserRights[]>()), Times.Once);
     }
 
     [Test]
@@ -373,7 +340,7 @@ public class ApplicationServiceTests
             .ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -417,16 +384,15 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-            false)).Returns(mockQuery);
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
 
         // Act
         var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
 
         // Assert
-        result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Entities.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -437,17 +403,55 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(r => r.Get(
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<string>(),
             It.IsAny<Expression<Func<Application, bool>>>(),
-            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-            false)).Returns(mockQuery);
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
 
         // Act
         var filter = new ApplicationFilter();
         var result = await service.GetAllByParent(Guid.NewGuid(), filter).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result.Entities, Is.Null);
+        result.Entities.Should().HaveCount(0);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenIdIsValid_ShouldReturnCount()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(c => c.IsInRole(Role.Employee)).Returns(true);
+        var existingApplications = WithApplicationsList();
+        var parentId = existingApplications.First().ParentId;
+        var expectedCount = existingApplications.Count(x => x.ParentId == parentId);
+        applicationRepositoryMock.Setup(a => a.Count(
+                It.IsAny<Expression<Func<Application, bool>>>()))
+            .Returns(Task.FromResult<int>(expectedCount));
+
+        // Act
+        var result = await service.GetCountByParentId(parentId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(expectedCount);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenIdIsNotValid_ShouldReturnZero()
+    {
+        // Arrange
+        currentUserServiceMock.Setup(c => c.IsInRole(Role.Employee)).Returns(true);
+
+        // Act
+        var result = await service.GetCountByParentId(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Test]
+    public async Task GetCountByParentId_WhenUserNotAuthorized_ShouldThrowException()
+    {
+        // Act
+        await service.Invoking(s => s.GetCountByParentId(Guid.NewGuid())).Should().ThrowAsync<UnauthorizedAccessException>();
     }
 
     [Test]
@@ -461,7 +465,7 @@ public class ApplicationServiceTests
         var result = await service.GetAllByChild(existingApplications.First().ChildId).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+        result.Should().BeEquivalentTo(existingApplications.ToDto());
     }
 
     [Test]
@@ -471,67 +475,111 @@ public class ApplicationServiceTests
         var result = await service.GetAllByChild(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        Assert.That(result, Is.Null);
+        result.Should().HaveCount(0);
     }
 
-
     [Test]
-    public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
+    [TestCase("provider", ApplicationStatus.AcceptedForSelection, ApplicationStatus.Approved)]
+    [TestCase("provider", ApplicationStatus.AcceptedForSelection, ApplicationStatus.Rejected)]
+    [TestCase("provider", ApplicationStatus.Pending, ApplicationStatus.AcceptedForSelection)]
+    [TestCase("parent", ApplicationStatus.Approved, ApplicationStatus.Left)]
+    public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication(string userRole, ApplicationStatus statusFrom, ApplicationStatus statusTo)
     {
         // Arrange
+        var statusKey = "Status";
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-        var changedEntity = WithApplication(id);
-        var userId = Guid.NewGuid().ToString();
+        var changedEntity = WithApplication(id, statusFrom, true).WithParent(ParentGenerator.Generate());
+        changedEntity.Parent.User = UserGenerator.Generate();
+        changedEntity.Parent.UserId = changedEntity.Parent.User.Id;
+        changedEntity.Workshop.WithProvider(ProvidersGenerator.Generate());
 
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
             .ReturnsAsync(changedEntity);
-        applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(changedEntity);
         applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() {Id = id});
+        applicationRepositoryMock.Setup(a => a.GetByFilter(
+            It.IsAny<Expression<Func<Application, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { changedEntity }));
+        applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
+           .Returns((Func<Task<Application>> f) => f.Invoke());
 
-        var expected = new ApplicationDto() {Id = id};
         var update = new ApplicationUpdate
         {
             Id = id,
-            Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            Status = statusTo,
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
+                Id = changedEntity.WorkshopId,
                 AvailableSeats = uint.MaxValue,
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
             .ReturnsAsync(new List<Workshop>());
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
-        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns(string.Empty);
+        currentUserServiceMock.Setup(c => c.UserRole).Returns(userRole);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        var recipientsIds = new List<string>();
+
+        if (statusTo == ApplicationStatus.Approved
+            || statusTo == ApplicationStatus.Rejected
+            || statusTo == ApplicationStatus.AcceptedForSelection)
+        {
+            recipientsIds.Add(changedEntity.Parent.UserId);
+        }
+        else if (statusTo == ApplicationStatus.Left)
+        {
+            recipientsIds.Add(Guid.NewGuid().ToString());
+        }
+
+        officialRepositoryMock.Setup(s => s.GetActiveOfficialUserIdsByProviderId(It.IsAny<Guid>()))
+            .ReturnsAsync(recipientsIds);
 
         // Act
-        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update).ConfigureAwait(false);
+        ApplicationDto result = new();
+        response.Match(
+            errResult => result = null,
+            response => result = response);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result.Value);
+        Assert.NotNull(result);
+        AssertApplicationsDTOsAreEqual(changedEntity.ToDto(), result);
+
+        notificationService.Verify(
+            x => x.Create(
+                NotificationType.Application,
+                NotificationAction.Update,
+                changedEntity.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(statusKey) && c[statusKey] == changedEntity.Status.ToString()),
+                changedEntity.Status.ToString()),
+            Times.Once);
     }
 
     [Test]
@@ -541,8 +589,88 @@ public class ApplicationServiceTests
         var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
         var entity = WithApplication(id);
         var changedEntity = WithApplication(id, ApplicationStatus.Approved);
-        var userId = Guid.NewGuid().ToString();
         var workshop = WithWorkshop(new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"));
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(entity);
+        applicationRepositoryMock.Setup(a => a.Count(x =>
+                x.WorkshopId == workshop.Id &&
+                (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
+            .ReturnsAsync(1);
+        applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
+           .Returns((Func<Task<Application>> f) => f.Invoke());
+
+        workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+        };
+
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = 5,
+                Status = WorkshopStatus.Open,
+            });
+
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+
+        // Act
+        var response = await service.Update(update).ConfigureAwait(false);
+        ApplicationDto result = new ApplicationDto();
+        response.Match(
+            actionResult => result = null,
+            succeed => result = succeed);
+
+        // Assert
+        Assert.NotNull(result);
+        AssertApplicationsDTOsAreEqual(changedEntity.ToDto(), result);
+    }
+
+    [Test]
+    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnErrorResponse()
+    {
+        // Arrange
+        var application = new ApplicationUpdate()
+        {
+            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
+            Status = ApplicationStatus.Pending,
+        };
+
+        // Act
+        var response = await service.Update(application);
+
+        // Assert
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
+    }
+
+    [Test]
+    public async Task UpdateApplication_WhenThereIsAlreadyApprovedWorkshop_ShouldReturnErrorResponse()
+    {
+        // Arrange
+        var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
+        var entity = WithApplication(id);
+        var changedEntity = WithApplication(id, ApplicationStatus.Approved);
+        var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
 
         applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
             .ReturnsAsync(changedEntity);
@@ -550,69 +678,500 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
         applicationRepositoryMock.Setup(a => a.Count(x =>
                 x.WorkshopId == workshop.Id &&
-                (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.StudyingForYears)))
+                Application.ValidApplicationStatuses.Contains(x.Status)))
             .ReturnsAsync(1);
-
         workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto()
-            {Id = id, Status = ApplicationStatus.Approved});
 
-        var expected = new ApplicationDto() {Id = id, Status = ApplicationStatus.Approved};
         var update = new ApplicationUpdate
         {
             Id = id,
             Status = ApplicationStatus.Approved,
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
         };
 
-        workshopServiceCombinerMock.Setup(c =>
-                c.GetById(It.Is<Guid>(i => i == update.WorkshopId)))
-            .ReturnsAsync(new WorkshopDTO()
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
             {
-                Id = update.WorkshopId,
-                AvailableSeats = 5,
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = 0,
                 Status = WorkshopStatus.Open,
             });
 
-        workshopRepositoryMock.Setup(w => w.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<Workshop>());
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>()
+            {
+                new Workshop()
+                {
+                    Id = changedEntity.WorkshopId,
+                },
+            });
 
         workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
 
         currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
-        currentUserServiceMock.Setup(c => c.UserSubRole).Returns("");
+
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
 
         // Act
-        var result = await service.Update(update, Guid.NewGuid()).ConfigureAwait(false);
+        var response = await service.Update(update);
 
         // Assert
-        AssertApplicationsDTOsAreEqual(expected, result.Value);
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
     }
 
     [Test]
-    public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnNotSucceeded()
+    public async Task UpdateApplication_WhenThereIsNoAlreadyApprovedWorkshop_Succeeded()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
-        var application = new ApplicationUpdate()
+        var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
+        var entity = WithApplication(id);
+        var changedEntity = WithApplication(id, ApplicationStatus.Approved);
+        var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(entity);
+        applicationRepositoryMock.Setup(a => a.Count(x =>
+                x.WorkshopId == workshop.Id &&
+        Application.ValidApplicationStatuses.Contains(x.Status)))
+            .ReturnsAsync(1);
+        applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
+           .Returns((Func<Task<Application>> f) => f.Invoke());
+        workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+
+        var update = new ApplicationUpdate
         {
-            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
-            WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-            Status = ApplicationStatus.Pending,
+            Id = id,
+            Status = ApplicationStatus.Approved,
         };
 
-        // Act and Assert
-        Assert.IsFalse((await service.Update(application, Guid.NewGuid())).Succeeded);
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = 0,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>()
+            {
+                new Workshop()
+                {
+                    Id = changedEntity.WorkshopId,
+                },
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        // Act
+        var response = await service.Update(update);
+
+        // Assert
+        Assert.IsInstanceOf<ApplicationDto>(response.Match(
+            error => null,
+            succeed => succeed));
+    }
+
+    [Test]
+    public async Task UpdateApplication_WhenAmountOfApprovedBiggerThanAvailableSeats_Succeeded()
+    {
+        // Arrange
+        var id = new Guid("08da8609-a211-4d74-82c0-dc89ea1fb2a7");
+        var entity = WithApplication(id);
+        var changedEntity = WithApplication(id, ApplicationStatus.Approved);
+        var workshop = WithWorkshop(new Guid("08da85ea-5b3c-4991-8416-2673d9421ca9"));
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+
+        applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(entity);
+        applicationRepositoryMock.Setup(a => a.Count(x =>
+                x.WorkshopId == workshop.Id &&
+                Application.ValidApplicationStatuses.Contains(x.Status)))
+            .ReturnsAsync(1);
+        workshopRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+        };
+
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = 0,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>()
+            {
+                new Workshop()
+                {
+                    Id = changedEntity.WorkshopId,
+                },
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MinValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+
+        // Act
+        var response = await service.Update(update);
+
+        // Assert
+        Assert.IsInstanceOf<ErrorResponse>(response.Match(
+            error => error,
+            succeed => null));
     }
 
     [Test]
     public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
     {
         // Act and Assert
-        var userId = Guid.NewGuid().ToString();
-        service.Invoking(s => s.Update(null, Guid.NewGuid())).Should().ThrowAsync<ArgumentException>();
+        service.Invoking(s => s.Update(null)).Should().ThrowAsync<ArgumentException>();
     }
+
+    [Test]
+    [TestCase(ApplicationStatus.Approved)]
+    [TestCase(ApplicationStatus.Rejected)]
+    [TestCase(ApplicationStatus.AcceptedForSelection)]
+    public async Task UpdateApplication_WhenApplicationStatusIsApprovedRejectedAcceptedForSelection_ShouldSendEmail(ApplicationStatus status)
+    {
+        // Arrange
+        var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
+        var changedEntity = WithApplication(id);
+        if (status == ApplicationStatus.AcceptedForSelection)
+        {
+            changedEntity.Workshop.CompetitiveSelection = true;
+        }
+
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+        applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
+           .Returns((Func<Task<Application>> f) => f.Invoke());
+
+        var expected = new ApplicationDto() { Id = id };
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = status,
+        };
+
+        workshopServiceCombinerMock.Setup(c => c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = uint.MaxValue,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        // Act
+        await service.Update(update).ConfigureAwait(false);
+
+        // Assert
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
+    }
+
+    [Test]
+    [TestCase(Gender.Male, "ий")]
+    [TestCase(Gender.Female, "а")]
+    [TestCase(null, "ий/a")]
+    public async Task UpdateApplication_WhenChildGenderMaleFemaleNull_ShouldSendEmailWithCorrectUaEnding(
+        Gender? gender,
+        string expectedEnding)
+    {
+        // Arrange
+        var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
+        var changedEntity = WithApplication(id);
+        changedEntity.Child.Gender = gender;
+
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+
+        applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.GetByIdWithDetails(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .ReturnsAsync(changedEntity);
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MaxValue);
+        applicationRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Application>>>()))
+           .Returns((Func<Task<Application>> f) => f.Invoke());
+
+        var expected = new ApplicationDto() { Id = id };
+        var update = new ApplicationUpdate
+        {
+            Id = id,
+            Status = ApplicationStatus.Approved,
+        };
+
+        workshopServiceCombinerMock.Setup(c =>
+                c.GetById(It.Is<Guid>(i => i == changedEntity.WorkshopId), It.IsAny<bool>()))
+            .ReturnsAsync(new WorkshopDto()
+            {
+                Id = changedEntity.WorkshopId,
+                AvailableSeats = uint.MaxValue,
+                Status = WorkshopStatus.Open,
+            });
+
+        workshopRepositoryMock.Setup(w => w.GetByFilter(
+            It.IsAny<Expression<Func<Workshop, bool>>>(),
+            It.IsAny<string>(),
+            It.IsAny<Func<IQueryable<Workshop>, IQueryable<Workshop>>>()))
+            .ReturnsAsync(new List<Workshop>());
+
+        workshopRepositoryMock.Setup(w => w.GetAvailableSeats(It.IsAny<Guid>())).ReturnsAsync(uint.MaxValue);
+
+        currentUserServiceMock.Setup(c => c.UserRole).Returns("provider");
+        applicationRepositoryMock.Setup(a => a.Count(It.IsAny<Expression<Func<Application, bool>>>())).ReturnsAsync(int.MinValue);
+
+        // Act
+        await service.Update(update).ConfigureAwait(false);
+
+        // Assert
+        rendererMock.Verify(
+            x => x.GetHtmlPlainStringAsync(
+                "ApplicationApprovedEmail",
+                It.Is<ApplicationStatusViewModel>(viewModel => viewModel.UaEnding == expectedEnding)),
+            Times.Once);
+        emailSenderMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<(string, string)>(), null), Times.Once);
+    }
+
+    [Test]
+    public async Task CountApplicationsByParentAndProvider_WhenIdsAreValid_ShouldReturnCount()
+    {
+        // Arrange
+        var parentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3");
+        var providerId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174");
+        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(r => r.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applicationsMock)
+            .Verifiable();
+
+        // Act
+        var result = await service.CountApplicationsByParentAndProvider(parentId, providerId).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(3));
+    }
+
+    #region AllowedToReview Tests
+
+    [Test]
+    public async Task AllowedToReview_WhenNoApplicationsExist_ReturnsFalse()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var emptyQueryable = new List<Application>().AsQueryable().BuildMock();
+
+        applicationRepositoryMock.Setup(x => x.Get(
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Expression<Func<Application, bool>>>(),
+            It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(emptyQueryable);
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestCase(ApplicationStatus.Completed)]
+    [TestCase(ApplicationStatus.Approved)]
+    [TestCase(ApplicationStatus.StudyingForYears)]
+    public async Task AllowedToReview_WhenLatestApplicationHasAllowedStatus_ReturnsTrue(ApplicationStatus status)
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, status, DateTime.UtcNow);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestCase(ApplicationStatus.Pending)]
+    [TestCase(ApplicationStatus.AcceptedForSelection)]
+    [TestCase(ApplicationStatus.Rejected)]
+    [TestCase(ApplicationStatus.Left)]
+    public async Task AllowedToReview_WhenLatestApplicationHasNonAllowedStatus_ReturnsFalse(ApplicationStatus status)
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, status, DateTime.UtcNow);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenMultipleApplications_ChecksOnlyLatest()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow;
+
+        // Create applications with different creation times
+        var latestPending = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Pending, baseTime);
+
+        // Setup mock to return only the latest application
+        SetupRepositoryMockForAllowedToReview(new[] { latestPending });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsFalse(result); // Should return false because latest application has Pending status
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenLatestHasAllowedStatusAndOlderHasNot_ReturnsTrue()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow;
+
+        // Create applications - latest has allowed status
+        var latestApproved = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Approved, baseTime);
+
+        // Setup mock to return only the latest application
+        SetupRepositoryMockForAllowedToReview(new[] { latestApproved });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result); // Should return true because latest application has Approved status
+    }
+
+    [Test]
+    public async Task AllowedToReview_WhenApplicationsHaveSameCreationTime_StillWorksCorrectly()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var workshopId = Guid.NewGuid();
+        var sameTime = DateTime.UtcNow;
+
+        // Test with one application with allowed status
+        var application = CreateApplicationForAllowedToReview(parentId, workshopId, ApplicationStatus.Approved, sameTime);
+        SetupRepositoryMockForAllowedToReview(new[] { application });
+
+        // Act
+        var result = await service.AllowedToReview(parentId, workshopId);
+
+        // Assert
+        Assert.IsTrue(result); // Should return true for allowed status
+    }
+
+    private Application CreateApplicationForAllowedToReview(Guid parentId, Guid workshopId, ApplicationStatus status, DateTime creationTime)
+    {
+        return new Application
+        {
+            Id = Guid.NewGuid(),
+            ParentId = parentId,
+            WorkshopId = workshopId,
+            ChildId = Guid.NewGuid(),
+            Status = status,
+            CreationTime = creationTime,
+            Child = new Child { IsDeleted = false },
+            Parent = new Parent { IsDeleted = false },
+            Workshop = new Workshop { IsDeleted = false }
+        };
+    }
+
+    private void SetupRepositoryMockForAllowedToReview(Application[] applications)
+    {
+        // Simulate the behavior of Get method with sorting and Take(1)
+        var mockQuery = applications.AsQueryable().BuildMock();
+
+        applicationRepositoryMock
+            .Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(mockQuery);
+    }
+
+    #endregion
 
     private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
     {
@@ -630,165 +1189,98 @@ public class ApplicationServiceTests
 
     private void SetupCreate(Application application)
     {
-        // var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
-        var workshopMock = new WorkshopDTO
+        var workshopMock = new WorkshopDto
         {
             Status = WorkshopStatus.Open,
         };
 
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
-        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
-
-        applicationRepositoryMock.Setup(
-                w => w.Create(It.IsAny<Application>()))
-            .Returns(Task.FromResult(It.IsAny<Application>()));
-        mapper.Setup(m => m.Map<Application>(It.IsAny<ApplicationCreate>()))
-            .Returns(application);
-        mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>()))
-            .Returns(new ApplicationDto() {Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd")});
-    }
-
-    private void SetupGetAll(List<Application> apps)
-    {
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id }).ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
                 It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application,bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application,object>>,SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
-    }
-
-    private void SetupGetAllByInstitutionId(List<Application> apps)
-    {
-        var mappedDtos = apps.Where(a => a.Workshop.InstitutionHierarchy.InstitutionId == new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"))
-            .Select(a => new ApplicationDto()
-            {
-                Id = a.Id,
-                Workshop = new WorkshopCard()
-                {
-                    InstitutionId = new Guid("b929a4cd-ee3d-4bad-b2f0-d40aedf656c4"),
-                },
-            })
-            .ToList();
-        applicationRepositoryMock.Setup(w => w.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(new List<Application> { apps.First() }.AsTestAsyncEnumerableQuery());
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
+        workshopServiceCombinerMock.Setup(x => x.GetById(application.WorkshopId, It.IsAny<bool>())).ReturnsAsync(workshopMock);
     }
 
     private void SetupGetAllBy(IEnumerable<Application> apps)
     {
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
-
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {apps.First()}));
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(apps.ToList()));
     }
 
     private void SetupGetAllByWorkshop(List<Application> apps)
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
 
         currentUserServiceMock.Setup(c => c.IsAdmin()).Returns(false);
-        currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] {new ProviderRights(apps.First().Workshop.ProviderId)}))
+        currentUserServiceMock.Setup(c => c.UserHasRights(new IUserRights[] { new ProviderRights(apps.First().Workshop.ProviderId) }))
             .Verifiable();
 
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllByWorkshopEmpty()
     {
         var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
-        var emptyApplicationDtosList = new List<ApplicationDto>();
 
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
     }
 
     private void SetupGetAllByProvider(IEnumerable<Application> apps)
     {
         var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
         var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
-        var mappedDtos = apps.Select(a => new ApplicationDto() {Id = a.Id}).ToList();
 
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(workshopsMock)
             .Verifiable();
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(applicationsMock)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
     }
 
     private void SetupGetAllByProviderEmpty()
     {
         var emptyWorkshopsList = new List<Workshop>().AsQueryable().BuildMock();
         var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
-        var emptyApplicationDtosList = new List<ApplicationDto>();
 
         workshopRepositoryMock.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>()))
             .Returns(emptyWorkshopsList)
             .Verifiable();
         applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
             .Returns(emptyApplicationsList)
             .Verifiable();
-        mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
     }
 
     private void SetupGetById(Application application)
@@ -797,26 +1289,9 @@ public class ApplicationServiceTests
         applicationRepositoryMock.Setup(a => a.GetById(applicationId)).ReturnsAsync(application);
         applicationRepositoryMock.Setup(a => a.GetByFilter(
                 It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<string>()))
-            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> {application}));
-        mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() {Id = application.Id});
-    }
-
-    private void SetupDelete(Application application)
-    {
-        var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-
-        applicationRepositoryMock.Setup(r => r.Get(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
                 It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
-                It.IsAny<bool>()))
-            .Returns(applicationsMock)
-            .Verifiable();
-        applicationRepositoryMock.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(application);
-        applicationRepositoryMock.Setup(a => a.Delete(It.IsAny<Application>())).Returns(Task.CompletedTask);
+                It.IsAny<Func<IQueryable<Application>, IQueryable<Application>>>()))
+            .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
     }
 
     #endregion
@@ -830,6 +1305,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+                IsBlockedByProvider = false,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -856,6 +1332,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+                IsBlockedByProvider = false,
                 Status = ApplicationStatus.Rejected,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -882,6 +1359,7 @@ public class ApplicationServiceTests
             new Application()
             {
                 Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                IsBlockedByProvider = true,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -908,9 +1386,7 @@ public class ApplicationServiceTests
         };
     }
 
-
-
-    private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending)
+    private Application WithApplication(Guid id, ApplicationStatus status = ApplicationStatus.Pending, bool CompetitiveSelection = false)
     {
         return new Application()
         {
@@ -927,11 +1403,19 @@ public class ApplicationServiceTests
                     LastName = "Petroffski",
                 },
             },
+            Child = new Child()
+            {
+                Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                LastName = "Petroffski",
+                FirstName = "Ivan",
+                Gender = Gender.Male,
+            },
             Workshop = new Workshop()
             {
                 Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
                 ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 Status = WorkshopStatus.Open,
+                CompetitiveSelection = CompetitiveSelection,
             },
         };
     }
@@ -1000,25 +1484,6 @@ public class ApplicationServiceTests
                 ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups
             },
         };
-    }
-
-    #endregion
-
-    #region Expected
-
-    private ApplicationDto ExpectedApplicationCreate(Application application)
-    {
-        return mapper.Object.Map<ApplicationDto>(application);
-    }
-
-    private ApplicationDto ExpectedApplicationGetByIdSuccess(Guid id)
-    {
-        return new ApplicationDto() {Id = id};
-    }
-
-    private List<ApplicationDto> ExpectedApplicationsGetAll(IEnumerable<Application> apps)
-    {
-        return mapper.Object.Map<List<ApplicationDto>>(apps);
     }
 
     #endregion

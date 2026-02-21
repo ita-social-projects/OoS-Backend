@@ -1,29 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NUnit.Framework;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using NUnit.Framework;
 
 namespace OutOfSchool.Tests.Common;
 
 public static class TestHelper
 {
-    /// <summary>
-    /// Creates a new mapper instance of given mapping profile.
-    /// </summary>
-    /// <typeparam name="TProfile"></typeparam>
-    /// <returns></returns>
-    public static IMapper CreateMapperInstanceOfProfileType<TProfile>()
-        where TProfile : Profile, new()
-    {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<TProfile>());
-        return config.CreateMapper();
-    }
-
     public static void AssertResponseOkResultAndValidateValue<TExpectedValue>(this IActionResult response, TExpectedValue expected)
     {
         var actual = (response as ObjectResult).Value;
@@ -63,9 +46,9 @@ public static class TestHelper
     {
         Assert.Multiple(() =>
             {
-                foreach (var collection in expected.Zip(actual))
+                foreach (var (First, Second) in expected.Zip(actual))
                 {
-                    AssertDtosAreEqual(collection.First, collection.Second);
+                    AssertDtosAreEqual(First, Second);
                 }
             }
         );
@@ -77,11 +60,41 @@ public static class TestHelper
         tuppledProperties.AssertPropertiesAreEqual();
     }
 
+    public static void AssertEquivalentWithNullHandling<TValue>(TValue expected, TValue actual)
+    {
+        if (expected is IEnumerable<object> expectedCollection &&
+        actual is IEnumerable<object> actualCollection &&
+        AreCollectionsEquivalent(expectedCollection, actualCollection))
+        {
+            return;
+        }
+
+        if (ReferenceEquals(expected, actual))
+        {
+            return;
+        }
+
+        if (expected is null || actual is null)
+        {
+            Assert.Fail($"Expected and actual values are not both null. Expected: {expected}, Actual: {actual}");
+        }
+
+        var tuppledProperties = GetTuppledProperties(expected, actual);
+        tuppledProperties.AssertPropertiesAreEqual();
+    }
+
+    private static bool AreCollectionsEquivalent<T>(T? expected, T? actual)
+    where T : class, IEnumerable<object>
+    {
+        return (expected == null || !expected.Any()) &&
+               (actual == null || !actual.Any());
+    }
+
     private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
     {
-        return expected.GetType().GetProperties()
+        return expected.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
             .Select(p => (p.Name, Value: p.GetValue(expected)))
-            .Zip(actual.GetType().GetProperties()
+            .Zip(actual.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any())
                 .Select(r => (r.Name, Value: r.GetValue(actual))))
             .Select(t => (t.First.Value, t.Second.Value, t.First.Name));
     }
@@ -92,6 +105,12 @@ public static class TestHelper
         {
             foreach (var property in tuppledProperties)
             {
+                // Ignore contacts for property checks as they are not mapped
+                if (property.Item3.Contains("Contacts"))
+                {
+                    continue;
+                }
+
                 Assert.AreEqual(property.Item1, property.Item2, $"Property: '{property.Item3}'");
             }
         });

@@ -7,4 +7,5 @@ public class EmailOptions
     public string NameFrom { get; set; }
     public string SendGridKey { get; set; }
     public bool Enabled { get; set; }
+    public int? TimeoutTime { get; set; }
 }

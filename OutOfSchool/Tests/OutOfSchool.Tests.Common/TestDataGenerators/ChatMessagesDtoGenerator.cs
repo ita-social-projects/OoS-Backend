@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Bogus;
 
-using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
 

@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using OutOfSchool.WebApi.Config;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;

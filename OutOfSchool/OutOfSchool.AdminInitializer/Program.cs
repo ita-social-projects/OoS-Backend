@@ -5,9 +5,11 @@ using Microsoft.Extensions.Hosting;
 using MySqlConnector;
 using OutOfSchool.AdminInitializer;
 using OutOfSchool.AdminInitializer.Config;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -16,13 +18,8 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var config = context.Configuration;
-        // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = config["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
-        {
-            throw new Exception("MySQL Server version should be 8 or higher.");
-        }
+        var mariaDbVersion = config.GetAndValidateMariaDbVersion();
+        var serverVersion = new MariaDbServerVersion(mariaDbVersion);
 
         var connectionString = config.GetMySqlConnectionString<InitializerConnectionOptions>(
             "DefaultConnection",
@@ -34,6 +31,7 @@ var host = Host.CreateDefaultBuilder(args)
                 Password = options.Password,
                 Database = options.Database,
                 GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                SslMode = options.SslMode.ToEnum(MySqlSslMode.None),
             });
 
         services
@@ -43,10 +41,8 @@ var host = Host.CreateDefaultBuilder(args)
                     serverVersion,
                     optionsBuilder =>
                         optionsBuilder
-                            .EnableRetryOnFailure(
-                                3,
-                                TimeSpan.FromSeconds(5),
-                                null)));
+                            .EnableStringComparisonTranslations()
+                            .UseMicrosoftJson()));
         services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -59,6 +55,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<AdminConfiguration>(config.GetSection(AdminConfiguration.Name));
         services.AddCustomDataProtection("IdentityServer");
         services.AddScoped<AdminInitializer>();
+        services.AddTransient<ICurrentUser>(_ => new CurrentUserAccessor(null));
+        services.AddTransient<BusinessEntityInterceptor>();
     })
     .Build();
 

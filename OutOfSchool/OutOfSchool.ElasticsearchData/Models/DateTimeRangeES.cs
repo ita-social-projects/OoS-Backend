@@ -1,5 +1,4 @@
 using System;
-using Nest;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
@@ -11,7 +10,6 @@ public class DateTimeRangeES
 
     public TimeSpan EndTime { get; set; }
 
-    [Keyword]
     public Guid WorkshopId { get; set; }
 
     public string Workdays { get; set; }

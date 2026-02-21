@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
 using OutOfSchool.ElasticsearchData.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
 public class WorkshopFilterES
 {
-    public List<Guid> Ids { get; set; } = null;
+    public static readonly TimeSpan MaxTimeInDay = new(23, 59, 59);
+
+    public List<Guid> Ids { get; set; } = [];
 
     public string SearchText { get; set; } = string.Empty;
 
@@ -20,21 +23,19 @@ public class WorkshopFilterES
 
     public bool IsFree { get; set; } = false;
 
-    public int MinPrice { get; set; } = 0;
+    public decimal MinPrice { get; set; } = 0;
 
-    public int MaxPrice { get; set; } = int.MaxValue;
+    public decimal MaxPrice { get; set; } = int.MaxValue;
 
-    public List<long> DirectionIds { get; set; } = new List<long>();
+    public List<long> SubDirectionIds { get; set; } = new List<long>();
 
     public string City { get; set; } = string.Empty;
-
-    public bool WithDisabilityOptions { get; set; } = false;
 
     public string Workdays { get; set; } = string.Empty;
 
     public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);
 
-    public TimeSpan MaxStartTime { get; set; } = new TimeSpan(23, 59, 59);
+    public TimeSpan MaxStartTime { get; set; } = MaxTimeInDay;
 
     public int Size { get; set; } = 12;
 
@@ -57,4 +58,34 @@ public class WorkshopFilterES
     public string ElasticRadius { get; set; } = GeoMathHelper.ElasticRadius;
 
     public Guid? InstitutionId { get; set; } = Guid.Empty;
+
+    public IReadOnlyCollection<FormOfLearning> FormOfLearning { get; set; } = new List<FormOfLearning>();
+
+    public IReadOnlyCollection<AgeComposition> AgeComposition { get; set; } = new List<AgeComposition>();
+
+    public IReadOnlyCollection<EducationalShift> EducationalShift { get; set; } = new List<EducationalShift>();
+
+    public bool IsSelfFinanced { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    public IReadOnlyCollection<SpecialNeedsType> SpecialNeedsType { get; set; } = new List<SpecialNeedsType>();
+
+    public bool IsInclusive { get; set; }
+
+    public long LanguageOfEducationId { get; set; }
+
+    public bool AreThereBenefits { get; set; }
+
+    public IReadOnlyCollection<Coverage> Coverage { get; set; } = new List<Coverage>();
+
+    public PayRateType PayRate { get; set; } = PayRateType.None;
+
+    public int? StudyPeriodStartDay { get; set; }
+
+    public int? StudyPeriodEndDay { get; set; }
+
+    public int? StudyPeriodEndMonth { get; set; }
+
+    public int? StudyPeriodStartMonth { get; set; }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OutOfSchool.Services.Models.ChatWorkshop;
+namespace OutOfSchool.Services.Models.ChatWorkshop.ModelsForChatLists;
 
 public class ChatRoomWorkshopForChatList
 {
+    [Column(TypeName = "UUID")]
     public Guid Id { get; set; }
 
     public Guid WorkshopId { get; set; }
@@ -17,4 +19,6 @@ public class ChatRoomWorkshopForChatList
     public int NotReadByCurrentUserMessagesCount { get; set; }
 
     public ChatMessageInfoForChatList LastMessage { get; set; }
+
+    public bool IsBlockedByProvider { get; set; }
 }

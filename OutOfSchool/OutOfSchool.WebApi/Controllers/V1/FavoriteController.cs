@@ -1,19 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class FavoriteController : ControllerBase
 {
@@ -79,7 +73,7 @@ public class FavoriteController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllByUser()
     {
-        string userId = User.FindFirst("sub")?.Value;
+        string userId = User.FindFirst(IdentityResourceClaimsTypes.Sub)?.Value;
 
         var favorites = await service.GetAllByUser(userId).ConfigureAwait(false);
 
@@ -103,16 +97,11 @@ public class FavoriteController : ControllerBase
     [HttpGet("workshops")]
     public async Task<IActionResult> GetFavoriteWorkshopsByUser([FromQuery] OffsetFilter offsetFilter)
     {
-        string userId = User.FindFirst("sub")?.Value;
+        string userId = User.FindFirst(IdentityResourceClaimsTypes.Sub)?.Value;
 
         var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
-        if (favorites.TotalAmount == 0)
-        {
-            return NoContent();
-        }
-
-        return Ok(favorites);
+        return this.SearchResultToOkOrNoContent(favorites);
     }
 
     /// <summary>
@@ -121,12 +110,13 @@ public class FavoriteController : ControllerBase
     /// <param name="dto">Favorite entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.FavoriteAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(FavoriteDto dto)
+    public async Task<IActionResult> Create([FromBody] FavoriteDto dto)
     {
         var favorite = await service.Create(dto).ConfigureAwait(false);
 
@@ -142,12 +132,13 @@ public class FavoriteController : ControllerBase
     /// <param name="dto">Favorite to update.</param>
     /// <returns>Favorite.</returns>
     [HasPermission(Permissions.FavoriteEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(FavoriteDto dto)
+    public async Task<IActionResult> Update([FromBody] FavoriteDto dto)
     {
         return Ok(await service.Update(dto).ConfigureAwait(false));
     }

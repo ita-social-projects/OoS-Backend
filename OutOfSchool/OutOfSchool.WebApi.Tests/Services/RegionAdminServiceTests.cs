@@ -1,48 +1,56 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoMapper;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.Responses;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-using Serilog.Configuration;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
 [TestFixture]
 public class RegionAdminServiceTests
 {
+    private readonly string email = "email@gmail.com";
+    private readonly string includeProperties = "Institution,User,CATOTTG";
+
     private Mock<IHttpClientFactory> httpClientFactory;
-    private Mock<IOptions<IdentityServerConfig>> identityServerConfig;
+    private Mock<IOptions<AuthorizationServerConfig>> identityServerConfig;
     private Mock<IOptions<CommunicationConfig>> communicationConfig;
     private Mock<IRegionAdminRepository> regionAdminRepositoryMock;
-    private Mock<IEntityRepository<string, User>> userRepositoryMock;
-    private IMapper mapper;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> userRepositoryMock;
     private Mock<ICurrentUserService> currentUserServiceMock;
     private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<string, User>> apiErrorServiceUserRepositoryMock;
+    private Mock<ISearchStringService> searchStringServiceMock;
 
     private RegionAdminService regionAdminService;
     private RegionAdmin regionAdmin;
     private List<RegionAdmin> regionAdmins;
     private RegionAdminDto regionAdminDto;
     private List<RegionAdminDto> regionAdminsDtos;
+    private ErrorResponse emailAlreadyTakenErrorResponse;
+    private ApiErrorResponse badRequestApiErrorResponse;
+    private ApiErrorService apiErrorService;
 
     [SetUp]
     public void SetUp()
@@ -53,8 +61,14 @@ public class RegionAdminServiceTests
         regionAdminsDtos = AdminGenerator.GenerateRegionAdminsDtos(5);
 
         httpClientFactory = new Mock<IHttpClientFactory>();
-        identityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+        identityServerConfig = new Mock<IOptions<AuthorizationServerConfig>>();
         communicationConfig = new Mock<IOptions<CommunicationConfig>>();
+
+        badRequestApiErrorResponse = new ApiErrorResponse();
+        badRequestApiErrorResponse.AddApiError(
+            ApiErrorsTypes.Common.EmailAlreadyTaken("RegionAdmin", email));
+        emailAlreadyTakenErrorResponse = ErrorResponse.BadRequest(badRequestApiErrorResponse);
+
         communicationConfig.Setup(x => x.Value)
             .Returns(new CommunicationConfig()
             {
@@ -71,10 +85,13 @@ public class RegionAdminServiceTests
 
         regionAdminRepositoryMock = new Mock<IRegionAdminRepository>();
         var logger = new Mock<ILogger<RegionAdminService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        userRepositoryMock = new Mock<IEntityRepository<string, User>>();
+        userRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
         currentUserServiceMock = new Mock<ICurrentUserService>();
         ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        apiErrorServiceUserRepositoryMock = new Mock<IEntityRepositorySoftDeleted<string, User>>();
+        var apiErrorServiceLogger = new Mock<ILogger<ApiErrorService>>();
+        apiErrorService = new ApiErrorService(apiErrorServiceUserRepositoryMock.Object, apiErrorServiceLogger.Object);
+        searchStringServiceMock = new Mock<ISearchStringService>();
 
         regionAdminService = new RegionAdminService(
             httpClientFactory.Object,
@@ -83,16 +100,17 @@ public class RegionAdminServiceTests
             regionAdminRepositoryMock.Object,
             logger.Object,
             userRepositoryMock.Object,
-            mapper,
             currentUserServiceMock.Object,
-            ministryAdminServiceMock.Object);
+            ministryAdminServiceMock.Object,
+            apiErrorService,
+            searchStringServiceMock.Object);
     }
 
     [Test]
     public async Task GetById_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(regionAdmin);
 
         // Act
@@ -110,7 +128,7 @@ public class RegionAdminServiceTests
         // Act
         var result = await regionAdminService.GetByIdAsync(It.IsAny<string>()).ConfigureAwait(false);
 
-        // Assert
+        // Assert   
         Assert.That(result, Is.Null);
     }
 
@@ -118,10 +136,12 @@ public class RegionAdminServiceTests
     public async Task GetByUserId_WhenCalled_ReturnsEntity()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock
-            .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin> { regionAdmin }));
 
         // Act
@@ -137,10 +157,12 @@ public class RegionAdminServiceTests
     public void GetByUserId_WhenCalled_ReturnsException()
     {
         // Arrange
-        var expected = mapper.Map<RegionAdminDto>(regionAdmin);
+        var expected = regionAdmin.ToDto();
         regionAdminRepositoryMock
-            .Setup(x => x
-                .GetByFilter(It.IsAny<Expression<Func<RegionAdmin, bool>>>(), It.IsAny<string>()))
+            .Setup(x => x.GetByFilter(
+                It.IsAny<Expression<Func<RegionAdmin, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<RegionAdmin>, IQueryable<RegionAdmin>>>()))
             .Returns(Task.FromResult<IEnumerable<RegionAdmin>>(new List<RegionAdmin>()));
 
         // Act, Assert
@@ -151,9 +173,7 @@ public class RegionAdminServiceTests
     public async Task GetByFilter_WhenCalled_ReturnsEntities()
     {
         // Arrange
-        var expected = regionAdmins
-            .Select(p => mapper.Map<RegionAdminDto>(p))
-            .ToList();
+        var expected = regionAdmins.ToDto();
 
         var filter = new RegionAdminFilter()
         {
@@ -168,10 +188,8 @@ public class RegionAdminServiceTests
             .Setup(repo => repo.Get(
                 filter.From,
                 filter.Size,
-                It.IsAny<string>(),
                 It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
-                It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>(),
-                It.IsAny<bool>()))
+                It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>()))
             .Returns(regionAdminsMock);
 
         // Act
@@ -197,9 +215,22 @@ public class RegionAdminServiceTests
         // Act
         regionAdminService
             .Invoking(x => x
-                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<RegionAdminDto>(), It.IsAny<string>()))
+                .UpdateRegionAdminAsync(It.IsAny<string>(), It.IsAny<BaseUpdateUserDto>(), It.IsAny<string>()))
             .Should()
             .ThrowAsync<ArgumentNullException>();
+    }
+
+    [Test]
+    public async Task Update_WhenAdminNotExist_ReturnsErrorResponse()
+    {
+        // Arrange
+        regionAdminRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(null as RegionAdmin);
+
+        // Act
+        var result = await regionAdminService.UpdateRegionAdminAsync(It.IsAny<string>(), new BaseUpdateUserDto(), It.IsAny<string>());
+
+        // Assert
+        Assert.AreEqual(HttpStatusCode.NotFound, result.Match(error => error.HttpStatusCode, null));
     }
 
     [Test]
@@ -242,5 +273,100 @@ public class RegionAdminServiceTests
 
         // Assert
         Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public async Task Create_EmailIsAlreadyTaken_ReturnsErrorResponse()
+    {
+        // Arrange
+        var expected = emailAlreadyTakenErrorResponse
+            .ApiErrorResponse
+            .ApiErrors
+            .First();
+        apiErrorServiceUserRepositoryMock
+            .Setup(r => r.GetByFilter(
+                It.IsAny<Expression<Func<User, bool>>>(), 
+                It.IsAny<string>(),
+                It.IsAny<Func<IQueryable<User>, IQueryable<User>>>()))
+            .ReturnsAsync(new List<User> { new User() });
+
+        var regionAdminBaseDto = new RegionAdminBaseDto();
+        regionAdminBaseDto.Email = email;
+
+        // Act
+        var response = await regionAdminService.CreateRegionAdminAsync(It.IsAny<string>(), regionAdminBaseDto, It.IsAny<string>()).ConfigureAwait(false);
+
+        ErrorResponse errorResponse = default;
+        response.Match<ErrorResponse>(
+            actionResult => errorResponse = actionResult,
+            succeed => errorResponse = new ErrorResponse());
+
+        var result = errorResponse.ApiErrorResponse.ApiErrors.First();
+
+        // Assert
+        Assert.AreEqual(expected.Group, result.Group);
+        Assert.AreEqual(expected.Code, result.Code);
+        Assert.AreEqual(expected.Message, result.Message);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenFilteredBySearchString_ShouldReturnEntities()
+    {
+        // Arrange
+        var filter = new RegionAdminFilter()
+        {
+            SearchString = "Хмельницька,Київська,  ",
+        };
+
+        regionAdmins[0].CATOTTG = new CATOTTG() { Name = "Хмельницька область" };
+        regionAdmins[1].CATOTTG = new CATOTTG() { Name = "Київська область" };
+
+        var filteredRegionAdmins = new List<RegionAdmin>() { regionAdmins[0], regionAdmins[1] };
+        var expectedDtos = filteredRegionAdmins.ToDto();
+
+        SetupCommonMocks(filteredRegionAdmins, filter, ["Київська", "Хмельницька"]);
+
+        // Act
+        var result = await regionAdminService.GetByFilter(filter)
+            .ConfigureAwait(false);
+
+        // Assert
+        result.Entities.Should()
+            .BeEquivalentTo(expectedDtos);
+
+        searchStringServiceMock.VerifyAll();
+        regionAdminRepositoryMock.VerifyAll();
+        currentUserServiceMock.VerifyAll();
+    }
+
+    private void SetupCommonMocks(
+    List<RegionAdmin> filteredRegionAdmins = null,
+    RegionAdminFilter filter = null,
+    string[] splitResults = null,
+    bool isMinistryAdmin = false,
+    bool isRegionAdmin = false)
+    {
+        searchStringServiceMock
+            .Setup(s => s.SplitSearchString(It.Is<string>(x => x == filter.SearchString)))
+            .Returns(splitResults);
+
+        currentUserServiceMock.Setup(s => s.IsMinistryAdmin())
+            .Returns(isMinistryAdmin);
+        currentUserServiceMock.Setup(s => s.IsRegionAdmin())
+            .Returns(isRegionAdmin);
+
+        regionAdminRepositoryMock
+            .Setup(r => r.Count(It.IsAny<Expression<Func<RegionAdmin, bool>>>()))
+            .ReturnsAsync(filteredRegionAdmins.Count);
+
+        regionAdminRepositoryMock
+            .Setup(r =>
+                r.Get(
+                    It.Is<int>(x => x == filter.From),
+                    It.Is<int>(x => x == filter.Size),
+                    It.IsAny<Expression<Func<RegionAdmin, bool>>>(),
+                    It.IsAny<Dictionary<Expression<Func<RegionAdmin, dynamic>>, SortDirection>>()))
+            .Returns(filteredRegionAdmins.AsQueryable()
+            .BuildMock());
     }
 }

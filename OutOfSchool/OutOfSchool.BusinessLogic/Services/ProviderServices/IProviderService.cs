@@ -1,0 +1,117 @@
+﻿using OutOfSchool.BusinessLogic.Models.Individual;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
+
+namespace OutOfSchool.BusinessLogic.Services.ProviderServices;
+
+/// <summary>
+/// Defines interface for CRUD functionality for Provider entity.
+/// </summary>
+public interface IProviderService
+{
+    /// <summary>
+    /// Add entity.
+    /// </summary>
+    /// <param name="providerDto">Provider entity to add.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<ProviderDto> Create(ProviderCreateDto providerDto);
+
+    /// <summary>
+    /// Get entity by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>Provider.</returns>
+    Task<ProviderDto> GetById(Guid id);
+
+    /// <summary>
+    /// Get provider's status.
+    /// </summary>
+    /// <param name="providerId">Key of the Provider entity in the table.</param>
+    /// <returns>ProviderStatus.</returns>
+    Task<ProviderStatusDto> GetProviderStatusById(Guid providerId);
+
+    /// <summary>
+    /// Update entity.
+    /// </summary>
+    /// <param name="providerUpdateDto">Provider entity to add.</param>
+    /// <param name="userId">Id of user that requests update.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<ProviderDto> Update(ProviderUpdateDto providerUpdateDto, string userId);
+
+    /// <summary>
+    ///  Delete entity.
+    /// </summary>
+    /// <param name="id">Provider's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<Either<ErrorResponse, bool>> Delete(Guid id);
+
+    /// <summary>
+    ///  Gets Id of Provider, which owns a Workshop with specified Id.
+    /// </summary>
+    /// <param name="workshopId">Workshop's key.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    Task<Guid> GetProviderIdForWorkshopById(Guid workshopId);
+
+    /// <summary>
+    /// Get blocked/unblocked status for provider.
+    /// </summary>
+    /// <param name="providerId">Key of the Provider entity in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<bool?> IsBlocked(Guid providerId);
+
+    /// <summary>
+    /// Sends notification about provider
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="notificationAction"></param>
+    /// <param name="addStatusData"></param>
+    /// <param name="addLicenseStatusData"></param>
+    /// <returns></returns>
+    Task SendNotification(Provider provider, NotificationAction notificationAction, bool addStatusData, bool addLicenseStatusData);
+
+    /// <summary>
+    /// Updates workshop's provider status
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <param name="providerStatus"></param>
+    /// <returns></returns>
+    Task UpdateWorkshopsProviderStatus(Guid providerId, ProviderStatus providerStatus);
+
+    /// <summary>
+    /// Check if entity is exists by it's key.
+    /// </summary>
+    /// <param name="id">Key in the table.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<bool> Exists(Guid id);
+
+    /// <summary>
+    /// Upload employees for provider.
+    /// </summary>
+    /// <param name="id">Id of provider that requests upload.</param>
+    /// <param name="data">List of employees to upload.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<UploadEmployeeResponse> UploadEmployeesForProvider(Guid id, UploadEmployeeRequestDto[] data);
+    
+    /// <summary>
+    /// Gets the license status and ownership type for a provider.
+    /// </summary>
+    /// <param name="providerId">The unique identifier of the provider.</param>
+    /// <returns>A <see cref="Tuple{T1,T2}"/> containing the provider's license status and ownership type.</returns>
+    Task<Tuple<ProviderLicenseStatus, OwnershipType>> GetLicenseStatusAndOwnershipAsync(Guid providerId);
+
+    /// <summary>
+    /// Gets providers branches by given providerId
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<IEnumerable<ProviderDto>> GetBranchesAsync(Guid providerId);
+
+    /// <summary>
+    /// Gets parents by given providerId
+    /// </summary>
+    /// <param name="providerId"></param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+    Task<ProviderDto> GetParentProviderAsync(Guid providerId);
+}

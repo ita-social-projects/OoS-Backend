@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -24,32 +24,39 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class StatusServiceTests
 {
     private IStatusService service;
-    private OutOfSchoolDbContext context;
-    private IEntityRepository<long, InstitutionStatus> repository;
+    private TestOutOfSchoolDbContext context;
+    private IEntityRepositorySoftDeleted<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private IMapper mapper;
 
     [SetUp]
     public void Setup()
     {
-        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB");
+        options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .UseLazyLoadingProxies()
+            .EnableSensitiveDataLogging()
+            .Options;
 
-        options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
-        repository = new EntityRepository<long, InstitutionStatus>(context);
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
+        context = new TestOutOfSchoolDbContext(options);
+        repository = new EntityRepositorySoftDeleted<long, InstitutionStatus>(context);
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        service = new StatusService(repository, logger.Object, localizer.Object, mapper);
+        service = new StatusService(repository, logger.Object, localizer.Object);
+
         SeedDatabase();
+    }
+
+    [TearDown]
+    public void Dispose()
+    {
+        context.Dispose();
     }
 
     [Test]
     public async Task GetAll_WhenCalled_ReturnsAllInstitutionStatuses()
     {
         // Arrange
-        var expected = (await repository.GetAll()).Select(s => mapper.Map<InstitutionStatusDTO>(s));
+        var expected = (await repository.GetAll()).ToDto();
 
         // Act
         var result = await service.GetAll().ConfigureAwait(false);
@@ -58,14 +65,13 @@ public class StatusServiceTests
         TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
     }
 
-
     [Test]
     public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus()
     {
         // Arrange
         var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
         var existingId = TestDataHelper.RandomItem(collection).Id;
-        var expected = mapper.Map<InstitutionStatusDTO>(await repository.GetById(existingId));
+        var expected = (await repository.GetById(existingId)).ToDto();
 
         // Act
         var result = await service.GetById(existingId).ConfigureAwait(false);
@@ -86,7 +92,6 @@ public class StatusServiceTests
             async () => await service.GetById(notExistingId).ConfigureAwait(false));
     }
 
-
     // research why test is failing from time to time
     [Test]
     public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
@@ -94,11 +99,11 @@ public class StatusServiceTests
         // Arrange
         var lastIndex = (await repository.GetAll()).Last().Id;
         var entityToCreate = new InstitutionStatus() { Name = TestDataHelper.GetRandomWords() };
-        var expected = mapper.Map<InstitutionStatusDTO>(entityToCreate);
+        var expected = entityToCreate.ToDto();
         expected.Id = lastIndex + 1;
 
         // Act
-        var result = await service.Create(mapper.Map<InstitutionStatusDTO>(entityToCreate)).ConfigureAwait(false);
+        var result = await service.Create(entityToCreate.ToDto()).ConfigureAwait(false);
 
         // Assert
         TestHelper.AssertDtosAreEqual(expected, result);
@@ -114,10 +119,10 @@ public class StatusServiceTests
             Name = TestDataHelper.GetRandomWords(),
         };
 
-        var expected = mapper.Map<InstitutionStatusDTO>(entityToUpdate);
+        var expected = entityToUpdate.ToDto();
 
         // Act
-        var result = await service.Update(mapper.Map<InstitutionStatusDTO>(entityToUpdate)).ConfigureAwait(false);
+        var result = await service.Update(entityToUpdate.ToDto()).ConfigureAwait(false);
 
         // Assert
         TestHelper.AssertDtosAreEqual(expected, result);
@@ -127,7 +132,10 @@ public class StatusServiceTests
     public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
     {
         // Arrange
-        var changedEntity = mapper.Map<InstitutionStatusDTO>(InstitutionStatusGenerator.Generate());
+        var institutionStatus = InstitutionStatusGenerator.Generate();
+        institutionStatus.Id = 100;
+
+        var changedEntity = institutionStatus.ToDto();
 
         // Act and Assert
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -165,15 +173,7 @@ public class StatusServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
-        {
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-
-            var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-            context.InstitutionStatuses.AddRange(institutionStatuses);
-
-            context.SaveChanges();
-        }
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
 }

@@ -1,12 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Achievement;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Achievement;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -16,18 +22,134 @@ internal class AchievementControllerTest
     private AchievementController controller;
     private Mock<IAchievementService> achievementService;
     private Mock<IProviderService> providerService;
-    private Mock<IProviderAdminService> providerAdminService;
     private Mock<IWorkshopService> workshopService;
+    private Mock<ICurrentUserService> currentUserService;
 
     [SetUp]
     public void Setup()
     {
         achievementService = new Mock<IAchievementService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
         workshopService = new Mock<IWorkshopService>();
+        currentUserService = new Mock<ICurrentUserService>();
 
-        controller = new AchievementController(achievementService.Object, providerService.Object, providerAdminService.Object, workshopService.Object);
+        controller = new AchievementController(achievementService.Object, providerService.Object, workshopService.Object, currentUserService.Object);
+    }
+
+    [Test]
+    public async Task CreateAchievement_WhenAchievementDtoIsNull_ShouldReturnBadRequest()
+    {
+        // Act
+        var result = await controller.Create(null).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<BadRequestObjectResult>(result);
+    }
+
+    [Test]
+    public async Task CreateAchievement_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var dto = GetAchievementCreateDTO();
+        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(false);
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
+    public async Task CreateAchievement_WhenProviderIsBlocked_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = GetAchievementCreateDTO();
+        var providerId = Guid.NewGuid();
+
+        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
+        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(true);
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as ObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(403, result.StatusCode);
+    }
+
+    [Test]
+    public void CreateAchievement_UserDontHaveRights_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = GetAchievementCreateDTO();
+        var providerId = Guid.NewGuid();
+
+        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
+        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Parent);
+
+        currentUserService.Setup(s => s.UserHasRights(It.IsAny<IUserRights[]>()))
+            .ThrowsAsync(new UnauthorizedAccessException());
+
+        // Act &Assert
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() =>  controller.Create(dto));
+    }
+
+    [Test]
+    public async Task CreateAchievement_UserProviderAdminHaveRights_ShouldReturnCreated()
+    {
+        // Arrange
+        var dto = GetAchievementCreateDTO();
+        var providerId = Guid.NewGuid();
+        var userId = Guid.NewGuid().ToString();
+
+        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
+        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
+
+        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
+        achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(201, result.StatusCode);
+    }
+
+    [Test]
+    public async Task CreateAchievement_UserDeputyHaveRights_ShouldReturnForbidden()
+    {
+        // Arrange
+        var dto = GetAchievementCreateDTO();
+        var providerId = Guid.NewGuid();
+        var userId = Guid.NewGuid().ToString();
+
+        workshopService.Setup(s => s.Exists(dto.WorkshopId)).ReturnsAsync(true);
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(dto.WorkshopId)).ReturnsAsync(providerId);
+        providerService.Setup(s => s.IsBlocked(providerId)).ReturnsAsync(false);
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext();
+        controller.ControllerContext.HttpContext.SetContextUser(Role.Provider, userId);
+
+        workshopService.Setup(s => s.GetWorkshopProviderOwnerIdAsync(dto.WorkshopId)).ReturnsAsync(providerId);
+        achievementService.Setup(s => s.Create(dto)).ReturnsAsync(new AchievementDto());
+
+        // Act
+        var result = await controller.Create(dto).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(201, result.StatusCode);
     }
 
     [Test]
@@ -75,4 +197,14 @@ internal class AchievementControllerTest
             },
         };
     }
+
+    private AchievementCreateDTO GetAchievementCreateDTO()
+    {
+        return new AchievementCreateDTO()
+        {
+            Title = "Achievement_1",
+            AchievementDate = DateTime.Now,
+            AchievementTypeId = 1,
+            WorkshopId = Guid.NewGuid(),
+        };    }
 }

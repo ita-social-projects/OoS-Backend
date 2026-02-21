@@ -1,10 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Services.SubordinationStructure;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 
@@ -12,7 +7,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure;
 /// Controller with CRUD operations for Institution entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class InstitutionFieldDescriptionController : Controller
 {

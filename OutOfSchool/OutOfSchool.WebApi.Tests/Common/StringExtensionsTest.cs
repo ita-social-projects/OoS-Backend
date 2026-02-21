@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using OutOfSchool.Common.Extensions;
 
@@ -57,6 +58,36 @@ public class StringExtensionsTest
         var initialValue = "abcde12345";
 
         Assert.Throws(typeof(ArgumentOutOfRangeException), () => initialValue.Limit(-1));
+    }
+
+    [TestCase("Te1st Value", @"[^a-zA-Z]", "TestValue")]
+    [TestCase("12345", @"[^a-zA-Z]", "")]
+    [TestCase(null, @"[^a-zA-Z]", null)]
+    [TestCase("", @"[^a-zA-Z]", "")]
+    public void RemoveCharsByRegexPattern(string value, string pattern, string expected)
+    {
+        // Arrange
+        var regexPattern = new Regex(pattern);
+
+        // Act
+        var result = value.RemoveCharsByRegexPattern(regexPattern);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    [Test]
+    public void RemoveCharsByRegexPattern_WithRegexPatternIsNull_ShouldReturnValue()
+    {
+        // Arrange
+        var value = "Another string";
+        var expected = "Another string";
+
+        // Act
+        var result = value.RemoveCharsByRegexPattern(null);
+
+        // Assert
+        Assert.AreEqual(expected, result);
     }
 
     internal enum Test

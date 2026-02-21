@@ -62,3 +62,21 @@ public class CodeficatorAddressDto
 
     private static string GetSplitter(StringBuilder address) => address.Length == 0 ? string.Empty : Constants.AddressSeparator;
 }
+
+public static class CodeficatorAddressDtoExtensions
+{
+    public static CodeficatorAddressDto Copy(this CodeficatorAddressDto dto)
+        => new()
+        {
+            Id = dto.Id,
+            Category = dto.Category,
+            Region = dto.Region,
+            District = dto.District,
+            TerritorialCommunity = dto.TerritorialCommunity,
+            Settlement = dto.Settlement,
+            CityDistrict = dto.CityDistrict,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Order = dto.Order,
+        };
+}

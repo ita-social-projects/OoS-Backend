@@ -5,9 +5,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models;
 
-public class Achievement : IKeyedEntity<Guid>
+public class Achievement : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required]
     [DataType(DataType.Text)]

@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class Child : IKeyedEntity<Guid>
+public class Child : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
 
-    [MaxLength(60)]
+    public bool IsDeleted { get; set; }
+
+    [MaxLength(Constants.NameMaxLength)]
     public string FirstName { get; set; } = string.Empty;
 
-    [MaxLength(60)]
+    [MaxLength(Constants.NameMaxLength)]
     public string LastName { get; set; } = string.Empty;
 
-    [MaxLength(60)]
+    [MaxLength(Constants.NameMaxLength)]
     public string MiddleName { get; set; } = string.Empty;
 
     public DateTime? DateOfBirth { get; set; }

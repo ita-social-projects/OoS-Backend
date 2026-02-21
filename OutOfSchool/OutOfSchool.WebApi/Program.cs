@@ -8,7 +8,7 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .ReadFrom.Configuration(ctx.Configuration)
     .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
         .WithDefaultDestructurers()
-        .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() })));
+        .WithDestructurers([new DbUpdateExceptionDestructurer()])));
 
 GlobalLogContext.PushProperty("AppVersion", builder.Configuration.GetSection("AppDefaults:Version").Value);
 
@@ -22,12 +22,12 @@ app.Configure();
 
 try
 {
-    Log.Information("Application has started.");
+    Log.Information("Application has started");
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application failed to start.");
+    Log.Fatal(ex, "Application failed to start");
 }
 finally
 {

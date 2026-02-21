@@ -2,12 +2,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 #nullable disable
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.Migrations.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
     partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
@@ -16,16 +17,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "8.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("AchievementChild", b =>
                 {
                     b.Property<Guid>("AchievementsId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<Guid>("ChildrenId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("AchievementsId", "ChildrenId");
 
@@ -37,7 +40,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("ChildSocialGroup", b =>
                 {
                     b.Property<Guid>("ChildrenId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<long>("SocialGroupsId")
                         .HasColumnType("bigint");
@@ -49,19 +52,34 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("ChildSocialGroup");
                 });
 
-            modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
+            modelBuilder.Entity("CompetitiveEventSubDirection", b =>
                 {
-                    b.Property<long>("DirectionsId")
+                    b.Property<Guid>("CompetitiveEventId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<long>("SubDirectionsId")
                         .HasColumnType("bigint");
 
+                    b.HasKey("CompetitiveEventId", "SubDirectionsId");
+
+                    b.HasIndex("SubDirectionsId");
+
+                    b.ToTable("CompetitiveEventSubDirection");
+                });
+
+            modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
+                {
                     b.Property<Guid>("InstitutionHierarchiesId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
-                    b.HasKey("DirectionsId", "InstitutionHierarchiesId");
+                    b.Property<long>("SubDirectionsId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("InstitutionHierarchiesId");
+                    b.HasKey("InstitutionHierarchiesId", "SubDirectionsId");
 
-                    b.ToTable("DirectionInstitutionHierarchy");
+                    b.HasIndex("SubDirectionsId");
+
+                    b.ToTable("InstitutionHierarchySubDirection");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -69,6 +87,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FriendlyName")
                         .HasColumnType("longtext");
@@ -113,6 +133,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
 
@@ -135,6 +157,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("longtext");
@@ -213,7 +237,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTime>("AchievementDate")
                         .HasColumnType("date");
@@ -232,7 +256,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(2000)");
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -251,8 +275,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<Guid>("AchievementId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -279,6 +305,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -303,42 +331,49 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
+                            IsDeleted = false,
                             Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
                             TitleEn = "Winners of international and all-Ukrainian sports competitions (individual and team)"
                         },
                         new
                         {
                             Id = 2L,
+                            IsDeleted = false,
                             Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
                             TitleEn = "Winners and participants of international, all-Ukrainian and regional contests and exhibitions of scientific, technical, research, innovation, IT projects"
                         },
                         new
                         {
                             Id = 3L,
+                            IsDeleted = false,
                             Title = "Реципієнти міжнародних грантів",
                             TitleEn = "Recipients of international grants"
                         },
                         new
                         {
                             Id = 4L,
+                            IsDeleted = false,
                             Title = "Призери міжнародних культурних конкурсів та фестивалів",
                             TitleEn = "Winners of international cultural competitions and festivals"
                         },
                         new
                         {
                             Id = 5L,
+                            IsDeleted = false,
                             Title = "Соціально активні категорії учнів",
                             TitleEn = "Socially active categories of students"
                         },
                         new
                         {
                             Id = 6L,
+                            IsDeleted = false,
                             Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
                             TitleEn = "Google digital tools for institutions of higher and professional pre-higher education"
                         },
                         new
                         {
                             Id = 7L,
+                            IsDeleted = false,
                             Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
                             TitleEn = "Winners and participants of olympiads at the international and all-Ukrainian levels"
                         });
@@ -349,6 +384,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("BuildingNumber")
                         .IsRequired()
@@ -390,18 +427,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTimeOffset?>("ApprovedTime")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("ChildId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("IsBlocked")
+                    b.Property<bool>("IsBlockedByProvider")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsDeleted")
@@ -410,7 +447,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(false);
 
                     b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("RejectionMessage")
                         .HasMaxLength(500)
@@ -422,7 +459,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(1);
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -437,22 +474,52 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Applications");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.AverageRating", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.AreaAdmin", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<long>("CATOTTGId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
+                    b.Property<Guid>("InstitutionId")
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<float>("Rate")
-                        .HasColumnType("float");
+                    b.HasKey("UserId");
+
+                    b.HasIndex("CATOTTGId");
+
+                    b.HasIndex("InstitutionId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("AreaAdmins");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AverageRating", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("UUID");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(2, 1)
+                        .HasColumnType("decimal(2,1)");
 
                     b.Property<int>("RateQuantity")
                         .HasColumnType("int");
@@ -470,7 +537,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTimeOffset>("DateTimeFrom")
                         .HasColumnType("datetime(6)");
@@ -484,10 +551,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(false);
 
                     b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -517,6 +584,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Category")
                         .HasMaxLength(3)
@@ -571,8 +640,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<Guid?>("EntityIdGuid")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<long?>("EntityIdLong")
                         .HasColumnType("bigint");
@@ -612,10 +683,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<DateTimeOffset>("CreatedDateTime")
                         .HasColumnType("datetime(6)");
@@ -633,8 +704,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.HasKey("Id");
 
@@ -649,9 +720,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
-                    b.Property<bool>("IsBlocked")
+                    b.Property<bool>("IsBlockedByProvider")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsDeleted")
@@ -660,10 +731,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(false);
 
                     b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -680,7 +751,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTime?>("DateOfBirth")
                         .IsRequired()
@@ -688,8 +759,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<int>("Gender")
                         .ValueGeneratedOnAdd()
@@ -706,16 +777,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<string>("MiddleName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("PlaceOfStudy")
                         .HasMaxLength(500)
@@ -734,12 +805,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
+                        .HasColumnType("UUID");
 
                     b.Property<string>("Title")
                         .HasMaxLength(200)
@@ -750,8 +816,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsDeleted");
-
                     b.ToTable("CompanyInformation");
                 });
 
@@ -759,19 +823,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<Guid>("CompanyInformationId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
                         .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("SectionName")
                         .HasMaxLength(200)
@@ -781,9 +840,463 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CompanyInformationId");
 
+                    b.ToTable("CompanyInformationItems");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("CATOTTGId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("CompetitiveEventAccountingTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompetitiveEventDraftContent")
+                        .IsRequired()
+                        .HasColumnType("json");
+
+                    b.Property<Guid?>("CompetitiveEventId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("CoverImageId")
+                        .HasColumnType("char(255)");
+
+                    b.Property<int>("CoverageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DraftStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("RejectionMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime?>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitiveEventId")
+                        .IsUnique();
+
+                    b.HasIndex("CoverImageId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("CompetitiveEventDrafts");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<bool>("AreThereBenefits")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Benefits")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<int>("CompetitiveEventAccountingTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("CompetitiveSelection")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("CompetitiveSelectionDescription")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("CoverImageId")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<int>("CoverageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("DescriptionOfTheEnrollmentProcedure")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("MaximumAge")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinimumAge")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<uint>("NumberOfSeats")
+                        .HasColumnType("int unsigned");
+
+                    b.Property<Guid>("OrganizerOfTheEventId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<int>("PlannedFormatOfClasses")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("RegistrationEndTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset>("RegistrationStartTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset>("ScheduledEndTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset>("ScheduledStartTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ShortTitle")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("VenueName")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitiveEventAccountingTypeId");
+
+                    b.HasIndex("CoverImageId");
+
+                    b.HasIndex("CoverageId");
+
                     b.HasIndex("IsDeleted");
 
-                    b.ToTable("CompanyInformationItems");
+                    b.HasIndex("OrganizerOfTheEventId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("CompetitiveEvents");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventAccountingType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("CompetitiveEventAccountingTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            Title = "Освітній проєкт",
+                            TitleEn = "Educational project"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            Title = "Конкурс (не має етапів)",
+                            TitleEn = "Competition"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsDeleted = false,
+                            Title = "Основний конкурс (має мати підпорядковані конкурси-етапи)",
+                            TitleEn = "Main competition"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsDeleted = false,
+                            Title = "Етап конкурсу (має мати батьківський основний конкурс)",
+                            TitleEn = "Contest stage"
+                        });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventCoverage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("CompetitiveEventCoverages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            Title = "Локальний (Шкільний)",
+                            TitleEn = "Local (School)"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            Title = "Міський",
+                            TitleEn = "City"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsDeleted = false,
+                            Title = "Районний",
+                            TitleEn = "Raional"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsDeleted = false,
+                            Title = "Обласний",
+                            TitleEn = "Regional"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsDeleted = false,
+                            Title = "Всеукраїнський",
+                            TitleEn = "All-Ukrainian"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsDeleted = false,
+                            Title = "Міжнародний",
+                            TitleEn = "International"
+                        });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventDescriptionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid?>("CompetitiveEventId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitiveEventId");
+
+                    b.ToTable("CompetitiveEventDescriptionItems");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventRegistrationDeadline", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("CompetitiveEventRegistrationDeadlines");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            Title = "Постійно (протягом року)",
+                            TitleEn = "Constantly (during the year)"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            Title = "Певний місяць або місяці року",
+                            TitleEn = "A certain month or months of the year"
+                        });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.Judge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<Guid?>("CompetitiveEventId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("CoverImageId")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsChiefJudge")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("MiddleName")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitiveEventId");
+
+                    b.ToTable("Judges");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
@@ -791,6 +1304,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time(6)");
@@ -807,7 +1322,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint unsigned");
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.HasKey("Id");
 
@@ -815,9 +1330,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("WorkshopId");
 
-                    b.ToTable("DateTimeRanges");
-
-                    b.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
+                    b.ToTable("DateTimeRanges", t =>
+                        {
+                            t.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
+                        });
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
@@ -825,6 +1341,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -840,6 +1358,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("NULL ON UPDATE CURRENT_TIMESTAMP(6)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsDeleted");
@@ -851,7 +1374,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<int>("Entity")
                         .HasColumnType("int");
@@ -863,11 +1386,60 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("RecordId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.HasKey("Id");
 
                     b.ToTable("ElasticsearchSyncRecords");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.EmployeeChangesLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("EmployeeUserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("NewValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("OldValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("OperationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PropertyName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeUserId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmployeeChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
@@ -875,6 +1447,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -886,7 +1460,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -915,10 +1489,40 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("FilesInDb");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft>", b =>
+                {
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("ExternalStorageId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("EntityId", "ExternalStorageId");
+
+                    b.HasIndex("ExternalStorageId");
+
+                    b.ToTable("CompetitiveEventDraftImages");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>", b =>
+                {
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("ExternalStorageId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("EntityId", "ExternalStorageId");
+
+                    b.HasIndex("ExternalStorageId");
+
+                    b.ToTable("CompetitiveEventsImages");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
                 {
                     b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("ExternalStorageId")
                         .HasColumnType("varchar(255)");
@@ -931,14 +1535,125 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("ExternalStorageId")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("EntityId", "ExternalStorageId");
 
+                    b.HasIndex("ExternalStorageId");
+
                     b.ToTable("WorkshopImages");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft>", b =>
+                {
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("ExternalStorageId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("EntityId", "ExternalStorageId");
+
+                    b.HasIndex("ExternalStorageId");
+
+                    b.ToTable("WorkshopDraftImages");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Individual", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("ExternalRegistryId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsRegistered")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Rnokpp")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("Rnokpp")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Individuals");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
@@ -947,11 +1662,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
 
                     b.HasKey("UserId");
 
                     b.HasIndex("InstitutionId");
+
+                    b.HasIndex("IsDeleted");
 
                     b.ToTable("InstitutionAdmins");
                 });
@@ -962,12 +1684,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
                     b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("NameEn")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
@@ -981,30 +1709,109 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
-                            Name = "Працює"
+                            IsDeleted = false,
+                            Name = "Працює",
+                            NameEn = "Active"
                         },
                         new
                         {
                             Id = 2L,
-                            Name = "Перебуває в стані реорганізації"
+                            IsDeleted = false,
+                            Name = "Перебуває в стані реорганізації",
+                            NameEn = "Undergoing reorganization"
                         },
                         new
                         {
                             Id = 3L,
-                            Name = "Має намір на реорганізацію"
+                            IsDeleted = false,
+                            Name = "Має намір на реорганізацію",
+                            NameEn = "Waiting for reorganization"
                         },
                         new
                         {
                             Id = 4L,
-                            Name = "Відсутній"
+                            IsDeleted = false,
+                            Name = "Відсутній статус",
+                            NameEn = "Without status"
                         });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Language", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Languages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Code = "en",
+                            Name = "English"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Code = "uk",
+                            Name = "Українська"
+                        });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Moderator", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("Moderators");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Notification", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<int>("Action")
                         .HasColumnType("int");
@@ -1019,7 +1826,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("longtext");
 
                     b.Property<Guid?>("ObjectId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTimeOffset?>("ReadDateTime")
                         .HasColumnType("datetime(6)");
@@ -1038,17 +1845,104 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Official", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("DismissalOrder")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("DismissalReason")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("EmploymentType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ExternalRegistryId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("IndividualId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<Guid>("PositionId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("RecruitmentOrder")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IndividualId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("PositionId");
+
+                    b.ToTable("Officials");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.OperationWithObject", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<string>("Comment")
                         .HasColumnType("longtext");
 
                     b.Property<Guid?>("EntityId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<int?>("EntityType")
                         .HasColumnType("int");
@@ -1079,7 +1973,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTime?>("DateOfBirth")
                         .IsRequired()
@@ -1106,11 +2000,47 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Parents");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("OperationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ParentBlockedByAdminLog");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.PermissionsForRole", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Description")
                         .HasMaxLength(100)
@@ -1134,103 +2064,259 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "techadmin permissions",
-                            PackedPermissions = "def\n\r !()+43257>=<?HGIFPQ[]\\rpqon|z{yx}T",
+                            PackedPermissions = "ZGVmAwIBBAoLDQweIB8hKCkrLBc0MzI1Nzg5Pj08P0hHSUZQUVtdXF5ycHFvbnx6e3l4fZCOj42MkVRnlpo=",
                             RoleName = "TechAdmin"
                         },
                         new
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "e\n43256HGIFPQ[]\\T",
+                            PackedPermissions = "ZQMCAQQKCzQzMjU2SEdJRlBRW11cVJaYl5mgoaOi",
                             RoleName = "Provider"
                         },
                         new
                         {
                             Id = 3L,
                             Description = "parent permissions",
-                            PackedPermissions = "e\n !()+>=<PQT",
+                            PackedPermissions = "ZQMKCwwUFhUXHiAfISgpKz49PFBRVJY=",
                             RoleName = "Parent"
                         },
                         new
                         {
                             Id = 4L,
-                            Description = "provider admin permissions",
-                            PackedPermissions = "e\n26HGIFPQ[\\T",
-                            RoleName = "ProviderAdmin"
+                            Description = "employee permissions",
+                            PackedPermissions = "ZQMCAQQKCzI2SEdJRlBRW1xUlpiXmQ==",
+                            RoleName = "Employee"
                         },
                         new
                         {
                             Id = 5L,
                             Description = "ministry admin permissions",
-                            PackedPermissions = "ef\n257(PQFTn[zxy{}",
+                            PackedPermissions = "ZWYDAgEECjI1NzgoLDkUUFFGVG5bXnp4eXt9joyNj5Fnlpo=",
                             RoleName = "MinistryAdmin"
                         },
                         new
                         {
                             Id = 6L,
                             Description = "region admin permissions",
-                            PackedPermissions = "ef\n257(PQFTxy[",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUeHmOjI2PkVteZ5aa",
                             RoleName = "RegionAdmin"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Description = "area admin permissions",
+                            PackedPermissions = "ZWYDAgEECjI1Nzg5KBRQUUZUjI1bXmeWmg==",
+                            RoleName = "AreaAdmin"
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            Description = "moderator permissions",
+                            PackedPermissions = "ZTI3OVpbXmZUlpo=",
+                            RoleName = "Moderator"
                         });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Position", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<string>("ClassifierType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("GenitiveName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsForRuralAreas")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsTeachingPosition")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Language")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<int>("PositionType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(10);
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<float>("Rate")
+                        .HasColumnType("float");
+
+                    b.Property<int>("SeatsAmount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<float>("Tariff")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("Positions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
-                    b.Property<long?>("ActualAddressId")
-                        .HasColumnType("bigint");
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<string>("BlockPhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
 
                     b.Property<string>("BlockReason")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
                     b.Property<string>("CoverImageId")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Document")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Director")
+                    b.Property<string>("Edrpou")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .IsUnicode(true)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
 
-                    b.Property<DateTime?>("DirectorDateOfBirth")
-                        .IsRequired()
-                        .HasColumnType("Date");
+                    b.Property<string>("EdrpouUniqKey")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("varchar(255)")
+                        .HasComputedColumnSql("\n                CASE \n                    WHEN `IsStructuralUnit` = 1 \n                    THEN CONCAT(`Edrpou`, '-', REPLACE(LOWER(`Id`), '-', ''))\n                    ELSE `Edrpou`\n                END", true);
 
-                    b.Property<string>("EdrpouIpn")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("varchar(12)");
+                    b.Property<Guid?>("ExternalId")
+                        .HasColumnType("binary(16)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<string>("Facebook")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.Property<string>("Founder")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("FullTitle")
                         .IsRequired()
-                        .HasMaxLength(60)
+                        .HasMaxLength(256)
                         .IsUnicode(true)
-                        .HasColumnType("varchar(60)");
+                        .HasColumnType("varchar(256)");
 
-                    b.Property<string>("Instagram")
+                    b.Property<string>("FullTitleEn")
+                        .HasMaxLength(256)
+                        .IsUnicode(true)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("GeneralWorkSchedule")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("InstitutionCode")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
                     b.Property<Guid?>("InstitutionId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<long?>("InstitutionStatusId")
                         .HasColumnType("bigint");
@@ -1246,28 +2332,51 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<long>("LegalAddressId")
-                        .HasColumnType("bigint");
+                    b.Property<bool>("IsLocatedInMountainousArea")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsStructuralUnit")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("License")
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<DateTime?>("LicenseExpirationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("LicenseIssuanceDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("LicenseLimits")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.Property<int>("LicenseStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
                     b.Property<int>("Ownership")
                         .HasColumnType("int");
 
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)");
+                    b.Property<Guid?>("ParentProviderId")
+                        .HasColumnType("UUID(16)");
 
                     b.Property<string>("ShortTitle")
                         .IsRequired()
+                        .HasMaxLength(60)
+                        .IsUnicode(true)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("ShortTitleEn")
                         .HasMaxLength(60)
                         .IsUnicode(true)
                         .HasColumnType("varchar(60)");
@@ -1284,21 +2393,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("TypeId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Website")
-                        .HasMaxLength(256)
-                        .IsUnicode(true)
-                        .HasColumnType("varchar(256)");
+                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime?>("UpdatedAt"));
+
+                    b.Property<bool>("UsesOutsourcingServices")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActualAddressId")
-                        .IsUnique();
-
-                    b.HasIndex("EdrpouIpn");
+                    b.HasIndex("EdrpouUniqKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Providers_EdrpouUniqKey");
 
                     b.HasIndex("InstitutionId");
 
@@ -1306,85 +2414,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.HasIndex("LegalAddressId")
-                        .IsUnique();
+                    b.HasIndex("ParentProviderId");
 
                     b.HasIndex("TypeId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Providers");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDeputy")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.HasIndex("ProviderId");
-
-                    b.ToTable("ProviderAdmins");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("ManagedWorkshopId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<DateTime>("OperationDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("OperationType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ProviderAdminUserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ManagedWorkshopId");
-
-                    b.HasIndex("ProviderAdminUserId");
-
-                    b.HasIndex("ProviderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProviderAdminChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
@@ -1400,7 +2441,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(200)");
 
                     b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -1416,6 +2457,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Name")
                         .HasMaxLength(500)
@@ -1499,10 +2542,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTimeOffset>("LastSuccessLaunch")
                         .HasColumnType("datetime(6)");
@@ -1511,8 +2551,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
 
                     b.ToTable("QuartzJobs");
                 });
@@ -1523,11 +2561,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1535,7 +2575,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(false);
 
                     b.Property<Guid>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<int>("Rate")
                         .HasColumnType("int");
@@ -1560,7 +2600,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("bigint");
 
                     b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1583,6 +2623,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1608,30 +2650,35 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 1L,
+                            IsDeleted = false,
                             Name = "Діти із багатодітних сімей",
                             NameEn = "Children from large families"
                         },
                         new
                         {
                             Id = 2L,
+                            IsDeleted = false,
                             Name = "Діти із малозабезпечених сімей",
                             NameEn = "Children from low-income families"
                         },
                         new
                         {
                             Id = 3L,
+                            IsDeleted = false,
                             Name = "Діти з інвалідністю",
                             NameEn = "Children with disabilities"
                         },
                         new
                         {
                             Id = 4L,
+                            IsDeleted = false,
                             Name = "Діти-сироти",
                             NameEn = "Orphans"
                         },
                         new
                         {
                             Id = 5L,
+                            IsDeleted = false,
                             Name = "Діти, позбавлені батьківського піклування",
                             NameEn = "Children deprived of parental care"
                         });
@@ -1671,6 +2718,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ApplicationsAmount")
                         .HasColumnType("int");
@@ -1779,11 +2828,130 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("StatisticReportsCSV");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.StudySubject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsLanguageUkrainian")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<long>("LanguageId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("NameInInstructionLanguage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("NameInUkrainian")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("StudySubjects");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<long>("DirectionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectionId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("SubDirections");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.Institution", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1800,6 +2968,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("NULL ON UPDATE CURRENT_TIMESTAMP(6)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsDeleted");
@@ -1811,13 +2984,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<int>("HierarchyLevel")
                         .HasColumnType("int");
 
                     b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1841,13 +3014,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<int>("HierarchyLevel")
                         .HasColumnType("int");
 
                     b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -1855,11 +3028,23 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasDefaultValue(false);
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<long?>("SportRegistryIdCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SportsSectionNumeral")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("Title")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("NULL ON UPDATE CURRENT_TIMESTAMP(6)");
 
                     b.HasKey("Id");
 
@@ -1872,11 +3057,632 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("InstitutionHierarchies");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Tag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NameEn")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Name = "Музичний Гурток",
+                            NameEn = "Music Workshop"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "Спортивна Секція",
+                            NameEn = "Sports Section"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Name = "Хореографія",
+                            NameEn = "Choreography"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Name = "Образотворче Мистецтво",
+                            NameEn = "Fine Arts"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Name = "Театральна Студія",
+                            NameEn = "Theater Studio"
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            Name = "Футбол",
+                            NameEn = "Football"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Name = "Волейбол",
+                            NameEn = "Volleyball"
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            Name = "Плавання",
+                            NameEn = "Swimming"
+                        },
+                        new
+                        {
+                            Id = 9L,
+                            Name = "Легка Атлетика",
+                            NameEn = "Track and Field"
+                        },
+                        new
+                        {
+                            Id = 10L,
+                            Name = "Баскетбол",
+                            NameEn = "Basketball"
+                        },
+                        new
+                        {
+                            Id = 11L,
+                            Name = "Гімнастика",
+                            NameEn = "Gymnastics"
+                        },
+                        new
+                        {
+                            Id = 12L,
+                            Name = "Танці",
+                            NameEn = "Dancing"
+                        },
+                        new
+                        {
+                            Id = 13L,
+                            Name = "Йога",
+                            NameEn = "Yoga"
+                        },
+                        new
+                        {
+                            Id = 14L,
+                            Name = "Карате",
+                            NameEn = "Karate"
+                        },
+                        new
+                        {
+                            Id = 15L,
+                            Name = "Айкідо",
+                            NameEn = "Aikido"
+                        },
+                        new
+                        {
+                            Id = 16L,
+                            Name = "Боротьба",
+                            NameEn = "Wrestling"
+                        },
+                        new
+                        {
+                            Id = 17L,
+                            Name = "Джудо",
+                            NameEn = "Judo"
+                        },
+                        new
+                        {
+                            Id = 18L,
+                            Name = "Кулінарія",
+                            NameEn = "Culinary Arts"
+                        },
+                        new
+                        {
+                            Id = 19L,
+                            Name = "Рукоділля",
+                            NameEn = "Handicrafts"
+                        },
+                        new
+                        {
+                            Id = 20L,
+                            Name = "Малювання",
+                            NameEn = "Drawing"
+                        },
+                        new
+                        {
+                            Id = 21L,
+                            Name = "Скульптура",
+                            NameEn = "Sculpture"
+                        },
+                        new
+                        {
+                            Id = 22L,
+                            Name = "Фотографія",
+                            NameEn = "Photography"
+                        },
+                        new
+                        {
+                            Id = 23L,
+                            Name = "Кіно Мистецтво",
+                            NameEn = "Cinema Art"
+                        },
+                        new
+                        {
+                            Id = 24L,
+                            Name = "Акторська Майстерність",
+                            NameEn = "Acting"
+                        },
+                        new
+                        {
+                            Id = 25L,
+                            Name = "Психологічні Тренінги",
+                            NameEn = "Psychological Training"
+                        },
+                        new
+                        {
+                            Id = 26L,
+                            Name = "Робототехніка",
+                            NameEn = "Robotics"
+                        },
+                        new
+                        {
+                            Id = 27L,
+                            Name = "Програмування",
+                            NameEn = "Programming"
+                        },
+                        new
+                        {
+                            Id = 28L,
+                            Name = "Інформаційні Технології",
+                            NameEn = "Information Technology"
+                        },
+                        new
+                        {
+                            Id = 29L,
+                            Name = "Шахи",
+                            NameEn = "Chess"
+                        },
+                        new
+                        {
+                            Id = 30L,
+                            Name = "Логіка",
+                            NameEn = "Logic"
+                        },
+                        new
+                        {
+                            Id = 31L,
+                            Name = "Екологія",
+                            NameEn = "Ecology"
+                        },
+                        new
+                        {
+                            Id = 32L,
+                            Name = "Наукові Дослідження",
+                            NameEn = "Scientific Research"
+                        },
+                        new
+                        {
+                            Id = 33L,
+                            Name = "Біологія",
+                            NameEn = "Biology"
+                        },
+                        new
+                        {
+                            Id = 34L,
+                            Name = "Астрономія",
+                            NameEn = "Astronomy"
+                        },
+                        new
+                        {
+                            Id = 35L,
+                            Name = "Математика",
+                            NameEn = "Mathematics"
+                        },
+                        new
+                        {
+                            Id = 36L,
+                            Name = "Фізика",
+                            NameEn = "Physics"
+                        },
+                        new
+                        {
+                            Id = 37L,
+                            Name = "Хімія",
+                            NameEn = "Chemistry"
+                        },
+                        new
+                        {
+                            Id = 38L,
+                            Name = "Іноземні Мови",
+                            NameEn = "Foreign Languages"
+                        },
+                        new
+                        {
+                            Id = 39L,
+                            Name = "Англійська Мова",
+                            NameEn = "English Language"
+                        },
+                        new
+                        {
+                            Id = 40L,
+                            Name = "Німецька Мова",
+                            NameEn = "German Language"
+                        },
+                        new
+                        {
+                            Id = 41L,
+                            Name = "Французька Мова",
+                            NameEn = "French Language"
+                        },
+                        new
+                        {
+                            Id = 42L,
+                            Name = "Іспанська Мова",
+                            NameEn = "Spanish Language"
+                        },
+                        new
+                        {
+                            Id = 43L,
+                            Name = "Журналістика",
+                            NameEn = "Journalism"
+                        },
+                        new
+                        {
+                            Id = 44L,
+                            Name = "Риторика",
+                            NameEn = "Rhetoric"
+                        },
+                        new
+                        {
+                            Id = 45L,
+                            Name = "Літературна Творчість",
+                            NameEn = "Literary Creativity"
+                        },
+                        new
+                        {
+                            Id = 46L,
+                            Name = "Історія",
+                            NameEn = "History"
+                        },
+                        new
+                        {
+                            Id = 47L,
+                            Name = "Археологія",
+                            NameEn = "Archaeology"
+                        },
+                        new
+                        {
+                            Id = 48L,
+                            Name = "Мистецтвознавство",
+                            NameEn = "Art Studies"
+                        },
+                        new
+                        {
+                            Id = 49L,
+                            Name = "Культурологія",
+                            NameEn = "Cultural Studies"
+                        },
+                        new
+                        {
+                            Id = 50L,
+                            Name = "Краєзнавство",
+                            NameEn = "Local History"
+                        },
+                        new
+                        {
+                            Id = 51L,
+                            Name = "Етнографія",
+                            NameEn = "Ethnography"
+                        },
+                        new
+                        {
+                            Id = 52L,
+                            Name = "Радіо Аматорство",
+                            NameEn = "Radio Amateur"
+                        },
+                        new
+                        {
+                            Id = 53L,
+                            Name = "Модельний Спорт",
+                            NameEn = "Model Sports"
+                        },
+                        new
+                        {
+                            Id = 54L,
+                            Name = "Авіамоделювання",
+                            NameEn = "Aeromodelling"
+                        },
+                        new
+                        {
+                            Id = 55L,
+                            Name = "Судномоделювання",
+                            NameEn = "Ship Modelling"
+                        },
+                        new
+                        {
+                            Id = 56L,
+                            Name = "Конструювання",
+                            NameEn = "Construction"
+                        },
+                        new
+                        {
+                            Id = 57L,
+                            Name = "Технічне Моделювання",
+                            NameEn = "Technical Modelling"
+                        },
+                        new
+                        {
+                            Id = 58L,
+                            Name = "Декоративно Прикладне Мистецтво",
+                            NameEn = "Decorative Arts"
+                        },
+                        new
+                        {
+                            Id = 59L,
+                            Name = "Кераміка",
+                            NameEn = "Ceramics"
+                        },
+                        new
+                        {
+                            Id = 60L,
+                            Name = "Різьба По Дереву",
+                            NameEn = "Wood Carving"
+                        },
+                        new
+                        {
+                            Id = 61L,
+                            Name = "Вишивка",
+                            NameEn = "Embroidery"
+                        },
+                        new
+                        {
+                            Id = 62L,
+                            Name = "Плетіння",
+                            NameEn = "Weaving"
+                        },
+                        new
+                        {
+                            Id = 63L,
+                            Name = "Бісероплетіння",
+                            NameEn = "Bead Weaving"
+                        },
+                        new
+                        {
+                            Id = 64L,
+                            Name = "Флористика",
+                            NameEn = "Floristry"
+                        },
+                        new
+                        {
+                            Id = 65L,
+                            Name = "Дизайн",
+                            NameEn = "Design"
+                        },
+                        new
+                        {
+                            Id = 66L,
+                            Name = "Архітектура",
+                            NameEn = "Architecture"
+                        },
+                        new
+                        {
+                            Id = 67L,
+                            Name = "Моделювання Одягу",
+                            NameEn = "Fashion Design"
+                        },
+                        new
+                        {
+                            Id = 68L,
+                            Name = "Кравецтво",
+                            NameEn = "Tailoring"
+                        },
+                        new
+                        {
+                            Id = 69L,
+                            Name = "Хенд Мейд",
+                            NameEn = "Handmade"
+                        },
+                        new
+                        {
+                            Id = 70L,
+                            Name = "Графічний Дизайн",
+                            NameEn = "Graphic Design"
+                        },
+                        new
+                        {
+                            Id = 71L,
+                            Name = "Анімація",
+                            NameEn = "Animation"
+                        },
+                        new
+                        {
+                            Id = 72L,
+                            Name = "3D Моделювання",
+                            NameEn = "3D Modelling"
+                        },
+                        new
+                        {
+                            Id = 73L,
+                            Name = "Мультиплікація",
+                            NameEn = "Cartoon Making"
+                        },
+                        new
+                        {
+                            Id = 74L,
+                            Name = "Відеомонтаж",
+                            NameEn = "Video Editing"
+                        },
+                        new
+                        {
+                            Id = 75L,
+                            Name = "Цифровий Мистецький Дизайн",
+                            NameEn = "Digital Art Design"
+                        },
+                        new
+                        {
+                            Id = 76L,
+                            Name = "Сучасне Мистецтво",
+                            NameEn = "Modern Art"
+                        },
+                        new
+                        {
+                            Id = 77L,
+                            Name = "Естрадний Спів",
+                            NameEn = "Pop Singing"
+                        },
+                        new
+                        {
+                            Id = 78L,
+                            Name = "Вокальний Ансамбль",
+                            NameEn = "Vocal Ensemble"
+                        },
+                        new
+                        {
+                            Id = 79L,
+                            Name = "Оркестр",
+                            NameEn = "Orchestra"
+                        },
+                        new
+                        {
+                            Id = 80L,
+                            Name = "Гра На Гітарі",
+                            NameEn = "Guitar Playing"
+                        },
+                        new
+                        {
+                            Id = 81L,
+                            Name = "Гра На Фортепіано",
+                            NameEn = "Piano Playing"
+                        },
+                        new
+                        {
+                            Id = 82L,
+                            Name = "Сольний Спів",
+                            NameEn = "Solo Singing"
+                        },
+                        new
+                        {
+                            Id = 83L,
+                            Name = "Хоровий Спів",
+                            NameEn = "Choral Singing"
+                        },
+                        new
+                        {
+                            Id = 84L,
+                            Name = "Фольклорний Ансамбль",
+                            NameEn = "Folklore Ensemble"
+                        },
+                        new
+                        {
+                            Id = 85L,
+                            Name = "Етнічна Музика",
+                            NameEn = "Ethnic Music"
+                        },
+                        new
+                        {
+                            Id = 86L,
+                            Name = "Духові Інструменти",
+                            NameEn = "Wind Instruments"
+                        },
+                        new
+                        {
+                            Id = 87L,
+                            Name = "Струнні Інструменти",
+                            NameEn = "String Instruments"
+                        },
+                        new
+                        {
+                            Id = 88L,
+                            Name = "Барабани",
+                            NameEn = "Drums"
+                        },
+                        new
+                        {
+                            Id = 89L,
+                            Name = "Перкусія",
+                            NameEn = "Percussion"
+                        },
+                        new
+                        {
+                            Id = 90L,
+                            Name = "Музичний Театр",
+                            NameEn = "Musical Theater"
+                        },
+                        new
+                        {
+                            Id = 91L,
+                            Name = "Сценічна Мова",
+                            NameEn = "Stage Speech"
+                        },
+                        new
+                        {
+                            Id = 92L,
+                            Name = "Імпровізація",
+                            NameEn = "Improvisation"
+                        },
+                        new
+                        {
+                            Id = 93L,
+                            Name = "Сценічний Рух",
+                            NameEn = "Stage Movement"
+                        },
+                        new
+                        {
+                            Id = 94L,
+                            Name = "Сценографія",
+                            NameEn = "Scenography"
+                        },
+                        new
+                        {
+                            Id = 95L,
+                            Name = "Художнє Читання",
+                            NameEn = "Artistic Reading"
+                        },
+                        new
+                        {
+                            Id = 96L,
+                            Name = "Модерн",
+                            NameEn = "Modern Dance"
+                        },
+                        new
+                        {
+                            Id = 97L,
+                            Name = "Балет",
+                            NameEn = "Ballet"
+                        },
+                        new
+                        {
+                            Id = 98L,
+                            Name = "Сучасні Танці",
+                            NameEn = "Modern Dances"
+                        },
+                        new
+                        {
+                            Id = 99L,
+                            Name = "Народні Танці",
+                            NameEn = "Folk Dances"
+                        },
+                        new
+                        {
+                            Id = 100L,
+                            Name = "Фітнес",
+                            NameEn = "Fitness"
+                        });
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<string>("CoverImageId")
                         .HasColumnType("longtext");
@@ -1891,8 +3697,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
@@ -1904,16 +3710,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<string>("MiddleName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                    b.Property<Guid?>("WorkshopId")
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -1922,6 +3728,37 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("WorkshopId");
 
                     b.ToTable("Teachers");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.TechAdmin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.ToTable("TechAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -1963,6 +3800,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsRegistered")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTimeOffset>("LastLogin")
@@ -2045,10 +3885,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
-                    b.Property<long>("AddressId")
-                        .HasColumnType("bigint");
+                    b.Property<DateOnly>("ActiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ActiveTo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(9999, 12, 31));
+
+                    b.Property<int>("AgeComposition")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("AreThereBenefits")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<uint>("AvailableSeats")
                         .HasColumnType("int unsigned");
@@ -2056,31 +3907,57 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<bool>("CompetitiveSelection")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("CompetitiveSelectionDescription")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
                     b.Property<string>("CoverImageId")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
-                    b.Property<string>("DisabilityOptionsDesc")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                    b.Property<int>("Coverage")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Facebook")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
 
-                    b.Property<string>("Instagram")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                    b.Property<Guid?>("DefaultTeacherId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<string>("Document")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("EducationalShift")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EnrollmentProcedureDescription")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("File")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("FormOfLearning")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("InstitutionHierarchyId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsChampionPath")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsDeleted")
@@ -2088,9 +3965,24 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsInclusive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSelfFinanced")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsSystemProtected")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Keywords")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<long>("LanguageOfEducationId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("MaxAge")
                         .HasColumnType("int");
@@ -2098,50 +3990,74 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("MinAge")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("MinsportSectionId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(36)
+                        .HasColumnType("char");
+
+                    b.Property<Guid?>("ParentWorkshopId")
+                        .HasColumnType("UUID(16)");
+
                     b.Property<int>("PayRate")
                         .HasColumnType("int");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)");
+                    b.Property<string>("PreferentialTermsOfParticipation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.Property<int>("ProviderOwnership")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProviderTitle")
+                    b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("varchar(120)");
 
+                    b.Property<int>("SpecialNeedsType")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateOnly>("StudyPeriodEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("StudyPeriodStartDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
 
-                    b.Property<string>("Website")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("WithDisabilityOptions")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<int>("WorkshopType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("CoverImageId");
+
+                    b.HasIndex("DefaultTeacherId")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionHierarchyId");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("LanguageOfEducationId");
+
+                    b.HasIndex("ParentWorkshopId");
 
                     b.HasIndex("ProviderId");
 
@@ -2152,7 +4068,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -2166,11 +4082,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("SectionName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<Guid>("WorkshopId")
-                        .HasColumnType("binary(16)");
+                        .HasColumnType("UUID(16)");
 
                     b.HasKey("Id");
 
@@ -2181,19 +4097,147 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("WorkshopDescriptionItems");
                 });
 
-            modelBuilder.Entity("ProviderAdminWorkshop", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.TeacherDraft", b =>
                 {
-                    b.Property<Guid>("ManagedWorkshopsId")
-                        .HasColumnType("binary(16)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
 
-                    b.Property<string>("ProviderAdminsUserId")
-                        .HasColumnType("varchar(255)");
+                    b.Property<string>("CoverImageId")
+                        .HasColumnType("char(255)");
 
-                    b.HasKey("ManagedWorkshopsId", "ProviderAdminsUserId");
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("date");
 
-                    b.HasIndex("ProviderAdminsUserId");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
-                    b.ToTable("ProviderAdminWorkshop");
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDefaultTeacher")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("MiddleName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<DateTime?>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
+
+                    b.Property<Guid>("WorkshopDraftId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkshopDraftId");
+
+                    b.ToTable("TeacherDraft");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
+
+                    b.Property<long>("CATOTTGId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("CoverImageId")
+                        .HasColumnType("char(255)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DraftStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<string>("RejectionMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime?>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
+
+                    b.Property<string>("WorkshopDraftContent")
+                        .IsRequired()
+                        .HasColumnType("json");
+
+                    b.Property<Guid?>("WorkshopId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoverImageId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.HasIndex("WorkshopId")
+                        .IsUnique();
+
+                    b.ToTable("WorkshopDrafts");
+                });
+
+            modelBuilder.Entity("StudySubjectWorkshop", b =>
+                {
+                    b.Property<Guid>("StudySubjectsId")
+                        .HasColumnType("UUID(16)");
+
+                    b.Property<Guid>("WorkshopsId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("StudySubjectsId", "WorkshopsId");
+
+                    b.HasIndex("WorkshopsId");
+
+                    b.ToTable("StudySubjectWorkshop");
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.Property<long>("TagsId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("WorkshopsId")
+                        .HasColumnType("UUID(16)");
+
+                    b.HasKey("TagsId", "WorkshopsId");
+
+                    b.HasIndex("WorkshopsId");
+
+                    b.ToTable("TagWorkshop");
                 });
 
             modelBuilder.Entity("AchievementChild", b =>
@@ -2226,17 +4270,32 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
+            modelBuilder.Entity("CompetitiveEventSubDirection", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Direction", null)
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", null)
                         .WithMany()
-                        .HasForeignKey("DirectionsId")
+                        .HasForeignKey("CompetitiveEventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("OutOfSchool.Services.Models.SubDirection", null)
+                        .WithMany()
+                        .HasForeignKey("SubDirectionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InstitutionHierarchySubDirection", b =>
+                {
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", null)
                         .WithMany()
                         .HasForeignKey("InstitutionHierarchiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.SubDirection", null)
+                        .WithMany()
+                        .HasForeignKey("SubDirectionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2360,6 +4419,33 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.AreaAdmin", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
+                        .WithMany()
+                        .HasForeignKey("CATOTTGId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
+                        .WithMany()
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CATOTTG");
+
+                    b.Navigation("Institution");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.BlockedProviderParent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
@@ -2449,6 +4535,254 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("CompanyInformation");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "CompetitiveEvent")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft", "CompetitiveEventId");
+
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany("CompetitiveEventDrafts")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CompetitiveEvent");
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventAccountingType", "CompetitiveEventAccountingType")
+                        .WithMany()
+                        .HasForeignKey("CompetitiveEventAccountingTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventCoverage", "Coverage")
+                        .WithMany()
+                        .HasForeignKey("CoverageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "OrganizerOfTheEvent")
+                        .WithMany()
+                        .HasForeignKey("OrganizerOfTheEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId");
+
+                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                        {
+                            b1.Property<long>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<long>("Id"));
+
+                            b1.Property<bool>("IsDefault")
+                                .HasColumnType("tinyint(1)");
+
+                            b1.Property<Guid>("OwnerId")
+                                .HasColumnType("UUID(16)");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("OwnerId");
+
+                            b1.ToTable("CompetitiveEvents_Contacts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OwnerId");
+
+                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                                {
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("BuildingNumber")
+                                        .IsRequired()
+                                        .HasMaxLength(15)
+                                        .HasColumnType("varchar(15)");
+
+                                    b2.Property<long>("CATOTTGId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<ulong>("GeoHash")
+                                        .HasColumnType("bigint unsigned");
+
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<string>("Street")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("ContactsId");
+
+                                    b2.HasIndex("CATOTTGId");
+
+                                    b2.ToTable("CompetitiveEvents_Contacts");
+
+                                    b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
+                                        .WithMany()
+                                        .HasForeignKey("CATOTTGId")
+                                        .OnDelete(DeleteBehavior.Cascade)
+                                        .IsRequired();
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+
+                                    b2.Navigation("CATOTTG");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<string>("Address")
+                                        .IsRequired()
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("Address");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("CompetitiveEvents_Contacts_Emails");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Number")
+                                        .IsRequired()
+                                        .HasMaxLength(16)
+                                        .HasColumnType("varchar(16)");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.HasIndex("Number");
+
+                                    b2.ToTable("CompetitiveEvents_Contacts_Phones");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<int>("Type")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Url")
+                                        .HasMaxLength(2048)
+                                        .HasColumnType("varchar(2048)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("CompetitiveEvents_Contacts_SocialNetworks");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.Navigation("Address");
+
+                            b1.Navigation("Emails");
+
+                            b1.Navigation("Phones");
+
+                            b1.Navigation("SocialNetworks");
+                        });
+
+                    b.Navigation("CompetitiveEventAccountingType");
+
+                    b.Navigation("Contacts");
+
+                    b.Navigation("Coverage");
+
+                    b.Navigation("OrganizerOfTheEvent");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEventDescriptionItem", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "CompetitiveEvent")
+                        .WithMany("CompetitiveEventDescriptionItems")
+                        .HasForeignKey("CompetitiveEventId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CompetitiveEvent");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.Judge", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "CompetitiveEvent")
+                        .WithMany("Judges")
+                        .HasForeignKey("CompetitiveEventId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CompetitiveEvent");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
@@ -2456,6 +4790,33 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("WorkshopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.EmployeeChangesLog", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.User", "EmployeeUser")
+                        .WithMany()
+                        .HasForeignKey("EmployeeUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EmployeeUser");
+
+                    b.Navigation("Provider");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
@@ -2475,6 +4836,28 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
 
                     b.Navigation("Workshop");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft>", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft", "Entity")
+                        .WithMany("Images")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent>", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", "Entity")
+                        .WithMany("Images")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
@@ -2499,6 +4882,26 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Entity");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft>", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", "Entity")
+                        .WithMany("Images")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Individual", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
+                        .WithOne("Individual")
+                        .HasForeignKey("OutOfSchool.Services.Models.Individual", "UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
@@ -2518,6 +4921,36 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Moderator", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Moderator", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Individual");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Official", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
+                        .WithMany("Officials")
+                        .HasForeignKey("IndividualId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Position", "Position")
+                        .WithMany("Officials")
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Individual");
+
+                    b.Navigation("Position");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
@@ -2529,13 +4962,38 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.ParentBlockedByAdminLog", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Position", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany("Positions")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Provider");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "ActualAddressId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
                         .WithMany("RelatedProviders")
                         .HasForeignKey("InstitutionId");
@@ -2544,11 +5002,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .WithMany("Providers")
                         .HasForeignKey("InstitutionStatusId");
 
-                    b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.Provider", "LegalAddressId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "ParentProvider")
+                        .WithMany("Branches")
+                        .HasForeignKey("ParentProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.ProviderType", "Type")
                         .WithMany("Providers")
@@ -2556,67 +5013,191 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                        {
+                            b1.Property<long>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint");
 
-                    b.Navigation("ActualAddress");
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<long>("Id"));
+
+                            b1.Property<bool>("IsDefault")
+                                .HasColumnType("tinyint(1)");
+
+                            b1.Property<Guid>("OwnerId")
+                                .HasColumnType("UUID(16)");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("OwnerId");
+
+                            b1.ToTable("Providers_Contacts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OwnerId");
+
+                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                                {
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("BuildingNumber")
+                                        .IsRequired()
+                                        .HasMaxLength(15)
+                                        .HasColumnType("varchar(15)");
+
+                                    b2.Property<long>("CATOTTGId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<ulong>("GeoHash")
+                                        .HasColumnType("bigint unsigned");
+
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<string>("Street")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("ContactsId");
+
+                                    b2.HasIndex("CATOTTGId");
+
+                                    b2.ToTable("Providers_Contacts");
+
+                                    b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
+                                        .WithMany()
+                                        .HasForeignKey("CATOTTGId")
+                                        .OnDelete(DeleteBehavior.Cascade)
+                                        .IsRequired();
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+
+                                    b2.Navigation("CATOTTG");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<string>("Address")
+                                        .IsRequired()
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("Address");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("Providers_Contacts_Emails");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Number")
+                                        .IsRequired()
+                                        .HasMaxLength(16)
+                                        .HasColumnType("varchar(16)");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.HasIndex("Number");
+
+                                    b2.ToTable("Providers_Contacts_Phones");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<int>("Type")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Url")
+                                        .HasMaxLength(2048)
+                                        .HasColumnType("varchar(2048)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("Providers_Contacts_SocialNetworks");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.Navigation("Address");
+
+                            b1.Navigation("Emails");
+
+                            b1.Navigation("Phones");
+
+                            b1.Navigation("SocialNetworks");
+                        });
+
+                    b.Navigation("Contacts");
 
                     b.Navigation("Institution");
 
                     b.Navigation("InstitutionStatus");
 
-                    b.Navigation("LegalAddress");
+                    b.Navigation("ParentProvider");
 
                     b.Navigation("Type");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
-                        .WithMany("ProviderAdmins")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "ManagedWorkshop")
-                        .WithMany()
-                        .HasForeignKey("ManagedWorkshopId");
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "ProviderAdminUser")
-                        .WithMany()
-                        .HasForeignKey("ProviderAdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
-                        .WithMany()
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ManagedWorkshop");
-
-                    b.Navigation("Provider");
-
-                    b.Navigation("ProviderAdminUser");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
@@ -2668,6 +5249,36 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.StudySubject", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.SubDirection", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Direction", "Direction")
+                        .WithMany("SubDirections")
+                        .HasForeignKey("DirectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Direction");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.SubordinationStructure.InstitutionFieldDescription", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
@@ -2698,26 +5309,44 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
                         .WithMany("Teachers")
                         .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.TechAdmin", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Individual", "Individual")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.TechAdmin", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Workshop");
+                    b.Navigation("Individual");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("OutOfSchool.Services.Models.Teacher", "DefaultTeacher")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.Workshop", "DefaultTeacherId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", "InstitutionHierarchy")
                         .WithMany()
                         .HasForeignKey("InstitutionHierarchyId");
+
+                    b.HasOne("OutOfSchool.Services.Models.Language", "LanguageOfEducation")
+                        .WithMany()
+                        .HasForeignKey("LanguageOfEducationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", "ParentWorkshop")
+                        .WithMany("IncludedStudyGroups")
+                        .HasForeignKey("ParentWorkshopId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")
@@ -2725,9 +5354,191 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Address");
+                    b.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Contacts", "Contacts", b1 =>
+                        {
+                            b1.Property<long>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<long>("Id"));
+
+                            b1.Property<bool>("IsDefault")
+                                .HasColumnType("tinyint(1)");
+
+                            b1.Property<Guid>("OwnerId")
+                                .HasColumnType("UUID(16)");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("varchar(60)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("OwnerId");
+
+                            b1.ToTable("Workshops_Contacts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OwnerId");
+
+                            b1.OwnsOne("OutOfSchool.Services.Models.ContactInfo.ContactsAddress", "Address", b2 =>
+                                {
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("BuildingNumber")
+                                        .IsRequired()
+                                        .HasMaxLength(15)
+                                        .HasColumnType("varchar(15)");
+
+                                    b2.Property<long>("CATOTTGId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<ulong>("GeoHash")
+                                        .HasColumnType("bigint unsigned");
+
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double");
+
+                                    b2.Property<string>("Street")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("ContactsId");
+
+                                    b2.HasIndex("CATOTTGId");
+
+                                    b2.ToTable("Workshops_Contacts");
+
+                                    b2.HasOne("OutOfSchool.Services.Models.CATOTTG", "CATOTTG")
+                                        .WithMany()
+                                        .HasForeignKey("CATOTTGId")
+                                        .OnDelete(DeleteBehavior.Cascade)
+                                        .IsRequired();
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+
+                                    b2.Navigation("CATOTTG");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.Email", "Emails", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<string>("Address")
+                                        .IsRequired()
+                                        .HasMaxLength(254)
+                                        .HasColumnType("varchar(254)");
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("Address");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("Workshops_Contacts_Emails");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.PhoneNumber", "Phones", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<string>("Number")
+                                        .IsRequired()
+                                        .HasMaxLength(16)
+                                        .HasColumnType("varchar(16)");
+
+                                    b2.Property<string>("Type")
+                                        .IsRequired()
+                                        .HasMaxLength(60)
+                                        .HasColumnType("varchar(60)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.HasIndex("Number");
+
+                                    b2.ToTable("Workshops_Contacts_Phones");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.OwnsMany("OutOfSchool.Services.Models.ContactInfo.SocialNetwork", "SocialNetworks", b2 =>
+                                {
+                                    b2.Property<long>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("bigint");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<long>("Id"));
+
+                                    b2.Property<long>("ContactsId")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<int>("Type")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Url")
+                                        .HasMaxLength(2048)
+                                        .HasColumnType("varchar(2048)");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ContactsId");
+
+                                    b2.ToTable("Workshops_Contacts_SocialNetworks");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ContactsId");
+                                });
+
+                            b1.Navigation("Address");
+
+                            b1.Navigation("Emails");
+
+                            b1.Navigation("Phones");
+
+                            b1.Navigation("SocialNetworks");
+                        });
+
+                    b.Navigation("Contacts");
+
+                    b.Navigation("DefaultTeacher");
 
                     b.Navigation("InstitutionHierarchy");
+
+                    b.Navigation("LanguageOfEducation");
+
+                    b.Navigation("ParentWorkshop");
 
                     b.Navigation("Provider");
                 });
@@ -2743,17 +5554,60 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("ProviderAdminWorkshop", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.TeacherDraft", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
-                        .WithMany()
-                        .HasForeignKey("ManagedWorkshopsId")
+                    b.HasOne("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", "WorkshopDraft")
+                        .WithMany("Teachers")
+                        .HasForeignKey("WorkshopDraftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.ProviderAdmin", null)
+                    b.Navigation("WorkshopDraft");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany("WorkshopDrafts")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
+                        .WithOne()
+                        .HasForeignKey("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", "WorkshopId");
+
+                    b.Navigation("Provider");
+
+                    b.Navigation("Workshop");
+                });
+
+            modelBuilder.Entity("StudySubjectWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.StudySubject", null)
                         .WithMany()
-                        .HasForeignKey("ProviderAdminsUserId")
+                        .HasForeignKey("StudySubjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("WorkshopsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TagWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("WorkshopsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2773,6 +5627,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("CompanyInformationItems");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEventDrafts.CompetitiveEventDraft", b =>
+                {
+                    b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompetitiveEvents.CompetitiveEvent", b =>
+                {
+                    b.Navigation("CompetitiveEventDescriptionItems");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("Judges");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
+                {
+                    b.Navigation("SubDirections");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Individual", b =>
+                {
+                    b.Navigation("Officials");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Navigation("Providers");
@@ -2785,13 +5663,24 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Children");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Position", b =>
+                {
+                    b.Navigation("Officials");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
+                    b.Navigation("Branches");
+
+                    b.Navigation("CompetitiveEventDrafts");
+
                     b.Navigation("Images");
 
-                    b.Navigation("ProviderAdmins");
+                    b.Navigation("Positions");
 
                     b.Navigation("ProviderSectionItems");
+
+                    b.Navigation("WorkshopDrafts");
 
                     b.Navigation("Workshops");
                 });
@@ -2806,6 +5695,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("RelatedProviders");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
+                {
+                    b.Navigation("Individual");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
                     b.Navigation("Applications");
@@ -2816,9 +5710,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("Images");
 
+                    b.Navigation("IncludedStudyGroups");
+
                     b.Navigation("Teachers");
 
                     b.Navigation("WorkshopDescriptionItems");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDrafts.WorkshopDraft", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("Teachers");
                 });
 #pragma warning restore 612, 618
         }

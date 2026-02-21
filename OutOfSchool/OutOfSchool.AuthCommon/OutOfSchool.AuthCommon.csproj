@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
+      <NuGetAuditMode>direct</NuGetAuditMode>
+    </PropertyGroup>    
+    
+    <PropertyGroup>
+        <PackageId>auth</PackageId>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="OpenIddict.EntityFrameworkCore" />
+        <PackageReference Include="OpenIddict.Client.AspNetCore" />
+        <PackageReference Include="IdentityModel" />
+        <PackageReference Include="OpenIddict.Validation.AspNetCore" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="FluentValidation.AspNetCore" />
+        <PackageReference Include="Microsoft.FeatureManagement" />
+        <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+        <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
+        <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
+        <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+        <ProjectReference Include="..\OutOfSchool.AikomApiClient\OutOfSchool.AikomApiClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Watch Include="wwwroot\**" />
+    </ItemGroup>
+</Project>

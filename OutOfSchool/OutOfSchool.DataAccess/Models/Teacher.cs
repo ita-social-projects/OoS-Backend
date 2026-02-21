@@ -6,9 +6,11 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models;
 
-public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>
+public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>, ISoftDeleted
 {
     public Guid Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [MaxLength(60)]
     public string FirstName { get; set; }
@@ -27,9 +29,9 @@ public class Teacher : IKeyedEntity<Guid>, IImageDependentEntity<Teacher>
 
     public string CoverImageId { get; set; }
 
-    public virtual List<Image<Teacher>> Images { get; set; }
+    public Guid? WorkshopId { get; set; }
 
-    public Guid WorkshopId { get; set; }
+    public virtual List<Image<Teacher>> Images { get; set; }
 
     public virtual Workshop Workshop { get; set; }
 }

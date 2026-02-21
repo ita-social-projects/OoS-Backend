@@ -1,13 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Util;
 
-public class AuthorizeCheckOperationFilter : IOperationFilter
+public class AuthorizeCheckOperationFilter(string authorizationName) : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
@@ -19,14 +15,14 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
         {
             operation.Security = new List<OpenApiSecurityRequirement>
             {
-                new OpenApiSecurityRequirement
+                new()
                 {
                     [
                         new OpenApiSecurityScheme {
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Identity server",
+                                Id = authorizationName,
                             },
                         }
 

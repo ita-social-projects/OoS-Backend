@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -24,12 +24,11 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class UserServiceTest
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
-    private IEntityRepository<string, User> repo;
+    private TestOutOfSchoolDbContext context;
+    private IEntityRepositorySoftDeleted<string, User> repo;
     private IUserService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<UserService>> logger;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -39,12 +38,11 @@ public class UserServiceTest
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repo = new EntityRepository<string, User>(context);
+        repo = new EntityRepositorySoftDeleted<string, User>(context);
         logger = new Mock<ILogger<UserService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        service = new UserService(repo, logger.Object, localizer.Object, mapper);
+        service = new UserService(repo, logger.Object, localizer.Object);
 
         SeedDatabase();
     }
@@ -93,49 +91,89 @@ public class UserServiceTest
     public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
     {
         // Arrange
-        var changedEntity = new ShortUserDto()
+        var changedEntity = new BaseUpdateUserDto()
         {
             Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
             PhoneNumber = "1160327456",
-            LastName = "LastName",
-            MiddleName = "MiddleName",
-            FirstName = "FirstName",
+            Email = "gsdfgfdg@gmail.com"
         };
         Expression<Func<User, bool>> filter = p => p.Id == changedEntity.Id;
 
         var users = repo.GetByFilterNoTracking(filter);
 
         // Act
-        var result = await repo.Update(mapper.Map(changedEntity, users.FirstOrDefault())).ConfigureAwait(false);
+        var result = await repo.Update(changedEntity.SetToModel(users.FirstOrDefault())).ConfigureAwait(false);
 
         // Assert
-        Assert.That(changedEntity.FirstName, Is.EqualTo(result.FirstName));
-        Assert.That(changedEntity.LastName, Is.EqualTo(result.LastName));
-        Assert.That(changedEntity.MiddleName, Is.EqualTo(result.MiddleName));
         Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));
+        Assert.That(changedEntity.Email, Is.EqualTo(result.Email));
+        Assert.That(changedEntity.Id, Is.EqualTo(result.Id));
     }
 
     [Test]
-    public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+    public void Update_WhenEntityIsInvalid_ThrowsArgumentException()
     {
         // Arrange
-        var changedEntity = new ShortUserDto()
+        var changedEntity = new BaseUpdateUserDto()
         {
             Id = "Invalid Id",
             PhoneNumber = "1160327456",
-            LastName = "LastName",
-            MiddleName = "MiddleName",
-            FirstName = "FirstName",
+
         };
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentException>(
+            async () => await service.Update(changedEntity).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")]
+    public async Task Delete_WhenIdIsValid_CalledDeleteMethod(string id)
+    {
+        // Arrange
+        var users = await service.GetAll().ConfigureAwait(false);
+
+        // Act
+        await service.Delete(id);
+
+        // Assert
+        Assert.AreEqual(users.Count() - 1, (await service.GetAll().ConfigureAwait(false)).Count());
+    }
+
+    [Test]
+    public void Delete_WhenIdIsInvalid_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var invalidId = "invalidId";
 
         // Act and Assert
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-            async () => await service.Update(changedEntity).ConfigureAwait(false));
+        Assert.ThrowsAsync<ArgumentException>(() => service.Delete(invalidId));
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae33")]
+    public async Task GetAccountStatus_WhenLastLoginIsNotDefault_ReturnsAccountStatusIsAccepted(string id)
+    {
+        // Act
+        var accountStatus = await service.GetAccountStatus(id);
+
+        // Assert
+        Assert.AreEqual(AccountStatus.Accepted, accountStatus);
+    }
+
+    [Test]
+    [TestCase("CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")]
+    public async Task GetAccountStatus_WhenLastLoginIsDefault_ReturnsAccountStatusIsNeverLogged(string id)
+    {
+        // Act
+        var accountStatus = await service.GetAccountStatus(id);
+
+        // Assert
+        Assert.AreEqual(AccountStatus.NeverLogged, accountStatus);
     }
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -251,6 +289,29 @@ public class UserServiceTest
                 SecurityStamp = "WGWJIYDFRG236HXFKGYS7H6QT2DE2LFF",
                 ConcurrencyStamp = "cb54f60f-6282-4416-926c-d1edce844d07",
                 PhoneNumber = "0965889312",
+                Role = "provider",
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false,
+                LockoutEnabled = true,
+                AccessFailedCount = 0,
+            },
+            new User()
+            {
+                Id = "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae33",
+                CreatingTime = default,
+                LastLogin = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero),
+                MiddleName = "MiddleName5",
+                FirstName = "FirstName5",
+                LastName = "LastName5",
+                UserName = "user6@gmail.com",
+                NormalizedUserName = "USER6@GMAIL.COM",
+                Email = "user6@gmail.com",
+                NormalizedEmail = "USER6@GMAIL.COM",
+                EmailConfirmed = false,
+                PasswordHash = "AQAAAAEAACcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
+                SecurityStamp = "WGWJIYDFRG236HXFKGYS7H6QT2DE2LFF",
+                ConcurrencyStamp = "cb54f60f-6282-4416-926c-d1edce844d07",
+                PhoneNumber = "0965889313",
                 Role = "provider",
                 PhoneNumberConfirmed = false,
                 TwoFactorEnabled = false,

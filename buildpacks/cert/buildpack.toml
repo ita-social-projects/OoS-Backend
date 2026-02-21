@@ -1,0 +1,16 @@
+api = "0.9"
+
+[buildpack]
+description = "A buildpack to add a layer of CA configuration for encryption service"
+id = "outofschool/cert"
+version = "0.0.1"
+name = "Buildpack for External CAs"
+
+[[buildpack.licenses]]
+type = "MIT"
+
+[metadata]
+include-files = ["buildpack.toml"]
+
+[[targets]]
+os = "linux"

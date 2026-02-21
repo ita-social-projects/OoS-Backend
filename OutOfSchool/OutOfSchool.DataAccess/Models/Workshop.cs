@@ -2,108 +2,138 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.ContactInfo;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
+// TODO:
+// - Add educational disciplines (many ED to 1 workshop)
+// - Add language
+public class Workshop : BusinessEntity, IImageDependentEntity<Workshop>, IHasEntityImages<Workshop>, IHasContacts, IHasHiddenFields
 {
-    public Guid Id { get; set; }
+    #region Required fields
 
     [Required(ErrorMessage = "Workshop title is required")]
-    [MinLength(1)]
-    [MaxLength(60)]
+    [MinLength(Constants.MinWorkshopTitleLength)]
+    [MaxLength(Constants.MaxWorkshopTitleLength)]
     public string Title { get; set; } = string.Empty;
 
-    [DataType(DataType.PhoneNumber)]
-    [Required(ErrorMessage = "Phone number is required")]
-    [RegularExpression(
-        Constants.PhoneNumberRegexModel,
-        ErrorMessage = Constants.PhoneErrorMessage)]
-    [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
-    [MaxLength(Constants.UnifiedPhoneLength)]
-    public string Phone { get; set; } = string.Empty;
-
-    [DataType(DataType.EmailAddress)]
-    [Required(ErrorMessage = "Email is required")]
-    [MaxLength(256)]
-    public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
-    public string Website { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
-    public string Facebook { get; set; } = string.Empty;
-
-    [DataType(DataType.Url)]
-    [MaxLength(Constants.UnifiedUrlLength)]
-    public string Instagram { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Workshop short title is required")]
+    [MinLength(Constants.MinWorkshopShortTitleLength)]
+    [MaxLength(Constants.MaxWorkshopShortTitleLength)]
+    public string ShortTitle { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Children's min age is required")]
-    [Range(0, 100, ErrorMessage = "Min age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Min age should be a number from 0 to 120")]
     public int MinAge { get; set; }
 
     [Required(ErrorMessage = "Children's max age is required")]
-    [Range(0, 100, ErrorMessage = "Max age should be a number from 0 to 100")]
+    [Range(0, 120, ErrorMessage = "Max age should be a number from 0 to 120")]
     public int MaxAge { get; set; }
 
-    public bool CompetitiveSelection { get; set; } = false;
+    [Required(ErrorMessage = "Available seats are required")]
+    public uint AvailableSeats { get; set; } = uint.MaxValue;
+
+    [Required(ErrorMessage = "Property CompetitiveSelection is required")]
+    public bool CompetitiveSelection { get; set; } = default;
+
+    public WorkshopType WorkshopType { get; set; } = WorkshopType.Workshop;
+
+    [Required(ErrorMessage = "Type of age composition is required")]
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
+
+    [Required(ErrorMessage = "Educational shift is required")]
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
+
+    [Required(ErrorMessage = "Should be indicated if the Workshop operates with funds from parents or benefactors")]
+    public bool IsSelfFinanced { get; set; } = false;
+
+    [Required(ErrorMessage = "Form of learning is required")]
+    public FormOfLearning FormOfLearning { get; set; }
+
+    [Required(ErrorMessage = "Property IsPaid is required")]
+    public bool IsPaid { get; set; } = false;
+
+    [Required]
+    public long LanguageOfEducationId { get; set; }
+
+    [Required(ErrorMessage = "Study period start date is required")]
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    [Required(ErrorMessage = "Study period end date is required")]
+    public DateOnly StudyPeriodEndDate { get; set; }
+
+    #endregion
+
+    [MinLength(Constants.MinCompetitiveSelectionDescriptionLength)]
+    [MaxLength(Constants.MaxCompetitiveSelectionDescriptionLength)]
+    public string CompetitiveSelectionDescription { get; set; }
+
+    public OwnershipType ProviderOwnership { get; set; }
+
+    [MaxLength(Constants.MaxKeywordsLength)]
+    public string Keywords { get; set; } = string.Empty;
+
+    public WorkshopStatus Status { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
-    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 1 to 100 000")]
+    [Range(0, 100000, ErrorMessage = "Field value should be in a range from 0 to 100 000")]
     public decimal Price { get; set; } = default;
 
-    public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
+    [Required(ErrorMessage = "Type of pay rate is required")]
+    public PayRateType PayRate { get; set; }
 
-    public bool WithDisabilityOptions { get; set; } = default;
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
 
-    [MaxLength(200)]
-    public string DisabilityOptionsDesc { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Property IsInclusive is required")]
+    public bool IsInclusive { get; set; } = false;
+
+    [MinLength(Constants.MinLengthOfEnrollmentProcedureDescriptionForWorkshop)]
+    [MaxLength(Constants.MaxLengthOfEnrollmentProcedureDescriptionForWorkshop)]
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public bool AreThereBenefits { get; set; } = false;
+
+    [MinLength(Constants.MinPreferentialTermsOfParticipationLength)]
+    [MaxLength(Constants.MaxPreferentialTermsOfParticipationLength)]
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    public Coverage Coverage { get; set; } = Coverage.School;
+
+    public bool IsChampionPath { get; set; } = false;
+
+    [Required(ErrorMessage = "Provider is required")]
+    public Guid ProviderId { get; set; }
+
+    public Guid? InstitutionHierarchyId { get; set; }
+
+    public Guid? DefaultTeacherId { get; set; }
 
     [MaxLength(256)]
     public string CoverImageId { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(120)]
-    public string ProviderTitle { get; set; } = string.Empty;
+    public Guid? ParentWorkshopId { get; set; }
 
-    public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
-
-    [MaxLength(200)]
-    public string Keywords { get; set; } = string.Empty;
-
-    [Required]
-    public PayRateType PayRate { get; set; }
-
-    [Required]
-    public Guid ProviderId { get; set; }
-
-    [Required]
-    public long AddressId { get; set; }
-
-    public Guid? InstitutionHierarchyId { get; set; }
-
-    public WorkshopStatus Status { get; set; }
-
-    public uint AvailableSeats { get; set; } = uint.MaxValue;
+    #region Navigation properties
 
     public virtual Provider Provider { get; set; }
 
     public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
-    public virtual Address Address { get; set; }
+    public virtual Teacher DefaultTeacher { get; set; }
 
-    public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
+    public virtual Workshop ParentWorkshop { get; set; }
+
+    public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
+
+    public virtual ICollection<Workshop> IncludedStudyGroups { get; set; } // Navigation property to included study groups
 
     public virtual List<Teacher> Teachers { get; set; }
 
@@ -111,10 +141,30 @@ public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
 
     public virtual List<DateTimeRange> DateTimeRanges { get; set; }
 
-    // These properties are only for navigation EF Core.
     public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
     public virtual List<Image<Workshop>> Images { get; set; }
 
-    public bool IsBlocked { get; set; } = false;
+    public virtual List<Tag> Tags { get; set; }
+
+    public virtual List<StudySubject> StudySubjects { get; set; }
+
+    public virtual Language LanguageOfEducation { get; set; }
+
+    #endregion
+
+    #region Owned entities
+
+    public List<Contacts> Contacts { get; set; } = [];
+
+    #endregion
+
+    #region Minsport external API integration
+
+    /// <summary>
+    /// ID of the section in the Ministry of Sport Registry (UUID).
+    /// </summary>
+    public Guid? MinsportSectionId { get; set; }
+
+    #endregion
 }

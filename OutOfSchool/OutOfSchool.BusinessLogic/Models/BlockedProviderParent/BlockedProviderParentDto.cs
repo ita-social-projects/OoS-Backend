@@ -1,0 +1,44 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OutOfSchool.BusinessLogic.Models.BlockedProviderParent;
+
+public class BlockedProviderParentDto
+{
+    public Guid Id { get; set; }
+
+    [Required]
+    public Guid ParentId { get; set; }
+
+    [Required]
+    public Guid ProviderId { get; set; }
+
+    [Required]
+    [MaxLength(500)]
+    public string Reason { get; set; }
+
+    [Required]
+    public string UserIdBlock { get; set; }
+
+    public string UserIdUnblock { get; set; } = string.Empty;
+
+    [Required]
+    public DateTimeOffset DateTimeFrom { get; set; }
+
+    public DateTimeOffset? DateTimeTo { get; set; }
+}
+
+public static class BlockedProviderParentDtoExtensions
+{
+    public static BlockedProviderParentDto ToDto(this OutOfSchool.Services.Models.BlockedProviderParent dto)
+        => new()
+        {
+            Id = dto.Id,
+            ParentId = dto.ParentId,
+            ProviderId = dto.ProviderId,
+            Reason = dto.Reason,
+            UserIdBlock = dto.UserIdBlock,
+            UserIdUnblock = dto.UserIdUnblock,
+            DateTimeFrom = dto.DateTimeFrom,
+            DateTimeTo = dto.DateTimeTo,
+        };
+}

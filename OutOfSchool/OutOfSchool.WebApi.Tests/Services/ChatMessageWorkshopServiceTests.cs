@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Hubs;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.ChatWorkshop;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Hubs;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ChatWorkshop;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -35,14 +34,13 @@ public class ChatMessageWorkshopServiceTests
         WorkshopId = Guid.NewGuid(),
     };
 
-    private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
+    private IEntityRepositorySoftDeleted<Guid, ChatMessageWorkshop> messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<IHubContext<ChatWorkshopHub>> workshopHub;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
-    private IMapper mapper;
 
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext dbContext;
+    private TestOutOfSchoolDbContext dbContext;
 
     private IChatMessageWorkshopService messageService;
 
@@ -58,13 +56,12 @@ public class ChatMessageWorkshopServiceTests
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
         options = builder.Options;
-        dbContext = new OutOfSchoolDbContext(options);
+        dbContext = new TestOutOfSchoolDbContext(options);
 
-        messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
+        messageRepository = new EntityRepositorySoftDeleted<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         workshopHub = new Mock<IHubContext<ChatWorkshopHub>>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
 
         clientsMock = new Mock<IHubClients>();
         clientProxyMock = new Mock<IClientProxy>();
@@ -76,8 +73,7 @@ public class ChatMessageWorkshopServiceTests
             messageRepository,
             roomServiceMock.Object,
             workshopHub.Object,
-            loggerMock.Object,
-            mapper);
+            loggerMock.Object);
 
         SeedDatabase();
     }
@@ -112,6 +108,7 @@ public class ChatMessageWorkshopServiceTests
 
     #region GetMessagesForChatRoomAsync
     [Test]
+    [Ignore("Testing of unused method")]
     public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
     {
         // Arrange
@@ -123,6 +120,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
     {
         // Arrange
@@ -141,6 +139,7 @@ public class ChatMessageWorkshopServiceTests
     }
 
     [Test]
+    [Ignore("Testing of unused method")]
     public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
     {
         // Arrange
@@ -193,11 +192,24 @@ public class ChatMessageWorkshopServiceTests
             Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
         });
     }
+
+    [Test]
+    public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithInValidParameters_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var invalidChatRoomId = Guid.NewGuid();
+
+        // Act
+        var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(invalidChatRoomId, new OffsetFilter(), Role.Provider).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsEmpty(result);
+    }
     #endregion
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();

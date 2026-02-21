@@ -5,25 +5,29 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.CompetitiveEventDrafts;
+using OutOfSchool.Services.Models.CompetitiveEvents;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
+using OutOfSchool.Services.Models.Configurations.WorkshopDrafts;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.Services;
 
-public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext, IUnitOfWork
+public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext
 {
     public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
         : base(options)
     {
     }
 
+    public DbSet<Individual> Individuals { get; set; }
+
     public DbSet<Parent> Parents { get; set; }
 
     public DbSet<Provider> Providers { get; set; }
-
-    public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
 
     public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
@@ -83,7 +87,7 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<ChangesLog> ChangesLog { get; set; }
 
-    public DbSet<ProviderAdminChangesLog> ProviderAdminChangesLog { get; set; }
+    public DbSet<EmployeeChangesLog> EmployeeChangesLog { get; set; }
 
     public DbSet<CATOTTG> CATOTTGs { get; set; }
 
@@ -103,42 +107,136 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<RegionAdmin> RegionAdmins { get; set; }
 
+    public DbSet<AreaAdmin> AreaAdmins { get; set; }
+
     public DbSet<AverageRating> AverageRatings { get; set; }
 
     public DbSet<OperationWithObject> OperationsWithObjects { get; set; }
 
     public DbSet<QuartzJob> QuartzJobs { get; set; }
 
+    public DbSet<Tag> Tags { get; set; }
+
+    public DbSet<ParentBlockedByAdminLog> ParentBlockedByAdminLog { get; set; }
+
+    public DbSet<CompetitiveEvent> CompetitiveEvents { get; set; }
+
+    public DbSet<CompetitiveEventAccountingType> CompetitiveEventAccountingTypes { get; set; }
+
+    public DbSet<CompetitiveEventCoverage> CompetitiveEventCoverages { get; set; }
+
+    public DbSet<CompetitiveEventDescriptionItem> CompetitiveEventDescriptionItems { get; set; }
+
+    public DbSet<CompetitiveEventRegistrationDeadline> CompetitiveEventRegistrationDeadlines { get; set; }
+
+    public DbSet<Judge> Judges { get; set; }
+
+    public DbSet<Official> Officials { get; set; }
+    
+    public DbSet<Position> Positions { get; set; }
+
+    public DbSet<StudySubject> StudySubjects { get; set; }
+
+    public DbSet<Language> Languages { get; set; }
+
+    public DbSet<WorkshopDraft> WorkshopDrafts { get; set; }
+
+    public DbSet<Image<WorkshopDraft>> WorkshopDraftImages { get; set; }
+
+    public DbSet<Image<CompetitiveEvent>> CompetitiveEventsImages { get; set; }
+
+    public DbSet<SubDirection> SubDirections { get; set; }
+
+    public DbSet<Moderator> Moderators { get; set; }
+
+    public DbSet<TechAdmin> TechAdmins { get; set; }
+
+    public DbSet<CompetitiveEventDraft> CompetitiveEventDrafts { get; set; }
+
+    public DbSet<Image<CompetitiveEventDraft>> CompetitiveEventDraftImages { get; set; }
+
+    /// <summary>
+    /// Asynchronously saves all changes made in this context to the database.
+    /// </summary>
+    /// <returns>The number of state entries written to the database.</returns>
     public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
-    public int Complete() => this.SaveChanges();
+    /// <summary>
+/// Saves all changes made in the context to the database.
+/// </summary>
+/// <returns>The number of state entries written to the database.</returns>
+public int Complete() => this.SaveChanges();
 
+    /// <summary>
+    /// Configures the entity mappings and constraints for the database context, applying all entity configurations and seeding initial data.
+    /// </summary>
+    /// <param name="builder">The model builder used to configure entity mappings.</param>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         builder.Entity<DateTimeRange>()
-            .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
+            .ToTable(dtr => dtr.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime"));
 
-        builder.ApplyConfiguration(new TeacherConfiguration());
+        builder.ApplyConfiguration(new AchievementConfiguration());
+        builder.ApplyConfiguration(new AchievementTeacherConfiguration());
+        builder.ApplyConfiguration(new AchievementTypeConfiguration());
+        builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new ApplicationConfiguration());
+        builder.ApplyConfiguration(new AreaAdminConfiguration());
+        builder.ApplyConfiguration(new AverageRatingConfiguration());
+        builder.ApplyConfiguration(new BlockedProviderParentConfiguration());
         builder.ApplyConfiguration(new ChatMessageWorkshopConfiguration());
         builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
         builder.ApplyConfiguration(new ChildConfiguration());
-        builder.ApplyConfiguration(new ProviderConfiguration());
-        builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
-        builder.ApplyConfiguration(new ProviderAdminConfiguration());
-        builder.ApplyConfiguration(new WorkshopConfiguration());
-        builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
-        builder.ApplyConfiguration(new NotificationConfiguration());
-        builder.ApplyConfiguration(new AchievementConfiguration());
-        builder.ApplyConfiguration(new AddressConfiguration());
         builder.ApplyConfiguration(new CodeficatorConfiguration());
-        builder.ApplyConfiguration(new RatingConfiguration());
-        builder.ApplyConfiguration(new AverageRatingConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventAccountingTypeConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventCoverageConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventRegistrationDeadlineConfiguration());
+        builder.ApplyConfiguration(new DateTimeRangeConfiguration());
+        builder.ApplyConfiguration(new DirectionConfiguration());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>(true));
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEvent>(true));
+        builder.ApplyConfiguration(new FavoriteConfiguration());
+        builder.ApplyConfiguration(new IndividualConfiguration());
+        builder.ApplyConfiguration(new InstitutionAdminConfiguration());
+        builder.ApplyConfiguration(new InstitutionConfiguration());
+        builder.ApplyConfiguration(new InstitutionFieldDescriptionConfiguration());
+        builder.ApplyConfiguration(new InstitutionHierarchyConfiguration());
+        builder.ApplyConfiguration(new InstitutionStatusConfiguration());
+        builder.ApplyConfiguration(new LanguageConfiguration());
+        builder.ApplyConfiguration(new NotificationConfiguration());
+        builder.ApplyConfiguration(new OfficialConfiguration());
         builder.ApplyConfiguration(new OperationWithObjectConfiguration());
-
-        ApplySoftDelete(builder);
+        builder.ApplyConfiguration(new ParentConfiguration());
+        builder.ApplyConfiguration(new PositionConfiguration());
+        builder.ApplyConfiguration(new ProviderConfiguration());
+        builder.ApplyConfiguration(new ProviderSectionItemConfiguration());
+        builder.ApplyConfiguration(new QuartzJobConfiguration());
+        builder.ApplyConfiguration(new RatingConfiguration());
+        builder.ApplyConfiguration(new RegionAdminConfiguration());
+        builder.ApplyConfiguration(new SocialGroupConfiguration());
+        builder.ApplyConfiguration(new StudySubjectConfiguration());
+        builder.ApplyConfiguration(new SubDirectionConfiguration());
+        builder.ApplyConfiguration(new TagConfiguration());
+        builder.ApplyConfiguration(new TeacherConfiguration());
+        builder.ApplyConfiguration(new UserConfiguration());
+        builder.ApplyConfiguration(new WorkshopConfiguration());
+        builder.ApplyConfiguration(new WorkshopDescriptionItemConfiguration());
+        builder.ApplyConfiguration(new EntityImagesConfiguration<WorkshopDraft>(true));
+        builder.ApplyConfiguration(new EntityImagesConfiguration<CompetitiveEventDraft>(true));
+        builder.ApplyConfiguration(new WorkshopDraftConfiguration());
+        builder.ApplyConfiguration(new TeacherDraftConfiguration());
+        builder.ApplyConfiguration(new ChangesLogConfiguration());
+        builder.ApplyConfiguration(new CompanyInformationConfiguration());
+        builder.ApplyConfiguration(new CompanyInformationItemConfiguration());
+        builder.ApplyConfiguration(new ElasticsearchSyncRecordConfiguration());
+        builder.ApplyConfiguration(new ModeratorConfiguration());
+        builder.ApplyConfiguration(new TechAdminConfiguration());
+        builder.ApplyConfiguration(new CompetitiveEventDraftConfiguration());
 
         builder.Seed();
         builder.UpdateIdentityTables();

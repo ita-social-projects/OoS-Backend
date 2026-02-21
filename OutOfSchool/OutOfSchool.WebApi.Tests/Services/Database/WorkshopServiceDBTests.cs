@@ -1,0 +1,265 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.BusinessLogic.Services.Images;
+using OutOfSchool.BusinessLogic.Services.SearchString;
+using OutOfSchool.BusinessLogic.Services.SubordinationStructure;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+
+namespace OutOfSchool.WebApi.Tests.Services.Database;
+
+[TestFixture]
+public class WorkshopServiceDBTests
+{
+    private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
+    private TestOutOfSchoolDbContext dbContext;
+    private IWorkshopService workshopService;
+    private IWorkshopRepository workshopRepository;
+    private Mock <IInstitutionHierarchyService> institutionHierarchyService;
+    private Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>> dateTimeRangeRepository;
+    private Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>> roomRepository;
+    private Mock<ITeacherService> teacherService;
+    private Mock<ILogger<WorkshopService>> logger;
+    private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
+    private Mock<IProviderRepository> providerRepositoryMock;
+    private Mock<ILanguageService> languageServiceMock;
+    private Mock<ICurrentUserService> currentUserServiceMock;
+    private Mock<IMinistryAdminService> ministryAdminServiceMock;
+    private Mock<IRegionAdminService> regionAdminServiceMock;
+    private Mock<ICodeficatorService> codeficatorServiceMock;
+    private Mock<ITagService> tagServiceMock;
+    private Mock<IEntityRepository<long, Tag>> tagRepository;
+    private Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>> contactsServiceMock;
+    private Mock<IApplicationRepository> applicationRepositoryMock;
+    private Mock<IFeatureManager> featureManagerMock;
+    private Mock<IChangesLogService> changesLogServiceMock;
+    private Mock<IOptions<InstitutionOptions>> institutionOptionsMock;
+
+
+    [SetUp]
+    public async Task SetUp()
+    {
+        dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .UseLazyLoadingProxies()
+            .EnableSensitiveDataLogging()
+            .Options;
+
+        dbContext = new TestOutOfSchoolDbContext(dbContextOptions);
+
+        workshopRepository = new WorkshopRepository(dbContext);
+        dateTimeRangeRepository = new Mock<IEntityRepositorySoftDeleted<long, DateTimeRange>>();
+        roomRepository = new Mock<IEntityRepositorySoftDeleted<Guid, ChatRoomWorkshop>>();
+        teacherService = new Mock<ITeacherService>();
+        logger = new Mock<ILogger<WorkshopService>>();
+        workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
+        languageServiceMock = new Mock<ILanguageService>();
+        providerRepositoryMock = new Mock<IProviderRepository>();
+        currentUserServiceMock = new Mock<ICurrentUserService>();
+        ministryAdminServiceMock = new Mock<IMinistryAdminService>();
+        regionAdminServiceMock = new Mock<IRegionAdminService>();
+        codeficatorServiceMock = new Mock<ICodeficatorService>();
+        institutionHierarchyService = new Mock<IInstitutionHierarchyService>();
+        tagServiceMock = new Mock<ITagService>();
+        var searchStringServiceMock = new Mock<ISearchStringService>();
+        tagRepository = new Mock<IEntityRepository<long, Tag>>();
+        contactsServiceMock = new Mock<IContactsService<Workshop, IHasContactsDto<Workshop>>>();
+        applicationRepositoryMock = new Mock<IApplicationRepository>();
+        featureManagerMock = new Mock<IFeatureManager>();
+        changesLogServiceMock = new Mock<IChangesLogService>();
+        institutionOptionsMock = new Mock<IOptions<InstitutionOptions>>();
+
+        workshopService =
+                new WorkshopService(
+                    workshopRepository,
+                    languageServiceMock.Object,
+                    institutionHierarchyService.Object,
+                    tagRepository.Object,
+                    dateTimeRangeRepository.Object,
+                    roomRepository.Object,
+                    teacherService.Object,
+                    logger.Object,
+                    workshopImagesMediator.Object,
+                    averageRatingServiceMock.Object,
+                    providerRepositoryMock.Object,
+                    currentUserServiceMock.Object,
+                    ministryAdminServiceMock.Object,
+                    regionAdminServiceMock.Object,
+                    codeficatorServiceMock.Object,
+                    tagServiceMock.Object,
+                    searchStringServiceMock.Object,
+                    contactsServiceMock.Object,
+                    applicationRepositoryMock.Object,
+                    featureManagerMock.Object,
+                    changesLogServiceMock.Object,
+                    institutionOptionsMock.Object);
+
+        Seed();
+        languageServiceMock.Setup(x => x.GetById(It.IsAny<long>()))
+                .ReturnsAsync(new LanguageDto { Id = 1, Name = "English" });
+        institutionOptionsMock.Setup(x => x.Value)
+            .Returns(new InstitutionOptions { MinistryOfSportId = "b67a4f29-728e-4bb0-bb42-4a9d7e0bd90a" });
+    }
+
+    [TearDown]
+    public void Dispose()
+    {
+        dbContext.Dispose();
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSetFormOfLearning_ShouldBuildPredicateAndReturnEntities()
+    {
+        // Arrange
+        await SeedFormOfLearningWorkshops();
+
+        var filter = new WorkshopFilter()
+        {
+            FormOfLearning = new List<FormOfLearning>()
+            {
+                FormOfLearning.Offline,
+            },
+        };
+
+        // Act
+        var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(2, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSetFormOfLearning_ReturnNothing()
+    {
+        // Arrange
+        await SeedFormOfLearningWorkshops();
+
+        var filter = new WorkshopFilter()
+        {
+            FormOfLearning = new List<FormOfLearning>()
+            {
+                FormOfLearning.Mixed,
+            },
+        };
+
+        // Act
+        var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(0, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenNotSetFormOfLearning_ReturnAll()
+    {
+        // Arrange
+        await SeedFormOfLearningWorkshops();
+
+        var filter = new WorkshopFilter();
+
+        // Act
+        var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(5, result.TotalAmount);
+    }
+
+    [Test]
+    public async Task Exists_WhenSendWrongId_ReturnFalse()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        dbContext.Add(workshop);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await workshopService.Exists(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(false, result);
+    }
+
+    [Test]
+    public async Task Exists_WhenSendGoodId_ReturnTrue()
+    {
+        // Arrange
+        var workshop = WorkshopGenerator.Generate();
+        dbContext.Add(workshop);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await workshopService.Exists(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        Assert.AreEqual(true, result);
+    }
+
+    #region private
+
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
+
+    private IWorkshopRepository GetWorkshopRepository(TestOutOfSchoolDbContext dbContext)
+        => new WorkshopRepository(dbContext);
+
+    private void Seed()
+    {
+        dbContext.Database.EnsureDeleted();
+        dbContext.Database.EnsureCreated();
+    }
+
+    private Task SeedFormOfLearningWorkshops()
+    {
+        var workshops = new List<Workshop>();
+
+        var workshop = WorkshopGenerator.Generate().WithProvider();
+        workshop.FormOfLearning = FormOfLearning.Offline;
+        workshop.Provider.Status = ProviderStatus.Approved;
+        workshops.Add(workshop);
+
+        workshop = WorkshopGenerator.Generate().WithProvider();
+        workshop.FormOfLearning = FormOfLearning.Offline;
+        workshop.Provider.Status = ProviderStatus.Approved;
+        workshops.Add(workshop);
+
+        workshop = WorkshopGenerator.Generate().WithProvider();
+        workshop.FormOfLearning = FormOfLearning.Online;
+        workshop.Provider.Status = ProviderStatus.Approved;
+        workshops.Add(workshop);
+
+        workshop = WorkshopGenerator.Generate().WithProvider();
+        workshop.FormOfLearning = FormOfLearning.Online;
+        workshop.Provider.Status = ProviderStatus.Approved;
+        workshops.Add(workshop);
+
+        workshop = WorkshopGenerator.Generate().WithProvider();
+        workshop.FormOfLearning = FormOfLearning.Online;
+        workshop.Provider.Status = ProviderStatus.Approved;
+        workshops.Add(workshop);
+
+        dbContext.AddRange(workshops);
+        return dbContext.SaveChangesAsync();
+    }
+
+    #endregion
+}

@@ -1,20 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Services;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class SocialGroupController : ControllerBase
 {
@@ -58,8 +51,8 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Get Social Group by it's id.
     /// </summary>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="id">Social Group id.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.ImpersonalDataRead)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
@@ -80,12 +73,13 @@ public class SocialGroupController : ControllerBase
     /// <param name="dto">Social Group entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(SocialGroupCreate dto)
+    public async Task<IActionResult> Create([FromBody] SocialGroupCreate dto)
     {
         var socialGroup = await service.Create(dto).ConfigureAwait(false);
 
@@ -98,8 +92,8 @@ public class SocialGroupController : ControllerBase
     /// <summary>
     /// Update info about a Social Group in the database.
     /// </summary>
-    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <param name="dto">Social Group to update.</param>
+    /// <param name="localization">Localization: Ua - 0, En - 1.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.SystemManagement)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
@@ -118,7 +112,6 @@ public class SocialGroupController : ControllerBase
 
         return Ok(socialGroup);
     }
-
 
     /// <summary>
     /// Delete a specific Social Group from the database.

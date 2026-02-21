@@ -1,9 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using System.Text.Json.Serialization;
 
 namespace OutOfSchool.Services.Enums;
 
-[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum NotificationAction
 {
     Unknown,
@@ -12,4 +11,8 @@ public enum NotificationAction
     Delete,
     Message,
     LicenseApproval,
+    Block,
+    Unblock,
+    ProviderBlock,
+    ProviderUnblock,
 }

@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.OpenApi.Models;
-using OutOfSchool.Common.Config;
-using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Util;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Extensions.Startup;
 
@@ -34,29 +27,18 @@ public static class SwaggerExtensions
                 // Set the comments path for the Swagger JSON and UI.
                 c.IncludeXmlComments(XmlCommentsFilePath);
 
+                c.SchemaFilter<ExcludeClrTypesFilter>(new List<Assembly> {typeof(OutOfSchoolDbContext).Assembly});
                 c.DocumentFilter<SwaggerFeatureGateFilter>();
-                c.OperationFilter<AuthorizeCheckOperationFilter>();
+                c.OperationFilter<AuthorizeCheckOperationFilter>(config.SecurityDefinitions.Title);
                 c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
                 {
                     Description = config.SecurityDefinitions.Description,
-                    Type = SecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        AuthorizationCode = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"{identityBaseUrl}/connect/authorize", UriKind.Absolute),
-                            TokenUrl = new Uri($"{identityBaseUrl}/connect/token", UriKind.Absolute),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                {string.Join(" ", config.SecurityDefinitions.AccessScopes), "Scopes"},
-                            },
-                        },
-                    },
+                    Type = SecuritySchemeType.OpenIdConnect,
+                    OpenIdConnectUrl = new Uri($"{identityBaseUrl}/.well-known/openid-configuration")
                 });
                 c.UseOneOfForPolymorphism();
                 c.UseAllOfForInheritance();
-            })
-            .AddSwaggerGenNewtonsoftSupport();
+            });
 
         return services;
     }
@@ -64,7 +46,8 @@ public static class SwaggerExtensions
     public static IApplicationBuilder UseSwaggerWithVersioning(
         this IApplicationBuilder app,
         IApiVersionDescriptionProvider provider,
-        ReverseProxyOptions options)
+        ReverseProxyOptions options,
+        SwaggerConfig config)
     {
         // Enable middleware to serve generated Swagger as a JSON endpoint.
         app.UseSwagger();
@@ -86,8 +69,39 @@ public static class SwaggerExtensions
 
             c.OAuthClientId("Swagger");
             c.OAuthUsePkce();
+            c.OAuthAdditionalQueryStringParams(new Dictionary<string, string>
+            {
+                {"prompt", "login"},
+            });
+            c.OAuthScopes(config.SecurityDefinitions.AccessScopes.ToArray());
         });
 
         return app;
+    }
+
+    private class ExcludeClrTypesFilter(List<Assembly> assemblies) : ISchemaFilter
+    {
+        private List<string> blacklist = assemblies.SelectMany(assembly => assembly.GetTypes())
+            .Where(t => !t.FullName.Contains("Enums")).Select(t => t.Name).ToList();
+
+        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (schema.Properties != null)
+            {
+                foreach (var prop in schema.Properties)
+                {
+                    if (prop.Value.Reference != null
+                        && blacklist.Contains(prop.Value.Reference.Id))
+                    {
+                        prop.Value.Reference = null;
+                    }
+                }
+            }
+
+            foreach (var key in blacklist)
+            {
+                context.SchemaRepository.Schemas.Remove(key);
+            }
+        }
     }
 }

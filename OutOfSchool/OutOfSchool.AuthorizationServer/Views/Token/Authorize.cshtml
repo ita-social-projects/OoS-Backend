@@ -1,0 +1,51 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.Extensions.Primitives
+@using OutOfSchool.AuthCommon
+@model OutOfSchool.AuthorizationServer.ViewModels.AuthorizeViewModel
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = SharedLocalizer["Consent Title"];
+    Layout = "_Layout";
+}
+
+@section PageSpecificCss
+{
+    <link rel="stylesheet" href="~/css/authorize.css" asp-append-version="true" type="text/css"/>
+}
+
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h1 class="consent_title">@SharedLocalizer["Consent Title"]</h1>
+        <section class="consent_wrapper">
+            <hr/>
+            <p class="consent_text">
+                @SharedLocalizer["By registering I agree with"]
+                <a class="link" id="link_privacy_terms" href="#" target="_blank">
+                    <a class="link" asp-controller="Privacy" asp-action="Terms" target="_blank">
+                        @SharedLocalizer["Terms of use"]
+                    </a>
+                </a>
+                <strong>@Model.ApplicationName</strong>
+                @SharedLocalizer["and"]
+                <a class="link" asp-controller="Privacy" asp-action="PersonalData" target="_blank">
+                    @SharedLocalizer["consent to the processing of personal data"]
+                </a>
+            </p>
+
+            <form asp-controller="Token" asp-action="Authorize" method="post">
+                @* Flow the request parameters so they can be received by the Accept/Reject actions: *@
+                @foreach (var parameter in Context.Request.HasFormContentType ? (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
+                {
+                    <input type="hidden" name="@parameter.Key" value="@parameter.Value"/>
+                }
+
+                <div class="consent_buttons">
+                    <input class="deny_button" name="submit.Deny" type="submit" value="@SharedLocalizer["No"]"/>
+                    <input class="authorize_button" name="submit.Accept" type="submit" value="@SharedLocalizer["Yes"]"/>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Common.PermissionsModule;
 
@@ -60,6 +59,8 @@ public enum Permissions : short
     ParentAddNew = 42,
     [Display(GroupName = "Parent", Name = "Remove", Description = "Can remove Parent data")]
     ParentRemove = 43,
+    [Display(GroupName = "Parent", Name = "Block", Description = "Can block Parent")]
+    ParentBlock = 44,
     #endregion
 
     #region Provider Control permissions #6
@@ -71,10 +72,14 @@ public enum Permissions : short
     ProviderAddNew = 52,
     [Display(GroupName = "Provider", Name = "Remove", Description = "Can remove Provider data")]
     ProviderRemove = 53,
-    [Display(GroupName = "Provider", Name = "Provider Admins", Description = "Can create and manage provider admins")]
-    ProviderAdmins = 54,
+    [Display(GroupName = "Provider", Name = "Employees", Description = "Can create and manage employees")]
+    Employees = 54,
     [Display(GroupName = "Provider", Name = "Provider Approve", Description = "Can approve Provider and License")]
     ProviderApprove = 55,
+    [Display(GroupName = "Provider", Name = "Block", Description = "Can block Provider")]
+    ProviderBlock = 56,
+    [Display(GroupName = "Provider", Name = "Read Provider Data", Description = "Can read Provider data")]
+    ProviderDataRead = 57,
     #endregion
 
     #region Rating control permissions #7
@@ -121,6 +126,8 @@ public enum Permissions : short
     WorkshopAddNew = 92,
     [Display(GroupName = "Workshop", Name = "Remove", Description = "Can remove Workshop data")]
     WorkshopRemove = 93,
+    [Display(GroupName = "Workshop", Name = "Workshop Approve", Description = "Can approve Workshop")]
+    WorkshopApprove = 94,
     #endregion
 
     #region System Management and admin permissions #11
@@ -132,6 +139,8 @@ public enum Permissions : short
     LogDataRead = 102,
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
+    [Display(GroupName = "AdminDataRead", Name = "AdminDataRead", Description = "access to all admins read the information")]
+    AdminDataRead = 103,
     #endregion
 
     #region MinistryAdmin Control permissions #12
@@ -160,5 +169,45 @@ public enum Permissions : short
     RegionAdmins = 124,
     [Display(GroupName = "RegionAdmin", Name = "Block", Description = "Can block region admin")]
     RegionAdminBlock = 125,
+    #endregion
+
+    #region AreaAdmin Control permissions # 14
+    //numbers from range 130-135 will cause troubles with migration
+    [Display(GroupName = "AreaAdmin", Name = "Read", Description = "Can read area admin")]
+    AreaAdminRead = 140,
+    [Display(GroupName = "AreaAdmin", Name = "Edit", Description = "Can edit area admin")]
+    AreaAdminEdit = 141,
+    [Display(GroupName = "AreaAdmin", Name = "Add new", Description = "Can add a new area admin")]
+    AreaAdminAddNew = 142,
+    [Display(GroupName = "AreaAdmin", Name = "Remove", Description = "Can remove area admin")]
+    AreaAdminRemove = 143,
+    [Display(GroupName = "AreaAdmin", Name = "Area Admins", Description = "Can manage area admins")]
+    AreaAdmins = 144,
+    [Display(GroupName = "AreaAdmin", Name = "Block", Description = "Can block area admin")]
+    AreaAdminBlock = 145,
+    #endregion
+
+    #region CompetitiveEvent control permissions #15
+    [Display(GroupName = "CompetitiveEvent", Name = "Read", Description = "Can read CompetitiveEvent")]
+    CompetitiveEventRead = 150,
+    [Display(GroupName = "CompetitiveEvent", Name = "Edit", Description = "Can edit CompetitiveEvent item")]
+    CompetitiveEventEdit = 151,
+    [Display(GroupName = "CompetitiveEvent", Name = "Add new", Description = "Can add a new CompetitiveEvent item")]
+    CompetitiveEventAddNew = 152,
+    [Display(GroupName = "CompetitiveEvent", Name = "Remove", Description = "Can remove CompetitiveEvent data")]
+    CompetitiveEventRemove = 153,
+    [Display(GroupName = "CompetitiveEvent", Name = "Approve", Description = "Can approve new CompetitiveEvent draft")]
+    CompetitiveEventApprove = 154,
+    #endregion
+
+    #region Position control permissions #16
+    [Display(GroupName = "Position", Name = "Read", Description = "Can read Position")]
+    PositionRead = 160,
+    [Display(GroupName = "Position", Name = "Edit", Description = "Can edit Position item")]
+    PositionEdit = 161,
+    [Display(GroupName = "Position", Name = "Add new", Description = "Can add a new Position item")]
+    PositionAddNew = 162,
+    [Display(GroupName = "Position", Name = "Remove", Description = "Can remove Position data")]
+    PositionRemove = 163,
     #endregion
 }

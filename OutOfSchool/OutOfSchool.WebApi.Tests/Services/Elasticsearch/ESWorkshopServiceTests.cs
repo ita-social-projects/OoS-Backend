@@ -1,675 +1,463 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Threading.Tasks;
-//using Elasticsearch.Net;
-//using Moq;
-//using Nest;
-//using NUnit.Framework;
-//using OutOfSchool.ElasticsearchData;
-//using OutOfSchool.ElasticsearchData.Models;
-//using OutOfSchool.Services.Enums;
-//using OutOfSchool.WebApi.Models;
-//using OutOfSchool.WebApi.Services;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Config;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.AverageRatings;
+using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
-//namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
-//{
-//    [TestFixture]
-//    public class ESWorkshopServiceTests
-//    {
-//        private IElasticsearchService<WorkshopES, WorkshopFilterES> service;
+namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch;
 
-//        private Mock<IWorkshopService> mockWorkshopService;
-//        private Mock<IRatingService> mockRatingService;
-//        private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> mockEsProvider;
+[TestFixture]
+public class ESWorkshopServiceTests
+{
+    private ESWorkshopService service;
+    private Mock<IWorkshopService> workshopServiceMock;
+    private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProviderMock;
+    private Mock<IElasticsearchHealthService> elasticHealthServiceMock;
+    private Mock<IAverageRatingService> averageRatingServiceMock;
+    private Mock<IOptions<ElasticConfig>> configMock;
 
-//        [SetUp]
-//        public void SetUp()
-//        {
-//            mockWorkshopService = new Mock<IWorkshopService>();
-//            mockRatingService = new Mock<IRatingService>();
-//            mockEsProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
+    [SetUp]
+    public void Setup()
+    {
+        workshopServiceMock = new Mock<IWorkshopService>();
+        esProviderMock = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
+        elasticHealthServiceMock = new Mock<IElasticsearchHealthService>();
+        averageRatingServiceMock = new Mock<IAverageRatingService>();
+        configMock = new Mock<IOptions<ElasticConfig>>();
 
-//            service = new ESWorkshopService(mockWorkshopService.Object, mockRatingService.Object, mockEsProvider.Object);
-//        }
+        service = new ESWorkshopService(
+            workshopServiceMock.Object,
+            esProviderMock.Object,
+            elasticHealthServiceMock.Object,
+            new Mock<ILogger<ESWorkshopService>>().Object,
+            averageRatingServiceMock.Object,
+            configMock.Object);
+    }
 
-//        #region Index
-//        [Test]
-//        public void Index_WhenEntityIsNull_ShouldThrowException()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Created);
+    #region IsElasticAlive
 
-//            // Act and Assert
-//            Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Index(null));
-//            mockEsProvider.Verify(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()), Times.Never);
-//        }
+    [Test]
+    public void IsElasticAlive_WhenElasticIsHealthy_ReturnsTrue()
+    {
+        // Arrange
+        elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(true);
 
-//        [Test]
-//        public async Task Index_WhenDocWasIndexed_ShouldReturnTrue()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Created);
+        // Act
+        var result = service.IsElasticAlive;
 
-//            // Act
-//            var result = await service.Index(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+        // Assert
+        Assert.IsTrue(result);
+    }
 
-//            // Assert
-//            Assert.IsTrue(result);
-//            mockEsProvider.Verify(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+    [Test]
+    public void IsElasticAlive_WhenElasticIsNotHealthy_ReturnsFalse()
+    {
+        // Arrange
+        elasticHealthServiceMock.Setup(x => x.IsHealthy).Returns(false);
 
-//        [Test]
-//        public async Task Index_WhenDocWasNotIndexed_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Error);
+        // Act
+        var result = service.IsElasticAlive;
 
-//            // Act
-//            var result = await service.Index(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+        // Assert
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+    #endregion
 
-//        [Test]
-//        public async Task Index_WhenElasticsearchExceptionOccures_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()))
-//               .Throws(new ElasticsearchClientException("exception"));
+    #region Index
 
-//            // Act
-//            var result = await service.Index(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+    [TestCase(Result.Updated)]
+    [TestCase(Result.Created)]
+    public async Task Index_WhenEntityIndexed_ReturnsTrue(Result operationResult)
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        esProviderMock.Setup(x => x.IndexEntityAsync(entity))
+            .ReturnsAsync(operationResult);
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.IndexEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
-//        #endregion
+        // Act
+        var result = await service.Index(entity);
 
-//        #region Update
-//        [Test]
-//        public void Update_WhenEntityIsNull_ShouldThrowException()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Updated);
+        // Assert
+        esProviderMock.Verify(x => x.IndexEntityAsync(entity), Times.Once());
+        Assert.IsTrue(result);
+    }
 
-//            // Act and Assert
-//            Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Update(null));
-//            mockEsProvider.Verify(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()), Times.Never);
-//        }
+    [Test]
+    public async Task Index_WhenEntityNotIndexed_ReturnsFalse()
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        esProviderMock.Setup(x => x.IndexEntityAsync(entity))
+            .ReturnsAsync(Result.NoOp);
 
-//        [Test]
-//        public async Task Update_WhenDocWasUpdated_ShouldReturnTrue()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Updated);
-//            mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
+        // Act
+        var result = await service.Index(entity);
 
-//            // Act
-//            var result = await service.Update(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+        // Assert
+        esProviderMock.Verify(x => x.IndexEntityAsync(entity), Times.Once());
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsTrue(result);
-//            mockEsProvider.Verify(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//            mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.Once);
-//        }
+    [Test]
+    public void Index_WhenEntityIsNull_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await service.Index((WorkshopES)null));
+    }
 
-//        [Test]
-//        public async Task Update_WhenDocWasNotUpdated_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Error);
-//            mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
+    #endregion
 
-//            // Act
-//            var result = await service.Update(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+    #region Update
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//            mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.Once);
-//        }
+    [TestCase(Result.Updated, true)]
+    [TestCase(Result.Created, true)]
+    [TestCase(Result.Updated, false)]
+    [TestCase(Result.Created, false)]
+    public async Task Update_WhenEntityUpdated_ReturnsTrue(
+        Result operationResult, bool hasRating)
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        AverageRatingDto rating = hasRating ?
+            RatingsGenerator.GetAverageRating(entity.Id) : null;
+        averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(entity.Id))
+            .ReturnsAsync(rating);
+        esProviderMock.Setup(x => x.UpdateEntityAsync(entity))
+            .ReturnsAsync(operationResult);
 
-//        [Test]
-//        public async Task Update_WhenElasticsearchExceptionOccures_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()))
-//               .Throws(new ElasticsearchClientException("exception"));
-//            mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
+        // Act
+        var result = await service.Update(entity);
 
-//            // Act
-//            var result = await service.Update(new WorkshopES() { Id = 1, Title = "Title" }).ConfigureAwait(false);
+        // Assert
+        averageRatingServiceMock.Verify(x => x.GetByEntityIdAsync(entity.Id), Times.Once());
+        esProviderMock.Verify(x => x.UpdateEntityAsync(entity), Times.Once());
+        Assert.IsTrue(result);
+    }
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.UpdateEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//            mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.Once);
-//        }
-//        #endregion
+    [TestCase(Result.NotFound, true)]
+    [TestCase(Result.NoOp, true)]
+    [TestCase(Result.NotFound, false)]
+    [TestCase(Result.NoOp, false)]
+    public async Task Update_WhenEntityNotUpdated_ReturnsFalse(
+    Result operationResult, bool hasRating)
+    {
+        // Arrange
+        var entity = WorkshopESGenerator.Generate();
+        AverageRatingDto rating = hasRating ?
+            RatingsGenerator.GetAverageRating(entity.Id) : null;
+        averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(entity.Id))
+            .ReturnsAsync(rating);
+        esProviderMock.Setup(x => x.UpdateEntityAsync(entity))
+            .ReturnsAsync(operationResult);
 
-//        #region Delete
-//        [Test]
-//        public async Task Delete_WhenDocWasDeleted_ShouldReturnTrue()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Deleted);
+        // Act
+        var result = await service.Update(entity);
 
-//            // Act
-//            var result = await service.Delete(1).ConfigureAwait(false);
+        // Assert
+        averageRatingServiceMock.Verify(x => x.GetByEntityIdAsync(entity.Id), Times.Once());
+        esProviderMock.Verify(x => x.UpdateEntityAsync(entity), Times.Once());
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsTrue(result);
-//            mockEsProvider.Verify(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+    [Test]
+    public void Update_WhenEntityIsNull_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await service.Update((WorkshopES)null));
+    }
 
-//        [Test]
-//        public async Task Delete_WhenDocWasNotDeleted_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()))
-//               .ReturnsAsync(Result.Error);
+    #endregion
 
-//            // Act
-//            var result = await service.Delete(1).ConfigureAwait(false);
+    #region Delete
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+    [Test]
+    public async Task Delete_WhenEntityDeleted_ReturnsTrue()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        esProviderMock.Setup(x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)))
+            .ReturnsAsync(Result.Deleted);
 
-//        [Test]
-//        public async Task Delete_WhenElasticsearchExceptionOccures_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()))
-//               .Throws(new ElasticsearchClientException("exception"));
+        // Act
+        var result = await service.Delete(id);
 
-//            // Act
-//            var result = await service.Delete(1).ConfigureAwait(false);
+        // Assert
+        esProviderMock.Verify(
+            x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)),
+            Times.Once());
+        Assert.IsTrue(result);
+    }
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.DeleteEntityAsync(It.IsAny<WorkshopES>()), Times.Once);
-//        }
-//        #endregion
+    [Test]
+    public async Task Delete_WhenEntityNotDeleted_ReturnsFalse()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        esProviderMock.Setup(x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)))
+            .ReturnsAsync(Result.NotFound);
 
-//        #region ReIndex
-//        [Test]
-//        public async Task ReIndex_WhenDocsWereUpdated_ShouldReturnTrue()
-//        {
-//            // Arrange
-//            var listDto = new List<WorkshopDTO>()
-//            {
-//                new WorkshopDTO()
-//                    {
-//                        Id = 1,
-//                        Title = "Шаффл",
-//                        Phone = "1111111111",
-//                        Description = "Танці",
-//                        Keywords = new List<string> { "шаффл" },
-//                        Price = 0,
-//                        WithDisabilityOptions = true,
-//                        Head = "Head1",
-//                        HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                        ProviderTitle = "Школа танцю",
-//                        DisabilityOptionsDesc = "пандус",
-//                        Website = "website1",
-//                        Instagram = "insta1",
-//                        Facebook = "facebook1",
-//                        Email = "email1@gmail.com",
-//                        MaxAge = 6,
-//                        MinAge = 3,
-//                        Logo = "image1",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        ClassId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 55,
-//                        Address = new AddressDto
-//                        {
-//                            Id = 55,
-//                            Region = "Київ",
-//                            District = "Київ55",
-//                            City = "Київ",
-//                            Street = "Street55",
-//                            BuildingNumber = "BuildingNumber55",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherDTO>
-//                        {
-//                            new TeacherDTO
-//                            {
-//                                Id = 1,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                            new TeacherDTO
-//                            {
-//                                Id = 2,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                        },
-//                    },
-//                new WorkshopDTO()
-//                    {
-//                        Id = 2,
-//                        Title = "Шаффл для дорослих",
-//                        Phone = "1111111111",
-//                        Description = "Танці",
-//                        Keywords = new List<string> { "танці", "діти", "шаффл" },
-//                        Price = 50,
-//                        WithDisabilityOptions = false,
-//                        Head = "Head2",
-//                        HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                        ProviderTitle = "Школа танцю",
-//                        DisabilityOptionsDesc = "Desc2",
-//                        Website = "website2",
-//                        Instagram = "insta2",
-//                        Facebook = "facebook2",
-//                        Email = "email2@gmail.com",
-//                        MaxAge = 10,
-//                        MinAge = 7,
-//                        Logo = "image2",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 10,
-//                        Address = new AddressDto
-//                        {
-//                            Id = 10,
-//                            Region = "Region10",
-//                            District = "District10",
-//                            City = "Чернігів",
-//                            Street = "Street10",
-//                            BuildingNumber = "BuildingNumber10",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherDTO>
-//                        {
-//                            new TeacherDTO
-//                            {
-//                                Id = 3,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                            new TeacherDTO
-//                            {
-//                                Id = 4,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                        },
-//                    },
-//            };
-//            mockWorkshopService.SetupSequence(x => x.GetAll(It.IsAny<OffsetFilter>()))
-//                .ReturnsAsync(new SearchResult<WorkshopDTO> { TotalAmount = listDto.Count, Entities = listDto })
-//                .ReturnsAsync(new SearchResult<WorkshopDTO> { TotalAmount = listDto.Count, Entities = new List<WorkshopDTO>() });
-//            mockEsProvider.Setup(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()))
-//               .ReturnsAsync(Result.Updated);
-//            mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
+        // Act
+        var result = await service.Delete(id);
 
-//            // Act
-//            var result = await service.ReIndex().ConfigureAwait(false);
+        // Assert
+        esProviderMock.Verify(
+            x => x.DeleteEntityAsync(It.Is<WorkshopES>(w => w.Id == id)),
+            Times.Once());
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsTrue(result);
-//            mockEsProvider.Verify(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()), Times.Once);
-//            mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.AtLeastOnce);
-//        }
+    #endregion
 
-//        [Test]
-//        public async Task ReIndex_WhenDocsWereNotUpdated_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            var listDto = new List<WorkshopDTO>()
-//            {
-//                new WorkshopDTO()
-//                    {
-//                        Id = 1,
-//                        Title = "Шаффл",
-//                        Phone = "1111111111",
-//                        Description = "Танці",
-//                        Keywords = new List<string> { "шаффл" },
-//                        Price = 0,
-//                        WithDisabilityOptions = true,
-//                        Head = "Head1",
-//                        HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                        ProviderTitle = "Школа танцю",
-//                        DisabilityOptionsDesc = "пандус",
-//                        Website = "website1",
-//                        Instagram = "insta1",
-//                        Facebook = "facebook1",
-//                        Email = "email1@gmail.com",
-//                        MaxAge = 6,
-//                        MinAge = 3,
-//                        Logo = "image1",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        ClassId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 55,
-//                        Address = new AddressDto
-//                        {
-//                            Id = 55,
-//                            Region = "Київ",
-//                            District = "Київ55",
-//                            City = "Київ",
-//                            Street = "Street55",
-//                            BuildingNumber = "BuildingNumber55",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherDTO>
-//                        {
-//                            new TeacherDTO
-//                            {
-//                                Id = 1,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                            new TeacherDTO
-//                            {
-//                                Id = 2,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                        },
-//                    },
-//                new WorkshopDTO()
-//                    {
-//                        Id = 2,
-//                        Title = "Шаффл для дорослих",
-//                        Phone = "1111111111",
-//                        Description = "Танці",
-//                        Keywords = new List<string> { "танці", "діти", "шаффл" },
-//                        Price = 50,
-//                        WithDisabilityOptions = false,
-//                        Head = "Head2",
-//                        HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                        ProviderTitle = "Школа танцю",
-//                        DisabilityOptionsDesc = "Desc2",
-//                        Website = "website2",
-//                        Instagram = "insta2",
-//                        Facebook = "facebook2",
-//                        Email = "email2@gmail.com",
-//                        MaxAge = 10,
-//                        MinAge = 7,
-//                        Logo = "image2",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 10,
-//                        Address = new AddressDto
-//                        {
-//                            Id = 10,
-//                            Region = "Region10",
-//                            District = "District10",
-//                            City = "Чернігів",
-//                            Street = "Street10",
-//                            BuildingNumber = "BuildingNumber10",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherDTO>
-//                        {
-//                            new TeacherDTO
-//                            {
-//                                Id = 3,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                            new TeacherDTO
-//                            {
-//                                Id = 4,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                        },
-//                    },
-//            };
-//            mockWorkshopService.SetupSequence(x => x.GetAll(It.IsAny<OffsetFilter>()))
-//                .ReturnsAsync(new SearchResult<WorkshopDTO> { TotalAmount = listDto.Count, Entities = listDto })
-//                .ReturnsAsync(new SearchResult<WorkshopDTO> { TotalAmount = listDto.Count, Entities = new List<WorkshopDTO>() });
-//            mockEsProvider.Setup(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()))
-//               .ReturnsAsync(Result.Error);
-//            mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
+    #region ReIndex
 
-//            // Act
-//            var result = await service.ReIndex().ConfigureAwait(false);
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task ReIndex_SuccessfulReindexing_ReturnsTrue(bool hasRating)
+    {
+        // Arrange
+        var workshops = WorkshopDtoGenerator.Generate(5);
+        SearchResult<WorkshopDto> searchResult = new()
+        {
+            Entities = workshops,
+            TotalAmount = workshops.Count,
+        };
 
-//            // Assert
-//            Assert.IsFalse(result);
-//            mockEsProvider.Verify(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()), Times.Once);
-//            mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.AtLeastOnce);
-//        }
+        var config = new ElasticConfig()
+        {
+            WorkshopIndexName = "test",
+            CompetitiveEventIndexName = "test1",
+        };
 
-//        [Test]
-//        public async Task ReIndex_WhenAnyExceptionOccures_ShouldReturnFalse()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()))
-//               .Throws(new Exception("exception"));
+        workshopServiceMock.Setup(x => x.GetAll(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(searchResult)
+            .Callback<OffsetFilter>(filter =>
+            {
+                if (filter.From > 0)
+                {
+                    searchResult.Entities = [];
+                }
+            });
+        averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(hasRating ?
+                RatingsGenerator.GetAverageRating(Guid.NewGuid()) : null);
+        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
+            .ReturnsAsync(Result.Updated);
+        configMock.Setup(x => x.Value).Returns(config);
 
-//            // Act
-//            var result = await service.ReIndex().ConfigureAwait(false);
+        // Act
+        var result = await service.ReIndex();
 
-//            // Assert
-//            Assert.IsFalse(result);
-//        }
-//        #endregion
+        // Assert
+        workshopServiceMock.Verify(
+            x => x.GetAll(It.IsAny<OffsetFilter>()), Times.Exactly(2));
+        averageRatingServiceMock.Verify(
+            x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
+        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
+        Assert.IsTrue(result);
+    }
 
-//        #region Search
-//        [Test]
-//        public async Task Search_WhenCalled_ShouldReturnResult()
-//        {
-//            // Arrange
-//            var listES = new List<WorkshopES>()
-//            {
-//                new WorkshopES()
-//                    {
-//                        Id = 1,
-//                        Title = "Шаффл",
-//                        Description = "Танці",
-//                        Keywords = "шаффл",
-//                        Price = 0,
-//                        WithDisabilityOptions = true,
-//                        ProviderTitle = "Школа танцю",
-//                        MaxAge = 6,
-//                        MinAge = 3,
-//                        Logo = "image1",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        ClassId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 55,
-//                        Address = new AddressES
-//                        {
-//                            Id = 55,
-//                            Region = "Київ",
-//                            District = "Київ55",
-//                            City = "Київ",
-//                            Street = "Street55",
-//                            BuildingNumber = "BuildingNumber55",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherES>
-//                        {
-//                            new TeacherES
-//                            {
-//                                Id = 1,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                            new TeacherES
-//                            {
-//                                Id = 2,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 1,
-//                            },
-//                        },
-//                    },
-//                new WorkshopES()
-//                    {
-//                        Id = 2,
-//                        Title = "Шаффл для дорослих",
-//                        Description = "Танці",
-//                        Keywords = "танці",
-//                        Price = 50,
-//                        WithDisabilityOptions = false,
-//                        ProviderTitle = "Школа танцю",
-//                        MaxAge = 10,
-//                        MinAge = 7,
-//                        Logo = "image2",
-//                        ProviderId = 1,
-//                        DirectionId = 1,
-//                        DepartmentId = 1,
-//                        AddressId = 10,
-//                        Address = new AddressES
-//                        {
-//                            Id = 10,
-//                            Region = "Region10",
-//                            District = "District10",
-//                            City = "Чернігів",
-//                            Street = "Street10",
-//                            BuildingNumber = "BuildingNumber10",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        Teachers = new List<TeacherES>
-//                        {
-//                            new TeacherES
-//                            {
-//                                Id = 3,
-//                                FirstName = "Alex",
-//                                LastName = "Brown",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                            new TeacherES
-//                            {
-//                                Id = 4,
-//                                FirstName = "John",
-//                                LastName = "Snow",
-//                                MiddleName = "SomeMiddleName",
-//                                Description = "Description",
-//                                Image = "Image",
-//                                DateOfBirth = DateTime.Parse("2000-01-01"),
-//                                WorkshopId = 2,
-//                            },
-//                        },
-//                    },
-//            };
-//            mockEsProvider.Setup(x => x.Search(It.IsAny<WorkshopFilterES>()))
-//               .ReturnsAsync(new SearchResultES<WorkshopES>() { TotalAmount = listES.Count, Entities = listES });
+    [Test]
+    public async Task ReIndex_ReindexingFails_ReturnsFalse()
+    {
+        // Arrange
+        var workshops = WorkshopDtoGenerator.Generate(3);
+        SearchResult<WorkshopDto> searchResult = new()
+        {
+            Entities = workshops,
+            TotalAmount = workshops.Count,
+        };
 
-//            // Act
-//            var result = await service.Search(null).ConfigureAwait(false);
+        var config = new ElasticConfig()
+        {
+            WorkshopIndexName = "test",
+            CompetitiveEventIndexName = "test1",
+        };
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
-//            Assert.AreEqual(2, result.TotalAmount);
-//            mockEsProvider.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//        }
+        workshopServiceMock.Setup(x => x.GetAll(It.IsAny<OffsetFilter>()))
+            .ReturnsAsync(searchResult)
+            .Callback<OffsetFilter>(filter =>
+            {
+                if (filter.From > 0)
+                {
+                    searchResult.Entities = [];
+                }
+            });
+        averageRatingServiceMock.Setup(x => x.GetByEntityIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(RatingsGenerator.GetAverageRating(Guid.NewGuid()));
+        esProviderMock.Setup(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()))
+            .ReturnsAsync(Result.NoOp);
+        configMock.Setup(x => x.Value).Returns(config);
 
-//        [Test]
-//        public async Task Search_WhenErrorOccured_ShouldReturnEmptyResult()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.Search(It.IsAny<WorkshopFilterES>()))
-//               .Throws(new Exception("exception"));
+        // Act
+        var result = await service.ReIndex();
 
-//            // Act
-//            var result = await service.Search(null).ConfigureAwait(false);
+        // Assert
+        workshopServiceMock.Verify(
+            x => x.GetAll(It.IsAny<OffsetFilter>()), Times.Exactly(2));
+        averageRatingServiceMock.Verify(
+            x => x.GetByEntityIdAsync(It.IsAny<Guid>()), Times.Exactly(workshops.Count));
+        esProviderMock.Verify(x => x.ReIndexAll(It.IsAny<List<WorkshopES>>(), It.IsAny<IndexName>()), Times.Once);
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
-//            Assert.AreEqual(0, result.TotalAmount);
-//            mockEsProvider.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//        }
-//        #endregion
+    [Test]
+    public async Task ReIndex_ExceptionThrown_ReturnFalse()
+    {
+        // Arrange
+        workshopServiceMock.Setup(x => x.GetAll(It.IsAny<OffsetFilter>()))
+            .ThrowsAsync(new Exception("Test exception"));
 
-//        #region PingServer
-//        [Test]
-//        public async Task PingServer_WhenCalled_ShouldReturnResult()
-//        {
-//            // Arrange
-//            mockEsProvider.Setup(x => x.PingServerAsync())
-//               .ReturnsAsync(true);
+        // Act
+        var result = await service.ReIndex();
 
-//            // Act
-//            var result = await service.PingServer().ConfigureAwait(false);
+        // Assert
+        Assert.IsFalse(result);
+    }
 
-//            // Assert
-//            Assert.IsTrue(result);
-//            mockEsProvider.Verify(x => x.PingServerAsync(), Times.Once);
-//        }
-//        #endregion
-//    }
-//}
+    #endregion
+
+    #region Search
+
+    [Test]
+    public async Task Search_SuccessfulSearch_ReturnsResult()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        var entities = WorkshopESGenerator.Generate(3);
+        var expectedResult = new SearchResultES<WorkshopES>()
+        {
+            Entities = entities,
+            TotalAmount = entities.Count,
+        };
+        esProviderMock.Setup(x => x.Search(filter)).ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await service.Search(filter);
+
+        // Assert
+        esProviderMock.Verify(x => x.Search(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.That(result, Is.EqualTo(expectedResult));
+    }
+
+    [Test]
+    public async Task Search_ThrownException_ReturnsEmptyResult()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        esProviderMock.Setup(x => x.Search(filter))
+            .ThrowsAsync(new Exception("Search failed"));
+
+        // Act
+        var result = await service.Search(filter);
+
+        // Assert
+        esProviderMock.Verify(x => x.Search(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<SearchResultES<WorkshopES>>(result);
+        Assert.AreEqual(0, result.TotalAmount);
+        Assert.IsEmpty(result.Entities);
+    }
+
+    #endregion
+
+    #region PartialUpdate
+
+    [Test]
+    public async Task PartialUpdate_SuccessfulPartialUpdate_ReturnsTrue()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var partialWorkshop = new WorkshopRatingES();
+        esProviderMock.Setup(x => x.PartialUpdateEntityAsync(id, partialWorkshop))
+            .ReturnsAsync(Result.Updated);
+
+        // Act
+        var result = await service.PartialUpdate(id, partialWorkshop);
+
+        // Assert
+        esProviderMock.Verify(x => x.PartialUpdateEntityAsync(id, partialWorkshop), Times.Once);
+        Assert.IsTrue(result);
+    }
+
+    [Test]
+    public async Task PartialUpdate_PartialUpdateFails_ReturnsFalse()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var partialWorkshop = new WorkshopRatingES();
+        esProviderMock.Setup(x => x.PartialUpdateEntityAsync(id, partialWorkshop))
+            .ReturnsAsync(Result.NoOp);
+
+        // Act
+        var result = await service.PartialUpdate(id, partialWorkshop);
+
+        // Assert
+        esProviderMock.Verify(x => x.PartialUpdateEntityAsync(id, partialWorkshop), Times.Once);
+        Assert.IsFalse(result);
+    }
+
+    #endregion
+
+    #region GetPriceRangeAsync
+
+    [Test]
+    public async Task GetPriceRange_WhenSuccess_ReturnsPriceRange()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        var priceRange = new PriceRangeES()
+        {
+            MinPrice = 100,
+            MaxPrice = 200
+        };
+
+        esProviderMock.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        esProviderMock.Verify(x => x.GetPriceRangeAsync(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<PriceRangeES>(result);
+        Assert.That(result, Is.EqualTo(priceRange));
+    }
+
+    [Test]
+    public async Task GetPriceRange_WhenExceptionCatched_ReturnsDefaultPriceRange()
+    {
+        // Arrange
+        var filter = new WorkshopFilterES();
+        var priceRange = new PriceRangeES();
+
+        esProviderMock.Setup(x => x.GetPriceRangeAsync(filter)).ThrowsAsync(new Exception());
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        esProviderMock.Verify(x => x.GetPriceRangeAsync(filter), Times.Once);
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOf<PriceRangeES>(result);
+        Assert.That(result.MaxPrice, Is.EqualTo(priceRange.MaxPrice));
+        Assert.That(result.MinPrice, Is.EqualTo(priceRange.MinPrice));
+    }
+
+    #endregion
+}

@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database;
@@ -44,24 +47,24 @@ public class WorkshopRepositoryTests
         // Arrange
         using var context = GetContext();
         var workshopRepository = GetWorkshopRepository(context);
-        var initialWorkshopsCount = context.Workshops.Count();
-        var workshop = context.Workshops.First();
+        var initialWorkshopsCount = context.Workshops.Count(x => !x.IsDeleted);
+        var workshop = context.Workshops.Include(workshop => workshop.Applications)
+            .Include(workshop => workshop.Teachers).Include(workshop => workshop.Images).First();
         var expectedWorkshopsCount = initialWorkshopsCount - 1;
-        var expectedApplicationsCount = context.Applications.Count() - workshop.Applications.Count;
-        var expectedTeachersCount = context.Teachers.Count() - workshop.Teachers.Count;
+        var expectedApplicationsCount = context.Applications.Count(x => !x.IsDeleted) - workshop.Applications.Count;
+        var expectedTeachersCount = context.Teachers.Count(x => !x.IsDeleted) - workshop.Teachers.Count;
         var expectedImagesCount = context.WorkshopImages.Count() - workshop.Images.Count;
-        var expectedAddressesCount = context.Addresses.Count() - 1;
 
         // Act
         await workshopRepository.Delete(workshop);
         var applications = context.Applications
             .IgnoreQueryFilters()
-            .Where(x => x.WorkshopId == workshop.Id)
+            .Where(x => !x.IsDeleted && x.WorkshopId == workshop.Id)
             .Select(x => context.Entry(x))
             .ToList();
         var teachers = context.Teachers
             .IgnoreQueryFilters()
-            .Where(x => x.WorkshopId == workshop.Id)
+            .Where(x => !x.IsDeleted && x.WorkshopId == workshop.Id)
             .Select(x => context.Entry(x))
             .ToList();
         var images = context.WorkshopImages
@@ -71,16 +74,14 @@ public class WorkshopRepositoryTests
 
         // Assert
         Assert.AreEqual(initialWorkshopsCount, context.Workshops.IgnoreQueryFilters().Count());
-        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count());
+        Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count(x => !x.IsDeleted));
         Assert.NotZero(expectedApplicationsCount);
         Assert.NotZero(expectedTeachersCount);
         Assert.NotZero(expectedImagesCount);
-        Assert.NotZero(expectedAddressesCount);
-        Assert.AreEqual(expectedApplicationsCount, context.Applications.Count());
-        Assert.AreEqual(expectedTeachersCount, context.Teachers.Count());
+        Assert.AreEqual(expectedApplicationsCount, context.Applications.Count(x => !x.IsDeleted));
+        Assert.AreEqual(expectedTeachersCount, context.Teachers.Count(x => !x.IsDeleted));
         Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
-        Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
-        Assert.False(context.Workshops.Any(x => x.Id == workshop.Id));
+        Assert.False(context.Workshops.Any(x => !x.IsDeleted && x.Id == workshop.Id));
         Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
         Assert.AreEqual(EntityState.Unchanged, context.Entry(workshop).State);
         Assert.AreEqual(true, context.Entry(workshop).CurrentValues["IsDeleted"]);
@@ -91,13 +92,78 @@ public class WorkshopRepositoryTests
         Assert.IsEmpty(images);
     }
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnValue(bool asNoTracking)
+    {
+        // Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshop = context.Workshops.First();
+
+        // Act
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id, asNoTracking);
+
+        // Assert
+        Assert.IsNotNull(expectedWorkshop);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetWithNavigations_WhenGetValidEntity_ReturnEmpty(bool asNoTracking)
+    {
+        // Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshop = context.Workshops.First();
+
+        // Act
+        await workshopRepository.Delete(workshop);
+        var expectedWorkshop = await workshopRepository.GetWithNavigations(workshop.Id, asNoTracking);
+
+        // Assert
+        Assert.IsNull(expectedWorkshop);
+    }
+
     #endregion
+
+    [Test]
+    public async Task AmountOfPendingApplications_Return_Correct_Count()
+    {
+        //Arrange
+        using var context = GetContext();
+        var workshopRepository = GetWorkshopRepository(context);
+        var workshopIds = context.Workshops.Select(x => x.Id).ToList();
+        var expectedCounts = context.Applications
+            .Where(a => a.Status == ApplicationStatus.Pending 
+                    && !a.IsDeleted 
+                    && a.Child != null 
+                    && !a.Child.IsDeleted 
+                    && a.Parent != null 
+                    && !a.Parent.IsDeleted 
+                    && workshopIds.Contains(a.WorkshopId))
+            .GroupBy(a => a.WorkshopId)
+            .Select(g => new { WorkshopId = g.Key, PendingApplicationCount = g.Count() })
+            .ToList();
+
+        //Act
+        var actualCounts = await workshopRepository.AmountOfPendingApplications(workshopIds).ConfigureAwait(false);
+
+        //Assert
+        Assert.AreEqual(expectedCounts.Count, actualCounts.Count);
+        foreach (var expected in expectedCounts)
+        {
+            var actual = actualCounts.FirstOrDefault(x => x.WorkshopId == expected.WorkshopId);
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.PendingApplicationCount, actual.PendingApplications);
+        }
+    }
 
     #region private
 
-    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private TestOutOfSchoolDbContext GetContext() => new TestOutOfSchoolDbContext(dbContextOptions);
 
-    private IWorkshopRepository GetWorkshopRepository(OutOfSchoolDbContext dbContext)
+    private IWorkshopRepository GetWorkshopRepository(TestOutOfSchoolDbContext dbContext)
         => new WorkshopRepository(dbContext);
 
     private async Task Seed()

@@ -1,0 +1,98 @@
+﻿using System;
+using System.Collections.Generic;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Common.Enums.Workshop;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models.ContactInfo;
+
+namespace OutOfSchool.Services.Models.WorkshopDrafts;
+
+/// <summary>
+///     Will be stored as nested objects in the JSON format of the workshop draft.
+///     This entity is specific to the draft and can be hard-deleted if the draft is removed.
+/// </summary>
+public class WorkshopDraftContent :
+    IHasContacts, IHasHiddenFields
+{
+    public bool NoAgeRestrictions { get; set; } = false;
+
+    public int MinAge { get; set; }
+
+    public int MaxAge { get; set; }
+
+    public long LanguageOfEducationId { get; set; }
+
+    public string LanguageOfEducationName { get; set; } = string.Empty;
+
+    public List<DateTimeRangeDraft> DateTimeRanges { get; set; } = new ();
+
+    public List<WorkshopDescriptionItemDraft> WorkshopDescriptionItems { get; set; } = new();
+
+    public bool IsSelfFinanced { get; set; }
+
+    public bool CompetitiveSelection { get; set; }
+
+    public DateOnly ActiveFrom { get; set; }
+
+    public DateOnly ActiveTo { get; set; }
+
+    public DateOnly StudyPeriodStartDate { get; set; }
+
+    public DateOnly StudyPeriodEndDate { get; set; }
+
+    public List<long> TagIds { get; set; } = new();
+
+    public string Title { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    public bool IsInclusive { get; set; }
+
+    public IEnumerable<string> Keywords { get; set; }
+
+    public OwnershipType OwnershipType { get; set; }
+
+    public uint AvailableSeats { get; set; }
+
+    public List<Guid> IncludedStudyGroupsIds { get; set; } = new();
+
+    public string ShortTitle { get; set; }
+
+    public string CompetitiveSelectionDescription { get; set; }
+
+    public FormOfLearning FormOfLearning { get; set; }
+
+    public WorkshopStatus WorkshopStatus { get; set; }
+
+    public ProviderLicenseStatus ProviderLicenseStatus { get; set; }
+
+    public decimal Price { get; set; }
+
+    public PayRateType PayRate { get; set; }
+
+    public bool AreThereBenefits { get; set; }
+
+    public string PreferentialTermsOfParticipation { get; set; }
+
+    public Guid? InstitutionHierarchyId { get; set; }
+
+    public Guid? InstitutionId { get; set; }
+
+    public string EnrollmentProcedureDescription { get; set; }
+
+    public Coverage Coverage { get; set; } = Coverage.School;
+
+    public SpecialNeedsType SpecialNeedsType { get; set; } = SpecialNeedsType.None;
+
+    public EducationalShift EducationalShift { get; set; } = EducationalShift.First;
+
+    public AgeComposition AgeComposition { get; set; } = AgeComposition.SameAge;
+
+    public WorkshopType WorkshopType { get; set; }
+
+    public Guid? ParentWorkshopId { get; set; }
+
+    public List<Contacts> Contacts { get; set; }
+
+    public bool IsChampionPath { get; set; }
+}

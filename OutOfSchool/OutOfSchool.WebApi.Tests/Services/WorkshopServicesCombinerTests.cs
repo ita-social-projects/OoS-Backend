@@ -1,453 +1,520 @@
-//using System;
-//using System.Collections.Generic;
-//using System.Threading.Tasks;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using NUnit.Framework;
-//using OutOfSchool.ElasticsearchData.Models;
-//using OutOfSchool.WebApi.Extensions;
-//using OutOfSchool.WebApi.Models;
-//using OutOfSchool.WebApi.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Threading.Tasks;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.Strategies.Interfaces;
+using OutOfSchool.BusinessLogic.Services.Workshops;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
-//namespace OutOfSchool.WebApi.Tests.Services
-//{
-//    [TestFixture]
-//    public class WorkshopServicesCombinerTests
-//    {
-//        private static WorkshopDTO workshop;
-//        private static WorkshopES workshopES;
-//        private static ProviderDto provider;
-//        private static List<WorkshopDTO> workshops;
-//        private static List<WorkshopES> workshopESs;
+namespace OutOfSchool.WebApi.Tests.Services;
 
-//        private Mock<IWorkshopService> mockDatabaseService;
-//        private Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>> mockElasticsearchService;
-//        private Mock<ILogger<WorkshopServicesCombiner>> mockLogger;
+[TestFixture]
+public class WorkshopServicesCombinerTests
+{
+    private Mock<IWorkshopService> workshopService;
+    private Mock<ISensitiveWorkshopsService> sensitiveWorkshopsService;
+    private Mock<INotificationService> notificationServiceMock;
+    private Mock<IEntityRepositorySoftDeleted<long, Favorite>> favoriteRepository;
+    private Mock<IApplicationRepository> applicationRepository;
+    private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> esProvider;
+    private Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>> elasticsearchSynchronizationService;
+    private Mock<IWorkshopStrategy> workshopStrategy;
+    private IWorkshopServicesCombiner service;
 
-//        private IWorkshopServicesCombiner service;
+    [SetUp]
+    public void SetUp()
+    {
+        workshopService = new Mock<IWorkshopService>();
+        elasticsearchSynchronizationService = new Mock<IElasticsearchSynchronizationService<IWorkshopService, Workshop>>();
+        sensitiveWorkshopsService = new Mock<ISensitiveWorkshopsService>();
 
-//        [OneTimeSetUp]
-//        public void OneTimeSetup()
-//        {
-//            workshop = FakeWorkshop();
-//            workshopES = workshop.ToESModel();
-//            provider = FakeProvider();
-//            workshops = FakeWorkshops();
-//            workshopESs = FakeWorkshopESs();
-//        }
+        favoriteRepository = new Mock<IEntityRepositorySoftDeleted<long, Favorite>>();
+        applicationRepository = new Mock<IApplicationRepository>();
+        workshopStrategy = new Mock<IWorkshopStrategy>();
+        var currentUserService = new Mock<ICurrentUserService>();
+        var ministryAdminService = new Mock<IMinistryAdminService>();
+        var regionAdminService = new Mock<IRegionAdminService>();
+        var codeficatorService = new Mock<ICodeficatorService>();
+        esProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
 
-//        [SetUp]
-//        public void SetUp()
-//        {
-//            mockDatabaseService = new Mock<IWorkshopService>();
-//            mockElasticsearchService = new Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
-//            mockLogger = new Mock<ILogger<WorkshopServicesCombiner>>();
+        notificationServiceMock = new Mock<INotificationService>();
 
-//            service = new WorkshopServicesCombiner(mockDatabaseService.Object, mockElasticsearchService.Object, mockLogger.Object);
-//        }
+        service = new WorkshopServicesCombiner(
+            workshopService.Object,
+            elasticsearchSynchronizationService.Object,
+            sensitiveWorkshopsService.Object,
+            notificationServiceMock.Object,
+            favoriteRepository.Object,
+            applicationRepository.Object,
+            workshopStrategy.Object,
+            currentUserService.Object,
+            ministryAdminService.Object,
+            regionAdminService.Object,
+            codeficatorService.Object,
+            esProvider.Object);
+    }
 
-//        [Test]
-//        public async Task Create_WhenCalled_ShouldCallInnerServices()
-//        {
-//            // Arrange
-//            mockDatabaseService.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
-//            mockElasticsearchService.Setup(x => x.Index(workshopES)).ReturnsAsync(true);
+    #region GetById
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithValidId_ShouldReturnDto(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = WorkshopDtoGenerator.Generate();
+        workshopDto.Id = id;
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
 
-//            // Act
-//            var result = await service.Create(workshop).ConfigureAwait(false);
+        // Act
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
 
-//            // Assert
-//            Assert.IsInstanceOf<WorkshopDTO>(result);
-//            Assert.AreEqual(workshop.Title, result.Title);
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(workshopDto, result);
+    }
 
-//            mockDatabaseService.Verify(x => x.Create(workshop), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Index(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetById_WithNotExistId_ShouldReturnNull(bool asNoTracking)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var workshopDto = null as WorkshopDto;
+        workshopService.Setup(x => x.GetById(id, asNoTracking)).ReturnsAsync(workshopDto);
 
-//        [Test]
-//        public async Task Update_WhenCalled_ShouldCallInnerServices()
-//        {
-//            // Arrange
-//            mockDatabaseService.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
-//            mockElasticsearchService.Setup(x => x.Update(workshopES)).ReturnsAsync(true);
+        // Act
+        var result = await service.GetById(id, asNoTracking).ConfigureAwait(false);
 
-//            // Act
-//            var result = await service.Update(workshop).ConfigureAwait(false);
+        // Assert
+        Assert.IsNull(result);
+        workshopService.Verify(x => x.GetById(id, asNoTracking), Times.Once);
+    }
+    #endregion
 
-//            // Assert
-//            Assert.IsInstanceOf<WorkshopDTO>(result);
-//            Assert.AreEqual(workshop.Title, result.Title);
+    #region Create
+    [Test]
+    public async Task Create_WithValidDto_ShouldReturnSucceededResult()
+    {
+        // Arrange
+        var createdWorkshop = WorkshopGenerator.Generate();
+        var workshopDto = createdWorkshop.ToDto();
+        var workshopCreateRequestDto = new WorkshopCreateRequestDto();// mapper.Map<WorkshopCreateRequestDto>(createdWorkshop);
+        workshopDto.AvailableSeats = 10;
 
-//            mockDatabaseService.Verify(x => x.Update(workshop), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Update(It.IsAny<WorkshopES>()), Times.Once);
-//        }
+        workshopService.Setup(x => x.Create(workshopCreateRequestDto))
+            .ReturnsAsync(workshopDto).Verifiable(Times.Once);
+        elasticsearchSynchronizationService.Setup(
+            x => x.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                workshopDto.Id,
+                ElasticsearchSyncOperation.Create)).Verifiable(Times.Once);
 
-//        [Test]
-//        [TestCase(1)]
-//        public async Task Delete_WhenCalled_ShouldCallInnerServices(long id)
-//        {
-//            // Arrange
-//            mockDatabaseService.Setup(x => x.Delete(id));
-//            mockElasticsearchService.Setup(x => x.Delete(id)).ReturnsAsync(true);
+        // Act
+        var result = await service.Create(workshopCreateRequestDto).ConfigureAwait(false);
 
-//            // Act
-//            await service.Delete(id).ConfigureAwait(false);
+        // Assert
+        workshopService.VerifyAll();
+        elasticsearchSynchronizationService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(workshopDto, result);
+    }
 
-//            // Assert
-//            mockDatabaseService.Verify(x => x.Delete(id), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Delete(id), Times.Once);
-//        }
+    [Test]
+    public void Create_WithNotExistedWorkshop_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var workshopCreateRequestDto = (WorkshopCreateRequestDto)null;
+        workshopService.Setup(x => x.Create(workshopCreateRequestDto))
+            .ThrowsAsync(new ArgumentNullException()).Verifiable(Times.Once);
+        elasticsearchSynchronizationService.Setup(
+            x => x.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                Guid.NewGuid(),
+                ElasticsearchSyncOperation.Create)).Verifiable(Times.Never);
 
-//        [Test]
-//        [TestCase(1)]
-//        public async Task GetById_WhenCalled_ShouldCallInnerServices(long id)
-//        {
-//            // Arrange
-//            mockDatabaseService.Setup(x => x.GetById(id)).ReturnsAsync(workshop);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(It.IsAny<SearchResultES<WorkshopES>>());
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Create(workshopCreateRequestDto));
+        workshopService.VerifyAll();
+        elasticsearchSynchronizationService.VerifyAll();
+    }
+    #endregion
 
-//            // Act
-//            var result = await service.GetById(id).ConfigureAwait(false);
+    #region Update
+    [Test]
+    public async Task Update_WithValidDto_ShouldReturnSucceededResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.TakenSeats = 4;
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        newWorkshopCreateUpdateDto.AvailableSeats = 10;
+        newWorkshopCreateUpdateDto.ProviderTitle = currentWorkshopDto.ProviderTitle;
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
 
-//            // Assert
-//            Assert.IsInstanceOf<WorkshopDTO>(result);
-//            Assert.AreEqual(workshop.Title, result.Title);
+        var updatedWorkshopDto = newWorkshopCreateUpdateDto.ToModel().ToDto();
+        newWorkshopCreateUpdateDto.ProviderTitle = updatedWorkshopDto.ProviderTitle;
+        workshopService.Setup(x => x.Update(newWorkshopCreateUpdateDto))
+            .ReturnsAsync(updatedWorkshopDto);
 
-//            mockDatabaseService.Verify(x => x.GetById(id), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Never);
-//        }
+        // Act
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
 
-//        [Test]
-//        [TestCase(1)]
-//        public async Task GetByProviderId_WhenCalled_ShouldCallInnerServices(long id)
-//        {
-//            // Arrange
-//            mockDatabaseService.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshops);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(It.IsAny<SearchResultES<WorkshopES>>());
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.Succeeded);
+        var actual = result.Value;
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Title, actual.Title);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ShortTitle, actual.ShortTitle);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.MinAge, actual.MinAge);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.MaxAge, actual.MaxAge);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.Price, actual.Price);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderId, actual.ProviderId);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.ProviderTitle, actual.ProviderTitle);
+        Assert.AreEqual(newWorkshopCreateUpdateDto.AvailableSeats, actual.AvailableSeats);
+    }
 
-//            // Act
-//            var result = await service.GetByProviderId(id).ConfigureAwait(false);
+    [Test]
+    public async Task Update_WithNotExistWorkshop_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = null as WorkshopDto;
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
 
-//            // Assert
-//            Assert.IsInstanceOf<IEnumerable<WorkshopCard>>(result);
+        // Act
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
 
-//            mockDatabaseService.Verify(x => x.GetByProviderId(id), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Never);
-//        }
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.IsNotNull(firstError, "Expected an error, but no errors were found.");
+        Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
+        Assert.AreEqual(Constants.WorkshopNotFoundErrorMessage, firstError.Description);
+    }
 
-//        [Test]
-//        public async Task GetAll_WhenElasticsearchIsAvailiable_ShouldReturnElasticsearchResult()
-//        {
-//            // Arrange
-//            var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
-//            var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = workshopESs.Count, Entities = workshopESs };
-//            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
-//            mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(true);
+    [Test]
+    public async Task Update_WithInvalidAvailableSeats_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.TakenSeats = 5;
+        var newWorkshopBaseDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        newWorkshopBaseDto.AvailableSeats = 3;
+        workshopService.Setup(x => x.GetById(newWorkshopBaseDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
 
-//            // Act
-//            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
+        // Act
+        var result = await service.Update(newWorkshopBaseDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
-//            Assert.AreEqual(elasticResult.TotalAmount, result.TotalAmount);
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.IsNotNull(firstError, "Expected an error, but no errors were found.");
+        Assert.AreEqual(HttpStatusCode.BadRequest.ToString(), firstError.Code);
+        Assert.AreEqual(Constants.InvalidAvailableSeatsForWorkshopErrorMessage, firstError.Description);
+    }
 
-//            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Never);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.PingServer(), Times.Never);
-//        }
+    [Test]
+    public async Task Update_WhenWorkshopIsArchived_ShouldReturnBadRequestResult()
+    {
+        // Arrange
+        var currentWorkshopDto = WorkshopDtoGenerator.Generate();
+        currentWorkshopDto.Status = WorkshopStatus.Archived;
+        var newWorkshopCreateUpdateDto = WorkshopCreateUpdateDtoGenerator.Generate();
+        workshopService.Setup(x => x.GetById(newWorkshopCreateUpdateDto.Id, true))
+            .ReturnsAsync(currentWorkshopDto);
 
-//        [Test]
-//        public async Task GetAll_WhenElasticsearchIsUnavailiable_ShouldReturnDatabaseResult()
-//        {
-//            // Arrange
-//            var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
-//            var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = 0, Entities = new List<WorkshopES>() };
-//            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
-//            mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(false);
+        // Act
+        var result = await service.Update(newWorkshopCreateUpdateDto).ConfigureAwait(false);
+        var firstError = result.OperationResult.Errors.FirstOrDefault();
 
-//            // Act
-//            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
+        // Assert
+        workshopService.VerifyAll();
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.OperationResult);
+        Assert.AreEqual(nameof(HttpStatusCode.BadRequest), firstError.Code);
+        Assert.AreEqual("Workshop is archived and cannot be updated.", firstError.Description);
+    }
+    #endregion
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
-//            Assert.AreEqual(databaseResult.TotalAmount, result.TotalAmount);
+    #region UpdateStatus
+    [Test]
+    public async Task UpdateStatus_WhenDtoIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        WorkshopStatusDto workshopStatusDto = null;
 
-//            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.PingServer(), Times.Once);
-//        }
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await service.UpdateStatus(workshopStatusDto).ConfigureAwait(false));
+    }
 
-//        [Test]
-//        public async Task GetByFilter_WhenElasticsearchIsAvailiable_ShouldReturnElasticsearchResult()
-//        {
-//            // Arrange
-//            var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
-//            var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = workshopESs.Count, Entities = workshopESs };
-//            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
-//            mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(true);
+    [Test]
+    public async Task UpdateStatus_WhenCalled_CreateNotificationWithTitleInAdditionalData()
+    {
+        // Arrange
+        string titleKey = "Title";
+        string statusKey = "Status";
 
-//            // Act
-//            var result = await service.GetByFilter(new WorkshopFilter()).ConfigureAwait(false);
+        var favorite = new Favorite()
+        {
+            Id = 1,
+            UserId = Guid.NewGuid().ToString(),
+            WorkshopId = Guid.NewGuid(),
+        };
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
-//            Assert.AreEqual(elasticResult.TotalAmount, result.TotalAmount);
+        var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
 
-//            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Never);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.PingServer(), Times.Never);
-//        }
+        var favorites = new List<Favorite>() { favorite };
+        var applications = new List<Application>() { application };
 
-//        [Test]
-//        public async Task GetByFilter_WhenElasticsearchIsUnavailiable_ShouldReturnDatabaseResult()
-//        {
-//            // Arrange
-//            var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
-//            var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = 0, Entities = new List<WorkshopES>() };
-//            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
-//            mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
-//            mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(false);
+        var recipientsIds = new List<string>()
+        {
+            favorite.UserId,
+            application.Parent.UserId,
+        };
 
-//            // Act
-//            var result = await service.GetByFilter(new WorkshopFilter()).ConfigureAwait(false);
+        var workshop = WorkshopGenerator.Generate();
+        workshop.Status = WorkshopStatus.Open;
 
-//            // Assert
-//            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
-//            Assert.AreEqual(databaseResult.TotalAmount, result.TotalAmount);
+        var workshopStatusDto = new WorkshopStatusDto()
+        {
+            WorkshopId = workshop.Id,
+            Status = WorkshopStatus.Closed,
+        };
 
-//            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
-//            mockElasticsearchService.Verify(x => x.PingServer(), Times.Once);
-//        }
+        var workshopDto = workshop.ToDto();
+        var workshopDtoWithTitle = workshopStatusDto.ToWorkshopStatusWithTitleDto(workshop.Title);
 
-//        private WorkshopDTO FakeWorkshop()
-//        {
-//            return new WorkshopDTO()
-//            {
-//                Id = 1,
-//                Title = "Title",
-//                Phone = "1111111111",
-//                Description = "Desc6",
-//                Price = 6000,
-//                WithDisabilityOptions = true,
-//                Head = "Head6",
-//                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                ProviderTitle = "ProviderTitle",
-//                DisabilityOptionsDesc = "Desc6",
-//                Website = "website6",
-//                Instagram = "insta6",
-//                Facebook = "facebook6",
-//                Email = "email6@gmail.com",
-//                MaxAge = 10,
-//                MinAge = 4,
-//                Logo = "image6",
-//                ProviderId = 1,
-//                DirectionId = 1,
-//                DepartmentId = 1,
-//                ClassId = 1,
-//                AddressId = 55,
-//                Address = new AddressDto
-//                {
-//                    Id = 55,
-//                    Region = "Region55",
-//                    District = "District55",
-//                    City = "Київ",
-//                    Street = "Street55",
-//                    BuildingNumber = "BuildingNumber55",
-//                    Latitude = 0,
-//                    Longitude = 0,
-//                },
-//                Teachers = new List<TeacherDTO>
-//                {
-//                    new TeacherDTO
-//                    {
-//                        Id = 1,
-//                        FirstName = "Alex",
-//                        LastName = "Brown",
-//                        MiddleName = "SomeMiddleName",
-//                        Description = "Description",
-//                        Image = "Image",
-//                        DateOfBirth = DateTime.Parse("2000-01-01"),
-//                        WorkshopId = 6,
-//                    },
-//                    new TeacherDTO
-//                    {
-//                        Id = 2,
-//                        FirstName = "John",
-//                        LastName = "Snow",
-//                        MiddleName = "SomeMiddleName",
-//                        Description = "Description",
-//                        Image = "Image",
-//                        DateOfBirth = DateTime.Parse("1990-01-01"),
-//                        WorkshopId = 6,
-//                    },
-//                },
-//            };
-//        }
+        workshopService.Setup(x => x.GetById(workshopDto.Id, It.IsAny<bool>())).ReturnsAsync(workshopDto);
+        workshopService.Setup(x => x.UpdateStatus(workshopStatusDto)).ReturnsAsync(workshopDtoWithTitle);
 
-//        private ProviderDto FakeProvider()
-//        {
-//            return new ProviderDto()
-//            {
-//                Id = 1,
-//                UserId = "some user Id",
-//                FullTitle = "Title",
-//                Description = "Description",
-//            };
-//        }
+        favoriteRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Favorite, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>()))
+            .Returns(favorites.AsTestAsyncEnumerableQuery());
 
-//        private List<WorkshopDTO> FakeWorkshops()
-//        {
-//            return new List<WorkshopDTO>()
-//            {
-//                new WorkshopDTO()
-//                {
-//                    Id = 1,
-//                    Title = "Title1",
-//                    Phone = "1111111111",
-//                    Description = "Desc1",
-//                    Price = 1000,
-//                    WithDisabilityOptions = true,
-//                    Head = "Head1",
-//                    HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                    ProviderId = 1,
-//                    ProviderTitle = "ProviderTitle",
-//                    DisabilityOptionsDesc = "Desc1",
-//                    Website = "website1",
-//                    Instagram = "insta1",
-//                    Facebook = "facebook1",
-//                    Email = "email1@gmail.com",
-//                    MaxAge = 10,
-//                    MinAge = 4,
-//                    Logo = "image1",
-//                    DirectionId = 1,
-//                    DepartmentId = 1,
-//                    ClassId = 1,
-//                    Address = new AddressDto
-//                    {
-//                        City = "Київ",
-//                    },
-//                },
-//                new WorkshopDTO()
-//                {
-//                    Id = 2,
-//                    Title = "Title2",
-//                    Phone = "1111111111",
-//                    Description = "Desc2",
-//                    Price = 2000,
-//                    WithDisabilityOptions = true,
-//                    Head = "Head2",
-//                    HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                    ProviderId = 1,
-//                    ProviderTitle = "ProviderTitle",
-//                    DisabilityOptionsDesc = "Desc2",
-//                    Website = "website2",
-//                    Instagram = "insta2",
-//                    Facebook = "facebook2",
-//                    Email = "email2@gmail.com",
-//                    MaxAge = 10,
-//                    MinAge = 4,
-//                    Logo = "image2",
-//                    DirectionId = 1,
-//                    DepartmentId = 1,
-//                    ClassId = 1,
-//                    Address = new AddressDto
-//                    {
-//                        City = "Київ",
-//                    },
-//                },
-//                new WorkshopDTO()
-//                {
-//                    Id = 3,
-//                    Title = "Title3",
-//                    Phone = "1111111111",
-//                    Description = "Desc3",
-//                    Price = 3000,
-//                    WithDisabilityOptions = true,
-//                    Head = "Head3",
-//                    HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                    ProviderId = 2,
-//                    ProviderTitle = "ProviderTitleNew",
-//                    DisabilityOptionsDesc = "Desc3",
-//                    Website = "website3",
-//                    Instagram = "insta3",
-//                    Facebook = "facebook3",
-//                    Email = "email3@gmail.com",
-//                    MaxAge = 10,
-//                    MinAge = 4,
-//                    Logo = "image3",
-//                    DirectionId = 1,
-//                    DepartmentId = 1,
-//                    ClassId = 1,
-//                },
-//                new WorkshopDTO()
-//                {
-//                    Id = 4,
-//                    Title = "Title4",
-//                    Phone = "1111111111",
-//                    Description = "Desc4",
-//                    Price = 4000,
-//                    WithDisabilityOptions = true,
-//                    Head = "Head4",
-//                    HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                    ProviderId = 2,
-//                    ProviderTitle = "ProviderTitleNew",
-//                    DisabilityOptionsDesc = "Desc4",
-//                    Website = "website4",
-//                    Instagram = "insta4",
-//                    Facebook = "facebook4",
-//                    Email = "email4@gmail.com",
-//                    MaxAge = 10,
-//                    MinAge = 4,
-//                    Logo = "image4",
-//                    DirectionId = 1,
-//                    DepartmentId = 1,
-//                    ClassId = 1,
-//                },
-//                new WorkshopDTO()
-//                {
-//                    Id = 5,
-//                    Title = "Title5",
-//                    Phone = "1111111111",
-//                    Description = "Desc5",
-//                    Price = 5000,
-//                    WithDisabilityOptions = true,
-//                    Head = "Head5",
-//                    HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-//                    ProviderId = 2,
-//                    ProviderTitle = "ProviderTitleNew",
-//                    DisabilityOptionsDesc = "Desc5",
-//                    Website = "website5",
-//                    Instagram = "insta5",
-//                    Facebook = "facebook5",
-//                    Email = "email5@gmail.com",
-//                    MaxAge = 10,
-//                    MinAge = 4,
-//                    Logo = "image5",
-//                    DirectionId = 1,
-//                    DepartmentId = 1,
-//                    ClassId = 1,
-//                    Address = new AddressDto
-//                    {
-//                        City = "Київ",
-//                    },
-//                },
-//            };
-//        }
+        applicationRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applications.AsTestAsyncEnumerableQuery());
 
-//        private List<WorkshopES> FakeWorkshopESs()
-//        {
-//            var list = FakeWorkshops();
-//            var eSlist = new List<WorkshopES>();
-//            foreach (var item in list)
-//            {
-//                eSlist.Add(item.ToESModel());
-//            }
+        // Act
+        await service.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
 
-//            return eSlist;
-//        }
-//    }
-//}
+        // Assert
+        notificationServiceMock.Verify(
+            x => x.Create(
+                NotificationType.Workshop,
+                NotificationAction.Update,
+                workshop.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c.ContainsKey(statusKey)),
+                null),
+            Times.Once);
+    }
+    #endregion
+
+    [Test]
+    public async Task UpdateProviderStatus_WhenCalled_CallPartialUpdates()
+    {
+        // Arrange
+        var provider = ProvidersGenerator.Generate();
+        var workshops = ShortEntityDtoGenerator.Generate(3);
+
+        workshopService.Setup(x => x.GetWorkshopListByProviderId(provider.Id)).ReturnsAsync(workshops);
+
+        // Act
+        await service.UpdateProviderStatus(provider.Id, provider.Status).ConfigureAwait(false);
+
+        // Assert
+        esProvider.Verify(
+            x => x.PartialUpdateEntityAsync(
+            It.IsAny<Guid>(),
+            It.Is<WorkshopProviderStatusES>(c => c.ProviderStatus == provider.Status)),
+            Times.Exactly(workshops.Count));
+    }
+
+    #region Archive
+
+    [Test]
+    public async Task Archive_WhenCalled_CreateNotificationWithTitleInAdditionalData()
+    {
+        // Arrange
+        string titleKey = "Title";
+        var favorite = new Favorite()
+        {
+            Id = 1,
+            UserId = Guid.NewGuid().ToString(),
+            WorkshopId = Guid.NewGuid(),
+        };
+
+        var application = ApplicationGenerator.Generate().WithParent(ParentGenerator.Generate());
+
+        var favorites = new List<Favorite>() { favorite };
+        var applications = new List<Application>() { application };
+
+        var recipientsIds = new List<string>()
+        {
+            favorite.UserId,
+            application.Parent.UserId,
+        };
+
+        var workshop = WorkshopGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        workshopService.Setup(x => x.Archive(workshop.Id)).ReturnsAsync(OperationResult.Success);
+        favoriteRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Favorite, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Favorite, object>>, SortDirection>>()))
+            .Returns(favorites.AsTestAsyncEnumerableQuery());
+
+        applicationRepository.Setup(x => x.Get(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>()))
+            .Returns(applications.AsTestAsyncEnumerableQuery());
+
+        // Act
+        await service.Archive(workshop.Id).ConfigureAwait(false);
+
+        // Assert
+        notificationServiceMock.Verify(
+            x => x.Create(
+                NotificationType.Workshop,
+                NotificationAction.Delete,
+                workshop.Id,
+                recipientsIds,
+                It.Is<Dictionary<string, string>>(c => c.ContainsKey(titleKey) && c[titleKey] == workshop.Title),
+                null),
+            Times.Once);
+    }
+
+    #endregion
+
+    #region Delete
+
+    [Test]
+    public async Task Delete_WhenResultIsNull_ShouldReturnFailedOperationResult()
+    {
+        //Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync((OperationResult)null);
+
+        //Act
+        var result = await service.Delete(workshop.Id).ConfigureAwait(false);
+
+        //Assert
+        Assert.IsNotNull(result);
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.Errors.FirstOrDefault().Code, Is.EqualTo(HttpStatusCode.BadRequest.ToString()));
+        Assert.That(result.Errors.FirstOrDefault().Description, Is.EqualTo("Returned result was null."));
+    }
+
+    [Test]
+    public async Task Delete_WhenResultIsFailed_ShouldReturnFailedOperationResult()
+    {
+        //Arrange
+        var workshop = WorkshopGenerator.Generate();
+
+        workshopService.Setup(x => x.GetById(workshop.Id, It.IsAny<bool>())).ReturnsAsync(workshop.ToDto());
+        sensitiveWorkshopsService.Setup(x => x.Delete(workshop.Id)).ReturnsAsync(OperationResult.Failed(new OperationError
+        {
+            Code = nameof(HttpStatusCode.BadRequest),
+            Description = "Returned result was null.",
+        }));
+
+        //Act
+        var result = await service.Delete(workshop.Id).ConfigureAwait(false);
+
+        //Assert
+        Assert.IsNotNull(result);
+        Assert.That(result.Succeeded, Is.False);
+        Assert.That(result.Errors.FirstOrDefault().Code, Is.EqualTo(HttpStatusCode.BadRequest.ToString()));
+        Assert.That(result.Errors.FirstOrDefault().Description, Is.EqualTo("Returned result was null."));
+    }
+
+    #endregion
+
+    #region GetPriceRange
+
+    [Test]
+    public async Task GetPriceRangeAsync_WhenCalled_ReturnsPriceRange()
+    {
+        // Arrange
+        var priceRange = new PriceRange()
+        {
+            MinPrice = 100,
+            MaxPrice = 200
+        };
+        var filter = new WorkshopFilter();
+
+        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
+        workshopStrategy.Setup(x => x.GetPriceRangeAsync(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(priceRange, result);
+    }
+
+    [Test]
+    public async Task GetPriceRangeAsync_WhenFilterIsNotValid_ReturnsDefaultPriceRange()
+    {
+        // Arrange
+        var priceRange = new PriceRange();
+        WorkshopFilter filter = null;
+
+        workshopService.Setup(x => x.GetPriceRange(filter)).ReturnsAsync(priceRange);
+
+        // Act
+        var result = await service.GetPriceRangeAsync(filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(priceRange.MaxPrice, result.MaxPrice);
+        Assert.AreEqual(priceRange.MinPrice, result.MinPrice);
+    }
+
+    #endregion
+}

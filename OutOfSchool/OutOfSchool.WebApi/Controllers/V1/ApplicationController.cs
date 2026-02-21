@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -8,57 +13,39 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for a Application entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/applications")]
 public class ApplicationController : ControllerBase
 {
     private readonly IApplicationService applicationService;
     private readonly IProviderService providerService;
-    private readonly IProviderAdminService providerAdminService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IWorkshopService workshopService;
+    private readonly IUserService userService;
+    private readonly IBlockedProviderParentService blockedProviderParentService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationController"/> class.
     /// </summary>
     /// <param name="applicationService">Service for Application model.</param>
     /// <param name="providerService">Service for Provider model.</param>
-    /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
     /// <param name="workshopService">Service for Workshop model.</param>
+    /// <param name="userService">Service for operations with users.</param>
+    /// <param name="blockedProviderParentService">Service for blocking parents for providers.</param>
     public ApplicationController(
         IApplicationService applicationService,
         IProviderService providerService,
-        IProviderAdminService providerAdminService,
-        IWorkshopService workshopService)
+        ICurrentUserService currentUserService,
+        IWorkshopService workshopService,
+        IUserService userService,
+        IBlockedProviderParentService blockedProviderParentService)
     {
         this.applicationService = applicationService;
         this.providerService = providerService;
-        this.providerAdminService = providerAdminService;
+        this.currentUserService = currentUserService;
         this.workshopService = workshopService;
-    }
-
-    /// <summary>
-    /// Get all applications from the database.
-    /// </summary>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of all applications.</returns>
-    /// <response code="200">All entities were found.</response>
-    /// <response code="204">No entity was found.</response>
-    /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.ApplicationRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] ApplicationFilter filter)
-    {
-        var applications = await applicationService.GetAll(filter).ConfigureAwait(false);
-
-        if (!applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        this.userService = userService;
+        this.blockedProviderParentService = blockedProviderParentService;
     }
 
     /// <summary>
@@ -114,10 +101,33 @@ public class ApplicationController : ControllerBase
         {
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (!applications.Entities.Any())
-            {
-                return NoContent();
-            }
+            return this.SearchResultToOkOrNoContent(applications);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Get Applications count by Parent Id.
+    /// </summary>
+    /// <param name="id">Parent id.</param>
+    /// <returns>Count of applications.</returns>
+    /// <response code="200">Entities count by given Id.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/parents/{id}/applicationsCount")]
+    public async Task<IActionResult> GetCountByParentId(Guid id)
+    {
+        try
+        {
+            var applications = await applicationService.GetCountByParentId(id).ConfigureAwait(false);
 
             return Ok(applications);
         }
@@ -144,21 +154,50 @@ public class ApplicationController : ControllerBase
     [HttpGet("/api/v{version:apiVersion}/providers/{providerId}/applications")]
     public async Task<IActionResult> GetByProviderId(Guid providerId, [FromQuery] ApplicationFilter filter)
     {
-        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
+        var isProviderExists = await providerService.Exists(providerId).ConfigureAwait(false);
 
-        if (provider is null)
+        if (!isProviderExists)
         {
             return BadRequest($"There is no provider with Id = {providerId}");
         }
 
         var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
-        {
-            return NoContent();
-        }
+        return this.SearchResultToOkOrNoContent(applications);
+    }
 
-        return Ok(applications);
+    /// <summary>
+    /// Get collection of applications, that have a pending status.
+    /// </summary>
+    /// <param name="providerId">Provider id.</param>
+    /// <returns>List of applications.</returns>
+    /// <response code="200">Entities were found by given Id.</response>
+    /// <response code="204">No entity with given Id was found.</response>
+    /// <response code="400">Provider with given id was not found.</response>
+    /// <response code="401">User is unauthorized.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("/api/v{version:apiVersion}/provider/{providerId}/applications/pending")]
+    public async Task<IActionResult> GetPendingApplicationsByProviderId(Guid providerId)
+    {
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new EmployeeRights(providerId)).ConfigureAwait(false);
+        
+        var filter = new ApplicationFilter()
+        {
+            Statuses = new List<ApplicationStatus>()
+            {
+                ApplicationStatus.Pending,
+            },
+        };
+
+        var applications = await applicationService.GetAllByProvider(providerId, filter).ConfigureAwait(false);
+
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -188,49 +227,7 @@ public class ApplicationController : ControllerBase
         var applications = await applicationService.GetAllByWorkshop(workshopId, workshop.ProviderId, filter)
             .ConfigureAwait(false);
 
-        if (applications == null || !applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
-    }
-
-    /// <summary>
-    /// Get Applications by ProviderAdmin Id.
-    /// </summary>
-    /// <param name="providerAdminId">ProviderAdmin id.</param>
-    /// <param name="filter">Application filter.</param>
-    /// <returns>List of applications.</returns>
-    /// <response code="200">Entities were found by given Id.</response>
-    /// <response code="204">No entity with given Id was found.</response>
-    /// <response code="500">If any server error occurs.</response>
-    [HasPermission(Permissions.ApplicationRead)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("/api/v{version:apiVersion}/provideradmins/{providerAdminId}/applications")]
-    public async Task<IActionResult> GetByProviderAdminId(Guid providerAdminId, [FromQuery] ApplicationFilter filter)
-    {
-        var userId = providerAdminId.ToString();
-        var providerAdmin = await providerAdminService.GetById(userId).ConfigureAwait(false);
-
-        if (providerAdmin is null)
-        {
-            return BadRequest($"There is no providerAdmin with userId = {userId}");
-        }
-
-        var applications = await applicationService
-            .GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy)
-            .ConfigureAwait(false);
-
-        if (applications == null || !applications.Entities.Any())
-        {
-            return NoContent();
-        }
-
-        return Ok(applications);
+        return this.SearchResultToOkOrNoContent(applications);
     }
 
     /// <summary>
@@ -244,17 +241,43 @@ public class ApplicationController : ControllerBase
     /// <response code="429">If too many requests have been sent.</response>
     /// <response code="500">If any server error occurs.</response>
     [HasPermission(Permissions.ApplicationAddNew)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ApplicationCreate applicationDto)
+    public async Task<IActionResult> Create([FromBody] ApplicationCreate applicationDto)
     {
         if (applicationDto == null)
         {
             return BadRequest("Application is null.");
+        }
+
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to create the application at the blocked workshop.");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked user.");
+        }
+
+        var workshop = await workshopService.GetById(applicationDto.WorkshopId);
+
+        if (workshop is null)
+        {
+            return BadRequest("Workshop does not exist.");
+        }
+
+        bool isBlockedParent = await blockedProviderParentService.IsBlocked(applicationDto.ParentId, workshop.ProviderId).ConfigureAwait(false);
+
+        if (isBlockedParent)
+        {
+            return StatusCode(403, "Forbidden to create the application by the blocked parent.");
         }
 
         if (!ModelState.IsValid)
@@ -289,43 +312,51 @@ public class ApplicationController : ControllerBase
     /// <summary>
     /// Update info about a specific application in the database.
     /// </summary>
-    /// <param name="applicationDto">Application entity.</param>
+    /// <param name="applicationUpdateDto">Application entity.</param>
     /// <returns><see cref="ApplicationDto"/>.</returns>
     /// <response code="200">Entity was updated and returned.</response>
     /// <response code="400">If the model is invalid, some properties are not set etc.</response>
     /// <response code="401">If the user is not authorized.</response>
     /// <response code="500">If any server error occurres.</response>
     [HasPermission(Permissions.ApplicationEdit)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ApplicationUpdate applicationDto)
+    public async Task<IActionResult> Update([FromBody] ApplicationUpdate applicationUpdateDto)
     {
-        if (applicationDto is null)
+        if (applicationUpdateDto is null)
         {
             return BadRequest("Application data is not provided.");
         }
 
-        var workshop = await workshopService.GetById(applicationDto.WorkshopId).ConfigureAwait(false);
+        var applicationDto = await applicationService.GetById(applicationUpdateDto.Id).ConfigureAwait(false);
 
-        if (workshop is null)
+        if (applicationDto is null)
         {
-            return BadRequest("Workshop does not exist.");
+            return BadRequest("Application does not exist.");
+        }
+
+        if (await IsWorkshopBlocked(applicationDto.WorkshopId).ConfigureAwait(false))
+        {
+            return StatusCode(403, "Forbidden to update the application at the blocked workshop.");
+        }
+
+        if (await IsCurrentUserBlocked())
+        {
+            return StatusCode(403, "Forbidden to update the application by the blocked user.");
         }
 
         try
         {
             var result =
-                await applicationService.Update(applicationDto, workshop.ProviderId).ConfigureAwait(false);
+                await applicationService.Update(applicationUpdateDto).ConfigureAwait(false);
 
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.OperationResult.Errors.ElementAt(0).Description);
-            }
-
-            return Ok(result.Value);
+            return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, new { error.Message, error.ApiErrorResponse }),
+            result => Ok(result));
         }
         catch (ArgumentException ex)
         {
@@ -360,4 +391,47 @@ public class ApplicationController : ControllerBase
     {
         return Ok(await applicationService.AllowedToReview(parentId, workshopId).ConfigureAwait(false));
     }
+
+    /// <summary>
+    /// Get the count of applications submitted by a parent (or their children) to workshops owned by the specified provider.
+    /// </summary>
+    /// <param name="parentId">Parent's id.</param>
+    /// <param name="providerId">Provider's id.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    /// <response code="200">Count of applications was retrieved.</response>
+    /// <response code="400">If properties are invalid.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user does not have permission.</response>
+    /// <response code="500">If any server error occurs.</response>
+    [HasPermission(Permissions.ApplicationRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet]
+    [Route("~/api/v{version:apiVersion}/providers/{providerId:guid}/parents/{parentId:guid}/applications/count")]
+    public async Task<IActionResult> Count(Guid parentId, Guid providerId)
+    {
+        if (!await providerService.Exists(providerId).ConfigureAwait(false))
+        {
+            return BadRequest($"There is no provider with Id = {providerId}");
+        }
+
+        await currentUserService.UserHasRights(new ProviderRights(providerId), new EmployeeRights(providerId)).ConfigureAwait(false);
+
+        var count = await applicationService.CountApplicationsByParentAndProvider(parentId, providerId).ConfigureAwait(false);
+
+        return Ok(count);
+    }
+
+    private async Task<bool> IsCurrentUserBlocked()
+    {
+        var userId = GettingUserProperties.GetUserId(User);
+
+        return await userService.IsBlocked(userId);
+    }
+
+    private async Task<bool> IsWorkshopBlocked(Guid workshopId) =>
+        await workshopService.IsBlocked(workshopId).ConfigureAwait(false);
 }

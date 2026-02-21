@@ -5,9 +5,11 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class DateTimeRange : IKeyedEntity<long>
+public class DateTimeRange : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public TimeSpan StartTime { get; set; }
 

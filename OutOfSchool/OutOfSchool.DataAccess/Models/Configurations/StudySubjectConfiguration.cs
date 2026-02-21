@@ -1,0 +1,39 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Models.Configurations.Base;
+
+namespace OutOfSchool.Services.Models.Configurations;
+public class StudySubjectConfiguration : BusinessEntityConfiguration<StudySubject>
+{
+    public override void Configure(EntityTypeBuilder<StudySubject> builder)
+    {
+        base.Configure(builder);
+
+        builder.Property(x => x.NameInUkrainian)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.NameInInstructionLanguage)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.IsLanguageUkrainian)
+            .IsRequired();
+
+        builder.Property(x => x.ProviderId)
+            .IsRequired();
+
+        builder.HasOne(x => x.Language)
+            .WithMany()
+            .HasForeignKey(x => x.LanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.Workshops)
+            .WithMany(x => x.StudySubjects);
+
+        builder.HasOne(x => x.Provider)
+            .WithMany()
+            .HasForeignKey(x => x.ProviderId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}

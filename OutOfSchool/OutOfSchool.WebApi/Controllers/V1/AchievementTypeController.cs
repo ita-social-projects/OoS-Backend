@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for Achievement Type entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class AchievementTypeController : Controller
 {

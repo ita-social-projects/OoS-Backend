@@ -4,13 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
 /// <summary>
 /// Repository for accessing the Achievement table in database.
 /// </summary>
-public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IAchievementRepository
+public class AchievementRepository : EntityRepositorySoftDeleted<Guid, Achievement>, IAchievementRepository
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AchievementRepository"/> class.
@@ -28,7 +30,7 @@ public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IA
     /// /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     public async Task<IEnumerable<Achievement>> GetByWorkshopId(Guid workshopId)
     {
-        var achievements = dbSet.Where(a => a.WorkshopId == workshopId);
+        var achievements = dbSet.Where(a => a.WorkshopId == workshopId && !a.IsDeleted);
 
         return await Task.FromResult(achievements);
     }
@@ -72,12 +74,20 @@ public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IA
         dbContext.Entry(newAchievement).CurrentValues.SetValues(achievement);
 
         newAchievement.Children.RemoveAll(x => !childrenIDs.Contains(x.Id));
-        var exceptChildrenIDs = childrenIDs.Where(p => newAchievement.Children.All(x => x.Id != p));
+        var exceptChildrenIDs = childrenIDs.Where(p => newAchievement.Children.TrueForAll(x => x.Id != p));
         newAchievement.Children.AddRange(dbContext.Children.Where(w => exceptChildrenIDs.Contains(w.Id)).ToList());
 
         newAchievement.Teachers.RemoveAll(x => !teachers.Contains(x.Title));
 
-        var exceptTeachers = teachers.Where(p => newAchievement.Teachers.All(x => !x.Title.Equals(p)));
+        var teachersToRestore = newAchievement.Teachers.Where(x => teachers.Contains(x.Title) && x.IsDeleted);
+
+        foreach (var teacher in teachersToRestore)
+        {
+            teacher.IsDeleted = false;
+        }
+
+        var exceptTeachers = teachers.Where(p => newAchievement.Teachers.TrueForAll(x => !x.Title.Equals(p)));
+
         foreach (var teacher in exceptTeachers)
         {
             newAchievement.Teachers.Add(new AchievementTeacher { Title = teacher, Achievement = newAchievement });

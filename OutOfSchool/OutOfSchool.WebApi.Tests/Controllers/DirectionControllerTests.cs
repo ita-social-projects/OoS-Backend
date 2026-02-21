@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Common;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -38,6 +40,57 @@ public class DirectionControllerTests
 
         directions = FakeDirections();
         direction = FakeDirection();
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNotNullOrEmpty_ReturnOkObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+            Entities = new List<DirectionDto>() { new DirectionDto() },
+            TotalAmount = 1,
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<OkObjectResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status200OK);
+    }
+
+    [Test]
+    public async Task GetByFilter_WhenSearchResultIsNullOrEmpty_ReturnNoContentObjectResult()
+    {
+        // Arrange
+        var data = new SearchResult<DirectionDto>()
+        {
+
+        };
+
+        var directionFilter = new DirectionFilter();
+
+        service.Setup(x => x.GetByFilter(directionFilter, true)).ReturnsAsync(data);
+
+        // Act
+        var result = await controller.GetByFilter(directionFilter, true);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should()
+              .BeOfType<NoContentResult>()
+              .Which.StatusCode
+              .Should()
+              .Be(StatusCodes.Status204NoContent);
     }
 
     [Test]
@@ -83,24 +136,25 @@ public class DirectionControllerTests
 
     [Test]
     [TestCase(10)]
-    public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
+    public async Task GetById_WhenIdIsInvalid_ReturnsNotFound(long id)
     {
         // Arrange
-        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+        service.Setup(x => x.GetById(id)).ReturnsAsync((long id) => directions.SingleOrDefault(x => x.Id == id));
 
         // Act
-        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+        var result = await controller.GetById(id).ConfigureAwait(false) as NotFoundObjectResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
+        Assert.AreEqual(404, result.StatusCode);
     }
-
+    
     [Test]
     public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
     {
         // Arrange
-        service.Setup(x => x.Create(direction)).ReturnsAsync(direction);
+        var returnedResult = Result<DirectionDto>.Success(direction);
+        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
 
         // Act
         var result = await controller.Create(direction).ConfigureAwait(false) as CreatedAtActionResult;
@@ -109,7 +163,7 @@ public class DirectionControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.AreEqual(201, result.StatusCode);
     }
-
+    
     [Test]
     public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
     {
@@ -125,96 +179,22 @@ public class DirectionControllerTests
     }
 
     [Test]
-    public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
+    public async Task Create_WhenModelTitleIsDuplicated_ReturnsBadRequestObjectResult()
     {
-        // Arrange
-        var changedDirection = new DirectionDto()
-        {
-            Id = 1,
-            Title = "ChangedTitle",
-        };
-        service.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
-
-        // Act
-        var result = await controller.Update(changedDirection).ConfigureAwait(false) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(200, result.StatusCode);
-    }
-
-    [Test]
-    public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-    {
-        // Arrange
-        controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
-
-        // Act
-        var result = await controller.Update(direction).ConfigureAwait(false);
-
-        // Assert
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-    }
-
-    [Test]
-    [TestCase(1)]
-    public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.Delete(id) as NoContentResult;
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(204, result.StatusCode);
-    }
-
-    [Test]
-    [TestCase(0)]
-    public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id));
-
-        // Act and Assert
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            async () => await controller.Delete(id).ConfigureAwait(false));
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-        // Act
-        var result = await controller.Delete(id) as OkObjectResult;
-
-        // Assert
-        Assert.That(result, Is.Null);
-    }
-
-    [Test]
-    [TestCase(10)]
-    public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
-    {
-        // Arrange
-        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
+        //Arrange
+        var returnedResult = Result<DirectionDto>.Failed(new OperationError()
         {
             Code = "400",
-            Description = "Some workshops assosiated with this direction. Deletion prohibited.",
-        }));
+            Description = "There is already a Direction with such a data.",
+        });
+        service.Setup(x => x.Create(direction)).ReturnsAsync(returnedResult);
 
         // Act
-        var result = await controller.Delete(id);
+        var result = await controller.Create(direction).ConfigureAwait(false) as BadRequestObjectResult;
 
         // Assert
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        Assert.That(result.StatusCode, Is.EqualTo(400));
     }
 
     private DirectionDto FakeDirection()
@@ -232,16 +212,19 @@ public class DirectionControllerTests
         {
             new DirectionDto()
             {
+                Id = 1,
                 Title = "Test1",
                 Description = "Test1",
             },
             new DirectionDto
             {
+                Id = 2,
                 Title = "Test2",
                 Description = "Test2",
             },
             new DirectionDto
             {
+                Id = 3,
                 Title = "Test3",
                 Description = "Test3",
             },

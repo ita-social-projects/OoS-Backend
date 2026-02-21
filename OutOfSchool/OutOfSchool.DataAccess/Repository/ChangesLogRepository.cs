@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ContactInfo;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Services.Repository.Base;
 
 namespace OutOfSchool.Services.Repository;
 
 public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChangesLogRepository
 {
+    public const string CreatingOperation = "Creating";
+
     public ChangesLogRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)
     {
@@ -46,8 +52,15 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             if (propertyName == "InstitutionId")
             {
                 propertyNameTmp = "Institution";
-                oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).SingleOrDefault().Title;
-                newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).SingleOrDefault().Title;
+                oldValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(oldValue)).Single().Title;
+                newValueTmp = dbContext.Institutions.Where(x => x.Id == Guid.Parse(newValue)).Single().Title;
+            }
+
+            if (propertyName == "InstitutionStatusId")
+            {
+                propertyNameTmp = "InstitutionStatus";
+                oldValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(oldValue)).Single().Name;
+                newValueTmp = dbContext.InstitutionStatuses.Where(x => x.Id == long.Parse(newValue)).Single().Name;
             }
 
             result.Add(CreateChangesLogRecord(
@@ -66,6 +79,35 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
         }
 
         return result;
+    }
+
+    public Task<ChangesLog> AddCreatingOfEntityToChangesLog<TEntity>(
+        TEntity entity,
+        string userId)
+        where TEntity : class, IKeyedEntity, new()
+    {
+        var entry = dbContext.Entry(entity);
+        var (entityIdGuid, entityIdLong) = GetEntityId(entry);
+
+        var changesLog = CreateChangesLogRecord(
+            typeof(TEntity).Name,
+            CreatingOperation,
+            entityIdGuid,
+            entityIdLong,
+            string.Empty,
+            string.Empty,
+            userId);
+
+        return Create(changesLog);
+    }
+
+    /// <inheritdoc/>
+    public void AddChangeLogsToDbContext(IEnumerable<ChangesLog> logs)
+    {
+        if (logs is null || !logs.Any())
+            return;
+
+        dbContext.AddRange(logs);
     }
 
     // TODO: logging of the Institution changes is yet to be configured
@@ -88,7 +130,62 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.CurrentValues.ToObject())));
 
-        return properties.Concat(references);
+        var ownedEntities = entityEntry.Navigations
+            .Where(n => trackedProperties.Contains(n.Metadata.Name)
+                        && n.Metadata.TargetEntityType.IsOwned() 
+                        && n.EntityEntry.State == EntityState.Modified)
+            .Select(n => (
+                PropertyName: n.Metadata.Name,
+                OldValue: valueProjector(n.EntityEntry.Metadata.ClrType, n.EntityEntry.OriginalValues.ToObject()),
+                NewValue: valueProjector(n.EntityEntry.Metadata.ClrType, n.EntityEntry.CurrentValues.ToObject())
+            ));
+
+        // For owned collections (Contacts only)
+        var ownedCollectionChanges = entityEntry.Collections
+            .Where(c => c.Metadata.Name == "Contacts"
+                        && c.Metadata.TargetEntityType.IsOwned())
+            .SelectMany(c =>
+            {
+                // Cast the current collection value to IEnumerable<object>
+                if (c.CurrentValue is not IEnumerable<object> collection)
+                    return [];
+
+                return collection.SelectMany(item =>
+                {
+                    var changes = new List<(string PropertyName, string OldValue, string NewValue)>();
+                    var ownedEntry = entityEntry.Context.Entry(item);
+
+                    if (c.Metadata.Name == "Contacts")
+                    {
+                        var defaultContact = collection.FirstOrDefault(contact =>
+                            ((dynamic) contact).IsDefault == true);
+
+                        if (defaultContact != null)
+                        {
+                            var contactEntry = entityEntry.Context.Entry(defaultContact);
+                            var addressEntry = contactEntry.Reference("Address").TargetEntry;
+                            if (addressEntry?.Properties
+                                    .Any(p => p.IsModified) == true)
+                            {
+                                var originalAddress = addressEntry.OriginalValues.ToObject();
+                                var currentAddress = addressEntry.CurrentValues.ToObject();
+                                
+                                changes.Add((
+                                    PropertyName: "Contacts.Address",
+                                    OldValue: valueProjector(typeof(ContactsAddress), originalAddress),
+                                    NewValue: valueProjector(typeof(ContactsAddress), currentAddress)
+                                ));
+                            }
+                        }
+                    }
+
+                    return changes;
+                });
+            });
+
+        return properties.Concat(references)
+            .Concat(ownedEntities)
+            .Concat(ownedCollectionChanges);
     }
 
     private (Guid? entityIdGuid, long? entityIdLong) GetEntityId(EntityEntry entityEntry)
@@ -130,7 +227,7 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
             EntityIdLong = entityIdLong,
             OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.OldValue)) ?? 0),
             NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.NewValue)) ?? 0),
-            UpdatedDate = DateTime.Now,
+            UpdatedDate = DateTime.UtcNow,
             UserId = userId,
         };
 }

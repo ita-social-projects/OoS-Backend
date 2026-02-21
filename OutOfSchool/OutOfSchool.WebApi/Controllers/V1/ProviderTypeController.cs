@@ -1,12 +1,13 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ProviderTypeController:ControllerBase
 {
@@ -69,12 +70,13 @@ public class ProviderTypeController:ControllerBase
     /// <param name="dto">Social Group entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> Create(ProviderTypeDto dto)
+    public async Task<IActionResult> Create([FromBody] ProviderTypeDto dto)
     {
         var providerType = await service.Create(dto).ConfigureAwait(false);
 
@@ -90,12 +92,13 @@ public class ProviderTypeController:ControllerBase
     /// <param name="dto">Social Group to update.</param>
     /// <returns>Social Group.</returns>
     [HasPermission(Permissions.SystemManagement)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut]
-    public async Task<IActionResult> Update(ProviderTypeDto dto)
+    public async Task<IActionResult> Update([FromBody] ProviderTypeDto dto)
     {
         return Ok(await service.Update(dto).ConfigureAwait(false));
     }

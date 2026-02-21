@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Application;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Models.Workshops;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Application;
-using OutOfSchool.WebApi.Models.Providers;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
 
@@ -29,7 +29,8 @@ public class ChildControllerTests
     private ChildController controller;
     private Mock<IChildService> service;
     private Mock<IProviderService> providerService;
-    private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IWorkshopServicesCombiner> workshopService;
+    private Mock<ICurrentUserService> currentUserService;
     private List<ChildDto> children;
     private ChildDto child;
     private ChildCreateDto childCreateDto;
@@ -43,14 +44,16 @@ public class ChildControllerTests
     {
         service = new Mock<IChildService>();
         providerService = new Mock<IProviderService>();
-        providerAdminService = new Mock<IProviderAdminService>();
-        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object);
+        workshopService = new Mock<IWorkshopServicesCombiner>();
+        currentUserService = new Mock<ICurrentUserService>();
+
+        controller = new ChildController(service.Object, providerService.Object, workshopService.Object, currentUserService.Object);
 
         // TODO: find out why it is a string but not a GUID
         currentUserId = Guid.NewGuid().ToString();
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim("sub", currentUserId) }, "sub"));
+            new Claim[] { new Claim(IdentityResourceClaimsTypes.Sub, currentUserId) }, "sub"));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
@@ -73,15 +76,16 @@ public class ChildControllerTests
     }
 
     [Test]
-        public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
-        {
-            // Act and Assert
-            Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
-            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));            
-        }
+    public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
+    {
+        // Act and Assert
+        Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, workshopService.Object, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, workshopService.Object, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null, currentUserService.Object));
+        Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, workshopService.Object, null));
+    }
 
-        [Test]
+    [Test]
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
@@ -218,10 +222,31 @@ public class ChildControllerTests
     }
 
     [Test]
-    public async Task DeleteChild_WhenChildWithIdExists_ShouldReturnNoContentResult()
+    public async Task DeleteChild_WhenChildWithIdExistsAndUserIsParent_ShouldReturnNoContentResult()
     {
         // Arrange
         var childToDelete = children.RandomItem();
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.TechAdmin.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await controller.Delete(childToDelete.Id);
+
+        // Assert
+        Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task DeleteChild_WhenChildWithIdExistsAndUserIsTechAdmin_ShouldReturnNoContentResult()
+    {
+        // Arrange
+        var childToDelete = children.RandomItem();
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.Parent.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
         var result = await controller.Delete(childToDelete.Id);
@@ -233,6 +258,12 @@ public class ChildControllerTests
     [Test]
     public async Task DeleteChild_WhenIdIsNotValid_ShouldReturnNull()
     {
+        // Arrange
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new(IdentityResourceClaimsTypes.Sub, currentUserId), new(IdentityResourceClaimsTypes.Role, Role.TechAdmin.ToString()) }, "sub"));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
         // Act
         var result = await controller.Delete(Guid.NewGuid());
 
@@ -241,77 +272,81 @@ public class ChildControllerTests
     }
 
     [Test]
+    public async Task DeleteChild_WhenWorkshopIdIsNotValid_ShouldReturnNotFound()
+    {
+        // Arrange
+        var filter = new OffsetFilter();
+        workshopService.Setup(s => s.Exists(It.IsAny<Guid>())).ReturnsAsync(() => false);
+
+        // Act
+        var result = await controller.GetApprovedByWorkshopId(Guid.NewGuid(), filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<NotFoundObjectResult>(result);
+    }
+
+    [Test]
     public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
         ChildDto child = children.First();
-        WorkshopDTO existingWorkshop = new WorkshopDTO()
+        WorkshopV2Dto existingWorkshop = new WorkshopV2Dto()
         {
             Id = Guid.NewGuid(),
             Title = "Title1",
-            Phone = "1111111111",
             WorkshopDescriptionItems = new[]
                 {
                     new WorkshopDescriptionItemDto
                     {
-                        Id = Guid.NewGuid(),
                         SectionName = "test heading",
                         Description = "test description",
                     },
                 },
             Price = 1000,
-            WithDisabilityOptions = true,
             ProviderId = Guid.NewGuid(),
             ProviderTitle = "ProviderTitle",
-            DisabilityOptionsDesc = "Desc1",
-            Website = "website1",
-            Instagram = "insta1",
-            Facebook = "facebook1",
-            Email = "email1@gmail.com",
             MaxAge = 10,
             MinAge = 4,
             CoverImageId = "image1",
-            Address = new AddressDto
-            {
-                CATOTTGId = 4970,
-            },
         };
 
-        ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());
+        ProviderDto existingProvider = ProviderDtoGenerator.Generate();
 
         ApplicationDto existingApplication = ApplicationDTOsGenerator
             .Generate()
             .WithWorkshopCard(new WorkshopCard
             {
-                WorkshopId = existingWorkshop.Id,
+                Id = existingWorkshop.Id,
                 ProviderTitle = existingWorkshop.ProviderTitle,
                 ProviderOwnership = existingWorkshop.ProviderOwnership,
                 Title = existingWorkshop.Title,
-                PayRate = existingWorkshop.PayRate,
+                PayRate = (PayRateType)existingWorkshop.PayRate,
                 CoverImageId = existingWorkshop.CoverImageId,
-                MinAge = existingWorkshop.MinAge,
-                MaxAge = existingWorkshop.MaxAge,
-                Price = existingWorkshop.Price,
+                MinAge = (int)existingWorkshop.MinAge,
+                MaxAge = (int)existingWorkshop.MaxAge,
+                Price = (decimal)existingWorkshop.Price,
                 DirectionIds = existingWorkshop.DirectionIds,
+                SubDirectionIds = existingWorkshop.SubDirectionIds,
                 ProviderId = existingWorkshop.ProviderId,
-                Address = existingWorkshop.Address,
-                WithDisabilityOptions = existingWorkshop.WithDisabilityOptions,
                 Rating = existingWorkshop.Rating,
                 ProviderLicenseStatus = existingWorkshop.ProviderLicenseStatus,
                 InstitutionHierarchyId = existingWorkshop.InstitutionHierarchyId,
                 InstitutionId = existingWorkshop.InstitutionId,
                 Institution = existingWorkshop.Institution,
-                AvailableSeats = existingWorkshop.AvailableSeats,
+                AvailableSeats = (uint)existingWorkshop.AvailableSeats,
                 TakenSeats = existingWorkshop.TakenSeats,
             })
             .WithChild(child);
 
+        workshopService.Setup(s => s.Exists(existingWorkshop.Id)).ReturnsAsync(true);
         providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
-        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(
-            new Claim[] { new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
-                            new Claim("sub", currentUserId)}));
+            new Claim[]
+            {
+                new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                new Claim("sub", currentUserId),
+            }));
 
         controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

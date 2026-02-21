@@ -1,0 +1,143 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Official;
+using OutOfSchool.BusinessLogic.Services;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
+
+namespace OutOfSchool.WebApi.Tests.Services;
+
+[TestFixture]
+public class OfficialServiceTests
+{
+    private DbContextOptions<OutOfSchoolDbContext> options;
+    private OutOfSchoolDbContext context;
+    private OfficialService service;
+    private IOfficialRepository repository;
+    private Mock<ICurrentUserService> currentUserService;
+    private Mock<ILogger<OfficialService>> logger;
+    private Guid providerId;
+
+    [SetUp]
+    public void SetUp()
+    {
+        var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
+            databaseName: "OutOfSchoolTestDB");
+
+        options = builder.Options;
+        context = new TestOutOfSchoolDbContext(options);
+
+        repository = new OfficialRepository(context);
+        providerId = Guid.NewGuid();
+
+        currentUserService = new Mock<ICurrentUserService>();
+        logger = new Mock<ILogger<OfficialService>>();
+
+        service = new OfficialService(repository, new Mock<IOfficialChangesLogService>().Object, currentUserService.Object, logger.Object);
+
+        SeedDatabase();
+    }
+
+    [Test]
+    public async Task GetByFilter_ReturnsSearchResultWithListOfOfficials_WhenFilterIsNull()
+    {
+        // Arrange
+        var expected = Officials();
+
+        // Act
+        var result = await service.GetByFilter(providerId, null).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Entities.First().Id, Is.EqualTo(expected.First().Id));
+        Assert.That(result.TotalAmount, Is.EqualTo(expected.Count));
+        Assert.IsInstanceOf<SearchResult<OfficialDto>>(result);
+    }
+
+    [Test]
+    public async Task GetByFilter_ReturnsSearchResultWithFilteredListOfOfficials_WhenFilterIsSpecified()
+    {
+        // Arrange
+        var expected = Officials().FirstOrDefault();
+        var filter = new SearchStringFilter()
+        {
+            SearchString = "TestPosition1"
+        };
+
+        // Act
+        var result = await service.GetByFilter(providerId, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Entities.First().Id, Is.EqualTo(expected.Id));
+        Assert.That(result.TotalAmount, Is.EqualTo(1));
+        Assert.IsInstanceOf<SearchResult<OfficialDto>>(result);
+    }
+
+    private void SeedDatabase()
+    {
+        using var ctx = new TestOutOfSchoolDbContext(options);
+        {
+            ctx.Database.EnsureDeleted();
+            ctx.Database.EnsureCreated();
+
+            ctx.Officials.AddRange(Officials());
+
+            ctx.SaveChanges();
+        }
+    }
+
+    private List<Official> Officials()
+    {
+        return new List<Official>()
+        {
+            new Official() {
+                Id = new Guid("eb49a87c-7042-45e9-a76b-79ebd98b6b16"),
+                ExternalRegistryId = Guid.NewGuid(),
+                EmploymentType = EmploymentType.Main,
+                Position = new Position()
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "TestPosition1",
+                    ProviderId = providerId
+                },
+                Individual = new Individual()
+                {
+                    FirstName = "Test",
+                    LastName = "Testov",
+                    MiddleName = "Testovich",
+                    Rnokpp = "1234567890"
+                }
+            },
+            new Official() {
+                Id = new Guid("4ca6f3af-5d02-4c16-b4b2-e202c71470f4"),
+                ExternalRegistryId = Guid.NewGuid(),
+                EmploymentType = EmploymentType.Main,
+                Position = new Position()
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "TestPosition2",
+                    ProviderId = providerId
+                },
+                Individual = new Individual()
+                {
+                    FirstName = "Test",
+                    LastName = "Testov",
+                    MiddleName = "Testovich",
+                    Rnokpp = "1234567890"
+                }
+            }
+        };
+    }
+}

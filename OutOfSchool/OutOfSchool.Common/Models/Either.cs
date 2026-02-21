@@ -30,20 +30,65 @@ public sealed class Either<TL, TR>
     public static implicit operator Either<TL, TR>(TR right) => CreateRight(right);
 
     /// <summary>
+    /// If left value is assigned, execute an action on it.
+    /// </summary>
+    /// <param name="leftAction">Action to execute.</param>
+    public void DoLeft(Action<TL> leftAction)
+    {
+        ArgumentNullException.ThrowIfNull(leftAction);
+
+        if (imp is Left left)
+        {
+            leftAction(left.Value);
+        }
+    }
+
+    /// <summary>
+    /// Tries to get the Left value.
+    /// </summary>
+    /// <param name="value">The Left value if present.</param>
+    /// <returns>true if the Either is Left; otherwise, false.</returns>
+    public bool TryGetLeft(out TL value)
+    {
+        if (imp is Left left)
+        {
+            value = left.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    /// <summary>
     /// If right value is assigned, execute an action on it.
     /// </summary>
     /// <param name="rightAction">Action to execute.</param>
     public void DoRight(Action<TR> rightAction)
     {
-        if (rightAction == null)
-        {
-            throw new ArgumentNullException(nameof(rightAction));
-        }
+        ArgumentNullException.ThrowIfNull(rightAction);
 
         if (imp is Right right)
         {
             rightAction(right.Value);
         }
+    }
+
+    /// <summary>
+    /// Tries to get the Right value.
+    /// </summary>
+    /// <param name="value">The Right value if present.</param>
+    /// <returns>true if the Either is Right; otherwise, false.</returns>
+    public bool TryGetRight(out TR value)
+    {
+        if (imp is Right right)
+        {
+            value = right.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     public T Match<T>(Func<TL, T> onLeft, Func<TR, T> onRight)
@@ -53,10 +98,7 @@ public sealed class Either<TL, TR>
 
     public Either<TL, T> FlatMap<T>(Func<TR, Either<TL, T>> fn)
     {
-        if (fn is null)
-        {
-            throw new ArgumentNullException(nameof(fn));
-        }
+        ArgumentNullException.ThrowIfNull(fn);
 
         return this switch
         {
@@ -68,10 +110,7 @@ public sealed class Either<TL, TR>
 
     public Task<Either<TL, T>> FlatMapAsync<T>(Func<TR, Task<Either<TL, T>>> fn)
     {
-        if (fn is null)
-        {
-            throw new ArgumentNullException(nameof(fn));
-        }
+        ArgumentNullException.ThrowIfNull(fn);
 
         return InternalFlatMapAsync(fn);
     }
@@ -83,10 +122,7 @@ public sealed class Either<TL, TR>
 
     public Task<Either<TL, T>> MapAsync<T>(Func<TR, Task<T>> fn)
     {
-        if (fn is null)
-        {
-            throw new ArgumentNullException(nameof(fn));
-        }
+        ArgumentNullException.ThrowIfNull(fn);
 
         return InternalMapAsync(fn);
     }

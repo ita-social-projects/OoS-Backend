@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.DbContextTests;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.Tests;
@@ -20,7 +19,7 @@ public static class UnitTestHelper
             .UseLazyLoadingProxies()
             .Options;
 
-        using (var context = new OutOfSchoolDbContext(options))
+        using (var context = new TestOutOfSchoolDbContext(options))
         {
             SeedData(context);
         }
@@ -28,7 +27,7 @@ public static class UnitTestHelper
         return options;
     }
 
-    public static void SeedData(OutOfSchoolDbContext context)
+    public static void SeedData(TestOutOfSchoolDbContext context)
     {
         var socialGroups = new List<SocialGroup>
         {

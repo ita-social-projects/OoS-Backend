@@ -1,54 +1,35 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.BusinessLogic.Models.Providers;
+using OutOfSchool.BusinessLogic.Services.ProviderServices;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Controllers.V2;
 
 [ApiController]
 [FeatureGate(nameof(Feature.Images))]
-[ApiVersion("2.0")]
+[AspApiVersion(2)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ProviderController : ControllerBase
 {
     private readonly IProviderServiceV2 providerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly ILogger<ProviderController> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderController"/> class.
     /// </summary>
     /// <param name="providerService">Service for Provider model.</param>
+    /// <param name="currentUserService">Service for current user operations.</param>
     /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> Logger.</param>
     public ProviderController(
         IProviderServiceV2 providerService,
+        ICurrentUserService currentUserService,
         ILogger<ProviderController> logger)
     {
         this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
+        this.currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Get Providers that match filter's parameters.
-    /// </summary>
-    /// <param name="filter">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
-    {
-        var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-        if (providers.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(providers);
     }
 
     /// <summary>
@@ -81,16 +62,9 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProfile()
     {
-        // TODO: localize messages from the conrollers.
-        var userId = GettingUserProperties.GetUserId(User);
-        var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
-                              GettingUserProperties.GetUserSubrole(User) != "None";
-        if (userId == null)
-        {
-            BadRequest("Invalid user information.");
-        }
+        var providerId = currentUserService.ProviderId;
 
-        var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
+        var provider = await providerService.GetById(providerId).ConfigureAwait(false);
         if (provider == null)
         {
             return NoContent();
@@ -100,7 +74,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Method for creating new Provider.
+    /// Method for creating new Provider. For now, it is impossible to create providers until requirements change.
     /// </summary>
     /// <param name="providerModel">Entity to add.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -110,18 +84,11 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create([FromForm] ProviderDto providerModel)
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
+    public async Task<IActionResult> Create([FromForm] ProviderCreateDto providerModel)
     {
-        providerModel.Id = default;
-        providerModel.LegalAddress.Id = default;
-
-        if (providerModel.ActualAddress != null)
-        {
-            providerModel.ActualAddress.Id = default;
-        }
-
-        // TODO: find out if we need this field in the model
-        providerModel.UserId = GettingUserProperties.GetUserId(User);
+        providerModel.Id = Guid.Empty;
 
         try
         {
@@ -156,7 +123,7 @@ public class ProviderController : ControllerBase
     {
         try
         {
-            var userId = GettingUserProperties.GetUserId(User);
+            var userId = currentUserService.UserId;
             var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
             if (provider == null)
@@ -174,7 +141,7 @@ public class ProviderController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a specific Provider from the database.
+    /// Delete a specific Provider from the database. For now, it is impossible to delete providers until requirements change.
     /// </summary>
     /// <param name="uid">Provider's key.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -183,17 +150,20 @@ public class ProviderController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpDelete("{uid:guid}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [NonAction]
     public async Task<IActionResult> Delete(Guid uid)
     {
-        try
-        {
-            await providerService.Delete(uid).ConfigureAwait(false);
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var result = await providerService.Delete(
+            uid)
+            .ConfigureAwait(false);
 
-        return NoContent();
+        return result.Match<ActionResult>(
+            error => StatusCode((int)error.HttpStatusCode, error.Message),
+            _ =>
+            {
+                logger.LogInformation("Successfully deleted Provider with id: {uid}", uid);
+                return Ok();
+            });
     }
 }

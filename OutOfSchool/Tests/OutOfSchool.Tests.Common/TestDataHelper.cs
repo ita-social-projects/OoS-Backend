@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Bogus;
 using OutOfSchool.Common.PermissionsModule;
 
@@ -13,8 +11,6 @@ namespace OutOfSchool.Tests.Common;
 /// </summary>
 public static class TestDataHelper
 {
-    private static readonly string[] EdrpouIpnFormats = { "########", "##########" };
-
     private static readonly Faker faker = new Faker();
 
     /// <summary>
@@ -102,10 +98,10 @@ public static class TestDataHelper
     }
 
     /// <summary>
-    /// Gets random Edrpou/Ipn string.
+    /// Gets random Edrpou string.
     /// </summary>
-    public static string EdrpouIpnString =>
-        Regex.Replace(faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats)), "^0", "1");
+    public static string EdrpouString =>
+        Regex.Replace(faker.Random.ReplaceNumbers("########"), "^0", "1");
 
     /// <summary>
     /// Gets random "job area" string to use as fake role name in our test cases

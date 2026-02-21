@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models;
 
-public class Direction : IKeyedEntity<long>
+public class Direction : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
 
@@ -17,5 +17,9 @@ public class Direction : IKeyedEntity<long>
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
-    public virtual List<InstitutionHierarchy> InstitutionHierarchies { get; set; }
+    public bool IsDeleted { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual List<SubDirection> SubDirections { get; set; }
 }

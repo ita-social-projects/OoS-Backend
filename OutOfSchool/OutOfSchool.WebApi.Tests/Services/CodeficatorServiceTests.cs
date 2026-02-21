@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic.Models.Codeficator;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Models.Codeficator;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.Services.Repository.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -21,10 +20,9 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class CodeficatorServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private OutOfSchoolDbContext context;
+    private TestOutOfSchoolDbContext context;
     private ICodeficatorRepository repository;
     private ICodeficatorService service;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -34,11 +32,10 @@ public class CodeficatorServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
 
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
         repository = new CodeficatorRepository(context);
-        service = new CodeficatorService(repository, mapper);
+        service = new CodeficatorService(repository);
 
         SeedDatabase();
     }

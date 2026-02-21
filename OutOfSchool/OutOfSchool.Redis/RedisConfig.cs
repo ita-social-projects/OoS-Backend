@@ -11,7 +11,7 @@ public class RedisConfig
 
     [Required]
     public string Server { get; set; }
-        
+
     [Required]
     [DataType(DataType.Password)]
     public string Password { get; set; }
@@ -27,4 +27,9 @@ public class RedisConfig
 
     [Required]
     public TimeSpan CheckAlivePollingInterval { get; set; }
+
+    public string GetRedisConnectionString()
+    {
+        return $"{Server}:{Port},password={Password}";
+    }
 }

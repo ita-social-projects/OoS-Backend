@@ -1,9 +1,8 @@
 ﻿using Bogus;
-using Bogus.DataSets;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
-internal class CATOTTGGenerator
+public class CATOTTGGenerator
 {
     static CATOTTGGenerator()
     {

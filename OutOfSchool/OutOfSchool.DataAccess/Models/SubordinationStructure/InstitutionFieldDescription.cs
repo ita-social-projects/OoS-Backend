@@ -3,13 +3,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure;
 
-public class InstitutionFieldDescription : IKeyedEntity<Guid>
+public class InstitutionFieldDescription : IKeyedEntity<Guid>, ISoftDeleted
 {
     public Guid Id { get; set; }
 
     [MinLength(1)]
     [MaxLength(100)]
     public string Title { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public int HierarchyLevel { get; set; }
 

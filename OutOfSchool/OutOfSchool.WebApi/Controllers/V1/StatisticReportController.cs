@@ -1,15 +1,11 @@
-﻿using Google.Api;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Models.Notifications;
-using OutOfSchool.WebApi.Models.StatisticReports;
-using OutOfSchool.WebApi.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.StatisticReports;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class StatisticReportController : ControllerBase
 {

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class SocialGroup : IKeyedEntity<long>
+public class SocialGroup : IKeyedEntity<long>, ISoftDeleted
 {
     public long Id { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     [Required]
     [DataType(DataType.Text)]

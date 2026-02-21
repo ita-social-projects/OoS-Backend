@@ -1,4 +1,5 @@
-﻿using Nest;
+﻿using System.Text.Json.Serialization;
+using Elastic.Clients.Elasticsearch;
 
 namespace OutOfSchool.ElasticsearchData.Models;
 
@@ -12,6 +13,7 @@ public class AddressES
 
     public double Longitude { get; set; }
 
+    [JsonPropertyName("catottgId")]
     public long CATOTTGId { get; set; }
 
     public CodeficatorAddressES CodeficatorAddressES { get; set; }
@@ -20,6 +22,5 @@ public class AddressES
 
     public string BuildingNumber { get; set; }
 
-    [GeoPoint]
     public GeoLocation Point { get; set; }
 }

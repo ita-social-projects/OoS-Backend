@@ -1,15 +1,14 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using OutOfSchool.Common;
+using StackExchange.Redis;
 
 namespace OutOfSchool.Redis;
 
-public class CacheService : ICacheService, IDisposable
+public class CacheService : IReadWriteCacheService, IDisposable
 {
     private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
     private readonly IDistributedCache cache;
@@ -19,14 +18,15 @@ public class CacheService : ICacheService, IDisposable
     private readonly bool isEnabled = false;
 
     private readonly object lockObject = new object();
+    private bool isDisposed;
 
     public CacheService(
-        IDistributedCache cache, 
+        IDistributedCache cache,
         IOptions<RedisConfig> redisConfig
     )
     {
         this.cache = cache;
-            
+
         try
         {
             this.redisConfig = redisConfig.Value;
@@ -45,60 +45,56 @@ public class CacheService : ICacheService, IDisposable
         TimeSpan? slidingExpirationInterval = null)
     {
         T returnValue = default;
+        bool isExists = false;
 
         await ExecuteRedisMethod(() =>
         {
-            string value = null;
             cacheLock.EnterReadLock();
             try
             {
-                value = cache.GetString(key);
+                var value = cache.GetString(key);
+
+                if (value != null)
+                {
+                    returnValue = JsonSerializerHelper.Deserialize<T>(value);
+                    isExists = true;
+                    return;
+                }
             }
             finally
             {
                 cacheLock.ExitReadLock();
             }
-
-            if (value != null)
-            {
-                returnValue = JsonConvert.DeserializeObject<T>(value);
-            }
         });
 
-        if (EqualityComparer<T>.Default.Equals(returnValue, default))
+        if (!isExists)
         {
             returnValue = await newValueFactory();
-            await SetAsync(key, returnValue, absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+            await ExecuteRedisMethod(() =>
+            {
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    var options = GetExpirationIntervalOptions(absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+
+                    cache.SetString(key, JsonSerializerHelper.Serialize(returnValue), options);
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            });
         }
 
         return returnValue;
     }
 
-    public Task SetAsync<T>(
-        string key,
-        T value,
-        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
-        TimeSpan? slidingExpirationInterval = null)
-        => ExecuteRedisMethod(() => {
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNowInterval ?? redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                SlidingExpiration = slidingExpirationInterval ?? redisConfig.SlidingExpirationInterval
-            };
+    public Task RemoveAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
-            cacheLock.EnterWriteLock();
-            try
-            {
-                cache.SetString(key, JsonConvert.SerializeObject(value), options);
-            }
-            finally
-            {
-                cacheLock.ExitWriteLock();
-            }
-        });
-        
-    public Task ClearCacheAsync(string key)
-        => ExecuteRedisMethod(() => {
+        return ExecuteRedisMethod(() =>
+        {
             cacheLock.EnterWriteLock();
             try
             {
@@ -109,23 +105,93 @@ public class CacheService : ICacheService, IDisposable
                 cacheLock.ExitWriteLock();
             }
         });
+    }
 
-    public Task RefreshAsync(string key)
-        => ExecuteRedisMethod(() => {
+    public async Task<string> ReadAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        string returnValue = string.Empty;
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                returnValue = cache.GetString(key) ?? string.Empty;
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+
+        return returnValue;
+    }
+
+    public async Task WriteAsync(
+        string key,
+        string value,
+        TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+        TimeSpan? slidingExpirationInterval = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        await ExecuteRedisMethod(() =>
+        {
             cacheLock.EnterWriteLock();
             try
             {
-                cache.Refresh(key);
+                var options = GetExpirationIntervalOptions(absoluteExpirationRelativeToNowInterval, slidingExpirationInterval);
+
+                cache.SetString(key, value, options);
             }
             finally
             {
                 cacheLock.ExitWriteLock();
             }
         });
+    }
+
+    public async Task<TimeSpan?> GetTimeToLiveAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        TimeSpan? returnValue = null;
+
+        await ExecuteRedisMethod(() =>
+        {
+            cacheLock.EnterReadLock();
+            try
+            {
+                var redisConnection = redisConfig.GetRedisConnectionString();
+                ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(redisConnection);
+                IDatabase db = connection.GetDatabase();
+                returnValue = db.KeyTimeToLive(key);
+            }
+            finally
+            {
+                cacheLock.ExitReadLock();
+            }
+        });
+
+        return returnValue;
+    }
 
     public void Dispose()
     {
-        cacheLock?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && !isDisposed)
+        {
+            cacheLock?.Dispose();
+            isDisposed = true;
+        }
     }
 
     private async Task RedisIsBrokenStartCheck()
@@ -169,5 +235,37 @@ public class CacheService : ICacheService, IDisposable
                 _ = Task.Run(RedisIsBrokenStartCheck);
             }
         }
+    }
+
+    private DistributedCacheEntryOptions GetExpirationIntervalOptions(
+                                                                      TimeSpan? absoluteExpirationRelativeToNowInterval = null,
+                                                                      TimeSpan? slidingExpirationInterval = null)
+    {
+        var absoluteExpiration = absoluteExpirationRelativeToNowInterval
+                ?? redisConfig?.AbsoluteExpirationRelativeToNowInterval
+                ?? throw new ArgumentNullException(nameof(redisConfig.AbsoluteExpirationRelativeToNowInterval)); // throw exception if null
+
+        TimeSpan? slidingExpiration;
+        if (!slidingExpirationInterval.HasValue)
+        {
+            // Null => use the default from config
+            slidingExpiration = redisConfig.SlidingExpirationInterval;
+        }
+        else if (slidingExpirationInterval.Value <= TimeSpan.Zero)
+        {
+            // Zero or negative => explicitly disable sliding expiration
+            slidingExpiration = null;
+        }
+        else
+        {
+            // Positive => use the provided TimeSpan
+            slidingExpiration = slidingExpirationInterval;
+        }
+
+        return new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = absoluteExpiration,
+            SlidingExpiration = slidingExpiration
+        };
     }
 }

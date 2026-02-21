@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nest;
-using OutOfSchool.Common;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.ElasticsearchData;
 
 /// <inheritdoc/>
-public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilterES>,
+public class ESWorkshopProvider(ElasticsearchClient elasticClient) :
+    ElasticsearchProvider<WorkshopES, WorkshopFilterES>(elasticClient),
     IElasticsearchProvider<WorkshopES, WorkshopFilterES>
 {
-    public ESWorkshopProvider(ElasticClient elasticClient)
-        : base(elasticClient)
-    {
-    }
-
     /// <inheritdoc/>
     public override async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter = null)
     {
@@ -26,7 +23,7 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
 
         var query = this.CreateQueryFromFilter(filter);
         var sorts = this.CreateSortFromFilter(filter);
-        var req = new SearchRequest<WorkshopES>()
+        var request = new SearchRequest<WorkshopES>()
         {
             Query = query,
             Sort = sorts,
@@ -34,289 +31,156 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
             Size = filter.Size,
         };
 
-        var resp = await ElasticClient.SearchAsync<WorkshopES>(req);
+        var resp = await ElasticClient.SearchAsync<WorkshopES>(request);
 
-        return new SearchResultES<WorkshopES>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
+        return new SearchResultES<WorkshopES>()
+        {
+            TotalAmount = (int)resp.Total,
+            Entities = resp.Documents,
+        };
     }
 
-    private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
+    public override async Task<PriceRangeES> GetPriceRangeAsync(WorkshopFilterES filter = null)
     {
-        var queryContainer = new QueryContainer();
+        filter ??= new WorkshopFilterES();
 
-        queryContainer &= new TermsQuery()
+        var query = CreateQueryFromFilter(filter, false);
+
+        var request = new SearchRequest<WorkshopES>
         {
-            Field = Infer.Field<WorkshopES>(w => w.ProviderStatus),
-            Terms = new List<ProviderStatus>()
+            Query = query,
+            Aggregations = new Dictionary<string, Aggregation>
             {
-                ProviderStatus.Approved,
-                ProviderStatus.Recheck,
-            }
-            .Cast<object>(),
-        };
-
-        if (filter.Ids.Any())
-        {
-            queryContainer &= new TermsQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Id),
-                Terms = filter.Ids.Cast<object>(),
-            };
-
-            return queryContainer;
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.SearchText))
-        {
-            queryContainer &= new MultiMatchQuery()
-            {
-                Fields = Infer.Field<WorkshopES>(w => w.Title)
-                    .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
-                    .And(Infer.Field<WorkshopES>(w => w.Keywords))
-                    .And(Infer.Field<WorkshopES>(w => w.Description)),
-                Query = filter.SearchText,
-                Fuzziness = Fuzziness.Auto,
-            };
-        }
-
-        if (filter.DirectionIds.Any())
-        {
-            queryContainer &= new TermsQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.DirectionIds),
-                Terms = filter.DirectionIds.Cast<object>(),
-            };
-        }
-
-        if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
-        {
-            queryContainer &= new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Price),
-                Value = 0,
-            };
-        }
-        else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
-        {
-            queryContainer &= new NumericRangeQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Price),
-                GreaterThanOrEqualTo = filter.MinPrice,
-                LessThanOrEqualTo = filter.MaxPrice,
-            };
-        }
-        else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
-        {
-            var tempQuery = new QueryContainer();
-
-            tempQuery = new NumericRangeQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Price),
-                GreaterThanOrEqualTo = filter.MinPrice,
-                LessThanOrEqualTo = filter.MaxPrice,
-            };
-
-            tempQuery |= new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Price),
-                Value = 0,
-            };
-
-            queryContainer &= tempQuery;
-        }
-
-        if (filter.MinAge != 0 || filter.MaxAge != 100)
-        {
-            var ageQuery = new QueryContainer();
-
-            ageQuery = new NumericRangeQuery()
-            {
-                Field = filter.IsAppropriateAge ? Infer.Field<WorkshopES>(w => w.MinAge) : Infer.Field<WorkshopES>(w => w.MaxAge),
-                GreaterThanOrEqualTo = filter.MinAge,
-            };
-
-            ageQuery &= new NumericRangeQuery()
-            {
-                Field = filter.IsAppropriateAge ? Infer.Field<WorkshopES>(w => w.MaxAge) : Infer.Field<WorkshopES>(w => w.MinAge),
-                LessThanOrEqualTo = filter.MaxAge,
-            };
-
-            queryContainer &= ageQuery;
-        }
-
-        if (filter.WithDisabilityOptions)
-        {
-            queryContainer &= new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.WithDisabilityOptions),
-                Value = filter.WithDisabilityOptions,
-            };
-        }
-
-        queryContainer &= new TermQuery()
-        {
-            Field = Infer.Field<WorkshopES>(w => w.IsBlocked),
-            Value = false,
-        };
-
-        if (filter.Statuses.Any())
-        {
-            queryContainer &= new TermsQuery()
-            {
-                Field = Infer.Field<WorkshopES>(w => w.Status),
-                Terms = filter.Statuses.Cast<object>(),
-            };
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.Workdays))
-        {
-            queryContainer &= new NestedQuery()
-            {
-                Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
-                Query = new MatchQuery()
                 {
-                    Field = filter.IsStrictWorkdays
-                                ? Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays.Suffix("keyword"))
-                                : Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
-                    Query = filter.Workdays,
+                    MinPrice, Aggregation.Min(new MinAggregation
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
                 },
-            };
-        }
-
-        if (Equals(OrderBy.Nearest.ToString(), filter.OrderByField))
-        {
-            queryContainer &= new GeoDistanceQuery()
-            {
-                Boost = 1.1,
-                Name = "named_query",
-                Field = Infer.Field<WorkshopES>(w => w.Address.Point),
-                DistanceType = GeoDistanceType.Arc,
-                Location = new GeoLocation((double)filter.Latitude, (double)filter.Longitude),
-                Distance = filter.ElasticRadius,
-                ValidationMethod = GeoValidationMethod.IgnoreMalformed,
-            };
-        }
-
-        if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
-        {
-            if (filter.IsAppropriateHours)
-            {
-                queryContainer &= new NestedQuery()
                 {
-                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
-                    Query = new NumericRangeQuery()
+                    MaxPrice, Aggregation.Max(new MaxAggregation
                     {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
-                        GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
-                    },
-                };
-
-                queryContainer &= new NestedQuery()
-                {
-                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
-                    Query = new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().EndTime),
-                        LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
-                    },
-                };
+                        Field = Infer.Field<WorkshopES>(w => w.Price)
+                    })
+                }
             }
-            else
-            {
-                queryContainer &= new NestedQuery()
+        };
+
+        var response = await ElasticClient.SearchAsync<WorkshopES>(request);
+        var minPrice = response.Aggregations.GetMin(MinPrice).Value ?? 0;
+        var maxPrice = response.Aggregations.GetMax(MaxPrice).Value ?? 0;
+
+        return new PriceRangeES()
+        {
+            MaxPrice = Convert.ToDecimal(maxPrice),
+            MinPrice = Convert.ToDecimal(minPrice),
+        };
+    }
+
+    private Query CreateQueryFromFilter(WorkshopFilterES filter, bool includePrice = true)
+    {
+        var query = new BoolQuery
+        {
+            Filter =
+            [
+                new TermsQuery()
                 {
-                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
-                    Query = new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
-                        GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
-                        LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
-                    },
-                };
-            }
-        }
+                    Field = Infer.Field<WorkshopES>(f => f.ProviderStatus),
+                    Term = new([$"{ProviderStatus.Approved}", $"{ProviderStatus.Recheck}"]),
+                },
+                new TermQuery(Infer.Field<WorkshopES>(w => w.IsBlocked))
+                {
+                    Value = "false",
+                },
+            ],
+            Must = []
+        };
 
-        if (!string.IsNullOrWhiteSpace(filter.City))
+        if (filter.Ids.Count != 0)
         {
-            queryContainer &= new MatchQuery()
+            query.Filter.Add(new IdsQuery()
             {
-                Field = Infer.Field<WorkshopES>(w => w.Address.City),
-                Query = filter.City,
-            };
-        }
-
-        if (filter.CATOTTGId > 0)
-        {
-            var catottgIdFilter = new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(c => c.Address.CATOTTGId),
-                Value = filter.CATOTTGId,
-            };
-
-            var categoryFilter = new MatchQuery()
-            {
-                Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.Category),
-                Query = CodeficatorCategory.CityDistrict.Name,
-            };
-
-            var parentCatottgIdFilter = new TermQuery()
-            {
-                Field = Infer.Field<WorkshopES>(c => c.Address.CodeficatorAddressES.ParentId),
-                Value = filter.CATOTTGId,
-            };
-
-            queryContainer &= catottgIdFilter || (categoryFilter && parentCatottgIdFilter);
+                Values = filter.Ids.Select(id => id.ToString()).ToArray(),
+            });
+            return query;
         }
 
         if (filter.InstitutionId != Guid.Empty)
         {
-            queryContainer &= new TermQuery()
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.InstitutionId))
             {
-                Field = Infer.Field<WorkshopES>(w => w.InstitutionId),
-                Value = filter.InstitutionId,
-            };
-
-            return queryContainer;
+                Value = filter.InstitutionId.ToString(),
+            });
+            return query;
         }
 
-        return queryContainer;
+        AddSearchTextQuery(query, filter);
+        AddCityQuery(query, filter);
+        AddSubDirectionIdsQuery(query, filter);
+        if (includePrice) 
+        { 
+            AddPriceQuery(query, filter); 
+        }
+        AddAgeQuery(query, filter);
+        AddStatusesQuery(query, filter);
+        AddFormOfLearningQuery(query, filter);
+        AddWorkdaysQuery(query, filter);
+        AddCATOTTGIdQuery(query, filter);
+        AddGeoNearestQuery(query, filter);
+        AddTimeQuery(query, filter);
+        AddAgeCompositionQuery(query, filter);
+        AddEducationalShiftQuery(query, filter);
+        AddSpecialNeedsTypeQuery(query, filter);
+        AddCoverageQuery(query, filter);
+        AddIsSelfFinancedQuery(query, filter);
+        AddIsInclusiveQuery(query, filter);
+        AddAreThereBenefitsQuery(query, filter);
+        AddPayRateTypeQuery(query, filter);
+        AddStudyPeriodDatesQuery(query, filter);
+        AddLanguageQuery(query, filter);
+        return query;
     }
 
-    private List<ISort> CreateSortFromFilter(WorkshopFilterES filter)
+    private List<SortOptions> CreateSortFromFilter(WorkshopFilterES filter)
     {
-        var sorts = new List<ISort>();
+        var sorts = new List<SortOptions>();
 
         switch (filter.OrderByField)
         {
             case nameof(OrderBy.Rating):
-                sorts.Add(new FieldSort()
-                {
-                    Field = Infer.Field<WorkshopES>(w => w.Rating),
-                    Order = SortOrder.Descending,
-                });
+                sorts.Add(SortOptions.Field(
+                    Infer.Field<WorkshopES>(w => w.Rating),
+                    new FieldSort()
+                    {
+                        Order = SortOrder.Desc,
+                    }));
                 break;
 
             case nameof(OrderBy.Statistic):
-                sorts.Add(new FieldSort()
-                {
-                    Field = Infer.Field<WorkshopES>(w => w.Rating),
-                    Order = SortOrder.Descending,
-                });
+                sorts.Add(SortOptions.Field(
+                    Infer.Field<WorkshopES>(w => w.Rating),
+                    new FieldSort()
+                    {
+                        Order = SortOrder.Desc,
+                    }));
                 break;
 
             case nameof(OrderBy.PriceAsc):
-                sorts.Add(new FieldSort()
-                {
-                    Field = Infer.Field<WorkshopES>(w => w.Price),
-                    Order = SortOrder.Ascending,
-                });
+                sorts.Add(SortOptions.Field(
+                    Infer.Field<WorkshopES>(w => w.Price),
+                    new FieldSort()
+                    {
+                        Order = SortOrder.Asc,
+                    }));
                 break;
 
             case nameof(OrderBy.PriceDesc):
-                sorts.Add(new FieldSort()
-                {
-                    Field = Infer.Field<WorkshopES>(w => w.Price),
-                    Order = SortOrder.Descending,
-                });
+                sorts.Add(SortOptions.Field(
+                    Infer.Field<WorkshopES>(w => w.Price),
+                    new FieldSort()
+                    {
+                        Order = SortOrder.Desc,
+                    }));
                 break;
 
             case nameof(OrderBy.Alphabet):
@@ -326,26 +190,437 @@ public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilt
                 sorts.Add(new GeoDistanceSort()
                 {
                     Field = Infer.Field<WorkshopES>(w => w.Address.Point),
-                    Points = new[] { new GeoLocation((double)filter.Latitude, (double)filter.Longitude) },
-                    Order = SortOrder.Ascending,
+                    Location = [
+                    new LatLonGeoLocation()
+                    {
+                        Lat = (double)filter.Latitude,
+                        Lon = (double)filter.Longitude,
+                    },],
+                    Order = SortOrder.Asc,
                 });
                 break;
 
             default:
-                sorts.Add(new FieldSort()
-                {
-                    Field = Infer.Field<WorkshopES>(w => w.Id),
-                    Order = SortOrder.Ascending,
-                });
+                sorts.Add(SortOptions.Field(
+                    Infer.Field<WorkshopES>(w => w.Id),
+                    new FieldSort()
+                    {
+                        Order = SortOrder.Asc,
+                    }));
                 break;
         }
 
-        sorts.Add(new FieldSort
-        {
-            Field = WorkshopES.TitleKeyword,
-            Order = SortOrder.Ascending,
-        });
+        sorts.Add(SortOptions.Field(
+            Infer.Field<WorkshopES>(w => w.Title.Suffix(WorkshopES.SortSuffix)),
+            new FieldSort
+            {
+                Order = SortOrder.Asc,
+            }));
 
         return sorts;
+    }
+
+    private void AddSearchTextQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            query.Must.Add(new QueryStringQuery()
+            {
+                Fields = new[]
+                {
+                Infer.Field<WorkshopES>(w => w.Title.Suffix(WorkshopES.TextSuffix), boost: 3.0),
+                Infer.Field<WorkshopES>(w => w.ShortTitle, boost: 2.0),
+                Infer.Field<WorkshopES>(w => w.Keywords, boost: 1.5),
+                Infer.Field<WorkshopES>(w => w.ProviderTitle),
+                Infer.Field<WorkshopES>(w => w.Description)
+            },
+
+                // Query allows results where up to 2 chars may differ from the search keyword
+                Query = $"{filter.SearchText}* OR {filter.SearchText}~",
+                AllowLeadingWildcard = false,
+            });
+        }
+    }
+
+    private void AddLanguageQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.LanguageOfEducationId > 0)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.LanguageOfEducationId))
+            {
+                Value = filter.LanguageOfEducationId,
+            });
+        }
+    }
+
+    private void AddCityQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.City))
+        {
+            query.Must.Add(new MatchQuery(Infer.Field<WorkshopES>(w => w.Address.City))
+            {
+                Query = filter.City,
+            });
+        }
+    }
+
+    private void AddSubDirectionIdsQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.SubDirectionIds.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(w => w.SubDirectionIds),
+                Term = new(filter.SubDirectionIds
+                    .Select(id => FieldValue.String(id.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddPriceQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsFree && !filter.IsPaid)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.Price))
+            {
+                Value = 0,
+            });
+        }
+        else if (!filter.IsFree && filter.IsPaid)
+        {
+            query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.Price))
+            {
+                Gte = (double)filter.MinPrice,
+                Lte = (double)filter.MaxPrice,
+            });
+        }
+        else
+        {
+            query.Must.Add(new BoolQuery()
+            {
+                Should =
+                [
+                    new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.Price))
+                    {
+                        Gte = (double) filter.MinPrice,
+                        Lte = (double)filter.MaxPrice,
+                    },
+                    new TermQuery(Infer.Field<WorkshopES>(w => w.Price))
+                    {
+                        Value = 0,
+                    },
+                ],
+            });
+        }
+    }
+
+    private void AddAgeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.MinAge != 0 || filter.MaxAge != 100)
+        {
+            if (filter.IsAppropriateAge)
+            {
+                if (filter.MinAge != 0)
+                {
+                    query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.MinAge))
+                    {
+                        Value = filter.MinAge
+                    });
+                }
+
+                if (filter.MaxAge != 100)
+                {
+                    query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.MaxAge))
+                    {
+                        Value = filter.MaxAge
+                    });
+                }
+            }
+            else
+            {
+                query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.MinAge))
+                {
+                    Lte = filter.MaxAge
+                });
+
+                query.Must.Add(new NumberRangeQuery(Infer.Field<WorkshopES>(w => w.MaxAge))
+                {
+                    Gte = filter.MinAge
+                });
+            }
+        }
+    }
+
+    private void AddStatusesQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.Statuses.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.Status),
+                Term = new(filter.Statuses
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddFormOfLearningQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.FormOfLearning.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(w => w.FormOfLearning),
+                Term = new TermsQueryField(filter.FormOfLearning
+                    .Select(f => FieldValue.String(f.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddWorkdaysQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.Workdays))
+        {
+            query.Must.Add(new NestedQuery()
+            {
+                Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                Query = new MatchQuery(filter.IsStrictWorkdays
+                    ? Infer.Field<WorkshopES>(w =>
+                        w.DateTimeRanges[0].Workdays.Suffix(WorkshopES.KeywordSuffix))
+                    : Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].Workdays))
+                {
+                    Query = filter.Workdays,
+                },
+            });
+        }
+    }
+
+    private void AddCATOTTGIdQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.CATOTTGId > 0)
+        {
+            query.Must.Add(new BoolQuery()
+            {
+                Should =
+                [
+                    new TermQuery(Infer.Field<WorkshopES>(c => c.Address.CATOTTGId))
+                    {
+                        Value = filter.CATOTTGId,
+                    },
+                    new BoolQuery()
+                    {
+                        Must =
+                        [
+                            new MatchQuery(Infer.Field<WorkshopES>(c =>
+                                c.Address.CodeficatorAddressES.Category))
+                            {
+                                Query = CodeficatorCategory.CityDistrict.Name,
+                            },
+                            new TermQuery(Infer.Field<WorkshopES>(c =>
+                                c.Address.CodeficatorAddressES.ParentId))
+                            {
+                                Value = filter.CATOTTGId,
+                            },
+                        ],
+                    },
+                ],
+                MinimumShouldMatch = 1,
+            });
+        }
+    }
+
+    private void AddGeoNearestQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (Equals(OrderBy.Nearest.ToString(), filter.OrderByField))
+        {
+            query.Must.Add(new GeoDistanceQuery()
+            {
+                Boost = 1.1F,
+                QueryName = "named_query",
+                Field = "address.point",
+                DistanceType = GeoDistanceType.Arc,
+                Location = new LatLonGeoLocation()
+                {
+                    Lat = (double)filter.Latitude,
+                    Lon = (double)filter.Longitude,
+                },
+                Distance = filter.ElasticRadius,
+                ValidationMethod = GeoValidationMethod.IgnoreMalformed,
+            });
+        }
+    }
+
+    private void AddTimeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime < WorkshopFilterES.MaxTimeInDay)
+        {
+            if (filter.IsAppropriateHours)
+            {
+                query.Must.Add(new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new BoolQuery()
+                    {
+                        Must =
+                        [
+                            new DateRangeQuery(
+                                Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime))
+                            {
+                                Gte = filter.MinStartTime.ToString(),
+                            },
+                            new DateRangeQuery(
+                                Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].EndTime))
+                            {
+                                Lte = filter.MaxStartTime.ToString(),
+                            },
+                        ],
+                    },
+                });
+            }
+            else
+            {
+                query.Must.Add(new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new DateRangeQuery(
+                        Infer.Field<WorkshopES>(w => w.DateTimeRanges[0].StartTime))
+                    {
+                        Gte = filter.MinStartTime.ToString(),
+                        Lte = filter.MaxStartTime.ToString(),
+                    },
+                });
+            }
+        }
+    }
+
+    private void AddAgeCompositionQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.AgeComposition.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.AgeComposition),
+                Term = new(filter.AgeComposition
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddEducationalShiftQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.EducationalShift.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.EducationalShift),
+                Term = new(filter.EducationalShift
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddSpecialNeedsTypeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.SpecialNeedsType.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.SpecialNeedsType),
+                Term = new(filter.SpecialNeedsType
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+
+    private void AddCoverageQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.Coverage.Count != 0)
+        {
+            query.Filter.Add(new TermsQuery()
+            {
+                Field = Infer.Field<WorkshopES>(f => f.Coverage),
+                Term = new(filter.Coverage
+                    .Select(s => FieldValue.String(s.ToString())).ToArray()),
+            });
+        }
+    }
+   
+    private void AddIsSelfFinancedQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsSelfFinanced)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsSelfFinanced))
+            {
+                Value = filter.IsSelfFinanced,
+            });
+        }
+    }
+
+    private void AddIsInclusiveQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.IsInclusive)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.IsInclusive))
+            {
+                Value = filter.IsInclusive,
+            });
+        }
+    }
+
+    private void AddAreThereBenefitsQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.AreThereBenefits)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.AreThereBenefits))
+            {
+                Value = filter.AreThereBenefits,
+            });
+        }
+    }
+
+    private void AddPayRateTypeQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.PayRate != PayRateType.None)
+        {
+            query.Filter.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.PayRate.Suffix(WorkshopES.KeywordSuffix)))
+            {
+                Value = filter.PayRate.ToString(),
+            });
+        }
+    }
+
+    private void AddStudyPeriodDatesQuery(BoolQuery query, WorkshopFilterES filter)
+    {
+        if (filter.StudyPeriodStartDay.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodStartDay))
+            {
+                Value = filter.StudyPeriodStartDay.Value,
+            });
+        }
+
+        if (filter.StudyPeriodEndDay.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodEndDay))
+            {
+                Value = filter.StudyPeriodEndDay.Value,
+            });
+        }
+
+        if (filter.StudyPeriodStartMonth.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodStartMonth))
+            {
+                Value = filter.StudyPeriodStartMonth.Value,
+            });
+        }
+
+        if (filter.StudyPeriodEndMonth.HasValue)
+        {
+            query.Must.Add(new TermQuery(Infer.Field<WorkshopES>(w => w.StudyPeriodEndMonth))
+            {
+                Value = filter.StudyPeriodEndMonth.Value,
+            });
+        }
     }
 }

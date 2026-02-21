@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.AuthCommon
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Confirm email"];
+    Layout = "_Layout";
+}
+
+@model OutOfSchool.AuthCommon.ViewModels.RegisterViewModel
+
+<div class="wrapper_body">
+    <div class="wrapper">
+        <h2 class="title">@SharedLocalizer["Confirm email"]</h2>
+        <h3 class="instruction">@SharedLocalizer["Confirm email {0} sent", Model.Email]</h3>
+    </div>
+</div>

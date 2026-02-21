@@ -1,10 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Changes;
-using OutOfSchool.WebApi.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.BusinessLogic.Models;
+using OutOfSchool.BusinessLogic.Models.Changes;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -12,7 +8,7 @@ namespace OutOfSchool.WebApi.Controllers.V1;
 /// Controller with CRUD operations for ChangesLog entity.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[AspApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/[action]")]
 public class ChangesLogController : ControllerBase
 {
@@ -45,12 +41,7 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetProviderChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
@@ -75,19 +66,14 @@ public class ChangesLogController : ControllerBase
     {
         var changesLog = await changesLogService.GetApplicationChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
-
-        return Ok(changesLog);
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 
     /// <summary>
-    /// Get history of ProviderAdmin changes that matches filter's parameters.
+    /// Get history of Employee changes that matches filter's parameters.
     /// </summary>
     /// <param name="request">Entity that represents searching parameters.</param>
-    /// <returns><see cref="SearchResult{ProviderAdminChangesLogDto}"/>, or no content.</returns>
+    /// <returns><see cref="SearchResult{EmployeeChangesLogDto}"/>, or no content.</returns>
     /// <response code="200">The list of found entities by given filter.</response>
     /// <response code="204">No entity with given filter was found.</response>
     /// <response code="401">If the user is not authorized.</response>
@@ -95,21 +81,95 @@ public class ChangesLogController : ControllerBase
     /// <response code="500">If any server error occures. For example: Id was less than one.</response>
     [HasPermission(Permissions.LogDataRead)]
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderAdminChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<EmployeeChangesLogDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ProviderAdmin([FromQuery] ProviderAdminChangesLogRequest request)
+    public async Task<IActionResult> Employee([FromQuery] EmployeeChangesLogRequest request)
     {
-        var changesLog = await changesLogService.GetProviderAdminChangesLogAsync(request).ConfigureAwait(false);
+        var changesLog = await changesLogService.GetEmployeeChangesLogAsync(request).ConfigureAwait(false);
 
-        if (changesLog.TotalAmount < 1)
-        {
-            return NoContent();
-        }
+        return this.SearchResultToOkOrNoContent(changesLog);
+    }
 
-        return Ok(changesLog);
+    /// <summary>
+    /// Get history of ParentBlockedByAdmin changes that matches filter's parameters.
+    /// </summary>
+    /// <param name="request">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{ParentBlockedByAdminChangesLogDto}"/>, or no content.</returns>
+    /// <response code="200">The list of found entities by given filter.</response>
+    /// <response code="204">No entity with given filter was found.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
+    /// <response code="500">If any server error occures. For example: Id was less than one.</response>
+    [HasPermission(Permissions.ParentBlock)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ParentBlockedByAdminChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ParentBlockedByAdmin([FromQuery] ParentBlockedByAdminChangesLogRequest request)
+    {
+        var changesLog = await changesLogService.GetParentBlockedByAdminChangesLogAsync(request).ConfigureAwait(false);
+
+        return this.SearchResultToOkOrNoContent(changesLog);
+    }
+
+    /// <summary>
+    /// Get history of Workshop changes that matches filter's parameters.
+    /// </summary>
+    /// <param name="request">Entity that represents searching parameters.</param>
+    /// <returns><see cref="SearchResult{WorkshopChangesLogDto}"/>, or no content.</returns>
+    /// <response code="200">The list of found entities by given filter.</response>
+    /// <response code="204">No entity with given filter was found.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
+    /// <response code="500">If any server error occures. For example: Id was less than one.</response>
+    [HasPermission(Permissions.LogDataRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Workshop([FromQuery] WorkshopChangesLogRequest request)
+    {
+        var changesLog = await changesLogService.GetWorkshopChangesLogAsync(request).ConfigureAwait(false);
+        return this.SearchResultToOkOrNoContent(changesLog);
+    }
+    
+    /// <summary>
+    /// Retrieves the history of changes made WorkshopDraft entities
+    /// that match the specified filter parameters.
+    /// </summary>
+    /// <param name="request">The filter and pagination parameters for the search.</param>
+    /// <returns>
+    /// A <see cref="SearchResult{WorkshopDraftChangesLogDto}"/> containing the matching logs,
+    /// or a no-content response if none are found.
+    /// </returns>
+    /// <response code="200">Returns the list of matching change log entries.</response>
+    /// <response code="204">No matching change logs were found.</response>
+    /// <response code="400">The request parameters are invalid.</response>
+    /// <response code="401">The user is not authenticated.</response>
+    /// <response code="403">The user is not authorized to access this resource.</response>
+    /// <response code="500">An unexpected server error occurred.</response>
+    [HasPermission(Permissions.LogDataRead)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopDraftChangesLogDto>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> WorkshopDraft([FromQuery] WorkshopDraftChangesLogRequest request)
+    {
+        var changesLog = await changesLogService.GetWorkshopDraftChangesLogAsync(request).ConfigureAwait(false);
+
+        return this.SearchResultToOkOrNoContent(changesLog);
     }
 }

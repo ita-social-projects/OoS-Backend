@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.BusinessLogic;
+using OutOfSchool.BusinessLogic.Enums;
+using OutOfSchool.BusinessLogic.Models.SocialGroup;
+using OutOfSchool.BusinessLogic.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Models.SocialGroup;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
+using OutOfSchool.Services.Repository.Base;
+using OutOfSchool.Services.Repository.Base.Api;
+using OutOfSchool.Tests.Common.DbContextTests;
 
 namespace OutOfSchool.WebApi.Tests.Services;
 
@@ -23,12 +23,11 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class SocialGroupServiceTests
 {
     private ISocialGroupService service;
-    private OutOfSchoolDbContext context;
-    private IEntityRepository<long, SocialGroup> repository;
+    private TestOutOfSchoolDbContext context;
+    private IEntityRepositorySoftDeleted<long, SocialGroup> repository;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<SocialGroupService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
-    private IMapper mapper;
 
     [SetUp]
     public void SetUp()
@@ -38,12 +37,11 @@ public class SocialGroupServiceTests
                 databaseName: "OutOfSchoolTestDB");
 
         options = builder.Options;
-        context = new OutOfSchoolDbContext(options);
+        context = new TestOutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repository = new EntityRepository<long, SocialGroup>(context);
+        repository = new EntityRepositorySoftDeleted<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
-        mapper = TestHelper.CreateMapperInstanceOfProfileType<MappingProfile>();
-        service = new SocialGroupService(repository, logger.Object, localizer.Object, mapper);
+        service = new SocialGroupService(repository, logger.Object, localizer.Object);
 
         SeedDatabase();
     }
@@ -95,7 +93,6 @@ public class SocialGroupServiceTests
 
         // Assert
         Assert.AreEqual(expected.Name, result.Name);
-        Assert.AreEqual(expected.NameEn, result.NameEn);
     }
 
     [Test]
@@ -161,7 +158,7 @@ public class SocialGroupServiceTests
 
     private void SeedDatabase()
     {
-        using var context = new OutOfSchoolDbContext(options);
+        using var context = new TestOutOfSchoolDbContext(options);
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();

@@ -1,33 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <NuGetAuditMode>direct</NuGetAuditMode>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NUnit"/>
-        <PackageReference Include="NUnit3TestAdapter"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"/>
+        <PackageReference Include="NUnit" />
+        <PackageReference Include="NUnit3TestAdapter" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="coverlet.msbuild">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="FluentAssertions"/>
-        <PackageReference Include="IdentityModel"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"/>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens"/>
-        <PackageReference Include="MockQueryable.Moq"/>
-        <PackageReference Include="Moq"/>
-        <PackageReference Include="Newtonsoft.Json"/>
-        <PackageReference Include="StyleCop.Analyzers">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="FluentAssertions" />
+        <PackageReference Include="IdentityModel" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+        <PackageReference Include="MockQueryable.Moq" />
+        <PackageReference Include="Moq" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj"/>
-        <ProjectReference Include="..\..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj"/>
+        <ProjectReference Include="..\..\OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj" />
+        <ProjectReference Include="..\..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
     </ItemGroup>
 </Project>

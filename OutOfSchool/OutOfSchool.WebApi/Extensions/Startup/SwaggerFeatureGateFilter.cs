@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
