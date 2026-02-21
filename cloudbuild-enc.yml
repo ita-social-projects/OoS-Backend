@@ -4,6 +4,8 @@ steps:
 # Build the container image
 - name: 'buildpacksio/pack'
   entrypoint: 'pack'
+  env:
+    - 'DOCKER_API_VERSION=1.41'
   args:
     - build
     - ${_REGION}-docker.pkg.dev/$PROJECT_ID/outofschool/oos-encr:$SHORT_SHA
