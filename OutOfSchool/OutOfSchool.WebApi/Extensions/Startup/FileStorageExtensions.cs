@@ -61,8 +61,8 @@ public static class FileStorageExtensions
                     .WithRegion(options.Providers.AmazonS3.Region)
                     .WithSSL()
                     .Build();
-
-                services.AddSingleton<IStorageContext<IMinioClient>, S3StorageContext>(_ =>
+                                       
+                    services.AddSingleton<IStorageContext<IMinioClient>, S3StorageContext>(_ =>
                     new S3StorageContext(storageClient, options.Containers.Images.BucketName));
             
                 services.AddScoped<S3ImagesStorage>();

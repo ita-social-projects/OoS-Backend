@@ -21,5 +21,9 @@
         <RootNamespace>OutOfSchool.ExternalFileStore</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Minio" />
+    </ItemGroup>
+
 </Project>
 
