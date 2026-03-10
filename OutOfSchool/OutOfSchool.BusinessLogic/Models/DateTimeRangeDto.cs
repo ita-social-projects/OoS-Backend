@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models.WorkshopDrafts;
 
 namespace OutOfSchool.BusinessLogic.Models;
 
-public class DateTimeRangeDto
+public class DateTimeRangeDto : IValidatableObject
 {
     public long Id { get; set; }
 
@@ -19,6 +19,34 @@ public class DateTimeRangeDto
 
     [Required]
     public List<DaysBitMask> Workdays { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (StartTime >= EndTime)
+            yield return new ValidationResult("The end time cannot be equal to or earlier than the start time.", new[] { nameof(EndTime) });
+
+        if (Workdays.IsNullOrEmpty() || Workdays.Any(workday => workday == DaysBitMask.None))
+        {
+            yield return new ValidationResult("Workdays are required.", new[] { nameof(Workdays) });
+        } else
+        {
+            const DaysBitMask allValidDays = DaysBitMask.Monday | DaysBitMask.Tuesday |
+                                         DaysBitMask.Wednesday | DaysBitMask.Thursday |
+                                         DaysBitMask.Friday | DaysBitMask.Saturday |
+                                         DaysBitMask.Sunday;
+
+            foreach ( var dayValue in Workdays)
+            {
+                if ((dayValue & ~allValidDays) != 0)
+                {
+                    yield return new ValidationResult($"The value '{(int)dayValue}' contains undefined day bits.",
+                        new[] { nameof(Workdays) });
+                }
+            }
+
+            Workdays = Workdays.Distinct().ToList();
+        }
+    }
 }
 
 public static class DateTimeRangeDtoExtensions
@@ -28,21 +56,29 @@ public static class DateTimeRangeDtoExtensions
         {
             StartTime = TimeOnly.FromTimeSpan(dto.StartTime),
             EndTime = TimeOnly.FromTimeSpan(dto.EndTime),
-            Workdays = dto.Workdays?.ToHashSet() ?? []
+            Workdays = dto.Workdays?.ToDaysBitMask()
+                .ToDaysBitMaskEnumerable()
+                .ToHashSet() ?? []
         };
 
     public static List<DateTimeRangeDraft> ToDraft(this IEnumerable<DateTimeRangeDto> list)
         => list.MapToList(ToDraft);
 
     public static DateTimeRangeES ToES(this DateTimeRangeDto dto)
-        => new()
+    {
+        var workdays = dto.Workdays?.ToDaysBitMask()
+            .ToDaysBitMaskEnumerable()
+            .ToHashSet();
+
+        return new()
         {
             Id = dto.Id,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
-            Workdays = string.Join(' ', dto.Workdays ?? []),
+            Workdays = string.Join(' ', workdays ?? []),
             // WorkshopId - ignored in original AM mapping
         };
+    }
 
     public static List<DateTimeRangeES> ToES(this IEnumerable<DateTimeRangeDto> list)
         => list.MapToList(ToES);

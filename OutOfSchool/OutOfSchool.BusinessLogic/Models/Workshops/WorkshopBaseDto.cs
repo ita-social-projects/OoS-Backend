@@ -10,6 +10,8 @@ using OutOfSchool.Services.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using static OutOfSchool.BusinessLogic.Validators.RequiredIfMinAndMaxLengthAttributes;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.BusinessLogic.Models.Workshops;
 

@@ -26,7 +26,17 @@ public class TimespanConverter : JsonConverter<TimeSpan>
             throw new ArgumentException("TimeSpan value cannot be empty.");
         }
 
-        TimeSpan.TryParseExact(reader.GetString(), TimeSpanFormatString, null, out var parsedTimeSpan);
-        return parsedTimeSpan;
+        try
+        {
+            return TimeSpan.ParseExact(str, TimeSpanFormatString, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException ex)
+        {
+            throw new JsonException($"Invalid TimeSpan format. Expected: {TimeSpanFormatString}.", ex);
+        }
+        catch (OverflowException ex)
+        {
+            throw new JsonException($"Invalid TimeSpan value. At least one of the numeric components is out of range or contains too many digits.", ex);
+        }
     }
 }

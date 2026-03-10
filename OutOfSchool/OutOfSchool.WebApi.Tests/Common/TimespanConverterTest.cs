@@ -66,6 +66,57 @@ public class TimespanConverterTest
         Assert.AreEqual(expectedTimeJson, result.ToString());
     }
 
+    [TestCase("10/30")]
+    [TestCase("12;49")]
+    [TestCase("15-00")]
+    [Test]
+    public void Read_WhenTimeSpanFormatIsInvalid_ShouldThrowJsonException(string time)
+    {
+        // Arrange
+        var timeJson = $"\"{time}\"";
+        byte[] bytes = Encoding.UTF8.GetBytes(timeJson);
+        var reader = new Utf8JsonReader(bytes.AsSpan());
+        reader.Read();
+        Type typeToConvert = typeof(TimeSpan);
+        JsonSerializerOptions options = new JsonSerializerOptions();
+
+        // Act
+        try
+        {
+            var result = Converter.Read(ref reader, typeToConvert, options);
+            Assert.Fail();
+        }
+        catch (JsonException ex)
+        {
+            // Assert
+            StringAssert.Contains("Invalid TimeSpan format. Expected: hh\\:mm.", ex.Message);
+        }
+    }
+
+    [Test]
+    public void Read_WhenTimeSpanValueIsOutOfRange_ShouldThrowJsonException()
+    {
+        // Arrange
+        var timeJson = "\"25:00\"";
+        byte[] bytes = Encoding.UTF8.GetBytes(timeJson);
+        var reader = new Utf8JsonReader(bytes.AsSpan());
+        reader.Read();
+        Type typeToConvert = typeof(TimeSpan);
+        JsonSerializerOptions options = new JsonSerializerOptions();
+
+        // Act
+        try
+        {
+            var result = Converter.Read(ref reader, typeToConvert, options);
+            Assert.Fail();
+        }
+        catch (JsonException ex)
+        {
+            // Assert
+            StringAssert.Contains("Invalid TimeSpan value. At least one of the numeric components is out of range or contains too many digits.", ex.Message);
+        }
+    }
+
     private static byte[] TrimEnd(byte[] array)
     {
         var lastIndex = Array.FindLastIndex(array, b => b != 0);
