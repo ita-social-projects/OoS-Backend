@@ -524,13 +524,16 @@ public class WorkshopDraftService(
     {
         var draft = await GetByIdWithProviderDetails(id);
 
-        await currentUserService.UserHasRights(
-            new ProviderRights(draft.ProviderId),
-            new EmployeeRights(draft.ProviderId),
-            new ModeratorRights(),
-            new TechAdminRights()
-        ).ConfigureAwait(false);
+        var isAdmin = currentUserService.IsAdmin();
 
+        if (!isAdmin)
+        {
+                await currentUserService.UserHasRights(
+                new ProviderRights(draft.ProviderId),
+                new EmployeeRights(draft.ProviderId),
+                new ModeratorRights()
+            ).ConfigureAwait(false);
+        }
 
         return await MapWorkshopDraftWithDetails(draft);
     }
